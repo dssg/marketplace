@@ -1,0 +1,20 @@
+{% extends 'dssgmkt/org.html' %}
+
+{% block tabcontents %}
+
+  <h2>Edit staff member</h2>
+  <p>Name: {{ organizationrole.user.first_name }} {{ organizationrole.user.last_name }}</p>
+  <p>Email: {{ organizationrole.user.email }}</p>
+  <form id="editstaff">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit"
+            form="editstaff"
+            formaction="{% url 'dssgmkt:org_staff_edit' organization.id organizationrole.id %}"
+            formmethod="post">
+      Save
+    </button>
+  </form>
+  <a href="{% url 'dssgmkt:org_staff' organization.id %}">Cancel</a>
+
+{% endblock %}

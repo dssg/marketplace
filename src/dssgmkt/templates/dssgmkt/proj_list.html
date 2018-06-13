@@ -1,0 +1,80 @@
+{% extends 'dssgmkt/base.html' %}
+
+{% block pagecontents %}
+  <form>
+    <h2>Filter</h2>
+    <label for="projname">
+      Project name
+      <input type="text" id="projname" name="projname" placeholder=""></input></label>
+    <label for="orgname">
+      Organization name
+      <input type="text" id="orgname" name="orgname" placeholder=""></input></label>
+
+    <fieldset name="socialcause">
+      <legend>Project main cause</legend>
+      <label for="education">
+        <input type="checkbox" id="education" name="education"></input>Education</label>
+      <label for="health">
+        <input type="checkbox" id="health" name="health"></input>Health</label>
+      <label for="environment">
+        <input type="checkbox" id="environment" name="environment"></input>Environment</label>
+      <label for="socialservices">
+        <input type="checkbox" id="socialservices" name="socialservices"></input>Social Services</label>
+      <label for="transportation">
+        <input type="checkbox" id="transportation" name="transportation"></input>Transportation</label>
+      <label for="energy">
+        <input type="checkbox" id="energy" name="energy"></input>Energy and Environment</label>
+      <label for="internationaldev">
+        <input type="checkbox" id="internationaldev" name="internationaldev"></input>International Development</label>
+      <label for="publicsafety">
+        <input type="checkbox" id="publicsafety" name="publicsafety"></input>Public Safety</label>
+      <label for="economicdev">
+        <input type="checkbox" id="economicdev" name="economicdev"></input>Economic Development</label>
+      <label for="other">
+        <input type="checkbox" id="other" name="other"></input>Other</label>
+    </fieldset>
+
+    <fieldset name="status">
+      <legend>Project status</legend>
+      <label for="new">
+        <input type="checkbox" id="new" name="new"></input>New</label>
+      <label for="inprogress">
+        <input type="checkbox" id="inprogress" name="inprogress"></input>In progress</label>
+      <label for="acceptingvolunteers">
+        <input type="checkbox" id="acceptingvolunteers" name="acceptingvolunteers"></input>Looking for volunteers</label>
+      <label for="completed">
+        <input type="checkbox" id="completed" name="completed"></input>Completed</label>
+    </fieldset>
+    <button type="submit">Apply filters</button>
+  </form>
+
+  {% if proj_list %}
+    <table>
+      <thead>
+        <tr>
+            <th>Project name</th>
+            <th>Organization name</th>
+            <th>Summary</th>
+            <th>Status</th>
+            <th>Social impact area</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for project in proj_list %}
+          <tr>
+              <td><a href="{% url 'dssgmkt:proj_info' project.id %}">{{ project.name }}</a></td>
+              <td><a href="{% url 'dssgmkt:org_info' project.organization.id %}">{{ project.organization.name }}</a></td>
+              <td>{{ project.short_summary }}</td>
+              <td>{{ project.get_status_display }}</td>
+              <td>{{ project.get_social_cause_display }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% url 'dssgmkt:proj_list' as proj_list_url %}
+    {% include 'dssgmkt/components/pagination.html' with baseurl=proj_list_url %}
+
+  {% else %}
+    <p>No projects found.</p>
+  {% endif %}
+{% endblock %}

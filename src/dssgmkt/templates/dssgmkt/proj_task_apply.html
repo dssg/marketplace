@@ -1,0 +1,28 @@
+{% extends 'dssgmkt/proj.html' %}
+
+{% block tabcontents %}
+
+  <form id="projtaskapply">
+    <h2>Apply to volunteer</h2>
+    <p>Thank you for your interest in this project! Please fill out this form so the
+      project owners can review your application and your volunteering background.</p>
+
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    {% if project.developer_agreement %}
+      <p>By applying to this volunteer opening you agree to the below terms of this project:</p>
+      <p>{{ project.developer_agreement }}<p>
+    {% endif %}
+    
+    <button type="submit"
+            form="projtaskapply"
+            formaction="{% url 'dssgmkt:proj_task_apply' project.id project_task.id %}"
+            formmethod="post">
+        Apply to volunteer
+    </button>
+  </form>
+
+  <a href="{% url 'dssgmkt:proj_info' project.id %}">Cancel</a>
+
+{% endblock %}

@@ -1,0 +1,36 @@
+
+{% if project_tab == 'info' %}
+  Project information
+{% else %}
+  <a href="{% url 'dssgmkt:proj_info' project.id %}">Project information</a>
+{% endif %}
+
+{% if project_tab == 'tasklist' %}
+  Task status
+{% else %}
+  <a href="{% url 'dssgmkt:proj_task_list' project.id %}">Tasks</a>
+{% endif %}
+
+{% if project_tab == 'deliverables' %}
+  Deliverables
+{% else %}
+  <a href="{% url 'dssgmkt:proj_deliverables' project.id %}">Deliverables</a>
+{% endif %}
+
+{% if project_tab == 'log' %}
+  Changelog
+{% else %}
+  <a href="{% url 'dssgmkt:proj_log' project.id %}">Changelog</a>
+{% endif %}
+
+{% if project_tab == 'staff' %}
+  Staff
+{% else %}
+  <a href="{% url 'dssgmkt:proj_staff' project.id %}">Staff</a>
+{% endif %}
+
+{% if project_tab == 'instructions' %}
+  Volunteer instructions
+{% else %}
+  <a href="{% url 'dssgmkt:proj_instructions' project.id %}">Volunteer instructions</a>
+{% endif %}

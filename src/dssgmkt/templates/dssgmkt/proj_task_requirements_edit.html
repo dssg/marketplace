@@ -1,0 +1,46 @@
+{% extends 'dssgmkt/proj.html' %}
+
+{% block tabcontents %}
+
+  <h2>Task requirements</h2>
+  {% if task_requirements %}
+    <table>
+      <thead>
+        <tr>
+            <th>Area</th>
+            <th>Skill</th>
+            <th>Level</th>
+            <th>Edit</th>
+            <th>Remove</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for task_requirement in task_requirements %}
+          <tr>
+              <td>{{ task_requirement.skill.area }}</td>
+              <td>{{ task_requirement.skill.name }}</td>
+              <td>{{ task_requirement.get_level_display }}</td>
+              <td><a href="{% url 'dssgmkt:proj_task_requirements_requirement_edit' project.id  project_task.id task_requirement.id %}">Edit</a></td>
+              <td><a href="{% url 'dssgmkt:proj_task_requirements_requirement_remove' project.id  project_task.id task_requirement.id %}">Remove</a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No requirements listed.</p>
+  {% endif %}
+
+  <h2>Add new task requirement</h2>
+  <form id="addrequirement">
+    {% csrf_token %}
+    {{ add_requirement_form.as_p }}
+    <button type="submit"
+            form="addrequirement"
+            formaction="{% url 'dssgmkt:proj_task_requirements_edit' project.id project_task.id %}"
+            formmethod="post">
+      Add requirement
+    </button>
+  </form>
+
+  <a href="{% url 'dssgmkt:proj_task_list' project.id %}">Back</a>
+{% endblock %}

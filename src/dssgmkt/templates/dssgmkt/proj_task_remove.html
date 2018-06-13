@@ -1,0 +1,21 @@
+{% extends 'dssgmkt/proj.html' %}
+
+{% block tabcontents %}
+
+  <h2>Delete task</h2>
+  <p>Are you sure you want to delete this task? If you delete it
+    the task will be permanently removed from the system and
+    all its data will be lost.</p>
+  <form id="deletetask">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit"
+            form="deletetask"
+            formaction="{% url 'dssgmkt:proj_task_remove' project.id project_task.id %}"
+            formmethod="post">
+        Yes, delete this task
+    </button>
+  </form>
+  <a href="{% url 'dssgmkt:proj_task_list' project.id %}">No, keep this task</a>
+
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends 'dssgmkt/base.html' %}
+
+{% block pagecontents %}
+
+  <h2>Remove skill</h2>
+  <p>Area: {{ volunteerskill.skill.area }}</p>
+  <p>Name: {{ volunteerskill.skill.name }}</p>
+  <form id="removeskill">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit"
+            form="removeskill"
+            formaction="{% url 'dssgmkt:user_profile_skills_skill_remove' user.id volunteerskill.id %}"
+            formmethod="post">
+        Yes, remove this skill
+    </button>
+  </form>
+  <a href="{% url 'dssgmkt:user_profile_skills_edit' user.id %}">No, keep this skill</a>
+
+{% endblock %}

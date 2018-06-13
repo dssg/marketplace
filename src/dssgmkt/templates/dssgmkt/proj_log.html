@@ -1,0 +1,30 @@
+{% extends "dssgmkt/proj.html" %}
+
+{% block tabcontents %}
+  <table>
+    <thead>
+      <tr>
+          <th>Date</th>
+          <th>Author</th>
+          <th>Change type</th>
+          <th>Change target</th>
+          <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for log in project_logs %}
+        <tr>
+          <td>{{ log.change_date }}</td>
+          <td>{{ log.author }}</td>
+          <td>{{ log.change_type }}</td>
+          <td>{{ log.change_target }}</td>
+          <td>{{ log.change_description }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% url 'dssgmkt:proj_log' as proj_log_url %}
+  {% include 'dssgmkt/components/pagination.html' with baseurl=proj_log_url %}
+
+{% endblock %}

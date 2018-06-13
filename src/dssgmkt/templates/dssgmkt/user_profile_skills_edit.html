@@ -1,0 +1,45 @@
+{% extends 'dssgmkt/base.html' %}
+
+{% block pagecontents %}
+
+  <h2>My skills</h2>
+  {% if volunteerskills %}
+    <table>
+      <thead>
+        <tr>
+            <th>Area</th>
+            <th>Skill</th>
+            <th>Level</th>
+            <th>Edit</th>
+            <th>Remove</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for volunteerskill in volunteerskills %}
+          <tr>
+              <td>{{ volunteerskill.skill.area }}</td>
+              <td>{{ volunteerskill.skill.name }}</td>
+              <td>{{ volunteerskill.get_level_display }}</td>
+              <td><a href="{% url 'dssgmkt:user_profile_skills_skill_edit' user.id volunteerskill.id %}">Edit</a></td>
+              <td><a href="{% url 'dssgmkt:user_profile_skills_skill_remove' user.id volunteerskill.id %}">Remove</a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No skills listed.</p>
+  {% endif %}
+
+    <h2>Add new skill</h2>
+    <form id="addskill">
+      {% csrf_token %}
+      {{ add_skill_form.as_p }}
+      <button type="submit"
+              form="addskill"
+              formaction="{% url 'dssgmkt:user_profile_skills_edit' user.id %}"
+              formmethod="post">
+        Add skill
+      </button>
+    </form>
+
+{% endblock %}

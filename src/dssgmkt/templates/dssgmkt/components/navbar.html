@@ -1,0 +1,27 @@
+{% if user.is_authenticated %}
+  <nav>
+    <ul>
+      <li><a href="{% url 'dssgmkt:home' %}"><img src="missing.jpg"></img></a></li>
+      <li><a href="{% url 'dssgmkt:home' %}">DSSG Solve</a></li>
+      <li><a href="{% url 'dssgmkt:about' %}">About us</a></li>
+      <li><form><input type="text" id="q" name="q" placeholder="Search"></input><button formaction="search.html">Search</button></form></li>
+      <li><a href="{% url 'dssgmkt:proj_list' %}">Projects</a></li>
+      <li><a href="{% url 'dssgmkt:org_list' %}">Organizations</a></li>
+      <li><a href="{% url 'dssgmkt:user_profile' user.id %}">My profile</a></li>
+      <li><a href="{% url 'dssgmkt:logout' %}">Log out</a></li>
+    </ul>
+  </nav>
+{% else %}
+  <nav>
+    <ul>
+      <li><a href="{% url 'dssgmkt:home' %}"><img src="missing.jpg"></img></a></li>
+      <li><a href="{% url 'dssgmkt:home' %}">DSSG Solve</a></li>
+      <li><a href="{% url 'dssgmkt:about' %}">About us</a></li>
+      <li><form><input type="text" id="q" name="q" placeholder="Search"></input><button formaction="search.html">Search</button></form></li>
+      <li><a href="{% url 'dssgmkt:proj_list' %}">Projects</a></li>
+      <li><a href="{% url 'dssgmkt:org_list' %}">Organizations</a></li>
+      <li><a href="signup.html">Sign up</a></li>
+      <li><a href="{% url 'dssgmkt:login' %}">Log in</a></li>
+    </ul>
+  </nav>
+{% endif %}

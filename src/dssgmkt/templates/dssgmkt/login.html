@@ -1,0 +1,30 @@
+{% extends 'dssgmkt/base.html' %}
+
+{% block pagecontents %}
+
+  <form>
+    <h2>Log in</h2>
+    <p>Type your email address and password to access your account</p>
+    {% if next %}
+        {% if user.is_authenticated %}
+        <p>Your account doesn't have access to this page. To proceed,
+        please login with an account that has access.</p>
+        {% else %}
+        <p>Please login to see this page.</p>
+        {% endif %}
+    {% endif %}
+
+    {% if form.errors %}
+    <p>Your username and password didn't match. Please try again.</p>
+    {% endif %}
+
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit"
+            formaction="{%url 'dssgmkt:login' %}"
+            formmethod="post">Log in</button>
+  </form>
+  <a href="{% url 'dssgmkt:pwd_reset_request' %}">Forgot your password?</a>
+
+
+{% endblock %}

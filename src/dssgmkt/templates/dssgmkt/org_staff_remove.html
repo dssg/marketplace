@@ -1,0 +1,20 @@
+{% extends 'dssgmkt/org.html' %}
+
+{% block tabcontents %}
+
+  <h2>Remove staff member</h2>
+  <p>Name: {{ organizationrole.user.first_name }} {{ organizationrole.user.last_name }}</p>
+  <p>Email: {{ organizationrole.user.email }}</p>
+  <form id="removestaff">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit"
+            form="removestaff"
+            formaction="{% url 'dssgmkt:org_staff_remove' organization.id organizationrole.id %}"
+            formmethod="post">
+        Yes, remove this staff member
+    </button>
+  </form>
+  <a href="{% url 'dssgmkt:org_staff' organization.id %}">No, keep this staff member</a>
+
+{% endblock %}

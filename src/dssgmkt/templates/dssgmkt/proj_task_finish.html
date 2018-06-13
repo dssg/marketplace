@@ -1,0 +1,39 @@
+{% extends "dssgmkt/proj.html" %}
+
+{% block tabcontents %}
+
+  {% if project_task %}
+
+    <h2>Mark work as done</h2>
+
+    <p>Task:<a href="projinstructions.html">{{ project_task.name }}</a></p>
+
+    <p>Remember to put all the results of your work in the appropriate sites
+       designed for the task:</p>
+     {% if project.deliverable_management_url %}
+       <a href="{{ project.deliverable_management_url }}">External project home</a>
+     {% endif %}
+     {% if project.deliverable_github_url %}
+       <a href="{{ project.deliverable_github_url }}">Project github page</a>
+     {% endif %}
+     {% if project.deliverable_reports_url %}
+       <a href="{{ project.deliverable_reports_url }}">Project reports</a>
+     {% endif %}
+     {% if project.deliverable_documentation_url %}
+       <a href="{{ project.deliverable_documentation_url }}">Project documentation</a>
+     {% endif %}
+
+    <form id="completetask">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit"
+              form="completetask"
+              formaction="{% url 'dssgmkt:proj_task_finish' project.id project_task.id %}"
+              formmethod="post">Mark work as done</button>
+    </form>
+    <a href="{% url 'dssgmkt:proj_instructions' project.id %}">Cancel</a>
+
+  {% else %}
+    <p>You don't have any active task in this project.</p>
+  {% endif %}
+{% endblock %}

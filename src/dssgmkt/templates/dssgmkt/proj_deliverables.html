@@ -1,0 +1,25 @@
+{% extends "dssgmkt/proj.html" %}
+
+{% block tabcontents %}
+
+  <h3>Project deliverables</h3>
+
+  {% if project.is_completed %}
+    <p>This project has been completed.</p>
+    {% if project.deliverable_management_url %}
+      <a href="{{ project.deliverable_management_url }}">Project home</a>
+    {% endif %}
+    {% if project.deliverable_github_url %}
+      <a href="{{ project.deliverable_github_url }}">Project github page</a>
+    {% endif %}
+    {% if project.deliverable_reports_url %}
+      <a href="{{ project.deliverable_reports_url }}">Project reports</a>
+    {% endif %}
+    {% if project.deliverable_documentation_url %}
+      <a href="{{ project.deliverable_documentation_url }}">Project documentation</a>
+    {% endif %}
+  {% else %}
+    <p>This project is still in progress, so no public deliverables are available.</p>
+  {% endif %}
+
+{% endblock %}

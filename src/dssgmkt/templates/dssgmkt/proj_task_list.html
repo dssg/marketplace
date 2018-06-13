@@ -1,0 +1,67 @@
+{% extends "dssgmkt/proj.html" %}
+
+{% block tabcontents %}
+
+  <h3>Project tasks</h3>
+  {% if project_tasks %}
+    {% for project_task in project_tasks %}
+      <h3>Description of work</h3>
+      <p>{{ project_task.name }}</p>
+      <p>{{ project_task.description }}</p>
+      <p>{{ project_task.get_type_display }}</p>
+      <p>{{ project_task.onboarding_instructions }}</p>
+      <p>{{ project_task.get_stage_display }}</p>
+
+
+      <p>Created on: {{ project_task.creation_date }}</p>
+      <p>Last modified: {{ project_task.last_modified_date }}</p>
+
+      <p>Estimated start date: {{ project_task.estimated_start_date }}</p>
+      <p>Actual start date: {{ project_task.actual_start_date }}</p>
+      <p>Estimated end date: {{ project_task.estimated_end_date }}</p>
+      <p>Actual end date: {{ project_task.actual_end_date }}</p>
+
+      <p>Estimated effort in hours: {{ project_task.estimated_effort_hours }}</p>
+      <p>Actual effort spent in hours: {{ project_task.actual_effort_hours }}</p>
+
+      <p>External task home: <a href="{{ project_task.task_home_url }}">{{ project_task.task_home_url }}</a></p>
+      <p>External deliverables page: <a href="{{ project_task.task_deliverables_url }}">{{ project_task.task_deliverables_url }}</a></p>
+
+      <h4>Required skills</h4>
+      <table>
+        <thead>
+          <tr>
+            <th>Area</th>
+            <th>Skill</th>
+            <th>Level</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for task_requirement in project_task.projecttaskrequirement_set.all %}
+            <tr>
+              <td>{{ task_requirement.skill.area }}</td>
+              <td>{{ task_requirement.skill.name }}</td>
+              <td>{{ task_requirement.get_level_display }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <a href="{% url 'dssgmkt:proj_task_edit' project.id project_task.id %}">Edit task info</a>
+      <a href="{% url 'dssgmkt:proj_task_requirements_edit' project.id project_task.id %}">Edit task requirements</a>
+      <a href="{% url 'dssgmkt:proj_task_remove' project.id project_task.id %}">Delete task</a>
+    {% endfor %}
+  {% else %}
+    <p>This project does not have any tasks listed.</p>
+  {% endif %}
+  
+  <form id="addtask">
+    {% csrf_token %}
+    <button type="submit"
+            form="addtask"
+            formaction="{% url 'dssgmkt:proj_task_add' project.id %}"
+            formmethod="post">
+        Add new task
+    </button>
+  </form>
+{% endblock %}

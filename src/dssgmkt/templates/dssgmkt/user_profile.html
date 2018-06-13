@@ -1,0 +1,138 @@
+{% extends 'dssgmkt/base.html' %}
+
+{% block pagecontents %}
+
+    {% if user == userprofile %}
+      <h2>My profile</h2>
+    {% else %}
+      <h2>User profile</h2>
+    {% endif %}
+    <h3>Basic information</h3>
+    <p>User name: {{ userprofile.username }}</p>
+    <p>Email address: {{ userprofile.email }}</p>
+    <p>{{ userprofile.volunteerprofile.cover_letter }}</p>
+    <fieldset>
+      <legend>Contact information</legend>
+      <p>Full name: {{ userprofile.first_name }} {{ userprofile.last_name }}</p>
+      <p>Phone number: {{ userprofile.phone_number }}</p>
+      <p>Skype name: {{ userprofile.skype_name }}</p>
+    </fieldset>
+    {% if user == userprofile %}
+      <a href="{% url 'dssgmkt:user_profile_edit' userprofile.id %}">Edit my basic information</a>
+      <a href="{% url 'dssgmkt:user_pwd_change' %}">Change my password</a>
+    {% endif %}
+
+    <h3>Organization memberships</h3>
+    {% if userprofile.organizationrole_set.all %}
+      <table>
+        <thead>
+          <tr>
+              <th>Organization name</th>
+              <th>Role</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for organizationrole in userprofile.organizationrole_set.all %}
+          <tr>
+              <td><a href="{% url 'dssgmkt:org_info' organizationrole.organization.id %}">{{ organizationrole.organization.name }}</a></td>
+              <td>{{ organizationrole.get_role_display }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+        <p>Not a member of any organization.</p>
+    {% endif %}
+
+    {% if userprofile.volunteerprofile %}
+      <h3>Volunteer background</h3>
+      <fieldset>
+        <legend>Education</legend>
+        <p>{{ userprofile.volunteerprofile.university }}: {{ userprofile.volunteerprofile.get_degree_level_display }} on {{ userprofile.volunteerprofile.degree_name }}</p>
+      </fieldset>
+      <fieldset>
+        <legend>Professional experience</legend>
+        {% if userprofile.volunteerprofile.linkedin_url %}
+          <p><a href="{{ userprofile.volunteerprofile.linkedin_url }}">LinkedIn profile</a></p>
+        {% endif %}
+        {% if userprofile.volunteerprofile.github_url %}
+          <p><a href="userprofile.volunteerprofile.github_url">Github profile</a></p>
+        {% endif %}
+        {% if userprofile.volunteerprofile.portfolio_url %}
+          <p><a href="userprofile.volunteerprofile.portfolio_url">Portfolio</a></p>
+        {% endif %}
+      </fieldset>
+      <fieldset>
+        <legend>Availability</legend>
+        <p>Start date: {{ userprofile.volunteerprofile.availability_start_date }}</p>
+        <p>End date: {{ userprofile.volunteerprofile.availability_end_date }}</p>
+        <p>Hours available per week: {{ userprofile.volunteerprofile.weekly_availability_hours }}</p>
+      </fieldset>
+      {% if user == userprofile %}
+        <a href="{% url 'dssgmkt:user_volunteer_profile_edit' userprofile.id userprofile.volunteerprofile.id %}">Edit my volunteer profile</a>
+      {% endif %}
+    {% endif %}
+
+    <h3>Skills</h3>
+    {% if userprofile.volunteerskill_set.all %}
+      <table>
+        <thead>
+          <tr>
+              <th>Skill area</th>
+              <th>Skill name</th>
+              <th>Skill level</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for volunteerskill in userprofile.volunteerskill_set.all %}
+          <tr>
+              <td>{{ volunteerskill.skill.area }}</td>
+              <td>{{ volunteerskill.skill.name }}</td>
+              <td>{{ volunteerskill.get_level_display }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+        <p>No skills listed.</p>
+    {% endif %}
+    {% if user == userprofile %}
+      <a href="{% url 'dssgmkt:user_profile_skills_edit' user.id %}">Edit my skills</a>
+    {% endif %}
+
+
+    <h3>Volunteer projects</h3>
+    {% if project_tasks %}
+      <table>
+        <thead>
+          <tr>
+              <th>Project name</th>
+              <th>Organization name</th>
+              <th>Summary</th>
+              <th>Status</th>
+              <th>Social impact area</th>
+              <th>Volunteer role</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for project_task in project_tasks %}
+            <tr>
+                <td><a href="{% url 'dssgmkt:proj_info' project_task.project.id %}">{{ project_task.project.name }}</a></td>
+                <td><a href="{% url 'dssgmkt:org_info' project_task.project.organization.id %}">{{ project_task.project.organization.name }}</a></td>
+                <td>{{ project_task.project.summary }}</td>
+                <td>{{ project_task.project.get_status_display }}</td>
+                <td>{{ project_task.project.get_project_cause_display }}</td>
+                <td>{{ project_task.get_type_display }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% url 'dssgmkt:user_profile' as user_profile_url %}
+      {% include 'dssgmkt/components/pagination.html' with baseurl=user_profile_url page_obj=project_tasks pagename='project_tasks_page' %}
+
+    {% else %}
+        <p>No volunteer work yet.</p>
+    {% endif %}
+
+
+{% endblock %}

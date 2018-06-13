@@ -1,0 +1,23 @@
+{% extends 'dssgmkt/org.html' %}
+
+{% block tabcontents %}
+
+  <h2>Membership request review</h2>
+  <p>This person has requested to join your organization. Please review the
+  application and accept or reject it.</p>
+
+  <p>Full name:<a href="">{{ organizationmembershiprequest.user.first_name }} {{ organizationmembershiprequest.user.last_name }}</a></p>
+  <p>Email addres:<a href="">{{ organizationmembershiprequest.user.email }}</a></p>
+  <p>Request date: {{ organizationmembershiprequest.request_date }} </p>
+
+  <form id="orgmembershiprequestreview">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit"
+            form="orgmembershiprequestreview"
+            formaction="{% url 'dssgmkt:org_staff_request_review' organization.id organizationmembershiprequest.id %}"
+            formmethod="post">Save</button>
+  </form>
+  <a href="{% url 'dssgmkt:org_staff' organization.id %}">Cancel</a>
+
+{% endblock %}

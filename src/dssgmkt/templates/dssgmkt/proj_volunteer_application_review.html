@@ -1,0 +1,26 @@
+{% extends 'dssgmkt/proj.html' %}
+
+{% block tabcontents %}
+
+  <h2>Volunteer application review</h2>
+  <p>This person has applied to volunteer in your project. Please review the
+  application and accept or reject it.</p>
+
+  <p>Full name:<a href="">{{ volunteerapplication.volunteer.first_name }} {{ volunteerapplication.volunteer.last_name }}</a></p>
+  <p>Email addres:<a href="">{{ volunteerapplication.volunteer.email }}</a></p>
+  <p>Application date: {{ volunteerapplication.application_date }} </p>
+  <p>Task: {{ volunteerapplication.task.name }}</p>
+  <h4>Volunteer application letter</h4>
+  <p>{{ volunteerapplication.volunteer_application_letter }}</p>
+
+  <form id="volunteerapplicationreview">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit"
+            form="volunteerapplicationreview"
+            formaction="{% url 'dssgmkt:proj_volunteer_application_review' project.id volunteerapplication.task.id volunteerapplication.id %}"
+            formmethod="post">Save</button>
+  </form>
+  <a href="{% url 'dssgmkt:proj_staff' project.id %}">Cancel</a>
+
+{% endblock %}

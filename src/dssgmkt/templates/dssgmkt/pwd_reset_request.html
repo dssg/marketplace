@@ -1,0 +1,20 @@
+{% extends 'dssgmkt/base.html' %}
+
+{% block pagecontents %}
+
+  <form id="pwdreset">
+    <h2>Forgot your password?</h2>
+    <p>If you cannot remember your password, type the email you used to sign up
+		below and we will send you a password reset code.</p>
+
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit"
+            form="pwdreset"
+            formaction="{% url 'dssgmkt:pwd_reset_request' %}"
+            formmethod="post">Request password reset link</button>
+  </form>
+  <a href="{% url 'dssgmkt:login' %}">Cancel</a>
+
+
+{% endblock %}

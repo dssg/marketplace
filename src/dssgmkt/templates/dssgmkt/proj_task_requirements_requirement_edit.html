@@ -1,0 +1,20 @@
+{% extends 'dssgmkt/proj.html' %}
+
+{% block tabcontents %}
+
+  <h2>Edit task requirement</h2>
+  <p>Area: {{ task_requirement.skill.area }}</p>
+  <p>Name: {{ task_requirement.skill.name }}</p>
+  <form id="editrequirement">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit"
+            form="editrequirement"
+            formaction="{% url 'dssgmkt:proj_task_requirements_requirement_edit' project.id project_task.id task_requirement.id %}"
+            formmethod="post">
+      Save
+    </button>
+  </form>
+  <a href="{% url 'dssgmkt:proj_task_requirements_edit' project.id project_task.id %}">Cancel</a>
+
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends 'dssgmkt/proj.html' %}
+
+{% block tabcontents %}
+
+  <h2>Remove task requirement</h2>
+  <p>Area: {{ task_requirement.skill.area }}</p>
+  <p>Name: {{ task_requirement.skill.name }}</p>
+  <form id="removerequirement">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit"
+            form="removerequirement"
+            formaction="{% url 'dssgmkt:proj_task_requirements_requirement_remove' project.id project_task.id task_requirement.id %}"
+            formmethod="post">
+        Yes, remove this requirement
+    </button>
+  </form>
+  <a href="{% url 'dssgmkt:proj_task_requirements_edit' project.id project_task.id %}">No, keep this requirement</a>
+
+{% endblock %}

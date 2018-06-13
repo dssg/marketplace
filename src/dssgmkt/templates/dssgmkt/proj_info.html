@@ -1,0 +1,67 @@
+{% extends "dssgmkt/proj.html" %}
+
+{% block tabcontents %}
+
+  <h3>Project description</h3>
+  <h4>Context and motivation</h4>
+  <p>{{ project.motivation }}</p>
+  <h4>Proposed solution</h4>
+  <p>{{ project.solution_description }}</p>
+  <h4>Main challenges</h4>
+  <p>{{ project.challenges }}</p>
+
+  <a href="{% url 'dssgmkt:proj_info_edit' project.id %}">Edit project information</a>
+  <h3>Schedule</h3>
+  <p>Start date: {{ project.intended_start_date }}</p>
+  <p>End date: {{ project.intended_end_date }}</p>
+
+  <h3>Volunteer openings</h3>
+  {% if project_tasks %}
+    {% for project_task in project_tasks %}
+      <h3>Description of work</h3>
+      <p>{{ project_task.name }}</p>
+      <p>{{ project_task.description }}</p>
+      <h4>Required skills</h4>
+      <table>
+        <thead>
+          <tr>
+            <th>Area</th>
+            <th>Skill</th>
+            <th>Level</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for task_requirement in project_task.projecttaskrequirement_set.all %}
+            <tr>
+              <td>{{ task_requirement.skill.area }}</td>
+              <td>{{ task_requirement.skill.name }}</td>
+              <td>{{ task_requirement.get_level_display }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <a href="{% url 'dssgmkt:proj_task_apply' project.id project_task.id %}">Apply to volunteer</a>
+    {% endfor %}
+  {% else %}
+    <p>This project does not have any volunteer openings at this moment.</p>
+  {% endif %}
+
+  	<!-- <if status is new>
+  		Description of the scoping task:
+  			description
+  			business area
+  			List of required skills
+  				<if accepting volunteers>
+  					Apply button -> Volunteer apply page
+  				<else if not following project>
+  					Follow this project to be notified when volunteer positions become available
+  					Follow -> link to the same page
+
+  	<if status is design>
+  		"This project is being defined."
+  	<if status is waiting_staff or in_progress>
+  		"This project is now open and needs volunteers"
+  		Description of the project management task -- Same as the description of the scoping task
+  		Description of the work task -- same as the description of the scoping task -->
+{% endblock %}

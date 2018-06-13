@@ -1,0 +1,15 @@
+{% extends 'dssgmkt/base.html' %}
+
+{% block pagecontents %}
+
+  <a href="{{ organization.website_url }}"><img src="missing.jpg"></img></a>
+  <h1>{{ organization.name }}</h1>
+  <h4>{{ organization.get_main_cause_display }}</h4>
+  <div><a href="{{ organization.website_url }}">Website</a></div>
+
+  {% include 'dssgmkt/components/organization_tabs.html' %}
+
+  {% block tabcontents %}
+  {% endblock %}
+
+{% endblock %}

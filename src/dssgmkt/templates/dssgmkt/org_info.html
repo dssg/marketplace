@@ -1,0 +1,59 @@
+{% extends 'dssgmkt/org.html' %}
+
+{% block tabcontents %}
+
+  <p>{{ organization.description }}</p>
+  <fieldset name="contact">
+    <legend>Contact information</legend>
+    <p>Phone number: {{ organization.phone_number }}</p>
+    <p>Email address: {{ organization.email }}</p>
+  </fieldset>
+  <fieldset name="address">
+    <legend>Address</legend>
+    <p>{{ organization.street_address }}</p>
+    <p>{{ organization.address_line_2 }}</p>
+    <p>{{ organization.city }}, {{ organization.state }} {{ organization.zipcode }}</p>
+    <p>{{ organization.country }}</p>
+  </fieldset>
+  <fieldset name="orgdetails">
+    <legend>Organization's details</legend>
+    <p>Years in operation: {{ organization.get_years_operation_display }}</p>
+    <p>Yearly budget: {{ organization.get_budget_display }}</p>
+    <p>Geographical scope: {{ organization.get_organization_scope_display }}</p>
+  </fieldset>
+
+  {% if user_is_administrator %}
+    <a href="{% url 'dssgmkt:org_info_edit' organization.id %}">Edit organization information</a>
+  {% endif %}
+
+  {% if user_is_member %}
+    <a href="{% url 'dssgmkt:org_staff_leave' organization.id %}">Leave organization</a>
+  {% else %}
+    <a href="{% url 'dssgmkt:org_staff_request' organization.id %}">Request membership</a>
+  {% endif %}
+
+  <h3>Organization's projects</h3>
+  <table>
+    <thead>
+      <tr>
+          <th>Project name</th>
+          <th>Summary</th>
+          <th>Status</th>
+          <th>Social impact area</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for project in projects %}
+        <tr>
+            <td><a href="{% url 'dssgmkt:proj_info' project.id %}">{{ project.name }}</a></td>
+            <td>{{ project.summary }}</td>
+            <td>{{ project.get_status_display }}</td>
+            <td>{{ project.get_project_cause_display }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% url 'dssgmkt:org_info' as org_info_url %}
+  {% include 'dssgmkt/components/pagination.html' with baseurl=org_info_url page_obj=projects pagename='projects_page' %}
+
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends 'dssgmkt/org.html' %}
+
+{% block tabcontents %}
+
+
+  <form id="editorg">
+    <h2>Edit organization</h2>
+    <p>Tell us more about the organization you represent.</p>
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit"
+            form="editorg"
+            formaction="{% url 'dssgmkt:org_info_edit' organization.id %}"
+            formmethod="post">
+      Save
+    </button>
+  </form>
+  <a href="{% url 'dssgmkt:org_info' organization.id %}">Cancel</a>
+
+{% endblock %}

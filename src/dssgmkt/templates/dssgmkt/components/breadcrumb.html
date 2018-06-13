@@ -1,0 +1,7 @@
+{% for elementtext, elementurl in breadcrumb %}
+  {% if elementurl %}
+    <a href="{{ elementurl }}">{{ elementtext}}</a>
+  {% else %}
+    {{ elementtext }}
+  {% endif %}
+{% endfor %}

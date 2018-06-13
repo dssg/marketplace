@@ -1,0 +1,19 @@
+{% extends 'dssgmkt/base.html' %}
+
+{% block pagecontents %}
+
+
+  <form id="edituserprofile">
+    <h2>Edit your profile</h2>
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit"
+            form="edituserprofile"
+            formaction="{% url 'dssgmkt:user_profile_edit' userprofile.id %}"
+            formmethod="post">
+      Save
+    </button>
+  </form>
+  <a href="{% url 'dssgmkt:user_profile' userprofile.id %}">Cancel</a>
+
+{% endblock %}
