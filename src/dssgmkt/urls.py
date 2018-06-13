@@ -19,14 +19,10 @@ urlpatterns = [
     path('org/<int:org_pk>/staff/leave', orgviews.OrganizationLeave.as_view(), name='org_staff_leave'),
     path('org/<int:org_pk>/staff/request/<int:request_pk>/review', orgviews.OrganizationMembershipRequestEdit.as_view(), name='org_staff_request_review'),
 
-
-    # path('<int:pk>/results/', views.ResultsView.as_view(), name='results'),
-    # path('<int:question_id>/vote/', views.vote, name='vote'),
     path('proj/', projviews.ProjectIndexView.as_view(), name='proj_list'),
     path('proj/<int:proj_pk>/', projviews.ProjectView.as_view(), name='proj_info'),
     path('proj/<int:proj_pk>/edit', projviews.ProjectEdit.as_view(), name='proj_info_edit'),
     path('proj/<int:proj_pk>/follow', projviews.follow_project_view, name='proj_follow'),
-    # path('proj/<int:pk>/log/', views.ProjectLogView.as_view(), name='proj_log'),
     path('proj/<int:proj_pk>/log/', projviews.ProjectLogView.as_view(), name='proj_log'),
     path('proj/<int:proj_pk>/deliverables/', projviews.ProjectDeliverablesView.as_view(), name='proj_deliverables'),
     path('proj/<int:proj_pk>/instructions/', projviews.ProjectVolunteerInstructionsView.as_view(), name='proj_instructions'),
