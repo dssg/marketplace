@@ -10,9 +10,8 @@ from django.core.exceptions import ValidationError
 from django.contrib.messages.views import SuccessMessageMixin
 from datetime import date
 
-from ..models import (Organization, OrganizationRole,
-                    OrganizationMembershipRequest, NEW, ORGANIZATION_STAFF,
-                    ACCEPTED, REJECTED)
+from ..models.commonmodels import (NEW, ORGANIZATION_STAFF, ACCEPTED, REJECTED)
+from ..models.orgmodels import (Organization, OrganizationRole, OrganizationMembershipRequest)
 from ..authorization import is_organization_admin
 from rules.contrib.views import permission_required, objectgetter, PermissionRequiredMixin
 from .commonviews import home_link, build_breadcrumb

@@ -11,7 +11,8 @@ from django.contrib.auth import logout
 from django.contrib.messages.views import SuccessMessageMixin
 from datetime import date
 
-from ..models import (NEW, ACCEPTED, REJECTED, Project, ProjectTask, ProjectLog,
+from ..models.commonmodels import (NEW, ACCEPTED, REJECTED)
+from ..models.projmodels import (Project, ProjectTask, ProjectLog,
                     ProjectTaskReview, ProjectTaskRole, VolunteerApplication,
                     ProjectTaskRequirement, ProjectRole, ProjectFollower)
 from rules.contrib.views import permission_required, objectgetter, PermissionRequiredMixin
