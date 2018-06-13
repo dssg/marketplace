@@ -472,7 +472,8 @@ class ProjectView(generic.ListView): ## This is a listview because it is actuall
         context['project'] = project
         context['project_tab'] = 'info'
         context['breadcrumb'] = project_breadcrumb(project)
-        context['user_is_following_project'] = ProjectFollower.objects.filter(project = project, user = self.request.user).exists()
+        if not self.request.user.is_anonymous:
+            context['user_is_following_project'] = ProjectFollower.objects.filter(project = project, user = self.request.user).exists()
         return context
 
 class ProjectLogView(generic.ListView):
