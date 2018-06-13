@@ -118,7 +118,7 @@ LOGIN_URL = 'dssgmkt:login'
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'America/Chicago'
+TIME_ZONE = config('TIME_ZONE')
 
 USE_I18N = True
 
