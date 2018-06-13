@@ -4,21 +4,21 @@ from django.contrib import admin
 # VolunteerSkill, OrganizationMembershipRequest, OrganizationRole, ProjectRole, ProjectTaskRole
 
 
-from .models import orgmodels, projmodels, usermodels
+from .models import org, proj, user
 
-admin.site.register(usermodels.Skill)
-admin.site.register(orgmodels.Organization)
-admin.site.register(projmodels.Project)
-admin.site.register(projmodels.ProjectLog)
-admin.site.register(projmodels.ProjectFollower)
-admin.site.register(projmodels.ProjectTask)
-admin.site.register(projmodels.ProjectTaskReview)
-admin.site.register(projmodels.ProjectTaskRequirement)
-admin.site.register(projmodels.VolunteerApplication)
-admin.site.register(usermodels.User)
-admin.site.register(usermodels.VolunteerProfile)
-admin.site.register(usermodels.VolunteerSkill)
-admin.site.register(orgmodels.OrganizationMembershipRequest)
-admin.site.register(orgmodels.OrganizationRole)
-admin.site.register(projmodels.ProjectRole)
-admin.site.register(projmodels.ProjectTaskRole)
+admin.site.register(user.Skill)
+admin.site.register(org.Organization)
+admin.site.register(proj.Project)
+admin.site.register(proj.ProjectLog)
+admin.site.register(proj.ProjectFollower)
+admin.site.register(proj.ProjectTask)
+admin.site.register(proj.ProjectTaskReview)
+admin.site.register(proj.ProjectTaskRequirement)
+admin.site.register(proj.VolunteerApplication)
+admin.site.register(user.User)
+admin.site.register(user.VolunteerProfile)
+admin.site.register(user.VolunteerSkill)
+admin.site.register(org.OrganizationMembershipRequest)
+admin.site.register(org.OrganizationRole)
+admin.site.register(proj.ProjectRole)
+admin.site.register(proj.ProjectTaskRole)

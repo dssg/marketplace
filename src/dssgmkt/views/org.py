@@ -10,11 +10,11 @@ from django.core.exceptions import ValidationError
 from django.contrib.messages.views import SuccessMessageMixin
 from datetime import date
 
-from ..models.commonmodels import (NEW, ORGANIZATION_STAFF, ACCEPTED, REJECTED)
-from ..models.orgmodels import (Organization, OrganizationRole, OrganizationMembershipRequest)
+from ..models.common import (NEW, ORGANIZATION_STAFF, ACCEPTED, REJECTED)
+from ..models.org import (Organization, OrganizationRole, OrganizationMembershipRequest)
 from ..authorization import is_organization_admin
 from rules.contrib.views import permission_required, objectgetter, PermissionRequiredMixin
-from .commonviews import home_link, build_breadcrumb
+from .common import home_link, build_breadcrumb
 
 def organizations_link(include_link=True):
     return ('Organizations', reverse('dssgmkt:org_list') if include_link else None)

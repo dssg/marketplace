@@ -10,11 +10,11 @@ from django.contrib.auth import logout
 from django.contrib.messages.views import SuccessMessageMixin
 from datetime import date
 
-from ..models.usermodels import (User, VolunteerProfile, Skill, VolunteerSkill)
-from ..models.projmodels import (Project, ProjectTask)
+from ..models.user import (User, VolunteerProfile, Skill, VolunteerSkill)
+from ..models.proj import (Project, ProjectTask)
 
 from rules.contrib.views import permission_required, objectgetter, PermissionRequiredMixin
-from .commonviews import home_link, build_breadcrumb
+from .common import home_link, build_breadcrumb
 
 def logout_view(request):
     logout(request)

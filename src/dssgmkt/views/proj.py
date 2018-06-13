@@ -11,12 +11,12 @@ from django.contrib.auth import logout
 from django.contrib.messages.views import SuccessMessageMixin
 from datetime import date
 
-from ..models.commonmodels import (NEW, ACCEPTED, REJECTED)
-from ..models.projmodels import (Project, ProjectTask, ProjectLog,
+from ..models.common import (NEW, ACCEPTED, REJECTED)
+from ..models.proj import (Project, ProjectTask, ProjectLog,
                     ProjectTaskReview, ProjectTaskRole, VolunteerApplication,
                     ProjectTaskRequirement, ProjectRole, ProjectFollower)
 from rules.contrib.views import permission_required, objectgetter, PermissionRequiredMixin
-from .commonviews import home_link, build_breadcrumb
+from .common import home_link, build_breadcrumb
 
 def projects_link(include_link=True):
     return ('Projects', reverse('dssgmkt:proj_list') if include_link else None)

@@ -3,7 +3,7 @@ from django_countries.fields import CountryField
 from django.contrib.auth.models import AbstractUser
 from dssgsolve import settings
 
-from .commonmodels import (PHONE_REGEX, MAIN_CAUSE_CHOICES, EDUCATION,
+from .common import (PHONE_REGEX, MAIN_CAUSE_CHOICES, EDUCATION,
                             ORGANIZATION_ROLE_CHOICES, ORGANIZATION_STAFF,
                             REVIEW_RESULT_CHOICES, NEW)
 

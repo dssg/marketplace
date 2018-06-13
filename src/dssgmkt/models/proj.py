@@ -2,11 +2,11 @@ from django.db import models
 from django_countries.fields import CountryField
 from dssgsolve import settings
 
-from .orgmodels import Organization
-from .commonmodels import (PHONE_REGEX, MAIN_CAUSE_CHOICES, EDUCATION,
+from .org import Organization
+from .common import (PHONE_REGEX, MAIN_CAUSE_CHOICES, EDUCATION,
                             REVIEW_RESULT_CHOICES, NEW, SKILL_LEVEL_CHOICES,
                             BEGINNER)
-from .usermodels import Skill
+from .user import Skill
 
 class Project(models.Model):
     name = models.CharField(max_length=50)
