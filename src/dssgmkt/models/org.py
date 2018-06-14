@@ -8,18 +8,64 @@ from .common import (PHONE_REGEX, MAIN_CAUSE_CHOICES, CAUSE_EDUCATION,
 
 
 class Organization(models.Model):
-    name = models.CharField(max_length=50)
-    description = models.TextField(max_length=5000)
-    logo_url = models.URLField(max_length=200, blank=True, null=True)
-    website_url = models.URLField(max_length=200, blank=True, null=True)
-    phone_number = models.CharField(validators=[PHONE_REGEX], max_length=17, blank=True, null=True)
-    email_address = models.EmailField()
-    street_address = models.CharField(max_length=300)
-    address_line_2 = models.CharField(max_length=300, blank=True, null=True)
-    city = models.CharField(max_length=100)
-    state = models.CharField(max_length=100)
-    zipcode = models.CharField(max_length=20)
-    country = CountryField()
+    name = models.CharField(
+        max_length=50,
+        verbose_name="Organization name",
+        help_text="Type the name of your organization.",
+    )
+    description = models.TextField(
+        max_length=5000,
+        verbose_name="Organization description",
+        help_text="Write a description for volunteers to understand the context of your projects.",
+    )
+    logo_url = models.URLField(
+        verbose_name="Organization logo",
+        help_text="Upload an image file that represents your organization",
+        blank=True,
+        null=True,
+    )
+    website_url = models.URLField(
+        verbose_name="External website URL",
+        help_text="Add a link to your organization's home page so volunteers can reach you",
+        max_length=200,
+        blank=True,
+        null=True,
+    )
+    phone_number = models.CharField(
+        verbose_name="Phone number",
+        validators=[PHONE_REGEX],
+        max_length=17,
+        blank=True,
+        null=True,
+    )
+    email_address = models.EmailField(
+        verbose_name="Contact email",
+        blank=True,
+        null=True,
+    )
+    street_address = models.CharField(
+        verbose_name="Address line 1",
+        max_length=300,
+    )
+    address_line_2 = models.CharField(
+        verbose_name="Address line 2",
+        max_length=300,
+        blank=True,
+        null=True,
+    )
+    city = models.CharField(
+        verbose_name="City",
+        max_length=100,
+    )
+    state = models.CharField(
+        verbose_name="State/Province",
+        max_length=100,
+    )
+    zipcode = models.CharField(
+        verbose_name="ZIP/Postal code",
+        max_length=20,
+    )
+    country = CountryField(verbose_name="Country")
     B100K = 'B000'
     B500K = 'B001'
     B1M = 'B005'
@@ -37,6 +83,8 @@ class Organization(models.Model):
         (B50MP, '>$50MM')
     )
     budget = models.CharField(
+        verbose_name="Yearly budget",
+        help_text="Select the budget range that fits your organization best",
         max_length=7,
         choices=BUDGET_CHOICES,
         default=B100K,
@@ -54,11 +102,15 @@ class Organization(models.Model):
         (Y25, '25 or more years')
     )
     years_operation = models.CharField(
+        verbose_name="Years in operation",
+        help_text="For how long has the organization been in operation?",
         max_length=3,
         choices=OPERATION_YEARS_CHOICES,
         default=Y0,
     )
     main_cause = models.CharField(
+        verbose_name="Main social cause",
+        help_text="What is the main social cause that this organization has as a goal?",
         max_length=2,
         choices=MAIN_CAUSE_CHOICES,
         default=CAUSE_EDUCATION,
@@ -78,6 +130,8 @@ class Organization(models.Model):
         (OTHER, 'Other')
     )
     organization_scope = models.CharField(
+        verbose_name="Geographical scope",
+        help_text="What is the geographical scope that this organization targets?",
         max_length=2,
         choices=ORGANIZATION_SCOPE_CHOICES,
         default=LOCAL,

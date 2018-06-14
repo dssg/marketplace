@@ -6,6 +6,7 @@
   <h1>{{ organization.name }}</h1>
   <h4>{{ organization.get_main_cause_display }}</h4>
   <div><a href="{{ organization.website_url }}">Website</a></div>
+  <img src="{{ organization.logo_url }}"></img>
 
   {% include 'dssgmkt/components/organization_tabs.html' %}
 
