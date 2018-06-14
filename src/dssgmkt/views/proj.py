@@ -1,22 +1,26 @@
-from django.http import HttpResponseRedirect, Http404
-from django.shortcuts import get_object_or_404, render, redirect
-from django.urls import reverse
-from django.views import generic
-from django.views.generic.edit import CreateView, UpdateView, DeleteView
-from django.core.paginator import Paginator
-from django.forms import ModelForm, CharField, Textarea
-from django.db.models import Case, When, Q
-from django.core.exceptions import ValidationError
-from django.contrib.auth import logout
-from django.contrib.messages.views import SuccessMessageMixin
 from datetime import date
 
-from ..models.common import (REVIEW_NEW, REVIEW_ACCEPTED, REVIEW_REJECTED)
-from ..models.proj import (Project, ProjectTask, ProjectLog,
-                    ProjectTaskReview, ProjectTaskRole, VolunteerApplication,
-                    ProjectTaskRequirement, ProjectRole, ProjectFollower)
-from rules.contrib.views import permission_required, objectgetter, PermissionRequiredMixin
-from .common import home_link, build_breadcrumb
+from django.contrib.auth import logout
+from django.contrib.messages.views import SuccessMessageMixin
+from django.core.exceptions import ValidationError
+from django.core.paginator import Paginator
+from django.db.models import Case, Q, When
+from django.forms import CharField, ModelForm, Textarea
+from django.http import Http404, HttpResponseRedirect
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
+from django.views import generic
+from django.views.generic.edit import CreateView, DeleteView, UpdateView
+from rules.contrib.views import (PermissionRequiredMixin, objectgetter,
+                                 permission_required)
+
+from ..models.common import REVIEW_ACCEPTED, REVIEW_NEW, REVIEW_REJECTED
+from ..models.proj import (Project, ProjectFollower, ProjectLog, ProjectRole,
+                           ProjectTask, ProjectTaskRequirement,
+                           ProjectTaskReview, ProjectTaskRole,
+                           VolunteerApplication)
+from .common import build_breadcrumb, home_link
+
 
 def projects_link(include_link=True):
     return ('Projects', reverse('dssgmkt:proj_list') if include_link else None)

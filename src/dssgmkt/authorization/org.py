@@ -1,4 +1,5 @@
-from rules import predicate, add_perm
+from rules import add_perm, predicate
+
 
 @predicate
 def is_organization_admin(user, organization):

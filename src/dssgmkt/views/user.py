@@ -1,20 +1,22 @@
-from django.http import HttpResponseRedirect, Http404
-from django.shortcuts import get_object_or_404, render, redirect
-from django.urls import reverse
-from django.views import generic
-from django.views.generic.edit import CreateView, UpdateView, DeleteView
-from django.core.paginator import Paginator
-from django.forms import ModelForm
-from django.db.models import Q
-from django.contrib.auth import logout
-from django.contrib.messages.views import SuccessMessageMixin
 from datetime import date
 
-from ..models.user import (User, VolunteerProfile, Skill, VolunteerSkill)
-from ..models.proj import (Project, ProjectTask)
+from django.contrib.auth import logout
+from django.contrib.messages.views import SuccessMessageMixin
+from django.core.paginator import Paginator
+from django.db.models import Q
+from django.forms import ModelForm
+from django.http import Http404, HttpResponseRedirect
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
+from django.views import generic
+from django.views.generic.edit import CreateView, DeleteView, UpdateView
+from rules.contrib.views import (PermissionRequiredMixin, objectgetter,
+                                 permission_required)
 
-from rules.contrib.views import permission_required, objectgetter, PermissionRequiredMixin
-from .common import home_link, build_breadcrumb
+from ..models.proj import Project, ProjectTask
+from ..models.user import Skill, User, VolunteerProfile, VolunteerSkill
+from .common import build_breadcrumb, home_link
+
 
 def logout_view(request):
     logout(request)

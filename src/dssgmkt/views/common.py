@@ -1,7 +1,9 @@
-from django.http import HttpResponseRedirect, Http404
-from django.shortcuts import render, redirect
-from django.urls import reverse
 from itertools import repeat, zip_longest
+
+from django.http import Http404, HttpResponseRedirect
+from django.shortcuts import redirect, render
+from django.urls import reverse
+
 
 def home_view(request):
     if request.user.is_authenticated:

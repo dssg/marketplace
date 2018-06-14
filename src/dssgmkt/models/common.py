@@ -1,7 +1,5 @@
-from django.db import models
 from django.core.validators import RegexValidator
-
-
+from django.db import models
 
 CAUSE_EDUCATION = 'ED'
 CAUSE_HEALTH = 'HE'

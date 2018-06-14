@@ -1,10 +1,11 @@
 from django.db import models
 from django_countries.fields import CountryField
+
 from dssgsolve import settings
 
-from .common import (PHONE_REGEX, MAIN_CAUSE_CHOICES, CAUSE_EDUCATION,
-                            ORGANIZATION_ROLE_CHOICES, ROLE_ORGANIZATION_STAFF,
-                            REVIEW_RESULT_CHOICES, REVIEW_NEW)
+from .common import (CAUSE_EDUCATION, MAIN_CAUSE_CHOICES,
+                     ORGANIZATION_ROLE_CHOICES, PHONE_REGEX, REVIEW_NEW,
+                     REVIEW_RESULT_CHOICES, ROLE_ORGANIZATION_STAFF)
 
 
 class Organization(models.Model):

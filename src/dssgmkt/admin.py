@@ -1,10 +1,12 @@
 from django.contrib import admin
+
+from .models import org, proj, user
+
 # from .models import Skill, Organization, Project, ProjectLog, ProjectFollower, ProjectTask, \
 # ProjectTaskReview, ProjectTaskRequirement, VolunteerApplication, User, VolunteerProfile, \
 # VolunteerSkill, OrganizationMembershipRequest, OrganizationRole, ProjectRole, ProjectTaskRole
 
 
-from .models import org, proj, user
 
 admin.site.register(user.Skill)
 admin.site.register(org.Organization)

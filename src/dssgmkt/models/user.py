@@ -1,10 +1,12 @@
-from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.db import models
+
 from dssgsolve import settings
 
-from .common import (PHONE_REGEX, REVIEW_RESULT_CHOICES, REVIEW_NEW,
-                    SKILL_LEVEL_CHOICES, SKILL_LEVEL_BEGINNER, 
-                    ROLE_ORGANIZATION_STAFF, ROLE_ORGANIZATION_ADMINISTRATOR)
+from .common import (PHONE_REGEX, REVIEW_NEW, REVIEW_RESULT_CHOICES,
+                     ROLE_ORGANIZATION_ADMINISTRATOR, ROLE_ORGANIZATION_STAFF,
+                     SKILL_LEVEL_BEGINNER, SKILL_LEVEL_CHOICES)
+
 
 class User(AbstractUser):
     DSSG_STAFF = 0

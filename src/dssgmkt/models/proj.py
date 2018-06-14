@@ -1,12 +1,14 @@
 from django.db import models
 from django_countries.fields import CountryField
+
 from dssgsolve import settings
 
+from .common import (CAUSE_EDUCATION, MAIN_CAUSE_CHOICES, PHONE_REGEX,
+                     REVIEW_NEW, REVIEW_RESULT_CHOICES, SKILL_LEVEL_BEGINNER,
+                     SKILL_LEVEL_CHOICES)
 from .org import Organization
-from .common import (PHONE_REGEX, MAIN_CAUSE_CHOICES, CAUSE_EDUCATION,
-                            REVIEW_RESULT_CHOICES, REVIEW_NEW, SKILL_LEVEL_CHOICES,
-                            SKILL_LEVEL_BEGINNER)
 from .user import Skill
+
 
 class Project(models.Model):
     name = models.CharField(max_length=50)
