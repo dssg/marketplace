@@ -3,11 +3,7 @@ from django.db import models
 
 from dssgsolve import settings
 
-from .common import (
-    PHONE_REGEX, REVIEW_RESULT_CHOICES, REVIEW_NEW,
-    ROLE_ORGANIZATION_ADMINISTRATOR, ROLE_ORGANIZATION_STAFF,
-    SKILL_LEVEL_CHOICES, SKILL_LEVEL_BEGINNER,
-)
+from .common import PHONE_REGEX, ReviewStatus, OrgRole, SkillLevel
 
 
 class User(AbstractUser):
@@ -28,10 +24,10 @@ class User(AbstractUser):
         return self.organizationrole_set.filter(organization=orgid).exists()
 
     def is_organization_staff(self, orgid):
-        return self.organizationrole_set.filter(organization=orgid, role=ROLE_ORGANIZATION_STAFF).exists()
+        return self.organizationrole_set.filter(organization=orgid, role=OrgRole.STAFF).exists()
 
     def is_organization_admin(self, orgid):
-        return self.organizationrole_set.filter(organization=orgid, role=ROLE_ORGANIZATION_ADMINISTRATOR).exists()
+        return self.organizationrole_set.filter(organization=orgid, role=OrgRole.ADMINISTRATOR).exists()
 
 
 class UserNotification(models.Model):
@@ -101,12 +97,12 @@ class VolunteerProfile(models.Model):
     weekly_availability_hours = models.IntegerField()
     availability_start_date = models.DateField(blank=True, null=True)
     availability_end_date = models.DateField(blank=True, null=True)
-    volunteer_status = models.CharField(max_length=3, choices=REVIEW_RESULT_CHOICES, default=REVIEW_NEW)
+    volunteer_status = models.CharField(max_length=3, choices=ReviewStatus.get_choices(), default=ReviewStatus.NEW)
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
 
 class VolunteerSkill(models.Model):
-    level = models.IntegerField(choices = SKILL_LEVEL_CHOICES, default=SKILL_LEVEL_BEGINNER)
+    level = models.IntegerField(choices = SkillLevel.get_choices(), default=SkillLevel.BEGINNER)
     skill = models.ForeignKey(Skill, on_delete=models.CASCADE)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 

@@ -4,9 +4,8 @@ from django_countries.fields import CountryField
 from dssgsolve import settings
 
 from .common import (
-    CAUSE_EDUCATION, MAIN_CAUSE_CHOICES, PHONE_REGEX,
-    REVIEW_RESULT_CHOICES, REVIEW_NEW,
-    SKILL_LEVEL_CHOICES, SKILL_LEVEL_BEGINNER,
+    SocialCause, ReviewStatus, PHONE_REGEX,
+    SkillLevel
 )
 from .org import Organization
 from .user import Skill
@@ -21,8 +20,8 @@ class Project(models.Model):
     banner_image_url = models.URLField(max_length=200, blank=True, null=True)
     project_cause = models.CharField(
         max_length=2,
-        choices=MAIN_CAUSE_CHOICES,
-        default=CAUSE_EDUCATION,
+        choices=SocialCause.get_choices(),
+        default=SocialCause.EDUCATION,
     )
     project_impact = models.TextField(max_length=5000, blank=True, null=True)
     scoping_process = models.TextField(max_length=5000, blank=True, null=True)
@@ -169,13 +168,13 @@ class ProjectTaskReview(models.Model):
     review_date = models.DateTimeField(blank=True, null=True)
     review_result = models.CharField(
         max_length=3,
-        choices=REVIEW_RESULT_CHOICES,
-        default=REVIEW_NEW,
+        choices=ReviewStatus.get_choices(),
+        default=ReviewStatus.NEW,
     )
     task = models.ForeignKey(ProjectTask, on_delete=models.CASCADE)
 
 class ProjectTaskRequirement(models.Model):
-    level = models.IntegerField(choices = SKILL_LEVEL_CHOICES, default=SKILL_LEVEL_BEGINNER)
+    level = models.IntegerField(choices = SkillLevel.get_choices(), default=SkillLevel.BEGINNER)
     NICE_TO_HAVE = 0
     IMPORTANT = 1
     REQUIRED = 2
@@ -194,8 +193,8 @@ class VolunteerApplication(models.Model):
     resolution_date = models.DateTimeField(blank=True, null=True)
     status = models.CharField(
         max_length=3,
-        choices=REVIEW_RESULT_CHOICES,
-        default=REVIEW_NEW,
+        choices=ReviewStatus.get_choices(),
+        default=ReviewStatus.NEW,
     )
     volunteer_application_letter = models.TextField(max_length=5000)
     public_reviewer_comments = models.TextField(max_length=5000, blank=True, null=True)
@@ -204,7 +203,7 @@ class VolunteerApplication(models.Model):
     volunteer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
     def is_new(self):
-        return self.status == REVIEW_NEW
+        return self.status == ReviewStatus.NEW
 
 class ProjectRole(models.Model):
     PROJECT_OWNER = 0
