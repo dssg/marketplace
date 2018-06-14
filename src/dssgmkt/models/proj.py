@@ -3,9 +3,11 @@ from django_countries.fields import CountryField
 
 from dssgsolve import settings
 
-from .common import (CAUSE_EDUCATION, MAIN_CAUSE_CHOICES, PHONE_REGEX,
-                     REVIEW_NEW, REVIEW_RESULT_CHOICES, SKILL_LEVEL_BEGINNER,
-                     SKILL_LEVEL_CHOICES)
+from .common import (
+    CAUSE_EDUCATION, MAIN_CAUSE_CHOICES, PHONE_REGEX,
+    REVIEW_RESULT_CHOICES, REVIEW_NEW,
+    SKILL_LEVEL_CHOICES, SKILL_LEVEL_BEGINNER,
+)
 from .org import Organization
 from .user import Skill
 

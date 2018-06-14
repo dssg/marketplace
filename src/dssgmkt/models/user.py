@@ -3,9 +3,11 @@ from django.db import models
 
 from dssgsolve import settings
 
-from .common import (PHONE_REGEX, REVIEW_NEW, REVIEW_RESULT_CHOICES,
-                     ROLE_ORGANIZATION_ADMINISTRATOR, ROLE_ORGANIZATION_STAFF,
-                     SKILL_LEVEL_BEGINNER, SKILL_LEVEL_CHOICES)
+from .common import (
+    PHONE_REGEX, REVIEW_RESULT_CHOICES, REVIEW_NEW,
+    ROLE_ORGANIZATION_ADMINISTRATOR, ROLE_ORGANIZATION_STAFF,
+    SKILL_LEVEL_CHOICES, SKILL_LEVEL_BEGINNER,
+)
 
 
 class User(AbstractUser):

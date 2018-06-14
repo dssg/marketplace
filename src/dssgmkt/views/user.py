@@ -10,8 +10,9 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views import generic
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
-from rules.contrib.views import (PermissionRequiredMixin, objectgetter,
-                                 permission_required)
+from rules.contrib.views import (
+    PermissionRequiredMixin, objectgetter, permission_required,
+)
 
 from ..models.proj import Project, ProjectTask
 from ..models.user import Skill, User, VolunteerProfile, VolunteerSkill

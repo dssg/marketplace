@@ -11,14 +11,16 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views import generic
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
-from rules.contrib.views import (PermissionRequiredMixin, objectgetter,
-                                 permission_required)
+from rules.contrib.views import (
+    PermissionRequiredMixin, objectgetter, permission_required,
+)
 
 from ..models.common import REVIEW_ACCEPTED, REVIEW_NEW, REVIEW_REJECTED
-from ..models.proj import (Project, ProjectFollower, ProjectLog, ProjectRole,
-                           ProjectTask, ProjectTaskRequirement,
-                           ProjectTaskReview, ProjectTaskRole,
-                           VolunteerApplication)
+from ..models.proj import (
+    Project, ProjectFollower, ProjectLog, ProjectRole,
+    ProjectTask, ProjectTaskRequirement,
+    ProjectTaskReview, ProjectTaskRole, VolunteerApplication,
+)
 from .common import build_breadcrumb, home_link
 
 

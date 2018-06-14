@@ -3,9 +3,11 @@ from django_countries.fields import CountryField
 
 from dssgsolve import settings
 
-from .common import (CAUSE_EDUCATION, MAIN_CAUSE_CHOICES,
-                     ORGANIZATION_ROLE_CHOICES, PHONE_REGEX, REVIEW_NEW,
-                     REVIEW_RESULT_CHOICES, ROLE_ORGANIZATION_STAFF)
+from .common import (
+    CAUSE_EDUCATION, MAIN_CAUSE_CHOICES,PHONE_REGEX,
+    ORGANIZATION_ROLE_CHOICES, ROLE_ORGANIZATION_STAFF,
+    REVIEW_RESULT_CHOICES, REVIEW_NEW,
+)
 
 
 class Organization(models.Model):
@@ -130,7 +132,7 @@ class Organization(models.Model):
         COUNTRY = 'CO'
         MULTINATIONAL = 'MN'
         OTHER = 'OT'
-        
+
     ORGANIZATION_SCOPE_CHOICES = (
         (GeographicalScope.LOCAL, 'City/Local'),
         (GeographicalScope.STATE, 'State'),
