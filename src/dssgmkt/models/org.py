@@ -66,47 +66,53 @@ class Organization(models.Model):
         max_length=20,
     )
     country = CountryField(verbose_name="Country")
-    B100K = 'B000'
-    B500K = 'B001'
-    B1M = 'B005'
-    B5M = 'B010'
-    B20M = 'B050'
-    B50M = 'B200'
-    B50MP = 'B500'
+
+    class Budget():
+        B100K = 'B000'
+        B500K = 'B001'
+        B1M = 'B005'
+        B5M = 'B010'
+        B20M = 'B050'
+        B50M = 'B200'
+        B50MP = 'B500'
+
     BUDGET_CHOICES = (
-        (B100K, '<$100K'),
-        (B500K, '$100K-$500K'),
-        (B1M, '$500K-$1MM'),
-        (B5M, '$1MM-$5MM'),
-        (B20M, '$5MM-$20MM'),
-        (B50M, '$20MM-$50MM'),
-        (B50MP, '>$50MM')
+        (Budget.B100K, '<$100K'),
+        (Budget.B500K, '$100K-$500K'),
+        (Budget.B1M, '$500K-$1MM'),
+        (Budget.B5M, '$1MM-$5MM'),
+        (Budget.B20M, '$5MM-$20MM'),
+        (Budget.B50M, '$20MM-$50MM'),
+        (Budget.B50MP, '>$50MM')
     )
     budget = models.CharField(
         verbose_name="Yearly budget",
         help_text="Select the budget range that fits your organization best",
         max_length=7,
         choices=BUDGET_CHOICES,
-        default=B100K,
+        default=Budget.B100K,
     )
-    Y0 = 'Y00'
-    Y1 = 'Y01'
-    Y5 = 'Y05'
-    Y10 = 'Y10'
-    Y25 = 'Y25'
+
+    class YearsInOperation():
+        Y0 = 'Y00'
+        Y1 = 'Y01'
+        Y5 = 'Y05'
+        Y10 = 'Y10'
+        Y25 = 'Y25'
+
     OPERATION_YEARS_CHOICES = (
-        (Y0, 'less than 1 year'),
-        (Y1, '1 to 5 years'),
-        (Y5, '5 to 10 years'),
-        (Y10, '10 to 25 years'),
-        (Y25, '25 or more years')
+        (YearsInOperation.Y0, 'less than 1 year'),
+        (YearsInOperation.Y1, '1 to 5 years'),
+        (YearsInOperation.Y5, '5 to 10 years'),
+        (YearsInOperation.Y10, '10 to 25 years'),
+        (YearsInOperation.Y25, '25 or more years')
     )
     years_operation = models.CharField(
         verbose_name="Years in operation",
         help_text="For how long has the organization been in operation?",
         max_length=3,
         choices=OPERATION_YEARS_CHOICES,
-        default=Y0,
+        default=YearsInOperation.Y0,
     )
     main_cause = models.CharField(
         verbose_name="Main social cause",
@@ -115,26 +121,29 @@ class Organization(models.Model):
         choices=MAIN_CAUSE_CHOICES,
         default=CAUSE_EDUCATION,
     )
-    LOCAL = 'LO'
-    STATE = 'ST'
-    REGION = 'RE'
-    COUNTRY = 'CO'
-    MULTINATIONAL = 'MN'
-    OTHER = 'OT'
+
+    class GeographicalScope():
+        LOCAL = 'LO'
+        STATE = 'ST'
+        REGION = 'RE'
+        COUNTRY = 'CO'
+        MULTINATIONAL = 'MN'
+        OTHER = 'OT'
+        
     ORGANIZATION_SCOPE_CHOICES = (
-        (LOCAL, 'City/Local'),
-        (STATE, 'State'),
-        (REGION, 'Region (i.e. Midwest, Northeast, etc.)'),
-        (COUNTRY, 'Country'),
-        (MULTINATIONAL, 'Multi-national'),
-        (OTHER, 'Other')
+        (GeographicalScope.LOCAL, 'City/Local'),
+        (GeographicalScope.STATE, 'State'),
+        (GeographicalScope.REGION, 'Region (i.e. Midwest, Northeast, etc.)'),
+        (GeographicalScope.COUNTRY, 'Country'),
+        (GeographicalScope.MULTINATIONAL, 'Multi-national'),
+        (GeographicalScope.OTHER, 'Other')
     )
     organization_scope = models.CharField(
         verbose_name="Geographical scope",
         help_text="What is the geographical scope that this organization targets?",
         max_length=2,
         choices=ORGANIZATION_SCOPE_CHOICES,
-        default=LOCAL,
+        default=GeographicalScope.LOCAL,
     )
     creation_date = models.DateTimeField(auto_now_add=True)
     last_modified_date = models.DateTimeField(auto_now= True)
