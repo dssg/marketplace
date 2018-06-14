@@ -12,7 +12,7 @@ from datetime import date
 
 from ..models.common import (NEW, ORGANIZATION_STAFF, ACCEPTED, REJECTED)
 from ..models.org import (Organization, OrganizationRole, OrganizationMembershipRequest)
-from ..authorization import is_organization_admin
+from ..authorization.org import is_organization_admin
 from rules.contrib.views import permission_required, objectgetter, PermissionRequiredMixin
 from .common import home_link, build_breadcrumb
 
