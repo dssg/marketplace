@@ -3,53 +3,53 @@ from django.core.validators import RegexValidator
 
 
 
-EDUCATION = 'ED'
-HEALTH = 'HE'
-ENVIRONMENT = 'EN'
-SOCIAL_SERVICES = 'SS'
-TRANSPORTATION = 'TR'
-ENERGY = 'EE'
-INTERNATIONAL_DEVELOPMENT = 'ID'
-PUBLIC_SAFETY = 'PS'
-ECONOMIC_DEVELOPMENT = 'EC'
-OTHER = 'OT'
+CAUSE_EDUCATION = 'ED'
+CAUSE_HEALTH = 'HE'
+CAUSE_ENVIRONMENT = 'EN'
+CAUSE_SOCIAL_SERVICES = 'SS'
+CAUSE_TRANSPORTATION = 'TR'
+CAUSE_ENERGY = 'EE'
+CAUSE_INTERNATIONAL_DEVELOPMENT = 'ID'
+CAUSE_PUBLIC_SAFETY = 'PS'
+CAUSE_ECONOMIC_DEVELOPMENT = 'EC'
+CAUSE_OTHER = 'OT'
 MAIN_CAUSE_CHOICES = (
-    (EDUCATION, 'Education'),
-    (HEALTH, 'Health'),
-    (ENVIRONMENT, 'Environment'),
-    (SOCIAL_SERVICES, 'Social Services'),
-    (TRANSPORTATION, 'Transportation'),
-    (ENERGY, 'Energy and Environment'),
-    (INTERNATIONAL_DEVELOPMENT, 'International development'),
-    (PUBLIC_SAFETY, 'Public Safety'),
-    (ECONOMIC_DEVELOPMENT, 'Economic Development'),
-    (OTHER, 'Other')
+    (CAUSE_EDUCATION, 'Education'),
+    (CAUSE_HEALTH, 'Health'),
+    (CAUSE_ENVIRONMENT, 'Environment'),
+    (CAUSE_SOCIAL_SERVICES, 'Social Services'),
+    (CAUSE_TRANSPORTATION, 'Transportation'),
+    (CAUSE_ENERGY, 'Energy and Environment'),
+    (CAUSE_INTERNATIONAL_DEVELOPMENT, 'International development'),
+    (CAUSE_PUBLIC_SAFETY, 'Public Safety'),
+    (CAUSE_ECONOMIC_DEVELOPMENT, 'Economic Development'),
+    (CAUSE_OTHER, 'Other')
 )
 
 
-NEW='NEW'
-ACCEPTED='ACC'
-REJECTED='REJ'
+REVIEW_NEW='NEW'
+REVIEW_ACCEPTED='ACC'
+REVIEW_REJECTED='REJ'
 REVIEW_RESULT_CHOICES = (
-    (NEW, 'Pending review'),
-    (ACCEPTED, 'Accepted'),
-    (REJECTED, 'Rejected')
+    (REVIEW_NEW, 'Pending review'),
+    (REVIEW_ACCEPTED, 'Accepted'),
+    (REVIEW_REJECTED, 'Rejected')
 )
 
-BEGINNER = 0
-INTERMEDIATE = 1
-EXPERT = 2
+SKILL_LEVEL_BEGINNER = 0
+SKILL_LEVEL_INTERMEDIATE = 1
+SKILL_LEVEL_EXPERT = 2
 SKILL_LEVEL_CHOICES = (
-    (BEGINNER, 'Beginner'),
-    (INTERMEDIATE, 'Intermediate'),
-    (EXPERT, 'Expert')
+    (SKILL_LEVEL_BEGINNER, 'Beginner'),
+    (SKILL_LEVEL_INTERMEDIATE, 'Intermediate'),
+    (SKILL_LEVEL_EXPERT, 'Expert')
 )
 
-ORGANIZATION_ADMINISTRATOR = 0
-ORGANIZATION_STAFF = 1
+ROLE_ORGANIZATION_ADMINISTRATOR = 0
+ROLE_ORGANIZATION_STAFF = 1
 ORGANIZATION_ROLE_CHOICES = (
-    (ORGANIZATION_ADMINISTRATOR, 'Administrator'),
-    (ORGANIZATION_STAFF, 'Staff')
+    (ROLE_ORGANIZATION_ADMINISTRATOR, 'Administrator'),
+    (ROLE_ORGANIZATION_STAFF, 'Staff')
 )
 
 PHONE_REGEX = RegexValidator(regex=r'^\+?1?\d{9,15}$', message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.")

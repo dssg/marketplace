@@ -3,9 +3,9 @@ from django_countries.fields import CountryField
 from django.contrib.auth.models import AbstractUser
 from dssgsolve import settings
 
-from .common import (PHONE_REGEX, MAIN_CAUSE_CHOICES, EDUCATION,
-                            ORGANIZATION_ROLE_CHOICES, ORGANIZATION_STAFF,
-                            REVIEW_RESULT_CHOICES, NEW)
+from .common import (PHONE_REGEX, MAIN_CAUSE_CHOICES, CAUSE_EDUCATION,
+                            ORGANIZATION_ROLE_CHOICES, ROLE_ORGANIZATION_STAFF,
+                            REVIEW_RESULT_CHOICES, REVIEW_NEW)
 
 
 class Organization(models.Model):
@@ -62,7 +62,7 @@ class Organization(models.Model):
     main_cause = models.CharField(
         max_length=2,
         choices=MAIN_CAUSE_CHOICES,
-        default=EDUCATION,
+        default=CAUSE_EDUCATION,
     )
     LOCAL = 'LO'
     STATE = 'ST'
@@ -90,8 +90,8 @@ class Organization(models.Model):
         return self.name
 
 class OrganizationMembershipRequest(models.Model):
-    role = models.IntegerField(choices = ORGANIZATION_ROLE_CHOICES, default=ORGANIZATION_STAFF)
-    status = models.CharField(max_length=3, choices=REVIEW_RESULT_CHOICES, default=NEW)
+    role = models.IntegerField(choices = ORGANIZATION_ROLE_CHOICES, default=ROLE_ORGANIZATION_STAFF)
+    status = models.CharField(max_length=3, choices=REVIEW_RESULT_CHOICES, default=REVIEW_NEW)
     public_reviewer_comments = models.TextField(max_length=5000, blank=True, null=True)
     private_reviewer_notes = models.TextField(max_length=5000, blank=True, null=True)
     request_date = models.DateTimeField(auto_now_add=True)
@@ -100,7 +100,7 @@ class OrganizationMembershipRequest(models.Model):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
 
     def is_new(self):
-        return self.status == NEW
+        return self.status == REVIEW_NEW
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
@@ -110,7 +110,7 @@ class OrganizationMembershipRequest(models.Model):
 ## TODO move this to the logic in the views?
 
 class OrganizationRole(models.Model):
-    role = models.IntegerField(choices = ORGANIZATION_ROLE_CHOICES, default=ORGANIZATION_STAFF)
+    role = models.IntegerField(choices = ORGANIZATION_ROLE_CHOICES, default=ROLE_ORGANIZATION_STAFF)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
 

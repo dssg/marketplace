@@ -2,9 +2,9 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from dssgsolve import settings
 
-from .common import (PHONE_REGEX, REVIEW_RESULT_CHOICES, NEW,
-                            SKILL_LEVEL_CHOICES, BEGINNER, ORGANIZATION_STAFF,
-                            ORGANIZATION_ADMINISTRATOR)
+from .common import (PHONE_REGEX, REVIEW_RESULT_CHOICES, REVIEW_NEW,
+                    SKILL_LEVEL_CHOICES, SKILL_LEVEL_BEGINNER, 
+                    ROLE_ORGANIZATION_STAFF, ROLE_ORGANIZATION_ADMINISTRATOR)
 
 class User(AbstractUser):
     DSSG_STAFF = 0
@@ -24,10 +24,10 @@ class User(AbstractUser):
         return self.organizationrole_set.filter(organization=orgid).exists()
 
     def is_organization_staff(self, orgid):
-        return self.organizationrole_set.filter(organization=orgid, role=ORGANIZATION_STAFF).exists()
+        return self.organizationrole_set.filter(organization=orgid, role=ROLE_ORGANIZATION_STAFF).exists()
 
     def is_organization_admin(self, orgid):
-        return self.organizationrole_set.filter(organization=orgid, role=ORGANIZATION_ADMINISTRATOR).exists()
+        return self.organizationrole_set.filter(organization=orgid, role=ROLE_ORGANIZATION_ADMINISTRATOR).exists()
 
 
 class UserNotification(models.Model):
@@ -97,12 +97,12 @@ class VolunteerProfile(models.Model):
     weekly_availability_hours = models.IntegerField()
     availability_start_date = models.DateField(blank=True, null=True)
     availability_end_date = models.DateField(blank=True, null=True)
-    volunteer_status = models.CharField(max_length=3, choices=REVIEW_RESULT_CHOICES, default=NEW)
+    volunteer_status = models.CharField(max_length=3, choices=REVIEW_RESULT_CHOICES, default=REVIEW_NEW)
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
 
 class VolunteerSkill(models.Model):
-    level = models.IntegerField(choices = SKILL_LEVEL_CHOICES, default=BEGINNER)
+    level = models.IntegerField(choices = SKILL_LEVEL_CHOICES, default=SKILL_LEVEL_BEGINNER)
     skill = models.ForeignKey(Skill, on_delete=models.CASCADE)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 

@@ -10,7 +10,7 @@ from django.core.exceptions import ValidationError
 from django.contrib.messages.views import SuccessMessageMixin
 from datetime import date
 
-from ..models.common import (NEW, ORGANIZATION_STAFF, ACCEPTED, REJECTED)
+from ..models.common import (REVIEW_NEW, REVIEW_ACCEPTED, REVIEW_REJECTED, ROLE_ORGANIZATION_STAFF)
 from ..models.org import (Organization, OrganizationRole, OrganizationMembershipRequest)
 from ..authorization.org import is_organization_admin
 from rules.contrib.views import permission_required, objectgetter, PermissionRequiredMixin
@@ -102,9 +102,9 @@ def organization_staff_view(request, pk):
 
         requests_page_size = 50
         organization_requests = organization.organizationmembershiprequest_set.all().order_by(
-                Case(When(status=NEW, then=0),
-                     When(status=ACCEPTED, then=1),
-                     When(status=REJECTED, then=2)), '-request_date')
+                Case(When(status=REVIEW_NEW, then=0),
+                     When(status=REVIEW_ACCEPTED, then=1),
+                     When(status=REVIEW_REJECTED, then=2)), '-request_date')
         requests_paginator = Paginator(organization_requests, requests_page_size)
         requests_page = requests_paginator.get_page(request.GET.get('requests_page', 1))
 
@@ -154,8 +154,8 @@ class OrganizationMembershipRequestCreate(CreateView):
         organization = get_object_or_404(Organization, pk=self.kwargs['org_pk'])
         membership_request.organization = organization
         membership_request.user = self.request.user
-        membership_request.status = NEW
-        membership_request.role = ORGANIZATION_STAFF
+        membership_request.status = REVIEW_NEW
+        membership_request.role = ROLE_ORGANIZATION_STAFF
         membership_request.save()
         return HttpResponseRedirect(self.get_success_url())
 
@@ -167,7 +167,7 @@ class OrganizationMembershipRequestForm(ModelForm):
 
     def clean_status(self):
         status = self.cleaned_data['status']
-        if status == NEW:
+        if status == REVIEW_NEW:
             raise ValidationError("Please mark this membership request as accepted or rejected")
         return status
     #

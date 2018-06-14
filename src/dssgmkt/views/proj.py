@@ -11,7 +11,7 @@ from django.contrib.auth import logout
 from django.contrib.messages.views import SuccessMessageMixin
 from datetime import date
 
-from ..models.common import (NEW, ACCEPTED, REJECTED)
+from ..models.common import (REVIEW_NEW, REVIEW_ACCEPTED, REVIEW_REJECTED)
 from ..models.proj import (Project, ProjectTask, ProjectLog,
                     ProjectTaskReview, ProjectTaskRole, VolunteerApplication,
                     ProjectTaskRequirement, ProjectRole, ProjectFollower)
@@ -147,7 +147,7 @@ class ProjectTaskReviewCreate(CreateView):
         project_task = get_object_or_404(ProjectTask, pk=self.kwargs['task_pk'])
         project = get_object_or_404(Project, pk=self.kwargs['proj_pk'])
         project_task_review.task = project_task
-        project_task_review.review_result = NEW
+        project_task_review.review_result = REVIEW_NEW
         project_task_review.save()
         project_task.stage = ProjectTask.WAITING_REVIEW
         project_task.save()
@@ -199,7 +199,7 @@ class ProjectTaskApply(CreateView):
         task_application_request = form.save(commit=False)
         task = get_object_or_404(ProjectTask, pk=self.kwargs['task_pk'])
 
-        task_application_request.status = NEW
+        task_application_request.status = REVIEW_NEW
         task_application_request.task = task
         task_application_request.volunteer = self.request.user
         task_application_request.save()
@@ -398,9 +398,9 @@ def project_staff_view(request, proj_pk):
 
         applications_page_size = 50
         volunteer_applications = VolunteerApplication.objects.filter(task__project__id = proj_pk).order_by(
-                Case(When(status=NEW, then=0),
-                     When(status=ACCEPTED, then=1),
-                     When(status=REJECTED, then=2)), '-application_date')
+                Case(When(status=REVIEW_NEW, then=0),
+                     When(status=REVIEW_ACCEPTED, then=1),
+                     When(status=REVIEW_REJECTED, then=2)), '-application_date')
         volunteer_applications_paginator = Paginator(volunteer_applications, applications_page_size)
         applications_page = volunteer_applications_paginator.get_page(request.GET.get('applications_page', 1))
 

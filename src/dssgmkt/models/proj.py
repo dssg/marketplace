@@ -3,9 +3,9 @@ from django_countries.fields import CountryField
 from dssgsolve import settings
 
 from .org import Organization
-from .common import (PHONE_REGEX, MAIN_CAUSE_CHOICES, EDUCATION,
-                            REVIEW_RESULT_CHOICES, NEW, SKILL_LEVEL_CHOICES,
-                            BEGINNER)
+from .common import (PHONE_REGEX, MAIN_CAUSE_CHOICES, CAUSE_EDUCATION,
+                            REVIEW_RESULT_CHOICES, REVIEW_NEW, SKILL_LEVEL_CHOICES,
+                            SKILL_LEVEL_BEGINNER)
 from .user import Skill
 
 class Project(models.Model):
@@ -18,7 +18,7 @@ class Project(models.Model):
     project_cause = models.CharField(
         max_length=2,
         choices=MAIN_CAUSE_CHOICES,
-        default=EDUCATION,
+        default=CAUSE_EDUCATION,
     )
     project_impact = models.TextField(max_length=5000, blank=True, null=True)
     scoping_process = models.TextField(max_length=5000, blank=True, null=True)
@@ -166,12 +166,12 @@ class ProjectTaskReview(models.Model):
     review_result = models.CharField(
         max_length=3,
         choices=REVIEW_RESULT_CHOICES,
-        default=NEW,
+        default=REVIEW_NEW,
     )
     task = models.ForeignKey(ProjectTask, on_delete=models.CASCADE)
 
 class ProjectTaskRequirement(models.Model):
-    level = models.IntegerField(choices = SKILL_LEVEL_CHOICES, default=BEGINNER)
+    level = models.IntegerField(choices = SKILL_LEVEL_CHOICES, default=SKILL_LEVEL_BEGINNER)
     NICE_TO_HAVE = 0
     IMPORTANT = 1
     REQUIRED = 2
@@ -191,7 +191,7 @@ class VolunteerApplication(models.Model):
     status = models.CharField(
         max_length=3,
         choices=REVIEW_RESULT_CHOICES,
-        default=NEW,
+        default=REVIEW_NEW,
     )
     volunteer_application_letter = models.TextField(max_length=5000)
     public_reviewer_comments = models.TextField(max_length=5000, blank=True, null=True)
@@ -200,7 +200,7 @@ class VolunteerApplication(models.Model):
     volunteer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
     def is_new(self):
-        return self.status == NEW
+        return self.status == REVIEW_NEW
 
 class ProjectRole(models.Model):
     PROJECT_OWNER = 0
