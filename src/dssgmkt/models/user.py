@@ -155,7 +155,7 @@ class VolunteerProfile(models.Model):
         blank=True,
         null=True,
     )
-    weekly_availability_hours = models.IntegerField()
+    weekly_availability_hours = models.PositiveSmallIntegerField()
     availability_start_date = models.DateField(
         blank=True,
         null=True,

@@ -231,11 +231,11 @@ class ProjectTask(models.Model):
         blank=True,
         null=True,
     )
-    estimated_effort_hours = models.IntegerField(
+    estimated_effort_hours = models.PositiveSmallIntegerField(
         blank=True,
         null=True,
     )
-    actual_effort_hours = models.IntegerField(
+    actual_effort_hours = models.PositiveSmallIntegerField(
         blank=True,
         null=True,
     )
@@ -272,7 +272,7 @@ class ProjectTaskReview(models.Model):
         blank=True,
         null=True,
     )
-    volunteer_effort_hours = models.IntegerField()
+    volunteer_effort_hours = models.PositiveSmallIntegerField()
     reviewer_comment = models.TextField(
         max_length=2000,
         blank=True,
