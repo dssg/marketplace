@@ -154,14 +154,55 @@ class Organization(models.Model):
         return self.name
 
 class OrganizationMembershipRequest(models.Model):
-    role = models.IntegerField(choices = OrgRole.get_choices(), default=OrgRole.STAFF)
-    status = models.CharField(max_length=3, choices=ReviewStatus.get_choices(), default=ReviewStatus.NEW)
-    public_reviewer_comments = models.TextField(max_length=5000, blank=True, null=True)
-    private_reviewer_notes = models.TextField(max_length=5000, blank=True, null=True)
-    request_date = models.DateTimeField(auto_now_add=True)
-    resolution_date = models.DateTimeField(auto_now=True, blank=True, null=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
+    role = models.IntegerField(
+        verbose_name="User role",
+        help_text="Select the role of this user in the organization. IMPORTANT: Administrators will have full permissions over the organization so only assign this permission if you are sure you grant this user full control of the organization.",
+        choices = OrgRole.get_choices(),
+        default=OrgRole.STAFF,
+    )
+    status = models.CharField(
+        verbose_name="Membership request status",
+        max_length=3,
+        choices=ReviewStatus.get_choices(),
+        default=ReviewStatus.NEW,
+    )
+    public_reviewer_comments = models.TextField(
+        verbose_name="Public reviewer comments",
+        help_text="Write any comments you have for the applicant. IMPORTANT: These comments will be public and can be viewed by users outside ot the organization.",
+        max_length=5000,
+        blank=True,
+        null=True,
+    )
+    private_reviewer_notes = models.TextField(
+        verbose_name="Private review notes",
+        help_text="Write any private comments regarding this decision. IMPORTANT: these notes are private to the organization, but all members of the organization will be able to see them.",
+        max_length=5000,
+        blank=True,
+        null=True,
+    )
+    request_date = models.DateTimeField(
+        verbose_name="Review date",
+        help_text="Date and time in which the membership request was created",
+        auto_now_add=True)
+    resolution_date = models.DateTimeField(
+        verbose_name="Resolution date",
+        help_text="Date and time in which the membership request was resolved",
+        auto_now=True,
+        blank=True,
+        null=True,
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        verbose_name="Membership applicant",
+        help_text="User that requested membership in this organization",
+    )
+    organization = models.ForeignKey(
+        Organization,
+        on_delete=models.CASCADE,
+        verbose_name="Organization",
+        help_text="Organization to which the user is applying to be member of",
+    )
 
     def is_new(self):
         return self.status == ReviewStatus.NEW
@@ -174,9 +215,24 @@ class OrganizationMembershipRequest(models.Model):
 ## TODO move this to the logic in the views?
 
 class OrganizationRole(models.Model):
-    role = models.IntegerField(choices = OrgRole.get_choices(), default=OrgRole.STAFF)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
+    role = models.IntegerField(
+        verbose_name="User role",
+        # help_text="Role of this user in this specific organization.",
+        choices = OrgRole.get_choices(),
+        default=OrgRole.STAFF,
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        verbose_name="Organization member",
+        # help_text="User member of this organization.",
+    )
+    organization = models.ForeignKey(
+        Organization,
+        on_delete=models.CASCADE,
+        verbose_name="Organization",
+        # help_text="Organization this membership refers to.",
+    )
 
     class Meta:
         unique_together = ('user','organization')
