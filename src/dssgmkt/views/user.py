@@ -14,7 +14,7 @@ from rules.contrib.views import (
     PermissionRequiredMixin, objectgetter, permission_required,
 )
 
-from ..models.proj import Project, ProjectTask
+from ..models.proj import Project, ProjectStatus, ProjectTask
 from ..models.user import Skill, User, VolunteerProfile, VolunteerSkill
 from .common import build_breadcrumb, home_link
 
@@ -40,7 +40,7 @@ class UserProfileView(generic.DetailView):
                                                   ("My profile" , None)])
 
         project_tasks_page_size = 1
-        project_tasks = ProjectTask.objects.filter(projecttaskrole__user=self.object.id).filter(~Q(project__status = Project.DRAFT))
+        project_tasks = ProjectTask.objects.filter(projecttaskrole__user=self.object.id).filter(~Q(project__status = ProjectStatus.DRAFT)) # TODO create a proxy model for active projects
         project_tasks_paginator = Paginator(project_tasks, project_tasks_page_size)
         project_tasks_page = project_tasks_paginator.get_page(self.request.GET.get('project_tasks_page', 1))
         context['project_tasks'] = project_tasks_page
