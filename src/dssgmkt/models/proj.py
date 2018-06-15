@@ -260,10 +260,10 @@ class ProjectTask(models.Model):
         return self.name
 
     def is_in_progress(self):
-        return self.stage == self.STARTED
+        return self.stage == TaskStatus.STARTED
 
     def is_pending_review(self):
-        return self.stage == self.WAITING_REVIEW
+        return self.stage == TaskStatus.WAITING_REVIEW
 
 
 class ProjectTaskReview(models.Model):

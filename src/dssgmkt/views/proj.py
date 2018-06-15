@@ -18,7 +18,7 @@ from rules.contrib.views import (
 from ..models.common import ReviewStatus
 from ..models.proj import (
     Project, ProjectFollower, ProjectLog, ProjectRole,
-    ProjectTask, ProjectTaskRequirement, TaskStatus,
+    ProjectTask, ProjectTaskRequirement, ProjectStatus, TaskStatus,
     ProjectTaskReview, ProjectTaskRole, VolunteerApplication,
 )
 from .common import build_breadcrumb, home_link
@@ -111,7 +111,7 @@ class ProjectVolunteerInstructionsView(generic.DetailView):
     def get_object(self):
         return ProjectTask.objects.filter(project__pk = self.kwargs['proj_pk'],
                                           projecttaskrole__user = self.request.user,
-                                          stage__in=[ProjectTask.STARTED, ProjectTask.WAITING_REVIEW]).first()
+                                          stage__in=[TaskStatus.STARTED, TaskStatus.WAITING_REVIEW]).first()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -155,9 +155,9 @@ class ProjectTaskReviewCreate(CreateView):
         project_task_review.task = project_task
         project_task_review.review_result = ReviewStatus.NEW
         project_task_review.save()
-        project_task.stage = ProjectTask.WAITING_REVIEW
+        project_task.stage = TaskStatus.WAITING_REVIEW
         project_task.save()
-        project_task.project.status = Project.WAITING_REVIEW
+        project_task.project.status = ProjectStatus.WAITING_REVIEW
         project_task.project.save()
         return HttpResponseRedirect(self.get_success_url())
 
@@ -373,7 +373,7 @@ def create_default_project_task(request, proj_pk):
         project_task.name = 'New project task'
         project_task.description = 'This is the task description'
         project_task.onboarding_instructions = 'These are the volunteer onboarding instructions'
-        project_task.stage = ProjectTask.NOT_STARTED
+        project_task.stage = TaskStatus.NOT_STARTED
         project_task.accepting_volunteers = False
         project_task.project = get_object_or_404(Project, pk = proj_pk)
         project_task.percentage_complete = 0
