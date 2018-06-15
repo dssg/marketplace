@@ -18,7 +18,7 @@ from rules.contrib.views import (
 from ..models.common import ReviewStatus
 from ..models.proj import (
     Project, ProjectFollower, ProjectLog, ProjectRole,
-    ProjectTask, ProjectTaskRequirement,
+    ProjectTask, ProjectTaskRequirement, TaskStatus,
     ProjectTaskReview, ProjectTaskRole, VolunteerApplication,
 )
 from .common import build_breadcrumb, home_link
@@ -57,7 +57,7 @@ class ProjectView(generic.ListView): ## This is a listview because it is actuall
     context_object_name = 'project_tasks'
 
     def get_queryset(self):
-        return ProjectTask.objects.filter(stage = ProjectTask.ACCEPTING_VOLUNTEERS,
+        return ProjectTask.objects.filter(stage = TaskStatus.ACCEPTING_VOLUNTEERS,
                                           project = self.kwargs['proj_pk']).order_by('name')[:50]
 
     def get_context_data(self, **kwargs):
