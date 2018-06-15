@@ -212,7 +212,7 @@ class OrganizationMembershipRequest(models.Model):
         if self.status == ReviewStatus.ACCEPTED and not self.user.is_organization_member(self.organization):
             new_role = OrganizationRole(role = self.role, user = self.user, organization = self.organization)
             new_role.save()
-## TODO move this to the logic in the views?
+## TODO move this to the logic in the views? No, create a new layer for business logic and put it there
 
 class OrganizationRole(models.Model):
     role = models.IntegerField(
