@@ -139,7 +139,7 @@ class Project(models.Model):
         return self.name
 
     def is_completed(self):
-        return self.status == self.COMPLETED
+        return self.status == ProjectStatus.COMPLETED
 
 
 
