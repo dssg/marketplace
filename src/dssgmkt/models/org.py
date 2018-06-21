@@ -207,13 +207,6 @@ class OrganizationMembershipRequest(models.Model):
     def is_new(self):
         return self.status == ReviewStatus.NEW
 
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        if self.status == ReviewStatus.ACCEPTED and not self.user.is_organization_member(self.organization):
-            new_role = OrganizationRole(role = self.role, user = self.user, organization = self.organization)
-            new_role.save()
-## TODO move this to the logic in the views? No, create a new layer for business logic and put it there
-
 
 # class ActiveOrganizationRoleManager(models.Manager):
 #     def get_queryset(self):
