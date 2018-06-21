@@ -12,15 +12,15 @@ class OrganizationService():
         return Organization.objects.order_by('name')
 
     @staticmethod
-    def user_is_organization_member(request_user, user, org):
+    def user_is_organization_member(user, org):
         return OrganizationRole.objects.filter(organization=org, user=user).exists()
 
     @staticmethod
-    def user_is_organization_staff(request_user, user, org):
+    def user_is_organization_staff(user, org):
         return OrganizationRole.objects.filter(organization=org, user=user, role=OrgRole.STAFF).exists()
 
     @staticmethod
-    def user_is_organization_admin(request_user, user, org):
+    def user_is_organization_admin(user, org):
         return OrganizationRole.objects.filter(organization=org, user=user, role=OrgRole.ADMINISTRATOR).exists()
 
     @staticmethod
@@ -66,7 +66,7 @@ class OrganizationService():
     def save_membership_request(request_user, orgid, membership_request):
         if membership_request.organization.id == orgid:
             membership_request.save()
-            if membership_request.status == ReviewStatus.ACCEPTED and not OrganizationService.user_is_organization_member(request_user, membership_request.user, membership_request.organization):
+            if membership_request.status == ReviewStatus.ACCEPTED and not OrganizationService.user_is_organization_member(membership_request.user, membership_request.organization):
                 new_role = OrganizationRole(role = membership_request.role, user = membership_request.user, organization = membership_request.organization)
                 new_role.save()
         else:

@@ -43,9 +43,9 @@ class OrganizationIndexView(generic.ListView):
 
 def add_organization_user_context(request, context, user, organization):
     if not user.is_anonymous:
-        context['user_is_staff'] = OrganizationService.user_is_organization_staff(request.user, user, organization)
-        context['user_is_administrator'] = OrganizationService.user_is_organization_admin(request.user, user, organization)
-        context['user_is_member'] = OrganizationService.user_is_organization_member(request.user, user, organization)
+        context['user_is_staff'] = OrganizationService.user_is_organization_staff(user, organization)
+        context['user_is_administrator'] = OrganizationService.user_is_organization_admin(user, organization)
+        context['user_is_member'] = OrganizationService.user_is_organization_member(user, organization)
     return context
 
 class OrganizationView(generic.DetailView):

@@ -5,15 +5,15 @@ from dssgmkt.domain.org import OrganizationService
 
 @predicate
 def is_organization_admin(user, organization):
-    return user.is_authenticated and OrganizationService.user_is_organization_admin(None, user, organization)
+    return user.is_authenticated and OrganizationService.user_is_organization_admin(user, organization)
 
 @predicate
 def is_organization_staff(user, organization):
-    return user.is_authenticated and OrganizationService.user_is_organization_staff(None, user, organization)
+    return user.is_authenticated and OrganizationService.user_is_organization_staff(user, organization)
 
 @predicate
 def is_organization_member(user, organization):
-    return user.is_authenticated and OrganizationService.user_is_organization_member(None, user, organization)
+    return user.is_authenticated and OrganizationService.user_is_organization_member(user, organization)
 
 add_perm('organization.information_edit', is_organization_admin)
 add_perm('organization.staff_view', is_organization_member)
