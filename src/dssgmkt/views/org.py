@@ -156,18 +156,15 @@ class OrganizationMembershipRequestCreate(CreateView):
         context['organization_tab']='info'
         return context
 
-
     def form_valid(self, form):
         membership_request = form.save(commit=False)
-        organization = get_object_or_404(Organization, pk=self.kwargs['org_pk'])
-        membership_request.organization = organization
-        membership_request.user = self.request.user
-        membership_request.status = ReviewStatus.NEW
-        membership_request.role = OrgRole.STAFF
-        membership_request.save()
-        return HttpResponseRedirect(self.get_success_url())
+        try:
+            OrganizationService.create_membership_request(self.request.user, self.request.user, self.kwargs['org_pk'], membership_request)
+            return HttpResponseRedirect(self.get_success_url())
+        except KeyError:
+            raise Http404
 
-
+# TODO change the views that accept/reject membership requests to have two buttons for accept/reject instead of a selector
 class OrganizationMembershipRequestForm(ModelForm):
     class Meta:
         model = OrganizationMembershipRequest
@@ -178,10 +175,6 @@ class OrganizationMembershipRequestForm(ModelForm):
         if status == ReviewStatus.NEW:
             raise ValidationError("Please mark this membership request as accepted or rejected")
         return status
-    #
-    # def __init__(self, *args, **kwargs):
-    #     super(OrganizationMembershipRequestForm, self).__init__(*args, **kwargs)
-    #     self.fields['status'].queryset = None
 
 class OrganizationMembershipRequestEdit(PermissionRequiredMixin, UpdateView):
     model = OrganizationMembershipRequest
@@ -207,6 +200,15 @@ class OrganizationMembershipRequestEdit(PermissionRequiredMixin, UpdateView):
         else:
             raise Http404
 
+    def form_valid(self, form):
+        membership_request = form.save(commit = False)
+        try:
+            OrganizationService.save_membership_request(self.request.user, self.kwargs['org_pk'], membership_request)
+            return HttpResponseRedirect(self.get_success_url())
+        except:
+            return super().form_invalid(form)
+
+
 class OrganizationRoleEdit(PermissionRequiredMixin, UpdateView):
     model = OrganizationRole
     fields = ['role']
@@ -229,6 +231,14 @@ class OrganizationRoleEdit(PermissionRequiredMixin, UpdateView):
             return context
         else:
             raise Http404
+
+    def form_valid(self, form):
+        organization_role = form.save(commit = False)
+        try:
+            OrganizationService.save_organization_role(self.request.user, self.kwargs['org_pk'], organization_role)
+            return HttpResponseRedirect(self.get_success_url())
+        except:
+            return super().form_invalid(form)
 
 
 
@@ -255,6 +265,16 @@ class OrganizationLeave(PermissionRequiredMixin, DeleteView):
         else:
             raise Http404
 
+    def delete(self, request,  *args, **kwargs):
+        organization_role = self.get_object()
+        self.object = organization_role
+        try:
+            OrganizationService.leave_organization(request.user, self.kwargs['org_pk'], organization_role)
+            return HttpResponseRedirect(self.get_success_url())
+        except:
+            # TODO notify the user about the failure
+            return HttpResponseRedirect(self.get_success_url())
+
 class OrganizationRoleRemove(PermissionRequiredMixin, DeleteView):
     model = OrganizationRole
     template_name = 'dssgmkt/org_staff_remove.html'
@@ -276,3 +296,13 @@ class OrganizationRoleRemove(PermissionRequiredMixin, DeleteView):
             return context
         else:
             raise Http404
+
+    def delete(self, request,  *args, **kwargs):
+        organization_role = self.get_object()
+        self.object = organization_role
+        try:
+            OrganizationService.delete_organization_role(request.user, self.kwargs['org_pk'], organization_role)
+            return HttpResponseRedirect(self.get_success_url())
+        except:
+            # TODO notify the user about the failure
+            return HttpResponseRedirect(self.get_success_url())
