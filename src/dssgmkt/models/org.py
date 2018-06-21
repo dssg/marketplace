@@ -214,6 +214,12 @@ class OrganizationMembershipRequest(models.Model):
             new_role.save()
 ## TODO move this to the logic in the views? No, create a new layer for business logic and put it there
 
+
+# class ActiveOrganizationRoleManager(models.Manager):
+#     def get_queryset(self):
+#         return super().get_queryset().filter(organization__id = 2)
+
+
 class OrganizationRole(models.Model):
     role = models.IntegerField(
         verbose_name="User role",
@@ -233,6 +239,9 @@ class OrganizationRole(models.Model):
         verbose_name="Organization",
         # help_text="Organization this membership refers to.",
     )
+    #
+    # objects = models.Manager()
+    # active_roles = ActiveOrganizationRoleManager()
 
     class Meta:
         unique_together = ('user','organization')
