@@ -85,6 +85,7 @@ class OrganizationEdit(PermissionRequiredMixin, UpdateView):
         context['breadcrumb'] = organization_breadcrumb(organization,
                                                         ('Edit information', None))
         context['organization_tab']='info'
+        add_organization_user_context(self.request, context, self.request.user, organization)
         return context
 
 def organization_breadcrumb(organization, *items):
@@ -154,6 +155,7 @@ class OrganizationMembershipRequestCreate(CreateView):
         context['breadcrumb'] = organization_breadcrumb(organization,
                                                         ('Request membership', None))
         context['organization_tab']='info'
+        add_organization_user_context(self.request, context, self.request.user, organization)
         return context
 
 
@@ -178,10 +180,6 @@ class OrganizationMembershipRequestForm(ModelForm):
         if status == ReviewStatus.NEW:
             raise ValidationError("Please mark this membership request as accepted or rejected")
         return status
-    #
-    # def __init__(self, *args, **kwargs):
-    #     super(OrganizationMembershipRequestForm, self).__init__(*args, **kwargs)
-    #     self.fields['status'].queryset = None
 
 class OrganizationMembershipRequestEdit(PermissionRequiredMixin, UpdateView):
     model = OrganizationMembershipRequest
@@ -203,6 +201,7 @@ class OrganizationMembershipRequestEdit(PermissionRequiredMixin, UpdateView):
                                                             ('Staff', reverse('dssgmkt:org_staff', args=[self.object.organization.id])),
                                                             ('Review membership request', None))
             context['organization_tab']='staff'
+            add_organization_user_context(self.request, context, self.request.user, organization)
             return context
         else:
             raise Http404
@@ -221,11 +220,13 @@ class OrganizationRoleEdit(PermissionRequiredMixin, UpdateView):
         context = super().get_context_data(**kwargs)
         organization_role = self.object
         if organization_role and organization_role.organization.id == self.kwargs['org_pk']:
-            context['organization'] = self.object.organization
-            context['breadcrumb'] = organization_breadcrumb(self.object.organization,
+            organization = self.object.organization
+            context['organization'] = organization
+            context['breadcrumb'] = organization_breadcrumb(organization,
                                                             ('Staff', reverse('dssgmkt:org_staff', args=[self.object.organization.id])),
                                                             ('Edit', None))
             context['organization_tab']='staff'
+            add_organization_user_context(self.request, context, self.request.user, organization)
             return context
         else:
             raise Http404
@@ -247,10 +248,12 @@ class OrganizationLeave(PermissionRequiredMixin, DeleteView):
         context = super().get_context_data(**kwargs)
         organization_role = self.object
         if organization_role and organization_role.organization.id == self.kwargs['org_pk']:
-            context['organization'] = self.object.organization
-            context['breadcrumb'] = organization_breadcrumb(self.object.organization,
+            organization = self.object.organization
+            context['organization'] = organization
+            context['breadcrumb'] = organization_breadcrumb(organization,
                                                             ('Leave organization', None))
             context['organization_tab']='info'
+            add_organization_user_context(self.request, context, self.request.user, organization)
             return context
         else:
             raise Http404
@@ -268,11 +271,13 @@ class OrganizationRoleRemove(PermissionRequiredMixin, DeleteView):
         context = super().get_context_data(**kwargs)
         organization_role = self.object
         if organization_role and organization_role.organization.id == self.kwargs['org_pk']:
-            context['organization'] = self.object.organization
-            context['breadcrumb'] = organization_breadcrumb(self.object.organization,
+            organization = self.object.organization
+            context['organization'] = organization
+            context['breadcrumb'] = organization_breadcrumb(organization,
                                                             ('Staff', reverse('dssgmkt:org_staff', args=[self.object.organization.id])),
                                                             ('Remove', None))
             context['organization_tab']='staff'
+            add_organization_user_context(self.request, context, self.request.user, organization)
             return context
         else:
             raise Http404
