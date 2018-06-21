@@ -19,6 +19,7 @@ from ..models.common import ReviewStatus, OrgRole
 from ..models.org import (
     Organization, OrganizationMembershipRequest, OrganizationRole,
 )
+from dssgmkt.domain.org import OrganizationService
 from .common import build_breadcrumb, home_link
 
 
@@ -31,7 +32,8 @@ class OrganizationIndexView(generic.ListView):
     paginate_by = 1
 
     def get_queryset(self):
-        return Organization.objects.order_by('-name')[:50]
+        # This gets paginated by the view so we are not retrieving all the organizations in one query
+        return OrganizationService.get_all_organizations(self.request.user)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -39,11 +41,11 @@ class OrganizationIndexView(generic.ListView):
                                                   organizations_link(False)])
         return context
 
-def add_organization_user_context(context,user,organization):
+def add_organization_user_context(request, context, user, organization):
     if not user.is_anonymous:
-        context['user_is_staff'] = user.is_organization_staff(organization)
-        context['user_is_administrator'] = user.is_organization_admin(organization)
-        context['user_is_member'] = user.is_organization_member(organization)
+        context['user_is_staff'] = OrganizationService.user_is_organization_staff(request.user, user, organization)
+        context['user_is_administrator'] = OrganizationService.user_is_organization_admin(request.user, user, organization)
+        context['user_is_member'] = OrganizationService.user_is_organization_member(request.user, user, organization)
     return context
 
 class OrganizationView(generic.DetailView):
@@ -58,11 +60,11 @@ class OrganizationView(generic.DetailView):
                                                   (context['organization'].name , None)])
 
         projects_page_size = 1
-        projects = self.object.project_set.all()
+        projects = self.object.project_set.all() # TODO move this query to the project domain
         projects_paginator = Paginator(projects, projects_page_size)
         projects_page = projects_paginator.get_page(self.request.GET.get('projects_page', 1))
         context['projects'] = projects_page
-        add_organization_user_context(context, self.request.user, self.object)
+        add_organization_user_context(self.request, context, self.request.user, self.object)
 
         return context
 
@@ -99,42 +101,42 @@ class CreateOrganizationRoleForm(ModelForm):
 
 @permission_required('organization.staff_view', fn=objectgetter(Organization, 'pk'))
 def organization_staff_view(request, pk):
-    if request.method == 'GET':
-        organization = get_object_or_404(Organization, pk=pk)
-        staff_page_size = 50
-        organization_staff = organization.organizationrole_set.all().order_by('role')
-        staff_paginator = Paginator(organization_staff, staff_page_size)
-        staff_page = staff_paginator.get_page(request.GET.get('staff_page', 1))
-
-        requests_page_size = 50
-        organization_requests = organization.organizationmembershiprequest_set.all().order_by(
-                Case(When(status=ReviewStatus.NEW, then=0),
-                     When(status=ReviewStatus.ACCEPTED, then=1),
-                     When(status=ReviewStatus.REJECTED, then=2)), '-request_date')
-        requests_paginator = Paginator(organization_requests, requests_page_size)
-        requests_page = requests_paginator.get_page(request.GET.get('requests_page', 1))
-
-        return render(request, 'dssgmkt/org_staff.html',
-                        add_organization_user_context(
-                            {'organization': organization,
-                            'organization_tab': 'staff',
-                            'breadcrumb': organization_breadcrumb(organization, ('Staff', None)),
-
-                            'organization_staff': staff_page,
-
-                            'organization_requests': requests_page,
-
-                            'add_staff_form': CreateOrganizationRoleForm(),
-                            }, request.user, organization))
-    ## TODO this is a security hole as staff can post to this view and create new members
-    elif request.method == 'POST':
+## TODO this is a security hole as staff can post to this view and create new members
+    if request.method == 'POST':
         form = CreateOrganizationRoleForm(request.POST)
-        if form.is_valid:
+        if form.is_valid():
             organization_role = form.save(commit = False)
-            organization = get_object_or_404(Organization, pk=pk)
-            organization_role.organization = organization
-            organization_role.save()
-            return redirect('dssgmkt:org_staff', pk = pk)
+            try:
+                OrganizationService.add_staff_member(request.user, pk, organization_role)
+                return redirect('dssgmkt:org_staff', pk=pk)
+            except KeyError:
+                raise Http404
+            except ValueError:
+                form.add_error(None, "This user is already a member of the organization.")
+    elif request.method == 'GET':
+        form = CreateOrganizationRoleForm()
+    organization = get_object_or_404(Organization, pk=pk) # TODO move this check to the organization service
+    staff_page_size = 50
+    organization_staff = OrganizationService.get_organization_staff(request.user, organization)
+    staff_paginator = Paginator(organization_staff, staff_page_size)
+    staff_page = staff_paginator.get_page(request.GET.get('staff_page', 1))
+
+    requests_page_size = 50
+    organization_requests = OrganizationService.get_membership_requests(request.user, organization)
+    requests_paginator = Paginator(organization_requests, requests_page_size)
+    requests_page = requests_paginator.get_page(request.GET.get('requests_page', 1))
+
+    return render(request, 'dssgmkt/org_staff.html',
+                    add_organization_user_context(
+                        request,
+                        {'organization': organization,
+                        'organization_tab': 'staff',
+                        'breadcrumb': organization_breadcrumb(organization, ('Staff', None)),
+                        'organization_staff': staff_page,
+                        'organization_requests': requests_page,
+                        'add_staff_form': form,
+                        }, request.user, organization))
+
 
 
 class OrganizationMembershipRequestCreate(CreateView):

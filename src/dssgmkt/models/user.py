@@ -46,16 +46,6 @@ class User(AbstractUser):
         null=True,
     )
 
-    def is_organization_member(self, orgid):
-        return self.organizationrole_set.filter(organization=orgid).exists()
-
-    def is_organization_staff(self, orgid):
-        return self.organizationrole_set.filter(organization=orgid, role=OrgRole.STAFF).exists()
-
-    def is_organization_admin(self, orgid):
-        return self.organizationrole_set.filter(organization=orgid, role=OrgRole.ADMINISTRATOR).exists()
-
-
 class NotificationSeverity():
     INFO = 0
     WARNING = 1
