@@ -41,11 +41,11 @@ class OrganizationIndexView(generic.ListView):
                                                   organizations_link(False)])
         return context
 
-def add_organization_user_context(context, user, organization):
+def add_organization_user_context(request, context, user, organization):
     if not user.is_anonymous:
-        context['user_is_staff'] = OrganizationService.user_is_organization_staff(user, organization) # TODO move these to the domain
-        context['user_is_administrator'] = OrganizationService.user_is_organization_admin(user, organization) # TODO move these to the domain
-        context['user_is_member'] = OrganizationService.user_is_organization_member(user, organization) # TODO move these to the domain
+        context['user_is_staff'] = OrganizationService.user_is_organization_staff(request.user, user, organization)
+        context['user_is_administrator'] = OrganizationService.user_is_organization_admin(request.user, user, organization)
+        context['user_is_member'] = OrganizationService.user_is_organization_member(request.user, user, organization)
     return context
 
 class OrganizationView(generic.DetailView):
@@ -64,7 +64,7 @@ class OrganizationView(generic.DetailView):
         projects_paginator = Paginator(projects, projects_page_size)
         projects_page = projects_paginator.get_page(self.request.GET.get('projects_page', 1))
         context['projects'] = projects_page
-        add_organization_user_context(context, self.request.user, self.object)
+        add_organization_user_context(self.request, context, self.request.user, self.object)
 
         return context
 
@@ -128,6 +128,7 @@ def organization_staff_view(request, pk):
 
     return render(request, 'dssgmkt/org_staff.html',
                     add_organization_user_context(
+                        request,
                         {'organization': organization,
                         'organization_tab': 'staff',
                         'breadcrumb': organization_breadcrumb(organization, ('Staff', None)),

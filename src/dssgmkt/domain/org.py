@@ -10,17 +10,14 @@ class OrganizationService():
     def get_all_organizations(request_user):
         return Organization.objects.order_by('name')
 
-    def user_is_organization_member(user, org):
+    def user_is_organization_member(request_user, user, org):
         return OrganizationRole.objects.filter(organization=org, user=user).exists()
-        # return self.organizationrole_set.filter(organization=orgid).exists()
 
-    def user_is_organization_staff(user, org):
+    def user_is_organization_staff(request_user, user, org):
         return OrganizationRole.objects.filter(organization=org, user=user, role=OrgRole.STAFF).exists()
-        # return self.organizationrole_set.filter(organization=orgid, role=OrgRole.STAFF).exists()
 
-    def user_is_organization_admin(user, org):
+    def user_is_organization_admin(request_user, user, org):
         return OrganizationRole.objects.filter(organization=org, user=user, role=OrgRole.ADMINISTRATOR).exists()
-        # return self.organizationrole_set.filter(organization=orgid, role=OrgRole.ADMINISTRATOR).exists()
 
     def get_organization_staff(request_user, org):
         return org.organizationrole_set.order_by('role')
@@ -42,14 +39,3 @@ class OrganizationService():
                 raise ValueError('Duplicate user role')
         else:
             raise KeyError('Organization not found ' + str(orgid))
-
-#
-# class ActiveOrganizationRoleManager(models.Manager):
-#     def get_queryset(self):
-#         super(ActiveOrganizationRoleManager, self).get_queryset().filter(organization__id = 1)
-#
-# class ActiveOrganizationRole(OrganizationRole):
-#     objects = ActiveOrganizationRoleManager()
-#
-#     class Meta:
-#         proxy = True
