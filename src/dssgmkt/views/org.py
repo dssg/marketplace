@@ -14,7 +14,6 @@ from rules.contrib.views import (
     PermissionRequiredMixin, objectgetter, permission_required,
 )
 
-from ..authorization.org import is_organization_admin
 from ..models.common import ReviewStatus, OrgRole
 from ..models.org import (
     Organization, OrganizationMembershipRequest, OrganizationRole,

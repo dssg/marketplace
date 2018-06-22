@@ -21,11 +21,11 @@ add_perm('organization.staff_edit', is_organization_admin)
 
 @predicate
 def is_organization_role_admin(user, organization_role):
-    return is_organization_admin(user, organization_role.organization)
+    return OrganizationService.user_is_organization_admin(user, organization_role.organization)
 
 @predicate
 def is_organization_membership_request_admin(user, membership_request):
-    return is_organization_admin(user, membership_request.organization)
+    return OrganizationService.user_is_organization_admin(user, membership_request.organization)
 
 @predicate
 def is_own_membership(user, organization_role):
