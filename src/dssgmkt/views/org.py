@@ -50,6 +50,7 @@ def add_organization_user_context(request, context, user, organization):
 class OrganizationView(generic.DetailView):
     model = Organization
     template_name = 'dssgmkt/org_info.html'
+    pk_url_kwarg = 'org_pk'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -99,23 +100,23 @@ class CreateOrganizationRoleForm(ModelForm):
         model = OrganizationRole
         fields = ['role', 'user']
 
-@permission_required('organization.staff_view', fn=objectgetter(Organization, 'pk'))
-def organization_staff_view(request, pk):
+@permission_required('organization.staff_view', fn=objectgetter(Organization, 'org_pk'))
+def organization_staff_view(request, org_pk):
 ## TODO this is a security hole as staff can post to this view and create new members
     if request.method == 'POST':
         form = CreateOrganizationRoleForm(request.POST)
         if form.is_valid():
             organization_role = form.save(commit = False)
             try:
-                OrganizationService.add_staff_member(request.user, pk, organization_role)
-                return redirect('dssgmkt:org_staff', pk=pk)
+                OrganizationService.add_staff_member(request.user, org_pk, organization_role)
+                return redirect('dssgmkt:org_staff', pk=org_pk)
             except KeyError:
                 raise Http404
             except ValueError:
                 form.add_error(None, "This user is already a member of the organization.")
     elif request.method == 'GET':
         form = CreateOrganizationRoleForm()
-    organization = get_object_or_404(Organization, pk=pk) # TODO move this check to the organization service
+    organization = get_object_or_404(Organization, pk=org_pk) # TODO move this check to the organization service
     staff_page_size = 50
     organization_staff = OrganizationService.get_organization_staff(request.user, organization)
     staff_paginator = Paginator(organization_staff, staff_page_size)
