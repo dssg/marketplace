@@ -73,6 +73,16 @@ class OrganizationService():
             raise ValueError('Membership request does not match organization')
 
     @staticmethod
+    def accept_membership_request(request_user, orgid, membership_request):
+        membership_request.status = ReviewStatus.ACCEPTED
+        OrganizationService.save_membership_request(request_user, orgid, membership_request)
+
+    @staticmethod
+    def reject_membership_request(request_user, orgid, membership_request):
+        membership_request.status = ReviewStatus.REJECTED
+        OrganizationService.save_membership_request(request_user, orgid, membership_request)
+
+    @staticmethod
     def save_organization_role(request_user, orgid, organization_role):
         if organization_role.organization.id == orgid:
             organization_role.save()

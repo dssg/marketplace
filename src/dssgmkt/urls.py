@@ -17,7 +17,8 @@ urlpatterns = [
     path('org/<int:org_pk>/staff/<int:role_pk>/remove', org.OrganizationRoleRemove.as_view(), name='org_staff_remove'),
     path('org/<int:org_pk>/staff/request', org.OrganizationMembershipRequestCreate.as_view(), name='org_staff_request'),
     path('org/<int:org_pk>/staff/leave', org.OrganizationLeave.as_view(), name='org_staff_leave'),
-    path('org/<int:org_pk>/staff/request/<int:request_pk>/review', org.OrganizationMembershipRequestEdit.as_view(), name='org_staff_request_review'),
+    path('org/<int:org_pk>/staff/request/<int:request_pk>/review', org.process_organization_membership_request_view, name='org_staff_request_review'),
+    path('org/<int:org_pk>/staff/request/<int:request_pk>/review/<str:action>', org.process_organization_membership_request_view, name='org_staff_request_review_do'),
 
     path('proj/', proj.ProjectIndexView.as_view(), name='proj_list'),
     path('proj/<int:proj_pk>/', proj.ProjectView.as_view(), name='proj_info'),

@@ -13,11 +13,17 @@
   <form id="orgmembershiprequestreview">
     {% csrf_token %}
     {{ form.as_p }}
+
     <button type="submit"
             form="orgmembershiprequestreview"
-            formaction="{% url 'dssgmkt:org_staff_request_review' organization.id organizationmembershiprequest.id %}"
-            formmethod="post">Save</button>
+            formaction="{% url 'dssgmkt:org_staff_request_review_do' organization.id organizationmembershiprequest.id 'accept' %}"
+            formmethod="post">Accept membership request</button>
+
+    <button type="submit"
+            form="orgmembershiprequestreview"
+            formaction="{% url 'dssgmkt:org_staff_request_review_do' organization.id organizationmembershiprequest.id 'reject' %}"
+            formmethod="post">Reject membership request</button>
+
   </form>
   <a href="{% url 'dssgmkt:org_staff' organization.id %}">Cancel</a>
-
 {% endblock %}

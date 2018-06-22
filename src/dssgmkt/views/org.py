@@ -165,50 +165,41 @@ class OrganizationMembershipRequestCreate(CreateView):
         except KeyError:
             raise Http404
 
-# TODO change the views that accept/reject membership requests to have two buttons for accept/reject instead of a selector
 class OrganizationMembershipRequestForm(ModelForm):
     class Meta:
         model = OrganizationMembershipRequest
-        fields = ['role', 'status', 'public_reviewer_comments', 'private_reviewer_notes']
+        fields = ['role', 'public_reviewer_comments', 'private_reviewer_notes']
 
-    def clean_status(self):
-        status = self.cleaned_data['status']
-        if status == ReviewStatus.NEW:
-            raise ValidationError("Please mark this membership request as accepted or rejected")
-        return status
 
-class OrganizationMembershipRequestEdit(PermissionRequiredMixin, UpdateView):
-    model = OrganizationMembershipRequest
-    form_class = OrganizationMembershipRequestForm
-    template_name = 'dssgmkt/org_staff_request_review.html'
-    pk_url_kwarg = 'request_pk'
-    permission_required = 'organization.membership_review'
+def process_organization_membership_request_view(request, org_pk, request_pk, action=None):
+    membership_request = get_object_or_404(OrganizationMembershipRequest, pk=request_pk)
+    if request.method == 'POST':
+        form = OrganizationMembershipRequestForm(request.POST, instance=membership_request)
+        if form.is_valid():
+            membership_request = form.save(commit = False)
+            try:
+                if action == 'accept':
+                    OrganizationService.accept_membership_request(request.user, org_pk, membership_request)
+                else:
+                    OrganizationService.reject_membership_request(request.user, org_pk, membership_request)
+                return redirect('dssgmkt:org_staff', pk=org_pk)
+            except KeyError:
+                raise Http404
+    elif request.method == 'GET':
+        form = OrganizationMembershipRequestForm()
+    organization = get_object_or_404(Organization, pk=org_pk) # TODO move this check to the organization service
 
-    def get_success_url(self):
-        return reverse('dssgmkt:org_staff', args=[self.kwargs['org_pk']])
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        organization = get_object_or_404(Organization, pk=self.kwargs['org_pk'])
-        membership_request = self.object
-        if membership_request and membership_request.organization.id == self.kwargs['org_pk']:
-            context['organization'] = organization
-            context['breadcrumb'] = organization_breadcrumb(organization,
-                                                            ('Staff', reverse('dssgmkt:org_staff', args=[self.object.organization.id])),
-                                                            ('Review membership request', None))
-            context['organization_tab']='staff'
-            add_organization_user_context(self.request, context, self.request.user, organization)
-            return context
-        else:
-            raise Http404
-
-    def form_valid(self, form):
-        membership_request = form.save(commit = False)
-        try:
-            OrganizationService.save_membership_request(self.request.user, self.kwargs['org_pk'], membership_request)
-            return HttpResponseRedirect(self.get_success_url())
-        except:
-            return super().form_invalid(form)
+    return render(request, 'dssgmkt/org_staff_request_review.html',
+                    add_organization_user_context(
+                        request,
+                        {'organization': organization,
+                        'organizationmembershiprequest': membership_request,
+                        'organization_tab': 'staff',
+                        'breadcrumb': organization_breadcrumb(organization,
+                                                                        ('Staff', reverse('dssgmkt:org_staff', args=[organization.id])),
+                                                                        ('Review membership request', None)),
+                        'form': form,
+                        }, request.user, organization))
 
 
 class OrganizationRoleEdit(PermissionRequiredMixin, UpdateView):
