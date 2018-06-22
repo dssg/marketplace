@@ -171,6 +171,7 @@ class OrganizationMembershipRequestForm(ModelForm):
         fields = ['role', 'public_reviewer_comments', 'private_reviewer_notes']
 
 
+@permission_required('organization.membership_review', fn=objectgetter(OrganizationMembershipRequest, 'request_pk'))
 def process_organization_membership_request_view(request, org_pk, request_pk, action=None):
     membership_request = get_object_or_404(OrganizationMembershipRequest, pk=request_pk)
     if request.method == 'POST':
