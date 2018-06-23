@@ -114,7 +114,7 @@ def organization_staff_view(request, org_pk):
             organization_role = form.save(commit = False)
             try:
                 OrganizationService.add_staff_member(request.user, org_pk, organization_role)
-                return redirect('dssgmkt:org_staff', pk=org_pk)
+                return redirect('dssgmkt:org_staff', org_pk=org_pk)
             except KeyError:
                 raise Http404
             except ValueError:
@@ -189,7 +189,7 @@ def process_organization_membership_request_view(request, org_pk, request_pk, ac
                     OrganizationService.accept_membership_request(request.user, org_pk, membership_request)
                 else:
                     OrganizationService.reject_membership_request(request.user, org_pk, membership_request)
-                return redirect('dssgmkt:org_staff', pk=org_pk)
+                return redirect('dssgmkt:org_staff', org_pk=org_pk)
             except KeyError:
                 raise Http404
     elif request.method == 'GET':
