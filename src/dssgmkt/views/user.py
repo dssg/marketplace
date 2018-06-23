@@ -15,7 +15,7 @@ from rules.contrib.views import (
 )
 
 from ..models.proj import Project, ProjectStatus, ProjectTask
-from ..models.user import Skill, User, VolunteerProfile, VolunteerSkill
+from ..models.user import Skill, User, VolunteerProfile, VolunteerSkill, UserNotification
 from .common import build_breadcrumb, home_link
 
 
@@ -23,6 +23,26 @@ def logout_view(request):
     logout(request)
     return HttpResponseRedirect(reverse('dssgmkt:home'))
     # Redirect to a success page.
+
+class UserHomeView(generic.ListView): ## This is a listview because it is actually showing the list of user notifications
+    model = UserNotification
+    template_name = 'dssgmkt/home_user.html'
+    context_object_name = 'notification_list'
+    paginate_by = 50
+
+    def get_queryset(self):
+        return UserNotification.objects.filter(user=self.request.user).order_by('-notification_date')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['breadcrumb'] = build_breadcrumb([("Home", None)])
+        return context
+
+def home_view(request):
+    if request.user.is_authenticated:
+        return UserHomeView.as_view()(request)
+    else:
+        return render(request, 'dssgmkt/home_anonymous.html')
 
 
 def my_user_profile_view(request):

@@ -5,7 +5,7 @@ from .views import common, org, proj, user
 
 app_name = 'dssgmkt'
 urlpatterns = [
-    path('', common.home_view, name='home'),
+    path('', user.home_view, name='home'),
     path('about/', common.about_view, name='about'),
 
 

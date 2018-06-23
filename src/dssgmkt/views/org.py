@@ -309,6 +309,6 @@ class OrganizationRoleRemove(PermissionRequiredMixin, DeleteView):
         try:
             OrganizationService.delete_organization_role(request.user, self.kwargs['org_pk'], organization_role)
             return HttpResponseRedirect(self.get_success_url())
-        except:
+        except ValueError:
             # TODO notify the user about the failure
             return HttpResponseRedirect(self.get_success_url())

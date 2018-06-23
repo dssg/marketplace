@@ -5,6 +5,10 @@ from ..models.common import OrgRole, ReviewStatus
 from ..models.org import (
     Organization, OrganizationMembershipRequest, OrganizationRole,
 )
+from ..models.user import (
+    NotificationSeverity, NotificationSource,
+)
+from .notifications import NotificationService
 
 class OrganizationService():
     @staticmethod
@@ -105,3 +109,7 @@ class OrganizationService():
             raise ValueError('Role does not match organization')
         else:
             organization_role.delete()
+            NotificationService.add_user_notification(organization_role.user,
+                                                        "You were removed as a staff member of " + organization_role.organization.name,
+                                                        NotificationSeverity.INFO,
+                                                        NotificationSource.ORGANIZATION)
