@@ -70,7 +70,7 @@ class OrganizationView(generic.DetailView):
         context['organization_tab'] = 'info'
         context['breadcrumb'] = organization_breadcrumb(self.object)
 
-        projects_page_size = 1
+        projects_page_size = 25
         projects = self.object.project_set.all() # TODO move this query to the project domain
         projects_paginator = Paginator(projects, projects_page_size)
         projects_page = projects_paginator.get_page(self.request.GET.get('projects_page', 1))
@@ -122,12 +122,12 @@ def organization_staff_view(request, org_pk):
     elif request.method == 'GET':
         form = CreateOrganizationRoleForm()
     organization = get_object_or_404(Organization, pk=org_pk) # TODO move this check to the organization service
-    staff_page_size = 50
+    staff_page_size = 25
     organization_staff = OrganizationService.get_organization_staff(request.user, organization)
     staff_paginator = Paginator(organization_staff, staff_page_size)
     staff_page = staff_paginator.get_page(request.GET.get('staff_page', 1))
 
-    requests_page_size = 50
+    requests_page_size = 25
     organization_requests = OrganizationService.get_membership_requests(request.user, organization)
     requests_paginator = Paginator(organization_requests, requests_page_size)
     requests_page = requests_paginator.get_page(request.GET.get('requests_page', 1))
