@@ -46,6 +46,10 @@ class OrganizationService():
             organization_role.organization = organization
             try:
                 organization_role.save()
+                NotificationService.add_user_notification(organization_role.user,
+                                                            "You have been added as a member of " + organization_role.organization.name + " with " + organization_role.get_role_display() + " role.",
+                                                            NotificationSeverity.INFO,
+                                                            NotificationSource.ORGANIZATION)
             except IntegrityError:
                 raise ValueError('Duplicate user role')
         else:
@@ -63,6 +67,10 @@ class OrganizationService():
             membership_request.save()
             # except IntegrityError:
             #     raise ValueError('Duplicate user role')
+            NotificationService.add_user_notification(membership_request.user,
+                                                        "You have applied to be a member of " + membership_request.organization.name  + " with " + membership_request.get_role_display() + " role. You will be notified when the organization's administrators review your membership request.",
+                                                        NotificationSeverity.INFO,
+                                                        NotificationSource.ORGANIZATION_MEMBERSHIP_REQUEST)
         else:
             raise KeyError('Organization not found ' + str(orgid))
 
@@ -80,16 +88,28 @@ class OrganizationService():
     def accept_membership_request(request_user, orgid, membership_request):
         membership_request.status = ReviewStatus.ACCEPTED
         OrganizationService.save_membership_request(request_user, orgid, membership_request)
+        NotificationService.add_user_notification(membership_request.user,
+                                                    "Congratulations! Your membership request for " + membership_request.organization.name + " was accepted.",
+                                                    NotificationSeverity.INFO,
+                                                    NotificationSource.ORGANIZATION_MEMBERSHIP_REQUEST)
 
     @staticmethod
     def reject_membership_request(request_user, orgid, membership_request):
         membership_request.status = ReviewStatus.REJECTED
         OrganizationService.save_membership_request(request_user, orgid, membership_request)
+        NotificationService.add_user_notification(membership_request.user,
+                                                    "Your membership request for " + membership_request.organization.name + " was rejected.",
+                                                    NotificationSeverity.WARNING,
+                                                    NotificationSource.ORGANIZATION_MEMBERSHIP_REQUEST)
 
     @staticmethod
     def save_organization_role(request_user, orgid, organization_role):
         if organization_role.organization.id == orgid:
             organization_role.save()
+            NotificationService.add_user_notification(organization_role.user,
+                                                        "Your role within " + organization_role.organization.name + " has been changed to " + organization_role.get_role_display() + ".",
+                                                        NotificationSeverity.INFO,
+                                                        NotificationSource.ORGANIZATION)
         else:
             raise ValueError('Role does not match organization')
 
@@ -101,6 +121,10 @@ class OrganizationService():
             raise ValueError('Role does not match current user')
         else:
             organization_role.delete()
+            NotificationService.add_user_notification(request_user,
+                                                        "You left " + organization_role.organization.name,
+                                                        NotificationSeverity.INFO,
+                                                        NotificationSource.ORGANIZATION)
 
 
     @staticmethod
