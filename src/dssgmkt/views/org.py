@@ -25,6 +25,19 @@ from .common import build_breadcrumb, home_link
 def organizations_link(include_link=True):
     return ('Organizations', reverse('dssgmkt:org_list') if include_link else None)
 
+def organization_link(organization, include_link=True):
+    return (organization.name, reverse('dssgmkt:org_info', args=[organization.id]) if include_link else None)
+
+def organization_staff_link(organization, include_link=True):
+    return ('Staff', reverse('dssgmkt:org_staff', args=[organization.id]) if include_link else None)
+
+def organization_breadcrumb(organization, *items):
+    breadcrumb_items = [home_link(),
+                        organizations_link(),
+                        organization_link(organization, items)]
+    breadcrumb_items += items
+    return build_breadcrumb(breadcrumb_items)
+
 class OrganizationIndexView(generic.ListView):
     template_name = 'dssgmkt/org_list.html'
     context_object_name = 'org_list'
@@ -55,9 +68,7 @@ class OrganizationView(generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['organization_tab'] = 'info'
-        context['breadcrumb'] = build_breadcrumb([home_link(),
-                                                  organizations_link(),
-                                                  (context['organization'].name , None)])
+        context['breadcrumb'] = organization_breadcrumb(self.object)
 
         projects_page_size = 1
         projects = self.object.project_set.all() # TODO move this query to the project domain
@@ -88,12 +99,6 @@ class OrganizationEdit(PermissionRequiredMixin, UpdateView):
         add_organization_user_context(self.request, context, self.request.user, organization)
         return context
 
-def organization_breadcrumb(organization, *items):
-    breadcrumb_items = [home_link(),
-                        organizations_link(),
-                        (organization.name , reverse('dssgmkt:org_info', args=[organization.id]) if items[0] else None)]
-    breadcrumb_items += items
-    return build_breadcrumb(breadcrumb_items)
 
 class CreateOrganizationRoleForm(ModelForm):
     class Meta:
@@ -198,8 +203,8 @@ def process_organization_membership_request_view(request, org_pk, request_pk, ac
                         'organizationmembershiprequest': membership_request,
                         'organization_tab': 'staff',
                         'breadcrumb': organization_breadcrumb(organization,
-                                                                        ('Staff', reverse('dssgmkt:org_staff', args=[organization.id])),
-                                                                        ('Review membership request', None)),
+                                                                organization_staff_link(organization),
+                                                                ('Review membership request', None)),
                         'form': form,
                         }, request.user, organization))
 
@@ -221,7 +226,7 @@ class OrganizationRoleEdit(PermissionRequiredMixin, UpdateView):
             organization = self.object.organization
             context['organization'] = organization
             context['breadcrumb'] = organization_breadcrumb(organization,
-                                                            ('Staff', reverse('dssgmkt:org_staff', args=[self.object.organization.id])),
+                                                            organization_staff_link(organization),
                                                             ('Edit', None))
             context['organization_tab']='staff'
             add_organization_user_context(self.request, context, self.request.user, organization)
@@ -290,8 +295,8 @@ class OrganizationRoleRemove(PermissionRequiredMixin, DeleteView):
             organization = self.object.organization
             context['organization'] = organization
             context['breadcrumb'] = organization_breadcrumb(organization,
-                                                            ('Staff', reverse('dssgmkt:org_staff', args=[self.object.organization.id])),
-                                                            ('Remove', None))
+                                                            organization_staff_link(organization),
+                                                            ('Remove staff member', None))
             context['organization_tab']='staff'
             add_organization_user_context(self.request, context, self.request.user, organization)
             return context
