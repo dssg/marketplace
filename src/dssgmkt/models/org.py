@@ -229,6 +229,11 @@ class OrganizationRole(models.Model):
         verbose_name="Organization",
         # help_text="Organization this membership refers to.",
     )
+    creation_date = models.DateTimeField(
+        verbose_name="Creation date",
+        help_text="Date and time in which the organization role was created",
+        auto_now_add=True,
+    )
 
     class Meta:
         unique_together = ('user','organization')

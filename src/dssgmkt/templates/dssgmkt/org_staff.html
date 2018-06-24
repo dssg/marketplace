@@ -10,6 +10,7 @@
             <th>Full name</th>
             <th>Email address</th>
             <th>Role</th>
+            <th>Member since</th>
             {% if user_is_administrator %}
             <th>Edit</th>
             <th>Remove</th>
@@ -22,6 +23,7 @@
               <td><a href="{% url 'dssgmkt:user_profile' staff.user.id %}">{{ staff.user.first_name }} {{ staff.user.last_name }}</a></td>
               <td><a href="{% url 'dssgmkt:user_profile' staff.user.id %}">{{ staff.user.email }}</a></td>
               <td>{{ staff.get_role_display }}</td>
+              <td>{{ staff.creation_date }}</td>
               {% if user_is_administrator %}
               <td><a href="{% url 'dssgmkt:org_staff_edit' staff.organization.id staff.id %}">Edit</a></td>
               <td><a href="{% url 'dssgmkt:org_staff_remove' staff.organization.id staff.id %}">Remove</a></td>
