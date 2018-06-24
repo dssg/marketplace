@@ -90,6 +90,12 @@ class UserNotification(models.Model):
         choices=NotificationSource.get_choices(),
         default=NotificationSource.GENERIC,
     )
+    target_id = models.IntegerField(
+        verbose_name="Target ID",
+        help_text="ID of the target entity that is related to this notification",
+        blank=True,
+        null=True,
+    )
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,

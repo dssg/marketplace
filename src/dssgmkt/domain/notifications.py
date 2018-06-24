@@ -2,11 +2,12 @@ from dssgmkt.models.user import UserNotification
 
 class NotificationService():
     @staticmethod
-    def add_user_notification(user, notification_description, severity, source):
+    def add_user_notification(user, notification_description, severity, source, target_id):
         notification = UserNotification(user=user,
                                         notification_description=notification_description,
                                         severity=severity,
                                         source=source,
+                                        target_id=target_id,
                                         is_read=False)
         notification.save()
 

@@ -14,17 +14,38 @@ from rules.contrib.views import (
     PermissionRequiredMixin, objectgetter, permission_required,
 )
 
+from ..models.org import OrganizationMembershipRequest
 from ..models.proj import Project, ProjectStatus, ProjectTask
-from ..models.user import Skill, User, VolunteerProfile, VolunteerSkill, UserNotification
+from ..models.user import Skill, User, VolunteerProfile, VolunteerSkill, UserNotification, NotificationSource
 from .common import build_breadcrumb, home_link
 
 from dssgmkt.domain.notifications import NotificationService
+
 
 def logout_view(request):
     logout(request)
     return HttpResponseRedirect(reverse('dssgmkt:home'))
     # Redirect to a success page.
 
+def get_url_for_notification(source_type, source_id):
+    print(source_type)
+    print(source_id)
+    url = None
+    if source_id:
+        if source_type == NotificationSource.GENERIC:
+            url = None
+        elif source_type == NotificationSource.ORGANIZATION:
+            url = reverse('dssgmkt:org_info', args=[source_id])
+        elif source_type == NotificationSource.PROJECT:
+            url = None
+        elif source_type == NotificationSource.TASK:
+            url = None
+        elif source_type == NotificationSource.VOLUNTEER_APPLICATION:
+            url = None
+        elif source_type == NotificationSource.ORGANIZATION_MEMBERSHIP_REQUEST:
+            membership_request = get_object_or_404(OrganizationMembershipRequest, pk=source_id)
+            url = reverse('dssgmkt:org_staff_request_detail', args=[membership_request.organization.id, source_id])
+    return url
 
 class UserHomeView(generic.ListView): ## This is a listview because it is actually showing the list of user notifications
     model = UserNotification
@@ -38,6 +59,8 @@ class UserHomeView(generic.ListView): ## This is a listview because it is actual
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['breadcrumb'] = build_breadcrumb([("Home", None)])
+        for notification in context['notification_list']:
+            notification.url = get_url_for_notification(notification.source, notification.target_id)
         return context
 
     def render_to_response(self, context):

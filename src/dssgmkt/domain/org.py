@@ -49,7 +49,8 @@ class OrganizationService():
                 NotificationService.add_user_notification(organization_role.user,
                                                             "You have been added as a member of " + organization_role.organization.name + " with " + organization_role.get_role_display() + " role.",
                                                             NotificationSeverity.INFO,
-                                                            NotificationSource.ORGANIZATION)
+                                                            NotificationSource.ORGANIZATION,
+                                                            organization_role.organization.id)
             except IntegrityError:
                 raise ValueError('Duplicate user role')
         else:
@@ -68,9 +69,10 @@ class OrganizationService():
             # except IntegrityError:
             #     raise ValueError('Duplicate user role')
             NotificationService.add_user_notification(membership_request.user,
-                                                        "You have applied to be a member of " + membership_request.organization.name  + " with " + membership_request.get_role_display() + " role. You will be notified when the organization's administrators review your membership request.",
+                                                        "You have applied to be a member of " + membership_request.organization.name + ". You will be notified when the organization's administrators review your membership request.",
                                                         NotificationSeverity.INFO,
-                                                        NotificationSource.ORGANIZATION_MEMBERSHIP_REQUEST)
+                                                        NotificationSource.ORGANIZATION_MEMBERSHIP_REQUEST,
+                                                        membership_request.id)
         else:
             raise KeyError('Organization not found ' + str(orgid))
 
@@ -92,7 +94,8 @@ class OrganizationService():
         NotificationService.add_user_notification(membership_request.user,
                                                     "Congratulations! Your membership request for " + membership_request.organization.name + " was accepted.",
                                                     NotificationSeverity.INFO,
-                                                    NotificationSource.ORGANIZATION_MEMBERSHIP_REQUEST)
+                                                    NotificationSource.ORGANIZATION_MEMBERSHIP_REQUEST,
+                                                    membership_request.id)
 
     @staticmethod
     def reject_membership_request(request_user, orgid, membership_request):
@@ -101,7 +104,8 @@ class OrganizationService():
         NotificationService.add_user_notification(membership_request.user,
                                                     "Your membership request for " + membership_request.organization.name + " was rejected.",
                                                     NotificationSeverity.WARNING,
-                                                    NotificationSource.ORGANIZATION_MEMBERSHIP_REQUEST)
+                                                    NotificationSource.ORGANIZATION_MEMBERSHIP_REQUEST,
+                                                    membership_request.id)
 
     @staticmethod
     def save_organization_role(request_user, orgid, organization_role):
@@ -110,7 +114,8 @@ class OrganizationService():
             NotificationService.add_user_notification(organization_role.user,
                                                         "Your role within " + organization_role.organization.name + " has been changed to " + organization_role.get_role_display() + ".",
                                                         NotificationSeverity.INFO,
-                                                        NotificationSource.ORGANIZATION)
+                                                        NotificationSource.ORGANIZATION,
+                                                        organization_role.organization.id)
         else:
             raise ValueError('Role does not match organization')
 
@@ -125,7 +130,8 @@ class OrganizationService():
             NotificationService.add_user_notification(request_user,
                                                         "You left " + organization_role.organization.name,
                                                         NotificationSeverity.INFO,
-                                                        NotificationSource.ORGANIZATION)
+                                                        NotificationSource.ORGANIZATION,
+                                                        organization_role.organization.id)
 
 
     @staticmethod
@@ -137,4 +143,5 @@ class OrganizationService():
             NotificationService.add_user_notification(organization_role.user,
                                                         "You were removed as a staff member of " + organization_role.organization.name,
                                                         NotificationSeverity.INFO,
-                                                        NotificationSource.ORGANIZATION)
+                                                        NotificationSource.ORGANIZATION,
+                                                        organization_role.organization.id)

@@ -7,11 +7,17 @@
   {% if notification_list %}
     <ul>
         {% for notification in notification_list %}
-          <li> {% if not notification.is_read %}
-                  NEW 
-               {% endif %}
-               [{{ notification.notification_date }}] {{ notification.get_severity_display }} ({{ notification.get_source_display }}):
-             {{ notification.notification_description }}
+          <li>{% if notification.url %}
+                <a href="{{ notification.url }}">
+              {% endif %}
+              {% if not notification.is_read %}
+                  NEW
+              {% endif %}
+              [{{ notification.notification_date }}] {{ notification.get_severity_display }} ({{ notification.get_source_display }}):
+              {{ notification.notification_description }}
+              {% if notification.url %}
+                </a>
+              {% endif %}
           </li>
         {% endfor %}
     </ul>
