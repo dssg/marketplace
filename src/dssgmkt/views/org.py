@@ -81,6 +81,7 @@ class OrganizationView(generic.DetailView):
         projects_page = projects_paginator.get_page(self.request.GET.get('projects_page', 1))
         context['projects'] = projects_page
         add_organization_user_context(self.request, context, self.request.user, self.object)
+        context['user_is_pending_membership'] = OrganizationService.user_is_pending_membership(self.request.user, self.object)
 
         return context
 

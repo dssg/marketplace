@@ -28,6 +28,8 @@
 
   {% if user_is_member %}
     <a href="{% url 'dssgmkt:org_staff_leave' organization.id %}">Leave organization</a>
+  {% elif user_is_pending_membership %}
+    Membership requested
   {% else %}
     <a href="{% url 'dssgmkt:org_staff_request' organization.id %}">Request membership</a>
   {% endif %}

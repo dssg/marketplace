@@ -28,6 +28,10 @@ class OrganizationService():
         return user.is_authenticated and OrganizationRole.objects.filter(organization=org, user=user, role=OrgRole.ADMINISTRATOR).exists()
 
     @staticmethod
+    def user_is_pending_membership(user, org):
+        return user.is_authenticated and OrganizationMembershipRequest.objects.filter(organization=org, user=user, status=ReviewStatus.NEW).exists()
+
+    @staticmethod
     def get_organization_staff(request_user, org):
         return org.organizationrole_set.order_by('role')
 
@@ -69,15 +73,16 @@ class OrganizationService():
             membership_request.user = user
             membership_request.status = ReviewStatus.NEW
             membership_request.role = OrgRole.STAFF
-            # try:
-            membership_request.save()
-            # except IntegrityError:
-            #     raise ValueError('Duplicate user role')
-            NotificationService.add_user_notification(membership_request.user,
-                                                        "You have applied to be a member of " + membership_request.organization.name + ". You will be notified when the organization's administrators review your membership request.",
-                                                        NotificationSeverity.INFO,
-                                                        NotificationSource.ORGANIZATION_MEMBERSHIP_REQUEST,
-                                                        membership_request.id)
+            if not OrganizationService.user_is_pending_membership(user, organization):
+                # try:
+                membership_request.save()
+                # except IntegrityError:
+                #     raise ValueError('Duplicate user role')
+                NotificationService.add_user_notification(membership_request.user,
+                                                            "You have applied to be a member of " + membership_request.organization.name + ". You will be notified when the organization's administrators review your membership request.",
+                                                            NotificationSeverity.INFO,
+                                                            NotificationSource.ORGANIZATION_MEMBERSHIP_REQUEST,
+                                                            membership_request.id)
         else:
             raise KeyError('Organization not found ' + str(orgid))
 
