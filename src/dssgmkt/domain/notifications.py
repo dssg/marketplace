@@ -9,3 +9,9 @@ class NotificationService():
                                         source=source,
                                         is_read=False)
         notification.save()
+
+    @staticmethod
+    def mark_notifications_as_read(user_notification_list):
+        for notification in user_notification_list:
+            notification.is_read = True
+            notification.save()

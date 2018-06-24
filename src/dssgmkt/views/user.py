@@ -18,11 +18,13 @@ from ..models.proj import Project, ProjectStatus, ProjectTask
 from ..models.user import Skill, User, VolunteerProfile, VolunteerSkill, UserNotification
 from .common import build_breadcrumb, home_link
 
+from dssgmkt.domain.notifications import NotificationService
 
 def logout_view(request):
     logout(request)
     return HttpResponseRedirect(reverse('dssgmkt:home'))
     # Redirect to a success page.
+
 
 class UserHomeView(generic.ListView): ## This is a listview because it is actually showing the list of user notifications
     model = UserNotification
@@ -37,6 +39,15 @@ class UserHomeView(generic.ListView): ## This is a listview because it is actual
         context = super().get_context_data(**kwargs)
         context['breadcrumb'] = build_breadcrumb([("Home", None)])
         return context
+
+    def render_to_response(self, context):
+        response = super().render_to_response(context)
+        # This should be done in the service itself but only the view knows the
+        # items that are actually displayed (as pagination is done in the view) so
+        # the service iteslf cannot just mark the right notifications as read.
+        mark_notifications_as_read = lambda response: NotificationService.mark_notifications_as_read(context['notification_list'])
+        response.add_post_render_callback(mark_notifications_as_read)
+        return response
 
 def home_view(request):
     if request.user.is_authenticated:
