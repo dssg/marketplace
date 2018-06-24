@@ -30,7 +30,7 @@ class UserHomeView(generic.ListView): ## This is a listview because it is actual
     model = UserNotification
     template_name = 'dssgmkt/home_user.html'
     context_object_name = 'notification_list'
-    paginate_by = 50
+    paginate_by = 15
 
     def get_queryset(self):
         return UserNotification.objects.filter(user=self.request.user).order_by('-notification_date')
