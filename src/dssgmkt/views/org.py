@@ -1,6 +1,7 @@
 from datetime import date
 
 from django.contrib.messages.views import SuccessMessageMixin
+from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db.models import Case, Q, When
@@ -118,6 +119,7 @@ def organization_staff_view(request, org_pk):
             organization_role = form.save(commit = False)
             try:
                 OrganizationService.add_staff_member(request.user, org_pk, organization_role)
+                messages.add_message(request, messages.INFO, 'Staff member added successfully.')
                 return redirect('dssgmkt:org_staff', org_pk=org_pk)
             except KeyError:
                 raise Http404
@@ -171,6 +173,9 @@ class OrganizationMembershipRequestCreate(CreateView):
         membership_request = form.save(commit=False)
         try:
             OrganizationService.create_membership_request(self.request.user, self.request.user, self.kwargs['org_pk'], membership_request)
+            messages.add_message(self.request,
+                                 messages.INFO,
+                                 'Membership request for '+ membership_request.organization.name +' successful. You will be notifed when the administrators make a decision about your membership.')
             return HttpResponseRedirect(self.get_success_url())
         except KeyError:
             raise Http404
@@ -209,8 +214,10 @@ def process_organization_membership_request_view(request, org_pk, request_pk, ac
             try:
                 if action == 'accept':
                     OrganizationService.accept_membership_request(request.user, org_pk, membership_request)
+                    messages.add_message(request, messages.INFO, 'Membership request accepted.')
                 else:
                     OrganizationService.reject_membership_request(request.user, org_pk, membership_request)
+                    messages.add_message(request, messages.INFO, 'Membership request rejected.')
                 return redirect('dssgmkt:org_staff', org_pk=org_pk)
             except KeyError:
                 raise Http404
@@ -261,8 +268,9 @@ class OrganizationRoleEdit(PermissionRequiredMixin, UpdateView):
         organization_role = form.save(commit = False)
         try:
             OrganizationService.save_organization_role(self.request.user, self.kwargs['org_pk'], organization_role)
+            messages.add_message(self.request, messages.INFO, 'User role edited successfully.')
             return HttpResponseRedirect(self.get_success_url())
-        except:
+        except ValueError:
             return super().form_invalid(form)
 
 
@@ -297,9 +305,10 @@ class OrganizationLeave(PermissionRequiredMixin, DeleteView):
         self.object = organization_role
         try:
             OrganizationService.leave_organization(request.user, self.kwargs['org_pk'], organization_role)
+            messages.add_message(request, messages.INFO, 'You left ' + organization_role.organization.name + ' successfully.')
             return HttpResponseRedirect(self.get_success_url())
         except ValueError:
-            # TODO notify the user about the failure
+            messages.add_message(request, messages.ERROR, 'There was a problem with your request.')
             return HttpResponseRedirect(self.get_success_url())
 
 class OrganizationRoleRemove(PermissionRequiredMixin, DeleteView):
@@ -331,7 +340,8 @@ class OrganizationRoleRemove(PermissionRequiredMixin, DeleteView):
         self.object = organization_role
         try:
             OrganizationService.delete_organization_role(request.user, self.kwargs['org_pk'], organization_role)
+            messages.add_message(request, messages.INFO, 'Staff member removed successfully.')
             return HttpResponseRedirect(self.get_success_url())
         except ValueError:
-            # TODO notify the user about the failure
+            messages.add_message(request, messages.ERROR, 'There was a problem with your request.')
             return HttpResponseRedirect(self.get_success_url())
