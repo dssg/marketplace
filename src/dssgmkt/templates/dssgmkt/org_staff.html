@@ -68,11 +68,6 @@
             <th>Request date</th>
             <th>Status</th>
             <th>Resolution date</th>
-            <th>Public comments</th>
-            <th>Private notes</th>
-            {% if user_is_administrator %}
-            <th>Acept/Reject</th>
-            {% endif %}
         </tr>
       </thead>
       <tbody>
@@ -81,15 +76,10 @@
               <td><a href="{% url 'dssgmkt:user_profile' request.user.id %}">{{ request.user.first_name }} {{ request.user.last_name }}</a></td>
               <td><a href="{% url 'dssgmkt:user_profile' request.user.id %}">{{ request.user.email }}</a></td>
               <td>{{ request.request_date }}</td>
-              <td>{{ request.get_status_display }}</td>
-              <td>{{ request.resolution_date|default_if_none:"" }}</td>
-              <td>{{ request.public_reviewer_comments|default_if_none:"" }}</td>
-              <td>{{ request.private_reviewer_notes|default_if_none:"" }}</td>
-              {% if user_is_administrator %}
-              <td>{% if request.is_new %}
-                    <a href="{% url 'dssgmkt:org_staff_request_review' organization.id request.id %}">Accept/Reject</a>
+              <td><a href="{% url 'dssgmkt:org_staff_request_detail' organization.id request.id %}">{{ request.get_status_display }}</a></td>
+              <td>{% if not request.is_new %}
+                    {{ request.resolution_date|default_if_none:"" }}
                   {% endif %}</td>
-              {% endif %}
           </tr>
         {% endfor %}
       </tbody>

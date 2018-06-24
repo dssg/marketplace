@@ -183,7 +183,8 @@ class OrganizationMembershipRequest(models.Model):
     request_date = models.DateTimeField(
         verbose_name="Review date",
         help_text="Date and time in which the membership request was created",
-        auto_now_add=True)
+        auto_now_add=True,
+    )
     resolution_date = models.DateTimeField(
         verbose_name="Resolution date",
         help_text="Date and time in which the membership request was resolved",

@@ -17,15 +17,15 @@ class OrganizationService():
 
     @staticmethod
     def user_is_organization_member(user, org):
-        return OrganizationRole.objects.filter(organization=org, user=user).exists()
+        return user.is_authenticated and OrganizationRole.objects.filter(organization=org, user=user).exists()
 
     @staticmethod
     def user_is_organization_staff(user, org):
-        return OrganizationRole.objects.filter(organization=org, user=user, role=OrgRole.STAFF).exists()
+        return user.is_authenticated and OrganizationRole.objects.filter(organization=org, user=user, role=OrgRole.STAFF).exists()
 
     @staticmethod
     def user_is_organization_admin(user, org):
-        return OrganizationRole.objects.filter(organization=org, user=user, role=OrgRole.ADMINISTRATOR).exists()
+        return user.is_authenticated and OrganizationRole.objects.filter(organization=org, user=user, role=OrgRole.ADMINISTRATOR).exists()
 
     @staticmethod
     def get_organization_staff(request_user, org):

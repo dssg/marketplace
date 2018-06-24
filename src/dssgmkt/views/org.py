@@ -31,6 +31,10 @@ def organization_link(organization, include_link=True):
 def organization_staff_link(organization, include_link=True):
     return ('Staff', reverse('dssgmkt:org_staff', args=[organization.id]) if include_link else None)
 
+def organization_membership_request_link(membership_request, include_link=True):
+    return ('Membership request', reverse('dssgmkt:org_staff_request_detail',
+                                            args=[membership_request.organization.id, membership_request.id ]) if include_link else None)
+
 def organization_breadcrumb(organization, *items):
     breadcrumb_items = [home_link(),
                         organizations_link(),
@@ -171,6 +175,24 @@ class OrganizationMembershipRequestCreate(CreateView):
         except KeyError:
             raise Http404
 
+class OrganizationMembershipRequestView(PermissionRequiredMixin, generic.DetailView):
+    model = OrganizationMembershipRequest
+    template_name = 'dssgmkt/org_staff_request_detail.html'
+    pk_url_kwarg = 'request_pk'
+    permission_required = 'organization.membership_request_view'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        membership_request = self.object
+        organization = membership_request.organization
+        context['organization'] = organization
+        context['organization_tab'] = 'staff'
+        context['breadcrumb'] = organization_breadcrumb(organization,
+                                                        organization_staff_link(organization),
+                                                        ('Membership request', None))
+        add_organization_user_context(self.request, context, self.request.user, organization)
+        return context
+
 class OrganizationMembershipRequestForm(ModelForm):
     class Meta:
         model = OrganizationMembershipRequest
@@ -204,7 +226,8 @@ def process_organization_membership_request_view(request, org_pk, request_pk, ac
                         'organization_tab': 'staff',
                         'breadcrumb': organization_breadcrumb(organization,
                                                                 organization_staff_link(organization),
-                                                                ('Review membership request', None)),
+                                                                organization_membership_request_link(membership_request),
+                                                                ('Review request', None)),
                         'form': form,
                         }, request.user, organization))
 

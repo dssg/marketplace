@@ -1,0 +1,24 @@
+{% extends 'dssgmkt/org.html' %}
+
+{% block tabcontents %}
+  <h2>Membership request</h2>
+
+  <p>Full name:<a href="">{{ organizationmembershiprequest.user.first_name }} {{ organizationmembershiprequest.user.last_name }}</a></p>
+  <p>Email addres:<a href="">{{ organizationmembershiprequest.user.email }}</a></p>
+  <p>Request date: {{ organizationmembershiprequest.request_date }} </p>
+  <p>Request status: {{ organizationmembershiprequest.get_status_display }}
+      {% if organizationmembershiprequest.is_new and user_is_administrator %}
+        <a href="{% url 'dssgmkt:org_staff_request_review' organization.id organizationmembershiprequest.id %}">Accept/reject request<a>
+      {% endif %}
+  </p>
+  {% if not organizationmembershiprequest.is_new %}
+    <p>Resolution date: {{ organizationmembershiprequest.resolution_date }}</p>
+  {% endif %}
+  {% if organizationmembershiprequest.public_reviewer_comments %}
+    <p>Reviewer's comments: {{ organizationmembershiprequest.public_reviewer_comments }}</p>
+  {% endif %}
+  {% if user_is_member and organizationmembershiprequest.private_reviewer_notes %}
+    <p>Private reviewer's notes: {{ organizationmembershiprequest.private_reviewer_notes }}</p>
+  {% endif %}
+
+{% endblock %}

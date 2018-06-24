@@ -27,5 +27,5 @@
             formmethod="post">Reject membership request</button>
 
   </form>
-  <a href="{% url 'dssgmkt:org_staff' organization.id %}">Cancel</a>
+  <a href="{% url 'dssgmkt:org_staff_request_detail' organization.id organizationmembershiprequest.id %}">Cancel</a>
 {% endblock %}
