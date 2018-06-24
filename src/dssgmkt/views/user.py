@@ -25,11 +25,8 @@ from dssgmkt.domain.notifications import NotificationService
 def logout_view(request):
     logout(request)
     return HttpResponseRedirect(reverse('dssgmkt:home'))
-    # Redirect to a success page.
 
 def get_url_for_notification(source_type, source_id):
-    print(source_type)
-    print(source_id)
     url = None
     if source_id:
         if source_type == NotificationSource.GENERIC:

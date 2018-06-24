@@ -6,7 +6,7 @@ from ..models.org import (
     Organization, OrganizationMembershipRequest, OrganizationRole,
 )
 from ..models.user import (
-    NotificationSeverity, NotificationSource,
+    User, NotificationSeverity, NotificationSource,
 )
 from .notifications import NotificationService
 
@@ -30,6 +30,11 @@ class OrganizationService():
     @staticmethod
     def get_organization_staff(request_user, org):
         return org.organizationrole_set.order_by('role')
+
+    @staticmethod
+    def get_organization_admins(request_user, org):
+        # return OrganizationService.get_organization_staff(request_user, org).filter(role=OrgRole.ADMINISTRATOR)
+        return User.objects.filter(organizationrole__role=OrgRole.ADMINISTRATOR, organizationrole__organization=org)
 
     @staticmethod
     def get_membership_requests(request_user, org):
@@ -129,6 +134,12 @@ class OrganizationService():
             organization_role.delete()
             NotificationService.add_user_notification(request_user,
                                                         "You left " + organization_role.organization.name,
+                                                        NotificationSeverity.INFO,
+                                                        NotificationSource.ORGANIZATION,
+                                                        organization_role.organization.id)
+            admins = OrganizationService.get_organization_admins(request_user, organization_role.organization)
+            NotificationService.add_multiuser_notification(admins,
+                                                        organization_role.user.first_name + " " + organization_role.user.last_name + " left " + organization_role.organization.name,
                                                         NotificationSeverity.INFO,
                                                         NotificationSource.ORGANIZATION,
                                                         organization_role.organization.id)
