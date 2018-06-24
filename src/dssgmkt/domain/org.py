@@ -1,4 +1,4 @@
-from django.db import models, IntegrityError
+from django.db import models, IntegrityError, transaction
 from django.db.models import Case, Q, When
 
 from ..models.common import OrgRole, ReviewStatus
@@ -77,10 +77,11 @@ class OrganizationService():
     @staticmethod
     def save_membership_request(request_user, orgid, membership_request):
         if membership_request.organization.id == orgid:
-            membership_request.save()
-            if membership_request.status == ReviewStatus.ACCEPTED and not OrganizationService.user_is_organization_member(membership_request.user, membership_request.organization):
-                new_role = OrganizationRole(role = membership_request.role, user = membership_request.user, organization = membership_request.organization)
-                new_role.save()
+            with transaction.atomic():
+                membership_request.save()
+                if membership_request.status == ReviewStatus.ACCEPTED and not OrganizationService.user_is_organization_member(membership_request.user, membership_request.organization):
+                    new_role = OrganizationRole(role = membership_request.role, user = membership_request.user, organization = membership_request.organization)
+                    new_role.save()
         else:
             raise ValueError('Membership request does not match organization')
 
