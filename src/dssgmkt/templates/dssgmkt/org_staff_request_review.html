@@ -6,8 +6,10 @@
   <p>This person has requested to join your organization. Please review the
   application and accept or reject it.</p>
 
-  <p>Full name:<a href="">{{ organizationmembershiprequest.user.first_name }} {{ organizationmembershiprequest.user.last_name }}</a></p>
-  <p>Email addres:<a href="">{{ organizationmembershiprequest.user.email }}</a></p>
+  <p>Full name:<a href="{% url 'dssgmkt:user_profile' organizationmembershiprequest.user.id %}">
+    {{ organizationmembershiprequest.user.first_name }} {{ organizationmembershiprequest.user.last_name }}</a></p>
+  <p>Email addres:<a href="{% url 'dssgmkt:user_profile' organizationmembershiprequest.user.id %}">
+    {{ organizationmembershiprequest.user.email }}</a></p>
   <p>Request date: {{ organizationmembershiprequest.request_date }} </p>
 
   <form id="orgmembershiprequestreview">
