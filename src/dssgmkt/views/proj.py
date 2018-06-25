@@ -397,27 +397,12 @@ def project_staff_view(request, proj_pk):
         staff_paginator = Paginator(project_staff, staff_page_size)
         staff_page = staff_paginator.get_page(request.GET.get('staff_page', 1))
 
-        volunteers_page_size = 1
-        volunteers = ProjectTaskRole.objects.filter(task__project__id = proj_pk)
-        volunteers_paginator = Paginator(volunteers, volunteers_page_size)
-        volunteers_page = volunteers_paginator.get_page(request.GET.get('volunteers_page', 1))
-
-        applications_page_size = 50
-        volunteer_applications = VolunteerApplication.objects.filter(task__project__id = proj_pk).order_by(
-                Case(When(status=ReviewStatus.NEW, then=0),
-                     When(status=ReviewStatus.ACCEPTED, then=1),
-                     When(status=ReviewStatus.REJECTED, then=2)), '-application_date')
-        volunteer_applications_paginator = Paginator(volunteer_applications, applications_page_size)
-        applications_page = volunteer_applications_paginator.get_page(request.GET.get('applications_page', 1))
-
         return render(request, 'dssgmkt/proj_staff.html',
                             {'project': project,
                             'project_tab': 'staff',
-                            'breadcrumb': project_breadcrumb(project, 'Delete task'),
+                            'breadcrumb': project_breadcrumb(project, 'Staff'),
 
                             'project_staff': staff_page,
-                            'volunteers': volunteers_page,
-                            'volunteer_applications': applications_page,
 
                             'add_staff_form': CreateProjectRoleForm(),
 
@@ -433,6 +418,35 @@ def project_staff_view(request, proj_pk):
             project_role.save()
             return redirect('dssgmkt:proj_staff', proj_pk = proj_pk)
 
+
+
+def project_volunteers_view(request, proj_pk):
+    if request.method == 'GET':
+        project = get_object_or_404(Project, pk = proj_pk)
+
+        volunteers_page_size = 1
+        volunteers = ProjectTaskRole.objects.filter(task__project__id = proj_pk)
+        volunteers_paginator = Paginator(volunteers, volunteers_page_size)
+        volunteers_page = volunteers_paginator.get_page(request.GET.get('volunteers_page', 1))
+
+        applications_page_size = 50
+        volunteer_applications = VolunteerApplication.objects.filter(task__project__id = proj_pk).order_by(
+                Case(When(status=ReviewStatus.NEW, then=0),
+                     When(status=ReviewStatus.ACCEPTED, then=1),
+                     When(status=ReviewStatus.REJECTED, then=2)), '-application_date')
+        volunteer_applications_paginator = Paginator(volunteer_applications, applications_page_size)
+        applications_page = volunteer_applications_paginator.get_page(request.GET.get('applications_page', 1))
+
+        return render(request, 'dssgmkt/proj_volunteers.html',
+                            {'project': project,
+                            'project_tab': 'volunteers',
+                            'breadcrumb': project_breadcrumb(project, 'Volunteers'),
+
+                            'volunteers': volunteers_page,
+                            'volunteer_applications': applications_page,
+
+                            'user_is_project_owner': True, ## TODO remove this
+                            })
 
 
 class ProjectRoleEdit(SuccessMessageMixin, UpdateView):
@@ -487,7 +501,7 @@ class ProjectTaskRoleRemove(DeleteView):
         return get_object_or_404(ProjectTaskRole, pk = self.kwargs['task_role_pk'])
 
     def get_success_url(self):
-        return reverse('dssgmkt:proj_staff', args=[self.object.task.project.id])
+        return reverse('dssgmkt:proj_volunteers', args=[self.object.task.project.id])
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -497,7 +511,7 @@ class ProjectTaskRoleRemove(DeleteView):
         context['project_task'] = project_task
         context['project'] = project
         context['breadcrumb'] = project_breadcrumb(project, 'Remove volunteer')
-        context['organization_tab']='staff'
+        context['project_tab']='volunteers'
         return context
 
 class ProjectVolunteerApplicationEdit(UpdateView):
@@ -507,7 +521,7 @@ class ProjectVolunteerApplicationEdit(UpdateView):
     pk_url_kwarg = 'volunteer_application_pk'
 
     def get_success_url(self):
-        return reverse('dssgmkt:proj_staff', args=[self.kwargs['proj_pk']])
+        return reverse('dssgmkt:proj_volunteers', args=[self.kwargs['proj_pk']])
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -516,7 +530,7 @@ class ProjectVolunteerApplicationEdit(UpdateView):
         if volunteer_application and volunteer_application.task.id == self.kwargs['task_pk'] and volunteer_application.task.project.id == self.kwargs['proj_pk']:
             context['project'] = project
             context['breadcrumb'] = project_breadcrumb(project, 'Review volunteer')
-            context['project_tab']='staff'
+            context['project_tab']='volunteers'
             return context
         else:
             raise Http404

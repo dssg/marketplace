@@ -43,6 +43,7 @@ urlpatterns = [
     path('proj/<int:proj_pk>/staff', proj.project_staff_view, name='proj_staff'),
     path('proj/<int:proj_pk>/staff/<int:role_pk>/edit', proj.ProjectRoleEdit.as_view(), name='proj_staff_edit'),
     path('proj/<int:proj_pk>/staff/<int:role_pk>/remove', proj.ProjectRoleRemove.as_view(), name='proj_staff_remove'),
+    path('proj/<int:proj_pk>/volunteers', proj.project_volunteers_view, name='proj_volunteers'),
 
     path('logout/', user.logout_view, name='logout'),
     path('login/', auth_views.LoginView.as_view(template_name='dssgmkt/login.html'), name='login'),

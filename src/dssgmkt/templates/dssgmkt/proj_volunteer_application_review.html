@@ -21,6 +21,6 @@
             formaction="{% url 'dssgmkt:proj_volunteer_application_review' project.id volunteerapplication.task.id volunteerapplication.id %}"
             formmethod="post">Save</button>
   </form>
-  <a href="{% url 'dssgmkt:proj_staff' project.id %}">Cancel</a>
+  <a href="{% url 'dssgmkt:proj_volunteers' project.id %}">Cancel</a>
 
 {% endblock %}

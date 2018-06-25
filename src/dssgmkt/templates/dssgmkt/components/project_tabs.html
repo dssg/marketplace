@@ -29,6 +29,12 @@
   <a href="{% url 'dssgmkt:proj_staff' project.id %}">Staff</a>
 {% endif %}
 
+{% if project_tab == 'volunteers' %}
+  Volunteers
+{% else %}
+  <a href="{% url 'dssgmkt:proj_volunteers' project.id %}">Volunteers</a>
+{% endif %}
+
 {% if project_tab == 'instructions' %}
   Volunteer instructions
 {% else %}
