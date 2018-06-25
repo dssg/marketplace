@@ -1,0 +1,18 @@
+{% extends 'dssgmkt/proj.html' %}
+
+{% block tabcontents %}
+
+  <form id="edittaskvolunteer">
+    <h2>Edit task volunteer</h2>
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit"
+            form="edittaskvolunteer"
+            formaction="{% url 'dssgmkt:proj_volunteer_edit' projecttaskrole.task.project.id projecttaskrole.task.id projecttaskrole.id %}"
+            formmethod="post">
+      Save
+    </button>
+  </form>
+  <a href="{% url 'dssgmkt:proj_volunteers' project.id %}">Cancel</a>
+
+{% endblock %}

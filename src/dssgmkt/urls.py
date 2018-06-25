@@ -34,6 +34,7 @@ urlpatterns = [
     path('proj/<int:proj_pk>/task/<int:task_pk>/edit', proj.ProjectTaskEdit.as_view(), name='proj_task_edit'),
     path('proj/<int:proj_pk>/task/<int:task_pk>/delete', proj.ProjectTaskRemove.as_view(), name='proj_task_remove'),
     path('proj/<int:proj_pk>/task/<int:task_pk>/volunteer/<int:task_role_pk>', proj.ProjectTaskRoleRemove.as_view(), name='proj_volunteer_remove'),
+    path('proj/<int:proj_pk>/task/<int:task_pk>/volunteer/<int:task_role_pk>/edit', proj.ProjectTaskRoleEdit.as_view(), name='proj_volunteer_edit'),
     path('proj/<int:proj_pk>/task/<int:task_pk>/volunteer/application/<int:volunteer_application_pk>/review', proj.ProjectVolunteerApplicationEdit.as_view(), name='proj_volunteer_application_review'),
     path('proj/<int:proj_pk>/task/', proj.ProjectTaskIndex.as_view(), name='proj_task_list'),
     path('proj/<int:proj_pk>/task/add', proj.create_default_project_task, name='proj_task_add'),
@@ -44,6 +45,7 @@ urlpatterns = [
     path('proj/<int:proj_pk>/staff/<int:role_pk>/edit', proj.ProjectRoleEdit.as_view(), name='proj_staff_edit'),
     path('proj/<int:proj_pk>/staff/<int:role_pk>/remove', proj.ProjectRoleRemove.as_view(), name='proj_staff_remove'),
     path('proj/<int:proj_pk>/volunteers', proj.project_volunteers_view, name='proj_volunteers'),
+
 
     path('logout/', user.logout_view, name='logout'),
     path('login/', auth_views.LoginView.as_view(template_name='dssgmkt/login.html'), name='login'),

@@ -493,6 +493,40 @@ class ProjectRoleRemove(DeleteView):
         else:
             raise Http404
 
+class EditProjectTaskRoleForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(EditProjectTaskRoleForm, self).__init__(*args, **kwargs)
+        print(self.instance)
+        self.fields['task'].queryset = ProjectTask.objects.filter(project=self.instance.task.project)
+
+    class Meta:
+        model = ProjectTaskRole
+        fields = ['task']
+
+class ProjectTaskRoleEdit(SuccessMessageMixin, UpdateView):
+    model = ProjectTaskRole
+    form_class = EditProjectTaskRoleForm
+    template_name = 'dssgmkt/proj_task_volunteer_edit.html'
+    pk_url_kwarg = 'task_role_pk'
+    success_message = 'Volunteer edited successfully'
+
+    def get_success_url(self):
+        return reverse('dssgmkt:proj_volunteers', args=[self.object.task.project.id])
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        project_task_role = self.object
+        if project_task_role and project_task_role.task.id == self.kwargs['task_pk'] and project_task_role.task.project.id == self.kwargs['proj_pk']:
+            project_task = project_task_role.task
+            project = project_task.project
+            context['project'] = project
+            context['breadcrumb'] =  project_breadcrumb(project,
+                                                        ('Staff', reverse('dssgmkt:proj_staff', args=[project.id])))
+            context['project_tab'] = 'volunteers'
+            return context
+        else:
+            raise Http404
+
 class ProjectTaskRoleRemove(DeleteView):
     model = ProjectTaskRole
     template_name = 'dssgmkt/proj_volunteer_remove.html'
