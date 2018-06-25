@@ -239,7 +239,7 @@ class TaskType():
 
 class TaskStatus():
     NOT_STARTED='NOT'
-    ACCEPTING_VOLUNTEERS='AVL'
+    # ACCEPTING_VOLUNTEERS='AVL'
     STARTED='STA'
     WAITING_REVIEW='PRW'
     COMPLETED='COM'
@@ -248,7 +248,7 @@ class TaskStatus():
     def get_choices():
         return (
                     (TaskStatus.NOT_STARTED, 'Not started'),
-                    (TaskStatus.ACCEPTING_VOLUNTEERS, 'Accepting volunteers'),
+                    # (TaskStatus.ACCEPTING_VOLUNTEERS, 'Accepting volunteers'),
                     (TaskStatus.STARTED, 'Started'),
                     (TaskStatus.WAITING_REVIEW, 'Pending review'),
                     (TaskStatus.COMPLETED, 'Completed'),

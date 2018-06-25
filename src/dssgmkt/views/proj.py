@@ -73,7 +73,7 @@ class ProjectView(generic.ListView): ## This is a listview because it is actuall
     context_object_name = 'project_tasks'
 
     def get_queryset(self):
-        return ProjectTask.objects.filter(stage = TaskStatus.ACCEPTING_VOLUNTEERS,
+        return ProjectTask.objects.filter(accepting_volunteers = True,
                                           project = self.kwargs['proj_pk']).order_by('name')[:50]
 
     def get_context_data(self, **kwargs):
