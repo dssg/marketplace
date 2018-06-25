@@ -3,7 +3,6 @@ from datetime import date
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib import messages
 from django.core.exceptions import ValidationError
-from django.core.paginator import Paginator
 from django.db.models import Case, Q, When
 from django.forms import ModelForm
 from django.http import Http404, HttpResponseRedirect
@@ -20,7 +19,7 @@ from ..models.org import (
     Organization, OrganizationMembershipRequest, OrganizationRole,
 )
 from dssgmkt.domain.org import OrganizationService
-from .common import build_breadcrumb, home_link
+from .common import build_breadcrumb, home_link, paginate
 
 
 def organizations_link(include_link=True):
@@ -35,7 +34,7 @@ def organization_staff_link(organization, include_link=True):
 def organization_membership_request_link(membership_request, include_link=True):
     return ('Membership request', reverse('dssgmkt:org_staff_request_detail',
                                             args=[membership_request.organization.id, membership_request.id ]) if include_link else None)
-                                            
+
 def organization_breadcrumb(organization, *items):
     breadcrumb_items = [home_link(),
                         organizations_link(),
@@ -64,6 +63,7 @@ def get_organization_role(request, org_pk, user_pk):
         return role
     else:
         raise Http404
+
 
 class OrganizationIndexView(generic.ListView):
     template_name = 'dssgmkt/org_list.html'
@@ -97,11 +97,9 @@ class OrganizationView(generic.DetailView):
         context['organization_tab'] = 'info'
         context['breadcrumb'] = organization_breadcrumb(self.object)
 
-        projects_page_size = 25
         projects = self.object.project_set.all() # TODO move this query to the project domain
-        projects_paginator = Paginator(projects, projects_page_size)
-        projects_page = projects_paginator.get_page(self.request.GET.get('projects_page', 1))
-        context['projects'] = projects_page
+        context['projects'] = paginate(self.request, projects, request_key='projects_page', page_size=25)
+
         add_organization_user_context(self.request, context, self.request.user, self.object)
         context['user_is_pending_membership'] = OrganizationService.user_is_pending_membership(self.request.user, self.object)
 
@@ -151,15 +149,12 @@ def organization_staff_view(request, org_pk):
     elif request.method == 'GET':
         form = CreateOrganizationRoleForm()
     organization = get_organization(request, org_pk)
-    staff_page_size = 25
-    organization_staff = OrganizationService.get_organization_staff(request.user, organization)
-    staff_paginator = Paginator(organization_staff, staff_page_size)
-    staff_page = staff_paginator.get_page(request.GET.get('staff_page', 1))
 
-    requests_page_size = 25
+    organization_staff = OrganizationService.get_organization_staff(request.user, organization)
+    staff_page = paginate(request, organization_staff, request_key='staff_page', page_size=25)
+
     organization_requests = OrganizationService.get_membership_requests(request.user, organization)
-    requests_paginator = Paginator(organization_requests, requests_page_size)
-    requests_page = requests_paginator.get_page(request.GET.get('requests_page', 1))
+    requests_page = paginate(request, organization_requests, request_key='requests_page', page_size=25)
 
     return render(request, 'dssgmkt/org_staff.html',
                     add_organization_user_context(
