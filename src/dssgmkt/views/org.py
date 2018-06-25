@@ -80,11 +80,11 @@ class OrganizationIndexView(generic.ListView):
                                                   organizations_link(False)])
         return context
 
-def add_organization_user_context(request, context, user, organization):
-    if not user.is_anonymous:
-        context['user_is_staff'] = OrganizationService.user_is_organization_staff(user, organization)
-        context['user_is_administrator'] = OrganizationService.user_is_organization_admin(user, organization)
-        context['user_is_member'] = OrganizationService.user_is_organization_member(user, organization)
+def add_organization_user_context(request, context, organization):
+    if not request.user.is_anonymous:
+        context['user_is_staff'] = OrganizationService.user_is_organization_staff(request.user, organization)
+        context['user_is_administrator'] = OrganizationService.user_is_organization_admin(request.user, organization)
+        context['user_is_member'] = OrganizationService.user_is_organization_member(request.user, organization)
     return context
 
 class OrganizationView(generic.DetailView):
@@ -100,7 +100,7 @@ class OrganizationView(generic.DetailView):
         projects = self.object.project_set.all() # TODO move this query to the project domain
         context['projects'] = paginate(self.request, projects, request_key='projects_page', page_size=25)
 
-        add_organization_user_context(self.request, context, self.request.user, self.object)
+        add_organization_user_context(self.request, context, self.object)
         context['user_is_pending_membership'] = OrganizationService.user_is_pending_membership(self.request.user, self.object)
 
         return context
@@ -122,7 +122,7 @@ class OrganizationEdit(PermissionRequiredMixin, UpdateView):
         context['breadcrumb'] = organization_breadcrumb(organization,
                                                         ('Edit information', None))
         context['organization_tab']='info'
-        add_organization_user_context(self.request, context, self.request.user, organization)
+        add_organization_user_context(self.request, context, organization)
         return context
 
 
@@ -165,7 +165,7 @@ def organization_staff_view(request, org_pk):
                         'organization_staff': staff_page,
                         'organization_requests': requests_page,
                         'add_staff_form': form,
-                        }, request.user, organization))
+                        }, organization))
 
 
 
@@ -184,7 +184,7 @@ class OrganizationMembershipRequestCreate(CreateView):
         context['breadcrumb'] = organization_breadcrumb(organization,
                                                         ('Request membership', None))
         context['organization_tab']='info'
-        add_organization_user_context(self.request, context, self.request.user, organization)
+        add_organization_user_context(self.request, context, organization)
         return context
 
     def form_valid(self, form):
@@ -212,7 +212,7 @@ class OrganizationMembershipRequestView(PermissionRequiredMixin, generic.DetailV
         context['breadcrumb'] = organization_breadcrumb(organization,
                                                         organization_staff_link(organization),
                                                         ('Membership request', None))
-        add_organization_user_context(self.request, context, self.request.user, organization)
+        add_organization_user_context(self.request, context, organization)
         return context
 
 class OrganizationMembershipRequestForm(ModelForm):
@@ -253,7 +253,7 @@ def process_organization_membership_request_view(request, org_pk, request_pk, ac
                                                                 organization_membership_request_link(membership_request),
                                                                 ('Review request', None)),
                         'form': form,
-                        }, request.user, organization))
+                        }, organization))
 
 
 class OrganizationRoleEdit(PermissionRequiredMixin, UpdateView):
@@ -276,7 +276,7 @@ class OrganizationRoleEdit(PermissionRequiredMixin, UpdateView):
                                                             organization_staff_link(organization),
                                                             ('Edit', None))
             context['organization_tab']='staff'
-            add_organization_user_context(self.request, context, self.request.user, organization)
+            add_organization_user_context(self.request, context, organization)
             return context
         else:
             raise Http404
@@ -312,7 +312,7 @@ class OrganizationLeave(PermissionRequiredMixin, DeleteView):
             context['breadcrumb'] = organization_breadcrumb(organization,
                                                             ('Leave organization', None))
             context['organization_tab']='info'
-            add_organization_user_context(self.request, context, self.request.user, organization)
+            add_organization_user_context(self.request, context, organization)
             return context
         else:
             raise Http404
@@ -347,7 +347,7 @@ class OrganizationRoleRemove(PermissionRequiredMixin, DeleteView):
                                                             organization_staff_link(organization),
                                                             ('Remove staff member', None))
             context['organization_tab']='staff'
-            add_organization_user_context(self.request, context, self.request.user, organization)
+            add_organization_user_context(self.request, context, organization)
             return context
         else:
             raise Http404
