@@ -35,13 +35,35 @@ def organization_staff_link(organization, include_link=True):
 def organization_membership_request_link(membership_request, include_link=True):
     return ('Membership request', reverse('dssgmkt:org_staff_request_detail',
                                             args=[membership_request.organization.id, membership_request.id ]) if include_link else None)
-
+                                            
 def organization_breadcrumb(organization, *items):
     breadcrumb_items = [home_link(),
                         organizations_link(),
                         organization_link(organization, items)]
     breadcrumb_items += items
     return build_breadcrumb(breadcrumb_items)
+
+
+def get_organization(request, org_pk):
+    organization = OrganizationService.get_organization(request.user, org_pk)
+    if organization:
+        return organization
+    else:
+        raise Http404
+
+def get_organization_membership_request(request, request_pk):
+    membership_request = OrganizationService.get_organization_membership_request(request.user, request_pk)
+    if membership_request:
+        return membership_request
+    else:
+        raise Http404
+
+def get_organization_role(request, org_pk, user_pk):
+    role = OrganizationService.get_organization_role(request.user, org_pk, user_pk)
+    if role:
+        return role
+    else:
+        raise Http404
 
 class OrganizationIndexView(generic.ListView):
     template_name = 'dssgmkt/org_list.html'
@@ -97,7 +119,7 @@ class OrganizationEdit(PermissionRequiredMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        organization = get_object_or_404(Organization, pk=self.kwargs['org_pk'])
+        organization = get_organization(self.request, self.kwargs['org_pk'])
         context['organization'] = organization
         context['breadcrumb'] = organization_breadcrumb(organization,
                                                         ('Edit information', None))
@@ -128,7 +150,7 @@ def organization_staff_view(request, org_pk):
                 form.add_error(None, "This user is already a member of the organization.")
     elif request.method == 'GET':
         form = CreateOrganizationRoleForm()
-    organization = get_object_or_404(Organization, pk=org_pk) # TODO move this check to the organization service
+    organization = get_organization(request, org_pk)
     staff_page_size = 25
     organization_staff = OrganizationService.get_organization_staff(request.user, organization)
     staff_paginator = Paginator(organization_staff, staff_page_size)
@@ -162,7 +184,7 @@ class OrganizationMembershipRequestCreate(CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        organization = get_object_or_404(Organization, pk=self.kwargs['org_pk'])
+        organization = get_organization(self.request, self.kwargs['org_pk'])
         context['organization'] = organization
         context['breadcrumb'] = organization_breadcrumb(organization,
                                                         ('Request membership', None))
@@ -206,7 +228,7 @@ class OrganizationMembershipRequestForm(ModelForm):
 
 @permission_required('organization.membership_review', fn=objectgetter(OrganizationMembershipRequest, 'request_pk'))
 def process_organization_membership_request_view(request, org_pk, request_pk, action=None):
-    membership_request = get_object_or_404(OrganizationMembershipRequest, pk=request_pk)
+    membership_request = get_organization_membership_request(request, request_pk)
     if request.method == 'POST':
         form = OrganizationMembershipRequestForm(request.POST, instance=membership_request)
         if form.is_valid():
@@ -223,7 +245,7 @@ def process_organization_membership_request_view(request, org_pk, request_pk, ac
                 raise Http404
     elif request.method == 'GET':
         form = OrganizationMembershipRequestForm()
-    organization = get_object_or_404(Organization, pk=org_pk) # TODO move this check to the organization service
+    organization = get_organization(request, org_pk)
 
     return render(request, 'dssgmkt/org_staff_request_review.html',
                     add_organization_user_context(
@@ -281,7 +303,7 @@ class OrganizationLeave(PermissionRequiredMixin, DeleteView):
     permission_required = 'organization.membership_leave'
 
     def get_object(self):
-        return get_object_or_404(OrganizationRole, organization=self.kwargs['org_pk'], user=self.request.user.id)
+        return get_organization_role(self.request, self.kwargs['org_pk'], self.request.user.id)
 
     def get_success_url(self):
         return reverse('dssgmkt:org_info', args=[self.object.organization.id])

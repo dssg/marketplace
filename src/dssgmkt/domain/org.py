@@ -16,6 +16,18 @@ class OrganizationService():
         return Organization.objects.order_by('name')
 
     @staticmethod
+    def get_organization(request_user, org_pk):
+        return Organization.objects.get(pk=org_pk)
+
+    @staticmethod
+    def get_organization_membership_request(request_user, request_pk):
+        return OrganizationMembershipRequest.objects.get(pk=request_pk)
+
+    @staticmethod
+    def get_organization_role(request_user, org_pk, user_pk):
+        return OrganizationRole.objects.get(organization=org_pk, user=user_pk)
+
+    @staticmethod
     def user_is_organization_member(user, org):
         return user.is_authenticated and OrganizationRole.objects.filter(organization=org, user=user).exists()
 
