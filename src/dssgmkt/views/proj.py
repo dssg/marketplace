@@ -27,6 +27,31 @@ from .common import build_breadcrumb, home_link
 def projects_link(include_link=True):
     return ('Projects', reverse('dssgmkt:proj_list') if include_link else None)
 
+def project_link(project, include_link=True):
+    return (project.name, reverse('dssgmkt:proj_info', args=[project.id]) if include_link else None)
+
+def staff_link(project, include_link=True):
+    return ('Staff', reverse('dssgmkt:proj_staff', args=[project.id]) if include_link else None)
+
+def volunteers_link(project, include_link=True):
+    return ('Volunteers', reverse('dssgmkt:proj_volunteers', args=[project.id]) if include_link else None)
+
+def volunteer_instructions_link(project, include_link=True):
+    return ('Volunteer instructions', reverse('dssgmkt:proj_instructions', args=[project.id]) if include_link else None)
+
+def tasks_link(project, include_link=True):
+    return ('Tasks', reverse('dssgmkt:proj_task_list', args=[project.id]) if include_link else None)
+
+def edit_task_requirements_link(project, task, include_link=True):
+    return ('Edit project task requirements', reverse('dssgmkt:proj_task_requirements_edit', args=[project.id, task.id]) if include_link else None)
+
+def project_breadcrumb(project, *items):
+    breadcrumb_items = [home_link(),
+                        projects_link(),
+                        project_link(project, items)]
+    breadcrumb_items += items
+    return build_breadcrumb(breadcrumb_items)
+
 class ProjectIndexView(generic.ListView):
     template_name = 'dssgmkt/proj_list.html'
     context_object_name = 'proj_list'
@@ -40,15 +65,6 @@ class ProjectIndexView(generic.ListView):
         context['breadcrumb'] = build_breadcrumb([home_link(),
                                                   projects_link(False)])
         return context
-
-
-def project_breadcrumb(project, last_text = None):
-    breadcrumb_items = [home_link(),
-                        projects_link(),
-                        (project.name , reverse('dssgmkt:proj_info', args=[project.id]) if last_text else None)]
-    if last_text:
-        breadcrumb_items.append((last_text, None))
-    return build_breadcrumb(breadcrumb_items)
 
 
 class ProjectView(generic.ListView): ## This is a listview because it is actually showing the list of open tasks
@@ -84,7 +100,7 @@ class ProjectLogView(generic.ListView):
         context = super().get_context_data(**kwargs)
         project_pk = self.kwargs['proj_pk']
         project = get_object_or_404(Project, pk = project_pk)
-        context['breadcrumb'] = project_breadcrumb(project, 'Change log')
+        context['breadcrumb'] = project_breadcrumb(project, ('Change log', None))
         context['project'] = project
         context['project_tab'] = 'log'
         return context
@@ -99,7 +115,7 @@ class ProjectDeliverablesView(generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['project_tab'] = 'deliverables'
-        context['breadcrumb'] = project_breadcrumb(context['project'], 'Project deliverables')
+        context['breadcrumb'] = project_breadcrumb(context['project'], ('Project deliverables', None))
         context['project'] = self.object
         return context
 
@@ -121,7 +137,7 @@ class ProjectVolunteerInstructionsView(generic.DetailView):
         else:
             project = self.object.project
         context['project_tab'] = 'instructions'
-        context['breadcrumb'] = project_breadcrumb(project, 'Volunteer instructions')
+        context['breadcrumb'] = project_breadcrumb(project, ('Volunteer instructions', None))
         context['project'] = project
         context['project_task'] = self.object
         return context
@@ -144,7 +160,9 @@ class ProjectTaskReviewCreate(CreateView):
         project_task = get_object_or_404(ProjectTask, pk=self.kwargs['task_pk'])
         context['project'] = project_task.project
         context['project_task'] = project_task
-        context['breadcrumb'] = project_breadcrumb(project_task.project, 'Volunteer instructions')
+        context['breadcrumb'] = project_breadcrumb(project_task.project,
+                                                    volunteer_instructions_link(project_task.project),
+                                                    ('Mark work as completed', None))
         context['organization_tab']='instructions'
         return context
 
@@ -178,7 +196,9 @@ class ProjectTaskCancel(DeleteView):
         project = project_task.project
         context['project_task'] = project_task
         context['project'] = project
-        context['breadcrumb'] = project_breadcrumb(project, 'Stop volunteering')
+        context['breadcrumb'] = project_breadcrumb(project,
+                                                    volunteer_instructions_link(project_task.project),
+                                                    ('Stop volunteering', None))
         context['organization_tab']='instructions'
         return context
 
@@ -197,7 +217,7 @@ class ProjectTaskApply(CreateView):
         project = get_object_or_404(Project, pk=self.kwargs['proj_pk'])
         context['project'] = project
         context['project_task'] = project_task
-        context['breadcrumb'] = project_breadcrumb(project, 'Apply to volunteer')
+        context['breadcrumb'] = project_breadcrumb(project, ('Apply to volunteer', None))
         context['project_tab']='info'
         return context
 
@@ -225,7 +245,7 @@ class ProjectTaskIndex(generic.ListView):
         project = get_object_or_404(Project, pk = self.kwargs['proj_pk'])
         context['project'] = project
         context['project_tab'] = 'tasklist'
-        context['breadcrumb'] = project_breadcrumb(project, 'Tasks')
+        context['breadcrumb'] = project_breadcrumb(project, tasks_link(project, include_link=False))
         return context
 
 
@@ -245,7 +265,9 @@ class ProjectTaskEdit(UpdateView):
         project = get_object_or_404(Project, pk=self.kwargs['proj_pk'])
         context['project'] = project
         context['project_task'] = self.object
-        context['breadcrumb'] = project_breadcrumb(project, 'Edit project task')
+        context['breadcrumb'] = project_breadcrumb(project,
+                                                    tasks_link(project),
+                                                    ('Edit project task', None))
         context['project_tab']='tasklist'
         return context
 
@@ -266,7 +288,7 @@ class ProjectEdit(UpdateView):
         context = super().get_context_data(**kwargs)
         project = get_object_or_404(Project, pk=self.kwargs['proj_pk'])
         context['project'] = project
-        context['breadcrumb'] = project_breadcrumb(project, 'Edit project information')
+        context['breadcrumb'] = project_breadcrumb(project, ('Edit project information', None))
         context['project_tab']='info'
         return context
 
@@ -279,13 +301,17 @@ class CreateTaskRequirementForm(ModelForm):
 def project_task_requirements_edit_view(request, proj_pk, task_pk):
     if request.method == 'GET':
         task_requirements = ProjectTaskRequirement.objects.filter(task = task_pk)
+        task = get_object_or_404(ProjectTask, pk = task_pk)
         project = get_object_or_404(Project, pk = proj_pk)
         return render(request, 'dssgmkt/proj_task_requirements_edit.html',
                             {
                             'project': project,
-                            'project_task': get_object_or_404(ProjectTask, pk = task_pk),
+                            'project_tab': 'tasklist',
+                            'project_task': task,
                             'task_requirements': task_requirements,
-                            'breadcrumb': project_breadcrumb(project, 'Edit project task requirements'),
+                            'breadcrumb': project_breadcrumb(project,
+                                                                tasks_link(project),
+                                                                edit_task_requirements_link(project, task, include_link=False)),
                             'add_requirement_form': CreateTaskRequirementForm()
                             })
     ## TODO this is a security hole as anybody can post to this view and create new skills
@@ -316,7 +342,11 @@ class ProjectTaskRequirementEdit(UpdateView):
             context['project'] = project
             context['project_task'] = project_task
             context['task_requirement'] = task_requirement
-            context['breadcrumb'] =  project_breadcrumb(project, 'Edit project task requirement')
+            context['project_tab'] = 'tasklist'
+            context['breadcrumb'] =  project_breadcrumb(project,
+                                                            tasks_link(project),
+                                                            edit_task_requirements_link(project, project_task),
+                                                            ('Edit requirement', None))
             return context
         else:
             raise Http404
@@ -338,7 +368,11 @@ class ProjectTaskRequirementRemove(DeleteView):
             context['project'] = project
             context['project_task'] = project_task
             context['task_requirement'] = task_requirement
-            context['breadcrumb'] =  project_breadcrumb(project, 'Edit project task requirement')
+            context['project_tab'] = 'tasklist'
+            context['breadcrumb'] =  project_breadcrumb(project,
+                                                            tasks_link(project),
+                                                            edit_task_requirements_link(project, project_task),
+                                                            ('Remove requirement', None))
             return context
         else:
             raise Http404
@@ -358,7 +392,10 @@ class ProjectTaskRemove(DeleteView):
             project = project_task.project
             context['project'] = project
             context['project_task'] = project_task
-            context['breadcrumb'] =  project_breadcrumb(project, 'Delete task')
+            context['project_tab'] = 'tasklist'
+            context['breadcrumb'] =  project_breadcrumb(project,
+                                                            tasks_link(project),
+                                                            ('Delete task', None))
             return context
         else:
             raise Http404
@@ -368,7 +405,7 @@ def create_default_project_task(request, proj_pk):
     if request.method == 'GET':
         raise Http404
     ## TODO this is a security hole as anybody can post to this view and create new skills
-    elif request.method == 'POST':
+    elif request.method == 'POST': ## TODO move this to the ProjectTaskService in the domain logic layer
         project_task = ProjectTask()
         project_task.name = 'New project task'
         project_task.description = 'This is the task description'
@@ -400,7 +437,7 @@ def project_staff_view(request, proj_pk):
         return render(request, 'dssgmkt/proj_staff.html',
                             {'project': project,
                             'project_tab': 'staff',
-                            'breadcrumb': project_breadcrumb(project, 'Staff'),
+                            'breadcrumb': project_breadcrumb(project, ('Staff', None)),
 
                             'project_staff': staff_page,
 
@@ -440,7 +477,7 @@ def project_volunteers_view(request, proj_pk):
         return render(request, 'dssgmkt/proj_volunteers.html',
                             {'project': project,
                             'project_tab': 'volunteers',
-                            'breadcrumb': project_breadcrumb(project, 'Volunteers'),
+                            'breadcrumb': project_breadcrumb(project, ('Volunteers', None)),
 
                             'volunteers': volunteers_page,
                             'volunteer_applications': applications_page,
@@ -466,7 +503,8 @@ class ProjectRoleEdit(SuccessMessageMixin, UpdateView):
             project = self.object.project
             context['project'] = project
             context['breadcrumb'] =  project_breadcrumb(project,
-                                                        ('Staff', reverse('dssgmkt:proj_staff', args=[self.object.project.id])))
+                                                        staff_link(project),
+                                                        ('Edit staff member', None))
             context['project_tab'] = 'staff'
             return context
         else:
@@ -487,7 +525,8 @@ class ProjectRoleRemove(DeleteView):
             project = self.object.project
             context['project'] = project
             context['breadcrumb'] =  project_breadcrumb(project,
-                                                        ('Staff', reverse('dssgmkt:proj_staff', args=[self.object.project.id])))
+                                                        staff_link(project),
+                                                        ('Remove staff member', None))
             context['project_tab']='staff'
             return context
         else:
@@ -521,7 +560,8 @@ class ProjectTaskRoleEdit(SuccessMessageMixin, UpdateView):
             project = project_task.project
             context['project'] = project
             context['breadcrumb'] =  project_breadcrumb(project,
-                                                        ('Staff', reverse('dssgmkt:proj_staff', args=[project.id])))
+                                                        volunteers_link(project),
+                                                        ('Change volunteer task', None))
             context['project_tab'] = 'volunteers'
             return context
         else:
@@ -544,7 +584,9 @@ class ProjectTaskRoleRemove(DeleteView):
         project = project_task.project
         context['project_task'] = project_task
         context['project'] = project
-        context['breadcrumb'] = project_breadcrumb(project, 'Remove volunteer')
+        context['breadcrumb'] = project_breadcrumb(project,
+                                                    volunteers_link(project),
+                                                    ('Remove volunteer', None))
         context['project_tab']='volunteers'
         return context
 
@@ -563,7 +605,9 @@ class ProjectVolunteerApplicationEdit(UpdateView):
         volunteer_application = self.object
         if volunteer_application and volunteer_application.task.id == self.kwargs['task_pk'] and volunteer_application.task.project.id == self.kwargs['proj_pk']:
             context['project'] = project
-            context['breadcrumb'] = project_breadcrumb(project, 'Review volunteer')
+            context['breadcrumb'] = project_breadcrumb(project,
+                                                        volunteers_link(project),
+                                                        ('Review volunteer', None))
             context['project_tab']='volunteers'
             return context
         else:
