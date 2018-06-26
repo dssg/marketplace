@@ -2,6 +2,7 @@ from datetime import date
 
 from django.contrib.auth import logout
 from django.contrib.messages.views import SuccessMessageMixin
+from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db.models import Case, Q, When
@@ -145,15 +146,18 @@ def add_project_comment(request, proj_pk):
     if request.method == 'GET':
         raise Http404
     ## TODO this is a security hole as anybody can post to this view and create new skills
-    elif request.method == 'POST': ## TODO move this to the ProjectService in the domain logic layer
+    elif request.method == 'POST': 
         form = CreateProjectCommentForm(request.POST)
-        if form.is_valid:
+        if form.is_valid():
             project_comment = form.save(commit = False)
-            project = get_object_or_404(Project, pk = proj_pk)
-            project_comment.project = project
-            project_comment.author = request.user
-            project_comment.save()
-            return redirect('dssgmkt:proj_discussion', proj_pk = proj_pk)
+            try:
+                ProjectService.add_project_comment(request.user, proj_pk, project_comment)
+                messages.info(request, 'Comment added successfuly')
+                return redirect('dssgmkt:proj_discussion', proj_pk = proj_pk)
+            except KeyError:
+                raise Http404
+            except ValueError:
+                form.add_error(None, "Invalid comment.")
 
 class ProjectDeliverablesView(generic.DetailView):
     model = Project

@@ -48,7 +48,18 @@ class ProjectService():
     def get_project_comments(request_user, proj):
         return ProjectComment.objects.filter(project = proj).order_by('-comment_date')
 
-
+    @staticmethod
+    def add_project_comment(request_user, projid, project_comment):
+        project = Project.objects.get(pk=projid)
+        if project:
+            project_comment.project = project
+            project_comment.author = request_user
+            try:
+                project_comment.save()
+            except IntegrityError:
+                raise ValueError('Cannot save comment')
+        else:
+            raise KeyError('Project not found ' + str(projid))
 
 class ProjectTaskService():
     @staticmethod
