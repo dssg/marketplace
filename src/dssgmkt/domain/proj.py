@@ -1,7 +1,7 @@
 
 
 from ..models.proj import (
-    Project, ProjectStatus, ProjectRole, ProjRole, ProjectFollower, ProjectLog,
+    Project, ProjectStatus, ProjectRole, ProjRole, ProjectFollower, ProjectLog, ProjectComment,
     ProjectTask,
 )
 
@@ -40,9 +40,13 @@ class ProjectService():
         return user.is_authenticated and ProjectFollower.objects.filter(project=proj, user=user).exists()
 
     @staticmethod
-    def get_project_changes(user, proj):
+    def get_project_changes(request_user, proj):
         ## verify user permissions
         return ProjectLog.objects.filter(project = proj).order_by('-change_date')
+
+    @staticmethod
+    def get_project_comments(request_user, proj):
+        return ProjectComment.objects.filter(project = proj).order_by('-comment_date')
 
 
 
