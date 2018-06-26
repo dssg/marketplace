@@ -35,27 +35,32 @@
   {% endif %}
 
   <h3>Organization's projects</h3>
-  <table>
-    <thead>
-      <tr>
-          <th>Project name</th>
-          <th>Summary</th>
-          <th>Status</th>
-          <th>Social impact area</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for project in projects %}
+
+  {% if projects %}
+    <table>
+      <thead>
         <tr>
-            <td><a href="{% url 'dssgmkt:proj_info' project.id %}">{{ project.name }}</a></td>
-            <td>{{ project.summary }}</td>
-            <td>{{ project.get_status_display }}</td>
-            <td>{{ project.get_project_cause_display }}</td>
+            <th>Project name</th>
+            <th>Summary</th>
+            <th>Status</th>
+            <th>Social impact area</th>
         </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  {% url 'dssgmkt:org_info' as org_info_url %}
-  {% include 'dssgmkt/components/pagination.html' with baseurl=org_info_url page_obj=projects pagename='projects_page' %}
+      </thead>
+      <tbody>
+        {% for project in projects %}
+          <tr>
+              <td><a href="{% url 'dssgmkt:proj_info' project.id %}">{{ project.name }}</a></td>
+              <td>{{ project.summary }}</td>
+              <td>{{ project.get_status_display }}</td>
+              <td>{{ project.get_project_cause_display }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% url 'dssgmkt:org_info' as org_info_url %}
+    {% include 'dssgmkt/components/pagination.html' with baseurl=org_info_url page_obj=projects pagename='projects_page' %}
+  {% else %}
+    This organization has not posted any project yet.
+  {% endif %}
 
 {% endblock %}
