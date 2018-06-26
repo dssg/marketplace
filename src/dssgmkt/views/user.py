@@ -44,6 +44,21 @@ def get_url_for_notification(source_type, source_id):
             url = reverse('dssgmkt:org_staff_request_detail', args=[membership_request.organization.id, source_id])
     return url
 
+class VolunteerIndexView(generic.ListView):
+    template_name = 'dssgmkt/volunteer_list.html'
+    context_object_name = 'volunteer_list'
+    paginate_by = 1
+
+    def get_queryset(self):
+        return VolunteerProfile.objects.order_by('user__first_name', 'user__last_name')[:50]
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['breadcrumb'] = build_breadcrumb([home_link(),
+                                                  ('Volunteers', None)])
+        return context
+
+
 class UserHomeView(generic.ListView): ## This is a listview because it is actually showing the list of user notifications
     model = UserNotification
     template_name = 'dssgmkt/home_user.html'

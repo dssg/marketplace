@@ -1,0 +1,43 @@
+{% extends 'dssgmkt/base.html' %}
+
+{% block pagecontents %}
+  <form>
+    <h2>Filter</h2>
+    <label for="username">
+      User name
+      <input type="text" id="username" name="username" placeholder=""></input></label>
+    <label for="skills">
+      Skills
+      <input type="text" id="skills" name="skills" placeholder=""></input></label>
+
+    <button type="submit">Apply filters</button>
+  </form>
+
+  {% if volunteer_list %}
+    <table>
+      <thead>
+        <tr>
+            <th>First name</th>
+            <th>Last name</th>
+            <th>Email address</th>
+            <th>Member since</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for volunteer in volunteer_list %}
+          <tr>
+              <td><a href="{% url 'dssgmkt:user_profile' volunteer.user.id %}">{{ volunteer.user.first_name }}</a></td>
+              <td><a href="{% url 'dssgmkt:user_profile' volunteer.user.id %}">{{ volunteer.user.last_name }}</a></td>
+              <td><a href="{% url 'dssgmkt:user_profile' volunteer.user.id %}">{{ volunteer.user.email }}</a></td>
+              <td>{{ volunteer.user.date_joined }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% url 'dssgmkt:volunteer_list' as volunteer_list_url %}
+    {% include 'dssgmkt/components/pagination.html' with baseurl=volunteer_list_url %}
+
+  {% else %}
+    <p>No volunteers found.</p>
+  {% endif %}
+{% endblock %}
