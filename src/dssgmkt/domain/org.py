@@ -9,6 +9,7 @@ from ..models.user import (
     User, NotificationSeverity, NotificationSource,
 )
 from .notifications import NotificationService
+from .proj import ProjectService
 
 class OrganizationService():
     @staticmethod
@@ -46,6 +47,13 @@ class OrganizationService():
     @staticmethod
     def get_organization_staff(request_user, org):
         return org.organizationrole_set.order_by('role')
+
+    @staticmethod
+    def get_organization_projects(request_user, org):
+        if OrganizationService.user_is_organization_member(request_user, org):
+            return ProjectService.get_all_organization_projects(request_user, org)
+        else:
+            return ProjectService.get_organization_public_projects(request_user, org)
 
     @staticmethod
     def get_organization_admins(request_user, org):

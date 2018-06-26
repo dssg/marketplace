@@ -97,12 +97,13 @@ class OrganizationView(generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['breadcrumb'] = organization_breadcrumb(self.object)
+        organization = self.object
 
-        projects = self.object.project_set.all() # TODO move this query to the project domain
+        projects = OrganizationService.get_organization_projects(self.request.user, organization)
         context['projects'] = paginate(self.request, projects, request_key='projects_page', page_size=25)
 
         add_organization_common_context(self.request, self.object, 'info', context)
-        context['user_is_pending_membership'] = OrganizationService.user_is_pending_membership(self.request.user, self.object)
+        context['user_is_pending_membership'] = OrganizationService.user_is_pending_membership(self.request.user, organization)
 
         return context
 
