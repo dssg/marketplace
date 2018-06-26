@@ -167,16 +167,16 @@ LOGGING = {
         'django': {
             'handlers':['console'],
             'propagate': True,
-            'level':'WARN',
+            'level':config('DJANGO_LOG_LEVEL', default='WARN'),
         },
         'django.db.backends': {
             'handlers': ['console'],
-            'level': 'DEBUG',
+            'level': config('DJANGO_DB_LOG_LEVEL', default='WARN'),
             'propagate': False,
         },
         'dssgmkt': {
             'handlers': ['console', 'logfile'],
-            'level': 'DEBUG',
+            'level': config('DSSG_LOG_LEVEL', default='WARN'),
         },
     }
 }
