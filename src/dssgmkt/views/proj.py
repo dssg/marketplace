@@ -22,6 +22,7 @@ from ..models.proj import (
     ProjectTaskReview, ProjectTaskRole, VolunteerApplication,
 )
 from .common import build_breadcrumb, home_link
+from dssgmkt.domain.proj import ProjectService
 
 
 def projects_link(include_link=True):
@@ -105,6 +106,11 @@ class ProjectLogView(generic.ListView):
         context['page_tab'] = 'log'
         return context
 
+class CreateProjectCommentForm(ModelForm):
+    class Meta:
+        model = ProjectComment
+        fields = ['comment']
+
 class ProjectDiscussionView(generic.ListView):
     template_name = 'dssgmkt/proj_discussion.html'
     context_object_name = 'project_comments'
@@ -122,7 +128,23 @@ class ProjectDiscussionView(generic.ListView):
         context['breadcrumb'] = project_breadcrumb(project, ('Discussion', None))
         context['project'] = project
         context['page_tab'] = 'discussion'
+        context['form'] = CreateProjectCommentForm()
+        context['user_is_project_member'] = ProjectService.user_is_project_member(self.request.user, project)
         return context
+
+def add_project_comment(request, proj_pk):
+    if request.method == 'GET':
+        raise Http404
+    ## TODO this is a security hole as anybody can post to this view and create new skills
+    elif request.method == 'POST': ## TODO move this to the ProjectService in the domain logic layer
+        form = CreateProjectCommentForm(request.POST)
+        if form.is_valid:
+            project_comment = form.save(commit = False)
+            project = get_object_or_404(Project, pk = proj_pk)
+            project_comment.project = project
+            project_comment.author = request.user
+            project_comment.save()
+            return redirect('dssgmkt:proj_discussion', proj_pk = proj_pk)
 
 class ProjectDeliverablesView(generic.DetailView):
     model = Project

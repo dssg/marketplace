@@ -27,6 +27,7 @@ urlpatterns = [
     path('proj/<int:proj_pk>/follow', proj.follow_project_view, name='proj_follow'),
     path('proj/<int:proj_pk>/log/', proj.ProjectLogView.as_view(), name='proj_log'),
     path('proj/<int:proj_pk>/discussion/', proj.ProjectDiscussionView.as_view(), name='proj_discussion'),
+    path('proj/<int:proj_pk>/discussion/add', proj.add_project_comment, name='proj_discussion_add'),
     path('proj/<int:proj_pk>/deliverables/', proj.ProjectDeliverablesView.as_view(), name='proj_deliverables'),
     path('proj/<int:proj_pk>/instructions/', proj.ProjectVolunteerInstructionsView.as_view(), name='proj_instructions'),
     path('proj/<int:proj_pk>/task/<int:task_pk>/finish', proj.ProjectTaskReviewCreate.as_view(), name='proj_task_finish'),

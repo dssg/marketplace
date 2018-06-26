@@ -1,8 +1,7 @@
 
 
-from django.db.models import Case, Q, When
 from ..models.proj import (
-    Project, ProjectStatus
+    Project, ProjectStatus, ProjectRole
 )
 
 
@@ -17,3 +16,7 @@ class ProjectService():
                                 .exclude(status=ProjectStatus.DRAFT) \
                                 .exclude(status=ProjectStatus.EXPIRED) \
                                 .exclude(status=ProjectStatus.DELETED)
+
+    @staticmethod
+    def user_is_project_member(user, proj):
+        return user.is_authenticated and ProjectRole.objects.filter(project=proj, user=user).exists()

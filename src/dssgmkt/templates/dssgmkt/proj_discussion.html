@@ -2,6 +2,18 @@
 
 {% block tabcontents %}
   <p></p>
+
+  {% if user_is_project_member %}
+    <form id="addcomment">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit"
+              form="addcomment"
+              formaction="{% url 'dssgmkt:proj_discussion_add' project.id %}"
+              formmethod="post">Add comment</button>
+    </form>
+  {% endif %}
+  
   {% if project_comments %}
     <ol>
       {% for log in project_comments %}
