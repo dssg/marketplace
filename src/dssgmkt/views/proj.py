@@ -59,7 +59,8 @@ class ProjectIndexView(generic.ListView):
     paginate_by = 1
 
     def get_queryset(self):
-        return Project.objects.order_by('name')[:50]
+        # This gets paginated by the view so we are not retrieving all the projects in one query
+        return ProjectService.get_all_projects(self.request.user)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
