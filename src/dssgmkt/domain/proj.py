@@ -1,7 +1,8 @@
 
 
 from ..models.proj import (
-    Project, ProjectStatus, ProjectRole
+    Project, ProjectStatus, ProjectRole,
+    ProjectTask,
 )
 
 
@@ -11,7 +12,6 @@ def filter_public_projects(query_set):
                     .exclude(status=ProjectStatus.DELETED)
 
 class ProjectService():
-
     @staticmethod
     def get_all_projects(request_user):
         # We could also add the projects that are non-public but that also belong
@@ -30,3 +30,9 @@ class ProjectService():
     @staticmethod
     def user_is_project_member(user, proj):
         return user.is_authenticated and ProjectRole.objects.filter(project=proj, user=user).exists()
+
+class ProjectTaskService():
+    @staticmethod
+    def get_open_tasks(request_user, proj):
+        return ProjectTask.objects.filter(accepting_volunteers = True,
+                                          project = proj).order_by('estimated_start_date')

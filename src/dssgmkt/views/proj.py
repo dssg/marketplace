@@ -22,7 +22,7 @@ from ..models.proj import (
     ProjectTaskReview, ProjectTaskRole, VolunteerApplication,
 )
 from .common import build_breadcrumb, home_link
-from dssgmkt.domain.proj import ProjectService
+from dssgmkt.domain.proj import ProjectService, ProjectTaskService
 
 
 def projects_link(include_link=True):
@@ -73,10 +73,10 @@ class ProjectView(generic.ListView): ## This is a listview because it is actuall
     model = ProjectTask
     template_name = 'dssgmkt/proj_info.html'
     context_object_name = 'project_tasks'
+    paginate_by = 50
 
     def get_queryset(self):
-        return ProjectTask.objects.filter(accepting_volunteers = True,
-                                          project = self.kwargs['proj_pk']).order_by('name')[:50]
+        return ProjectTaskService.get_open_tasks(self.request.user, self.kwargs['proj_pk'])
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
