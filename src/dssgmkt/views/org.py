@@ -13,6 +13,7 @@ from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from rules.contrib.views import (
     PermissionRequiredMixin, objectgetter, permission_required,
 )
+import logging
 
 from ..models.common import ReviewStatus, OrgRole
 from ..models.org import (
@@ -21,6 +22,9 @@ from ..models.org import (
 from dssgmkt.domain.org import OrganizationService
 from .common import build_breadcrumb, home_link, paginate
 
+
+
+logger = logging.getLogger(__name__)
 
 def organizations_link(include_link=True):
     return ('Organizations', reverse('dssgmkt:org_list') if include_link else None)
@@ -317,8 +321,9 @@ class OrganizationLeave(PermissionRequiredMixin, DeleteView):
             OrganizationService.leave_organization(request.user, self.kwargs['org_pk'], organization_role)
             messages.info(request, 'You left ' + organization_role.organization.name + ' successfully.')
             return HttpResponseRedirect(self.get_success_url())
-        except ValueError:
-            messages.error(request, 'There was a problem with your request.') ## TODO log the exception
+        except ValueError as err:
+            messages.error(request, 'There was a problem with your request.')
+            logger.error("Error when user {0} tried to leave organization {1}: {2}".format(request.user.id, organization_role.organization.id, err))
             return HttpResponseRedirect(self.get_success_url())
 
 class OrganizationRoleRemove(PermissionRequiredMixin, DeleteView):
@@ -350,6 +355,7 @@ class OrganizationRoleRemove(PermissionRequiredMixin, DeleteView):
             OrganizationService.delete_organization_role(request.user, self.kwargs['org_pk'], organization_role)
             messages.info(request, 'Staff member removed successfully.')
             return HttpResponseRedirect(self.get_success_url())
-        except ValueError:
-            messages.error(request, 'There was a problem with your request.') ## TODO log the exception
+        except ValueError as err:
+            messages.error(request, 'There was a problem with your request.')
+            logger.error("Error when trying to remove user {0} from organization {1}: {2}".format(request.user.id, organization_role.organization.id, err))
             return HttpResponseRedirect(self.get_success_url())
