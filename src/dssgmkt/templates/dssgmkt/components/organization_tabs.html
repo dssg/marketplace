@@ -1,12 +1,12 @@
 
-{% if organization_tab == 'info' %}
+{% if page_tab == 'info' %}
   Organization information
 {% else %}
   <a href="{% url 'dssgmkt:org_info' organization.id %}">Organization information</a>
 {% endif %}
 
 {% if user_is_staff or user_is_administrator %}
-  {% if organization_tab == 'staff' %}
+  {% if page_tab == 'staff' %}
     Staff
   {% else %}
     <a href="{% url 'dssgmkt:org_staff' organization.id %}">Staff</a>

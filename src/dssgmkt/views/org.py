@@ -86,7 +86,7 @@ class OrganizationIndexView(generic.ListView):
 
 def add_organization_common_context(request, organization, page_tab, context):
     context['organization'] = organization
-    context['organization_tab'] = page_tab
+    context['page_tab'] = page_tab
     if not request.user.is_anonymous:
         context['user_is_staff'] = OrganizationService.user_is_organization_staff(request.user, organization)
         context['user_is_administrator'] = OrganizationService.user_is_organization_admin(request.user, organization)

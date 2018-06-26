@@ -80,7 +80,7 @@ class ProjectView(generic.ListView): ## This is a listview because it is actuall
         context = super().get_context_data(**kwargs)
         project = get_object_or_404(Project, pk = self.kwargs['proj_pk'])
         context['project'] = project
-        context['project_tab'] = 'info'
+        context['page_tab'] = 'info'
         context['breadcrumb'] = project_breadcrumb(project)
         if not self.request.user.is_anonymous:
             context['user_is_following_project'] = ProjectFollower.objects.filter(project = project, user = self.request.user).exists()
@@ -102,7 +102,7 @@ class ProjectLogView(generic.ListView):
         project = get_object_or_404(Project, pk = project_pk)
         context['breadcrumb'] = project_breadcrumb(project, ('Change log', None))
         context['project'] = project
-        context['project_tab'] = 'log'
+        context['page_tab'] = 'log'
         return context
 
 
@@ -114,7 +114,7 @@ class ProjectDeliverablesView(generic.DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['project_tab'] = 'deliverables'
+        context['page_tab'] = 'deliverables'
         context['breadcrumb'] = project_breadcrumb(context['project'], ('Project deliverables', None))
         context['project'] = self.object
         return context
@@ -136,7 +136,7 @@ class ProjectVolunteerInstructionsView(generic.DetailView):
             project = get_object_or_404(Project, pk = project_pk)
         else:
             project = self.object.project
-        context['project_tab'] = 'instructions'
+        context['page_tab'] = 'instructions'
         context['breadcrumb'] = project_breadcrumb(project, ('Volunteer instructions', None))
         context['project'] = project
         context['project_task'] = self.object
@@ -163,7 +163,7 @@ class ProjectTaskReviewCreate(CreateView):
         context['breadcrumb'] = project_breadcrumb(project_task.project,
                                                     volunteer_instructions_link(project_task.project),
                                                     ('Mark work as completed', None))
-        context['organization_tab']='instructions'
+        context['page_tab']='instructions'
         return context
 
     def form_valid(self, form):
@@ -199,7 +199,7 @@ class ProjectTaskCancel(DeleteView):
         context['breadcrumb'] = project_breadcrumb(project,
                                                     volunteer_instructions_link(project_task.project),
                                                     ('Stop volunteering', None))
-        context['organization_tab']='instructions'
+        context['page_tab']='instructions'
         return context
 
 
@@ -218,7 +218,7 @@ class ProjectTaskApply(CreateView):
         context['project'] = project
         context['project_task'] = project_task
         context['breadcrumb'] = project_breadcrumb(project, ('Apply to volunteer', None))
-        context['project_tab']='info'
+        context['page_tab']='info'
         return context
 
     def form_valid(self, form):
@@ -244,7 +244,7 @@ class ProjectTaskIndex(generic.ListView):
         context = super().get_context_data(**kwargs)
         project = get_object_or_404(Project, pk = self.kwargs['proj_pk'])
         context['project'] = project
-        context['project_tab'] = 'tasklist'
+        context['page_tab'] = 'tasklist'
         context['breadcrumb'] = project_breadcrumb(project, tasks_link(project, include_link=False))
         return context
 
@@ -268,7 +268,7 @@ class ProjectTaskEdit(UpdateView):
         context['breadcrumb'] = project_breadcrumb(project,
                                                     tasks_link(project),
                                                     ('Edit project task', None))
-        context['project_tab']='tasklist'
+        context['page_tab']='tasklist'
         return context
 
 
@@ -289,7 +289,7 @@ class ProjectEdit(UpdateView):
         project = get_object_or_404(Project, pk=self.kwargs['proj_pk'])
         context['project'] = project
         context['breadcrumb'] = project_breadcrumb(project, ('Edit project information', None))
-        context['project_tab']='info'
+        context['page_tab']='info'
         return context
 
 
@@ -306,7 +306,7 @@ def project_task_requirements_edit_view(request, proj_pk, task_pk):
         return render(request, 'dssgmkt/proj_task_requirements_edit.html',
                             {
                             'project': project,
-                            'project_tab': 'tasklist',
+                            'page_tab': 'tasklist',
                             'project_task': task,
                             'task_requirements': task_requirements,
                             'breadcrumb': project_breadcrumb(project,
@@ -342,7 +342,7 @@ class ProjectTaskRequirementEdit(UpdateView):
             context['project'] = project
             context['project_task'] = project_task
             context['task_requirement'] = task_requirement
-            context['project_tab'] = 'tasklist'
+            context['page_tab'] = 'tasklist'
             context['breadcrumb'] =  project_breadcrumb(project,
                                                             tasks_link(project),
                                                             edit_task_requirements_link(project, project_task),
@@ -368,7 +368,7 @@ class ProjectTaskRequirementRemove(DeleteView):
             context['project'] = project
             context['project_task'] = project_task
             context['task_requirement'] = task_requirement
-            context['project_tab'] = 'tasklist'
+            context['page_tab'] = 'tasklist'
             context['breadcrumb'] =  project_breadcrumb(project,
                                                             tasks_link(project),
                                                             edit_task_requirements_link(project, project_task),
@@ -392,7 +392,7 @@ class ProjectTaskRemove(DeleteView):
             project = project_task.project
             context['project'] = project
             context['project_task'] = project_task
-            context['project_tab'] = 'tasklist'
+            context['page_tab'] = 'tasklist'
             context['breadcrumb'] =  project_breadcrumb(project,
                                                             tasks_link(project),
                                                             ('Delete task', None))
@@ -436,7 +436,7 @@ def project_staff_view(request, proj_pk):
 
         return render(request, 'dssgmkt/proj_staff.html',
                             {'project': project,
-                            'project_tab': 'staff',
+                            'page_tab': 'staff',
                             'breadcrumb': project_breadcrumb(project, ('Staff', None)),
 
                             'project_staff': staff_page,
@@ -476,7 +476,7 @@ def project_volunteers_view(request, proj_pk):
 
         return render(request, 'dssgmkt/proj_volunteers.html',
                             {'project': project,
-                            'project_tab': 'volunteers',
+                            'page_tab': 'volunteers',
                             'breadcrumb': project_breadcrumb(project, ('Volunteers', None)),
 
                             'volunteers': volunteers_page,
@@ -505,7 +505,7 @@ class ProjectRoleEdit(SuccessMessageMixin, UpdateView):
             context['breadcrumb'] =  project_breadcrumb(project,
                                                         staff_link(project),
                                                         ('Edit staff member', None))
-            context['project_tab'] = 'staff'
+            context['page_tab'] = 'staff'
             return context
         else:
             raise Http404
@@ -527,7 +527,7 @@ class ProjectRoleRemove(DeleteView):
             context['breadcrumb'] =  project_breadcrumb(project,
                                                         staff_link(project),
                                                         ('Remove staff member', None))
-            context['project_tab']='staff'
+            context['page_tab']='staff'
             return context
         else:
             raise Http404
@@ -562,7 +562,7 @@ class ProjectTaskRoleEdit(SuccessMessageMixin, UpdateView):
             context['breadcrumb'] =  project_breadcrumb(project,
                                                         volunteers_link(project),
                                                         ('Change volunteer task', None))
-            context['project_tab'] = 'volunteers'
+            context['page_tab'] = 'volunteers'
             return context
         else:
             raise Http404
@@ -587,7 +587,7 @@ class ProjectTaskRoleRemove(DeleteView):
         context['breadcrumb'] = project_breadcrumb(project,
                                                     volunteers_link(project),
                                                     ('Remove volunteer', None))
-        context['project_tab']='volunteers'
+        context['page_tab']='volunteers'
         return context
 
 class ProjectVolunteerApplicationEdit(UpdateView):
@@ -608,7 +608,7 @@ class ProjectVolunteerApplicationEdit(UpdateView):
             context['breadcrumb'] = project_breadcrumb(project,
                                                         volunteers_link(project),
                                                         ('Review volunteer', None))
-            context['project_tab']='volunteers'
+            context['page_tab']='volunteers'
             return context
         else:
             raise Http404
