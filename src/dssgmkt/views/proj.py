@@ -22,7 +22,7 @@ from ..models.proj import (
     ProjectTask, ProjectTaskRequirement, ProjectStatus, TaskStatus,
     ProjectTaskReview, ProjectTaskRole, VolunteerApplication,
 )
-from .common import build_breadcrumb, home_link
+from .common import build_breadcrumb, home_link, paginate
 from dssgmkt.domain.proj import ProjectService, ProjectTaskService
 
 
@@ -123,30 +123,10 @@ class CreateProjectCommentForm(ModelForm):
         model = ProjectComment
         fields = ['comment']
 
-class ProjectDiscussionView(generic.ListView):
-    template_name = 'dssgmkt/proj_discussion.html'
-    context_object_name = 'project_comments'
-    paginate_by = 20
 
-    def get_queryset(self):
-        project_pk = self.kwargs['proj_pk']
-        project = get_object_or_404(Project, pk = project_pk)
-        return ProjectService.get_project_comments(self.request.user, project)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        project_pk = self.kwargs['proj_pk']
-        project = get_object_or_404(Project, pk = project_pk)
-        context['breadcrumb'] = project_breadcrumb(project, ('Discussion', None))
-        context['form'] = CreateProjectCommentForm()
-        add_project_common_context(self.request, project, 'discussion', context)
-        return context
-
-def add_project_comment(request, proj_pk):
-    if request.method == 'GET':
-        raise Http404
+def project_comments_view(request, proj_pk):
     ## TODO this is a security hole as anybody can post to this view and create new skills
-    elif request.method == 'POST': 
+    if request.method == 'POST':
         form = CreateProjectCommentForm(request.POST)
         if form.is_valid():
             project_comment = form.save(commit = False)
@@ -158,6 +138,21 @@ def add_project_comment(request, proj_pk):
                 raise Http404
             except ValueError:
                 form.add_error(None, "Invalid comment.")
+    elif request.method == 'GET':
+        form = CreateProjectCommentForm()
+    project = get_object_or_404(Project, pk=proj_pk) ## TODO move this to the logic layer
+    project_comments = ProjectService.get_project_comments(request.user, project)
+    project_comments_page = paginate(request, project_comments, page_size=20)
+    return render(request, 'dssgmkt/proj_discussion.html',
+                    add_project_common_context(
+                        request,
+                        project,
+                        'discussion',
+                        {
+                            'breadcrumb': project_breadcrumb(project, ('Discussion', None)),
+                            'project_comments': project_comments_page,
+                            'form': form,
+                        }))
 
 class ProjectDeliverablesView(generic.DetailView):
     model = Project

@@ -13,7 +13,7 @@
               formmethod="post">Add comment</button>
     </form>
   {% endif %}
-  
+
   {% if project_comments %}
     <ol>
       {% for log in project_comments %}
@@ -22,7 +22,7 @@
       {% endfor %}
     </ol>
     {% url 'dssgmkt:proj_discussion' as proj_discussion_url %}
-    {% include 'dssgmkt/components/pagination.html' with baseurl=proj_discusion_url %}
+    {% include 'dssgmkt/components/pagination.html' with baseurl=proj_discusion_url page_obj=project_comments %}
   {% else %}
     There are no comments in this discussion.
   {% endif %}
