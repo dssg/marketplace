@@ -211,6 +211,20 @@ class ProjectLog(models.Model):
     def __str__(self):
         return self.change_date.strftime('%Y-%m-%d %H:%M') + ": " + self.change_description
 
+class ProjectComment(models.Model):
+    comment = models.TextField(max_length=5000)
+    comment_date = models.DateTimeField(auto_now_add=True)
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.CASCADE,
+    )
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+
+    def __str__(self):
+        return self.comment_date.strftime('%Y-%m-%d %H:%M') + self.author.username + ": " + self.comment[:100]
 
 class ProjectFollower(models.Model):
     project = models.ForeignKey(

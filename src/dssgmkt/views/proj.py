@@ -17,7 +17,7 @@ from rules.contrib.views import (
 
 from ..models.common import ReviewStatus
 from ..models.proj import (
-    Project, ProjectFollower, ProjectLog, ProjectRole,
+    Project, ProjectFollower, ProjectLog, ProjectComment, ProjectRole,
     ProjectTask, ProjectTaskRequirement, ProjectStatus, TaskStatus,
     ProjectTaskReview, ProjectTaskRole, VolunteerApplication,
 )
@@ -105,7 +105,24 @@ class ProjectLogView(generic.ListView):
         context['page_tab'] = 'log'
         return context
 
+class ProjectDiscussionView(generic.ListView):
+    template_name = 'dssgmkt/proj_discussion.html'
+    context_object_name = 'project_comments'
+    paginate_by = 20
 
+    def get_queryset(self):
+        project_pk = self.kwargs['proj_pk']
+        project = get_object_or_404(Project, pk = project_pk)
+        return ProjectComment.objects.filter(project = project).order_by('-comment_date')[:50]
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        project_pk = self.kwargs['proj_pk']
+        project = get_object_or_404(Project, pk = project_pk)
+        context['breadcrumb'] = project_breadcrumb(project, ('Discussion', None))
+        context['project'] = project
+        context['page_tab'] = 'discussion'
+        return context
 
 class ProjectDeliverablesView(generic.DetailView):
     model = Project

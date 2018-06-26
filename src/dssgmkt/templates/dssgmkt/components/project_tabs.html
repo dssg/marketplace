@@ -5,6 +5,12 @@
   <a href="{% url 'dssgmkt:proj_info' project.id %}">Project information</a>
 {% endif %}
 
+{% if page_tab == 'discussion' %}
+  Discussion
+{% else %}
+  <a href="{% url 'dssgmkt:proj_discussion' project.id %}">Discussion</a>
+{% endif %}
+
 {% if page_tab == 'tasklist' %}
   Tasks
 {% else %}

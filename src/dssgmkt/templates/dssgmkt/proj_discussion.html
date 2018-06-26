@@ -1,0 +1,18 @@
+{% extends "dssgmkt/proj.html" %}
+
+{% block tabcontents %}
+  <p></p>
+  {% if project_comments %}
+    <ol>
+      {% for log in project_comments %}
+        <li>({{ log.comment_date }}) {{ log.author }}: {{ log.comment }}
+        </li>
+      {% endfor %}
+    </ol>
+    {% url 'dssgmkt:proj_discussion' as proj_discussion_url %}
+    {% include 'dssgmkt/components/pagination.html' with baseurl=proj_discusion_url %}
+  {% else %}
+    There are no comments in this discussion.
+  {% endif %}
+
+{% endblock %}
