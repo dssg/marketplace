@@ -107,7 +107,7 @@ class ProjectLogView(generic.ListView):
     def get_queryset(self):
         project_pk = self.kwargs['proj_pk']
         project = get_object_or_404(Project, pk = project_pk)
-        return ProjectLog.objects.filter(project = project).order_by('-change_date')[:50]
+        return ProjectService.get_project_changes(self.request.user, project)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
