@@ -69,6 +69,20 @@ class ProjectIndexView(generic.ListView):
         return context
 
 
+def add_project_common_context(request, project, page_tab, context):
+    context['project'] = project
+    context['page_tab'] = page_tab
+    if not request.user.is_anonymous:
+        context['user_is_following_project'] = ProjectService.user_is_project_follower(request.user, project)
+        context['user_is_project_member'] = ProjectService.user_is_project_member(request.user, project)
+        context['user_is_project_owner'] = ProjectService.user_is_project_owner(request.user, project)
+    return context
+
+def add_project_task_common_context(request, project_task, page_tab, context):
+    add_project_common_context(request, project_task.project, page_tab, context)
+    context['project_task'] = project_task
+    return context
+
 class ProjectView(generic.ListView): ## This is a listview because it is actually showing the list of open tasks
     model = ProjectTask
     template_name = 'dssgmkt/proj_info.html'
@@ -81,11 +95,8 @@ class ProjectView(generic.ListView): ## This is a listview because it is actuall
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         project = get_object_or_404(Project, pk = self.kwargs['proj_pk'])
-        context['project'] = project
-        context['page_tab'] = 'info'
         context['breadcrumb'] = project_breadcrumb(project)
-        if not self.request.user.is_anonymous:
-            context['user_is_following_project'] = ProjectFollower.objects.filter(project = project, user = self.request.user).exists()
+        add_project_common_context(self.request, project, 'info', context)
         return context
 
 class ProjectLogView(generic.ListView):
@@ -103,8 +114,7 @@ class ProjectLogView(generic.ListView):
         project_pk = self.kwargs['proj_pk']
         project = get_object_or_404(Project, pk = project_pk)
         context['breadcrumb'] = project_breadcrumb(project, ('Change log', None))
-        context['project'] = project
-        context['page_tab'] = 'log'
+        add_project_common_context(self.request, project, 'log', context)
         return context
 
 class CreateProjectCommentForm(ModelForm):
@@ -127,10 +137,8 @@ class ProjectDiscussionView(generic.ListView):
         project_pk = self.kwargs['proj_pk']
         project = get_object_or_404(Project, pk = project_pk)
         context['breadcrumb'] = project_breadcrumb(project, ('Discussion', None))
-        context['project'] = project
-        context['page_tab'] = 'discussion'
         context['form'] = CreateProjectCommentForm()
-        context['user_is_project_member'] = ProjectService.user_is_project_member(self.request.user, project)
+        add_project_common_context(self.request, project, 'discussion', context)
         return context
 
 def add_project_comment(request, proj_pk):
@@ -154,9 +162,8 @@ class ProjectDeliverablesView(generic.DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['page_tab'] = 'deliverables'
         context['breadcrumb'] = project_breadcrumb(context['project'], ('Project deliverables', None))
-        context['project'] = self.object
+        add_project_common_context(self.request, project, 'deliverables', context)
         return context
 
 class ProjectVolunteerInstructionsView(generic.DetailView):
@@ -176,9 +183,8 @@ class ProjectVolunteerInstructionsView(generic.DetailView):
             project = get_object_or_404(Project, pk = project_pk)
         else:
             project = self.object.project
-        context['page_tab'] = 'instructions'
         context['breadcrumb'] = project_breadcrumb(project, ('Volunteer instructions', None))
-        context['project'] = project
+        add_project_common_context(self.request, project, 'instructions', context)
         context['project_task'] = self.object
         return context
 
@@ -198,12 +204,10 @@ class ProjectTaskReviewCreate(CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         project_task = get_object_or_404(ProjectTask, pk=self.kwargs['task_pk'])
-        context['project'] = project_task.project
-        context['project_task'] = project_task
         context['breadcrumb'] = project_breadcrumb(project_task.project,
                                                     volunteer_instructions_link(project_task.project),
                                                     ('Mark work as completed', None))
-        context['page_tab']='instructions'
+        add_project_task_common_context(self.request, project_task, 'instructions', context)
         return context
 
     def form_valid(self, form):
@@ -234,12 +238,10 @@ class ProjectTaskCancel(DeleteView):
         project_task_role = self.object
         project_task = project_task_role.task
         project = project_task.project
-        context['project_task'] = project_task
-        context['project'] = project
         context['breadcrumb'] = project_breadcrumb(project,
-                                                    volunteer_instructions_link(project_task.project),
+                                                    volunteer_instructions_link(project),
                                                     ('Stop volunteering', None))
-        context['page_tab']='instructions'
+        add_project_task_common_context(self.request, project_task, 'instructions', context)
         return context
 
 
@@ -255,10 +257,8 @@ class ProjectTaskApply(CreateView):
         context = super().get_context_data(**kwargs)
         project_task = get_object_or_404(ProjectTask, pk=self.kwargs['task_pk'])
         project = get_object_or_404(Project, pk=self.kwargs['proj_pk'])
-        context['project'] = project
-        context['project_task'] = project_task
         context['breadcrumb'] = project_breadcrumb(project, ('Apply to volunteer', None))
-        context['page_tab']='info'
+        add_project_task_common_context(self.request, project_task, 'info', context)
         return context
 
     def form_valid(self, form):
@@ -283,9 +283,8 @@ class ProjectTaskIndex(generic.ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         project = get_object_or_404(Project, pk = self.kwargs['proj_pk'])
-        context['project'] = project
-        context['page_tab'] = 'tasklist'
         context['breadcrumb'] = project_breadcrumb(project, tasks_link(project, include_link=False))
+        add_project_common_context(self.request, project, 'tasklist', context)
         return context
 
 
@@ -303,12 +302,11 @@ class ProjectTaskEdit(UpdateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         project = get_object_or_404(Project, pk=self.kwargs['proj_pk'])
-        context['project'] = project
-        context['project_task'] = self.object
+        project_task = self.object
         context['breadcrumb'] = project_breadcrumb(project,
                                                     tasks_link(project),
                                                     ('Edit project task', None))
-        context['page_tab']='tasklist'
+        add_project_task_common_context(self.request, project_task, 'tasklist', context)
         return context
 
 
@@ -327,9 +325,8 @@ class ProjectEdit(UpdateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         project = get_object_or_404(Project, pk=self.kwargs['proj_pk'])
-        context['project'] = project
         context['breadcrumb'] = project_breadcrumb(project, ('Edit project information', None))
-        context['page_tab']='info'
+        add_project_common_context(self.request, project, 'info', context)
         return context
 
 
@@ -344,16 +341,14 @@ def project_task_requirements_edit_view(request, proj_pk, task_pk):
         task = get_object_or_404(ProjectTask, pk = task_pk)
         project = get_object_or_404(Project, pk = proj_pk)
         return render(request, 'dssgmkt/proj_task_requirements_edit.html',
+                        add_project_task_common_context(request, task, 'tasklist',
                             {
-                            'project': project,
-                            'page_tab': 'tasklist',
-                            'project_task': task,
-                            'task_requirements': task_requirements,
-                            'breadcrumb': project_breadcrumb(project,
-                                                                tasks_link(project),
-                                                                edit_task_requirements_link(project, task, include_link=False)),
-                            'add_requirement_form': CreateTaskRequirementForm()
-                            })
+                                'task_requirements': task_requirements,
+                                'breadcrumb': project_breadcrumb(project,
+                                                                    tasks_link(project),
+                                                                    edit_task_requirements_link(project, task, include_link=False)),
+                                'add_requirement_form': CreateTaskRequirementForm()
+                            }))
     ## TODO this is a security hole as anybody can post to this view and create new skills
     elif request.method == 'POST':
         form = CreateTaskRequirementForm(request.POST)
@@ -379,14 +374,12 @@ class ProjectTaskRequirementEdit(UpdateView):
         if task_requirement:
             project_task = task_requirement.task
             project = project_task.project
-            context['project'] = project
-            context['project_task'] = project_task
             context['task_requirement'] = task_requirement
-            context['page_tab'] = 'tasklist'
             context['breadcrumb'] =  project_breadcrumb(project,
                                                             tasks_link(project),
                                                             edit_task_requirements_link(project, project_task),
                                                             ('Edit requirement', None))
+            add_project_task_common_context(self.request, project_task, 'tasklist', context)
             return context
         else:
             raise Http404
@@ -405,14 +398,12 @@ class ProjectTaskRequirementRemove(DeleteView):
         if task_requirement:
             project_task = task_requirement.task
             project = project_task.project
-            context['project'] = project
-            context['project_task'] = project_task
             context['task_requirement'] = task_requirement
-            context['page_tab'] = 'tasklist'
             context['breadcrumb'] =  project_breadcrumb(project,
                                                             tasks_link(project),
                                                             edit_task_requirements_link(project, project_task),
                                                             ('Remove requirement', None))
+            add_project_task_common_context(self.request, project_task, 'tasklist', context)
             return context
         else:
             raise Http404
@@ -430,12 +421,10 @@ class ProjectTaskRemove(DeleteView):
         project_task = self.object
         if project_task:
             project = project_task.project
-            context['project'] = project
-            context['project_task'] = project_task
-            context['page_tab'] = 'tasklist'
             context['breadcrumb'] =  project_breadcrumb(project,
                                                             tasks_link(project),
                                                             ('Delete task', None))
+            add_project_task_common_context(self.request, project_task, 'tasklist', context)
             return context
         else:
             raise Http404
@@ -475,16 +464,12 @@ def project_staff_view(request, proj_pk):
         staff_page = staff_paginator.get_page(request.GET.get('staff_page', 1))
 
         return render(request, 'dssgmkt/proj_staff.html',
-                            {'project': project,
-                            'page_tab': 'staff',
-                            'breadcrumb': project_breadcrumb(project, ('Staff', None)),
-
-                            'project_staff': staff_page,
-
-                            'add_staff_form': CreateProjectRoleForm(),
-
-                            'user_is_project_owner': True, ## TODO remove this
-                            })
+                        add_project_common_context(request, project, 'staff',
+                            {
+                                'breadcrumb': project_breadcrumb(project, ('Staff', None)),
+                                'project_staff': staff_page,
+                                'add_staff_form': CreateProjectRoleForm(),
+                            }))
     ## TODO this is a security hole as staff can post to this view and create new members
     elif request.method == 'POST':
         form = CreateProjectRoleForm(request.POST)
@@ -515,15 +500,12 @@ def project_volunteers_view(request, proj_pk):
         applications_page = volunteer_applications_paginator.get_page(request.GET.get('applications_page', 1))
 
         return render(request, 'dssgmkt/proj_volunteers.html',
-                            {'project': project,
-                            'page_tab': 'volunteers',
-                            'breadcrumb': project_breadcrumb(project, ('Volunteers', None)),
-
-                            'volunteers': volunteers_page,
-                            'volunteer_applications': applications_page,
-
-                            'user_is_project_owner': True, ## TODO remove this
-                            })
+                        add_project_common_context(request, project, 'volunteers',
+                            {
+                                'breadcrumb': project_breadcrumb(project, ('Volunteers', None)),
+                                'volunteers': volunteers_page,
+                                'volunteer_applications': applications_page,
+                            }))
 
 
 class ProjectRoleEdit(SuccessMessageMixin, UpdateView):
@@ -541,11 +523,10 @@ class ProjectRoleEdit(SuccessMessageMixin, UpdateView):
         project_role = self.object
         if project_role and project_role.project.id == self.kwargs['proj_pk']:
             project = self.object.project
-            context['project'] = project
             context['breadcrumb'] =  project_breadcrumb(project,
                                                         staff_link(project),
                                                         ('Edit staff member', None))
-            context['page_tab'] = 'staff'
+            add_project_common_context(self.request, project, 'staff', context)
             return context
         else:
             raise Http404
@@ -563,11 +544,10 @@ class ProjectRoleRemove(DeleteView):
         project_role = self.object
         if project_role and project_role.project.id == self.kwargs['proj_pk']:
             project = self.object.project
-            context['project'] = project
             context['breadcrumb'] =  project_breadcrumb(project,
                                                         staff_link(project),
                                                         ('Remove staff member', None))
-            context['page_tab']='staff'
+            add_project_common_context(self.request, project, 'staff', context)
             return context
         else:
             raise Http404
@@ -598,11 +578,10 @@ class ProjectTaskRoleEdit(SuccessMessageMixin, UpdateView):
         if project_task_role and project_task_role.task.id == self.kwargs['task_pk'] and project_task_role.task.project.id == self.kwargs['proj_pk']:
             project_task = project_task_role.task
             project = project_task.project
-            context['project'] = project
             context['breadcrumb'] =  project_breadcrumb(project,
                                                         volunteers_link(project),
                                                         ('Change volunteer task', None))
-            context['page_tab'] = 'volunteers'
+            add_project_task_common_context(self.request, project_task, 'volunteers', context)
             return context
         else:
             raise Http404
@@ -622,12 +601,10 @@ class ProjectTaskRoleRemove(DeleteView):
         project_task_role = self.object
         project_task = project_task_role.task
         project = project_task.project
-        context['project_task'] = project_task
-        context['project'] = project
         context['breadcrumb'] = project_breadcrumb(project,
                                                     volunteers_link(project),
                                                     ('Remove volunteer', None))
-        context['page_tab']='volunteers'
+        add_project_task_common_context(self.request, project_task, 'volunteers', context)
         return context
 
 class ProjectVolunteerApplicationEdit(UpdateView):
@@ -644,11 +621,10 @@ class ProjectVolunteerApplicationEdit(UpdateView):
         project = get_object_or_404(Project, pk=self.kwargs['proj_pk'])
         volunteer_application = self.object
         if volunteer_application and volunteer_application.task.id == self.kwargs['task_pk'] and volunteer_application.task.project.id == self.kwargs['proj_pk']:
-            context['project'] = project
             context['breadcrumb'] = project_breadcrumb(project,
                                                         volunteers_link(project),
                                                         ('Review volunteer', None))
-            context['page_tab']='volunteers'
+            add_project_common_context(self.request, project, 'volunteers', context)
             return context
         else:
             raise Http404

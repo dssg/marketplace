@@ -1,7 +1,7 @@
 
 
 from ..models.proj import (
-    Project, ProjectStatus, ProjectRole,
+    Project, ProjectStatus, ProjectRole, ProjRole, ProjectFollower,
     ProjectTask,
 )
 
@@ -30,6 +30,14 @@ class ProjectService():
     @staticmethod
     def user_is_project_member(user, proj):
         return user.is_authenticated and ProjectRole.objects.filter(project=proj, user=user).exists()
+
+    @staticmethod
+    def user_is_project_owner(user, proj):
+        return user.is_authenticated and ProjectRole.objects.filter(project=proj, user=user, role=ProjRole.OWNER).exists()
+
+    @staticmethod
+    def user_is_project_follower(user, proj):
+        return user.is_authenticated and ProjectFollower.objects.filter(project=proj, user=user).exists()
 
 class ProjectTaskService():
     @staticmethod
