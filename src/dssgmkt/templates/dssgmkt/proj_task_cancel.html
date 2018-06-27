@@ -5,6 +5,7 @@
   <h2>Cancel task</h2>
   <p>Are you sure that you want to cancel this volunteer work and stop your involvement in the project?
     You will have to reapply to get involved in the project if you leave the project and change your mind in the future.</p>
+    
   <form id="canceltask">
     {% csrf_token %}
     {{ form.as_p }}

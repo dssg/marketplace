@@ -272,7 +272,7 @@ class ProjectTaskCancel(DeleteView):
     template_name = 'dssgmkt/proj_task_cancel.html'
 
     def get_object(self):
-        return get_object_or_404(ProjectTaskRole, task=self.kwargs['task_pk'], user=self.request.user.id)
+        return get_object_or_404(ProjectTaskRole, task=self.kwargs['task_pk'], user=self.request.user.id) # TODO get object from domain layer
 
     def get_success_url(self):
         return reverse('dssgmkt:proj_info', args=[self.object.task.project.id])
@@ -286,6 +286,19 @@ class ProjectTaskCancel(DeleteView):
                                                     volunteer_instructions_link(project),
                                                     ('Stop volunteering', None))
         add_project_task_common_context(self.request, project_task, 'instructions', context)
+        return context
+
+    def delete(self, request,  *args, **kwargs):
+        project_task_role = self.get_object()
+        self.object = project_task_role
+        try:
+            ProjectTaskService.cancel_volunteering(request.user, self.kwargs['proj_pk'], self.kwargs['task_pk'], project_task_role)
+            messages.info(request, 'You stopped working on ' + project_task_role.task.name + ' successfully.')
+            return HttpResponseRedirect(self.get_success_url())
+        except ValueError as err:
+            messages.error(request, 'There was a problem with your request.')
+            # logger.error("Error when user {0} tried to leave organization {1}: {2}".format(request.user.id, organization_role.organization.id, err))
+            return HttpResponseRedirect(self.get_success_url())
         return context
 
 

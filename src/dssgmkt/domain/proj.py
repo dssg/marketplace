@@ -100,9 +100,6 @@ class ProjectTaskService():
                 raise KeyError('Task not found ' + str(taskid))
 
 
-
-
-
     @staticmethod
     def save_task_review(request_user, projid, taskid, task_review):
         project_task = ProjectTask.objects.get(pk=taskid)
@@ -111,16 +108,13 @@ class ProjectTaskService():
             with transaction.atomic():
                 task_review.save()
                 if task_review.review_result == ReviewStatus.ACCEPTED:
-                    project_task.stage = TaskStatus.COMPLETED
+                    project_task.stage = TaskStatus.COMPLETED # TODO move this to a separate method that modifies tasks (so effects are passed on to the project as needed)
                     project_task.percentage_complete = 1.0
                     project_task.actual_effort_hours = task_review.volunteer_effort_hours
                     project_task.save()
-                elif task_review.review_result == ReviewStatus.REJECTED:
+                elif task_review.review_result == ReviewStatus.REJECTED:  # TODO move this to a separate method that modifies tasks (so effects are passed on to the project as needed)
                     project_task.stage = TaskStatus.STARTED
                     project_task.save()
-                # if task_review.res == ReviewStatus.ACCEPTED and not OrganizationService.user_is_organization_member(membership_request.user, membership_request.organization):
-                #     new_role = OrganizationRole(role = membership_request.role, user = membership_request.user, organization = membership_request.organization)
-                #     new_role.save()
         else:
             raise ValueError('Task review does not match project or task')
 
@@ -145,3 +139,31 @@ class ProjectTaskService():
         #                                             NotificationSeverity.INFO,
         #                                             NotificationSource.ORGANIZATION_MEMBERSHIP_REQUEST,
         #                                             membership_request.id)
+
+    @staticmethod
+    def cancel_volunteering(request_user, projid, taskid, project_task_role):
+        if project_task_role.task.id != taskid:
+            raise ValueError('Role does not match task')
+        elif project_task_role.task.project.id != projid:
+            raise ValueError('Role does not match project')
+        elif project_task_role.user != request_user:
+            raise ValueError('Role does not match current user')
+        else:
+            with transaction.atomic():
+                project_task_role.delete()
+                # TODO change the status of the task depending on how many volunteers are left
+                    ### get volunteer count
+                    ### if zero_volunteers, task is waiting for volunteers, accepting volunteers is true
+
+
+                # NotificationService.add_user_notification(request_user,
+                #                                             "You left " + organization_role.organization.name,
+                #                                             NotificationSeverity.INFO,
+                #                                             NotificationSource.ORGANIZATION,
+                #                                             organization_role.organization.id)
+                # admins = OrganizationService.get_organization_admins(request_user, organization_role.organization)
+                # NotificationService.add_multiuser_notification(admins,
+                #                                             organization_role.user.first_name + " " + organization_role.user.last_name + " left " + organization_role.organization.name,
+                #                                             NotificationSeverity.INFO,
+                #                                             NotificationSource.ORGANIZATION,
+                #                                             organization_role.organization.id)
