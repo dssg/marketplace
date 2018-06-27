@@ -565,9 +565,9 @@ def project_staff_view(request, proj_pk):
                 form.add_error(None, "This user is already a member of the project.")
     elif request.method == 'GET':
         form = CreateProjectRoleForm()
-    project = get_object_or_404(Project, pk = proj_pk)
-    staff_page_size = 50
-    project_staff = project.projectrole_set.all().order_by('role')
+    project = get_object_or_404(Project, pk = proj_pk) ## TODO move this to the domain logic
+    staff_page_size = 50 
+    project_staff = ProjectService.get_all_project_staff(request.user, proj_pk)
     staff_paginator = Paginator(project_staff, staff_page_size)
     staff_page = staff_paginator.get_page(request.GET.get('staff_page', 1))
 

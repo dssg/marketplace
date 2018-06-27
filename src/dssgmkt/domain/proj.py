@@ -88,6 +88,10 @@ class ProjectService():
         else:
             raise KeyError('Project not found ' + str(projid))
 
+    @staticmethod
+    def get_all_project_staff(request_user, projid):
+        return ProjectRole.objects.filter(project=projid).order_by('role')
+
 class ProjectTaskService():
     @staticmethod
     def get_all_tasks(request_user, proj): # TODO check that the user has permissions to take a look at all the tasks
