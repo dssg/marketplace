@@ -194,3 +194,9 @@ class ProjectTaskService():
             task_application_request.task = project_task
             task_application_request.volunteer = request_user
             task_application_request.save()
+
+    @staticmethod
+    def add_task_requirement(request_user, projid, taskid, requirement):  # TODO check the integrity of all the primary keys
+        project_task = ProjectTask.objects.get(pk=taskid)
+        requirement.task = project_task
+        requirement.save()

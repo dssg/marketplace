@@ -408,28 +408,31 @@ class CreateTaskRequirementForm(ModelForm):
         fields = ['skill', 'level']
 
 def project_task_requirements_edit_view(request, proj_pk, task_pk):
-    if request.method == 'GET':
-        task_requirements = ProjectTaskRequirement.objects.filter(task = task_pk)
-        task = get_object_or_404(ProjectTask, pk = task_pk)
-        project = get_object_or_404(Project, pk = proj_pk)
-        return render(request, 'dssgmkt/proj_task_requirements_edit.html',
-                        add_project_task_common_context(request, task, 'tasklist',
-                            {
-                                'task_requirements': task_requirements,
-                                'breadcrumb': project_breadcrumb(project,
-                                                                    tasks_link(project),
-                                                                    edit_task_requirements_link(project, task, include_link=False)),
-                                'add_requirement_form': CreateTaskRequirementForm()
-                            }))
     ## TODO this is a security hole as anybody can post to this view and create new skills
-    elif request.method == 'POST':
+    if request.method == 'POST':
         form = CreateTaskRequirementForm(request.POST)
-        if form.is_valid:
+        if form.is_valid():
             requirement = form.save(commit = False)
-            project_task = get_object_or_404(ProjectTask, pk = task_pk)
-            requirement.task = project_task
-            requirement.save()
-            return redirect('dssgmkt:proj_task_requirements_edit', proj_pk = proj_pk, task_pk = task_pk)
+            try:
+                ProjectTaskService.add_task_requirement(request.user, proj_pk, task_pk, requirement)
+                return redirect('dssgmkt:proj_task_requirements_edit', proj_pk=proj_pk, task_pk=task_pk)
+            except KeyError:
+                form.add_error(None, "Invalid task requirement.")
+    if request.method == 'GET':
+        form = CreateTaskRequirementForm()
+    task_requirements = ProjectTaskRequirement.objects.filter(task = task_pk)
+    task = get_object_or_404(ProjectTask, pk=task_pk)
+    project = get_object_or_404(Project, pk=proj_pk)
+    return render(request, 'dssgmkt/proj_task_requirements_edit.html',
+                    add_project_task_common_context(request, task, 'tasklist',
+                        {
+                            'task_requirements': task_requirements,
+                            'breadcrumb': project_breadcrumb(project,
+                                                                tasks_link(project),
+                                                                edit_task_requirements_link(project, task, include_link=False)),
+                            'add_requirement_form': form,
+                        }))
+    el
 
 class ProjectTaskRequirementEdit(UpdateView):
     model = ProjectTaskRequirement
