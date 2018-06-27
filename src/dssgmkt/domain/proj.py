@@ -67,10 +67,12 @@ class ProjectService():
 
 class ProjectTaskService():
     @staticmethod
+    def get_all_tasks(request_user, proj): # TODO check that the user has permissions to take a look at all the tasks
+        return ProjectTask.objects.filter(project = proj).order_by('estimated_start_date')
+    @staticmethod
     def get_open_tasks(request_user, proj):
         return ProjectTask.objects.filter(accepting_volunteers = True,
                                           project = proj).order_by('estimated_start_date')
-
 
     @staticmethod
     def get_volunteer_current_tasks(request_user, volunteer, projid):

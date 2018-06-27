@@ -325,7 +325,7 @@ class ProjectTaskApply(CreateView):
             return HttpResponseRedirect(self.get_success_url())
         except KeyError:
             raise Http404
-        task = get_object_or_404(ProjectTask, pk=self.kwargs['task_pk'])        
+        task = get_object_or_404(ProjectTask, pk=self.kwargs['task_pk'])
 
 
 class ProjectTaskIndex(generic.ListView):
@@ -334,11 +334,11 @@ class ProjectTaskIndex(generic.ListView):
     context_object_name = 'project_tasks'
 
     def get_queryset(self):
-        return ProjectTask.objects.filter(project = self.kwargs['proj_pk']).order_by('estimated_start_date')
+        return ProjectTaskService.get_all_tasks(self.request.user, self.kwargs['proj_pk'])
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        project = get_object_or_404(Project, pk = self.kwargs['proj_pk'])
+        project = get_object_or_404(Project, pk = self.kwargs['proj_pk']) # TODO move this to the domain logic
         context['breadcrumb'] = project_breadcrumb(project, tasks_link(project, include_link=False))
         add_project_common_context(self.request, project, 'tasklist', context)
         return context
