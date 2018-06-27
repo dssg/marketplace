@@ -523,6 +523,17 @@ class ProjectTaskRemove(DeleteView):
         else:
             raise Http404
 
+    def delete(self, request,  *args, **kwargs):
+        project_task = self.get_object()
+        self.object = project_task
+        try:
+            ProjectTaskService.delete_task(request.user, self.kwargs['proj_pk'], project_task)
+            return HttpResponseRedirect(self.get_success_url())
+        except ValueError as err:
+            messages.error(request, 'There was a problem with your request.')
+            # logger.error("Error when user {0} tried to leave organization {1}: {2}".format(request.user.id, organization_role.organization.id, err))
+            return HttpResponseRedirect(self.get_success_url())
+
 
 def create_default_project_task(request, proj_pk):
     if request.method == 'GET':

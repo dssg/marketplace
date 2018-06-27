@@ -113,6 +113,13 @@ class ProjectTaskService():
             else:
                 raise KeyError('Task not found ' + str(taskid))
 
+    @staticmethod
+    def delete_task(request_user, projid, project_task): # TODO check the integrity of all the primary keys
+        project_task.delete()
+        # TODO calculate the project status correctly based on all the tasks
+        # project_task.project.status = ProjectStatus.WAITING_REVIEW
+        # project_task.project.save()
+         # TODO move this to a separate method that modifies tasks (so effects are passed on to the project as needed)
 
     @staticmethod
     def save_task_review(request_user, projid, taskid, task_review):
