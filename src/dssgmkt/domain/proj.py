@@ -3,7 +3,7 @@ from django.utils import timezone
 
 from ..models.proj import (
     Project, ProjectStatus, ProjectRole, ProjRole, ProjectFollower, ProjectLog, ProjectComment,
-    ProjectTask, TaskStatus,
+    ProjectTask, TaskStatus, TaskRole, ProjectTaskRole,
 )
 from ..models.common import (
     ReviewStatus,
@@ -74,10 +74,21 @@ class ProjectTaskService():
 
     @staticmethod
     def get_volunteer_current_tasks(request_user, volunteer, projid):
-        return ProjectTask.objects.filter(project__pk = projid,
-                                          projecttaskrole__user = volunteer,
+        return ProjectTask.objects.filter(project__pk=projid,
+                                          projecttaskrole__user=volunteer,
                                           stage__in=[TaskStatus.STARTED, TaskStatus.WAITING_REVIEW])
 
+    @staticmethod
+    def task_has_volunteers(request_user, taskid):
+        return ProjectTaskRole.objects.filter(task=taskid, role=TaskRole.VOLUNTEER).exists()
+
+    @staticmethod
+    def save_task(request_user, project_task):
+        project_task.save()
+        # TODO calculate the project status correctly based on all the tasks
+        # project_task.project.status = ProjectStatus.WAITING_REVIEW
+        # project_task.project.save()
+         # TODO move this to a separate method that modifies tasks (so effects are passed on to the project as needed)
 
     @staticmethod
     def mark_task_as_completed(request_user, projid, taskid, project_task_review):
@@ -89,10 +100,7 @@ class ProjectTaskService():
                 project_task_review.review_result = ReviewStatus.NEW
                 project_task_review.save()
                 project_task.stage = TaskStatus.WAITING_REVIEW
-                project_task.save()
-                # TODO calculate the project status correctly based on all the tasks, not just this one.
-                # project_task.project.status = ProjectStatus.WAITING_REVIEW
-                # project_task.project.save()
+                ProjectTaskService.save_task(request_user, project_task)
         else:
             if not project:
                 raise KeyError('Project not found ' + str(projid))
@@ -108,13 +116,13 @@ class ProjectTaskService():
             with transaction.atomic():
                 task_review.save()
                 if task_review.review_result == ReviewStatus.ACCEPTED:
-                    project_task.stage = TaskStatus.COMPLETED # TODO move this to a separate method that modifies tasks (so effects are passed on to the project as needed)
+                    project_task.stage = TaskStatus.COMPLETED
                     project_task.percentage_complete = 1.0
                     project_task.actual_effort_hours = task_review.volunteer_effort_hours
-                    project_task.save()
-                elif task_review.review_result == ReviewStatus.REJECTED:  # TODO move this to a separate method that modifies tasks (so effects are passed on to the project as needed)
+                    ProjectTaskService.save_task(request_user, project_task)
+                elif task_review.review_result == ReviewStatus.REJECTED:
                     project_task.stage = TaskStatus.STARTED
-                    project_task.save()
+                    ProjectTaskService.save_task(request_user, project_task)
         else:
             raise ValueError('Task review does not match project or task')
 
@@ -150,11 +158,12 @@ class ProjectTaskService():
             raise ValueError('Role does not match current user')
         else:
             with transaction.atomic():
+                project_task = project_task_role.task
                 project_task_role.delete()
-                # TODO change the status of the task depending on how many volunteers are left
-                    ### get volunteer count
-                    ### if zero_volunteers, task is waiting for volunteers, accepting volunteers is true
-
+                if not ProjectTaskService.task_has_volunteers(request_user, taskid):
+                    project_task.stage = TaskStatus.STARTED ## or not started?
+                    project_task.accepting_volunteers = True
+                    ProjectTaskService.save_task(request_user, project_task)
 
                 # NotificationService.add_user_notification(request_user,
                 #                                             "You left " + organization_role.organization.name,
