@@ -129,7 +129,7 @@ class OrganizationEdit(PermissionRequiredMixin, UpdateView):
                                                         ('Edit information', None))
         add_organization_common_context(self.request, organization, 'info', context)
         return context
-
+# TODO move the saving of the organization info to the domain logic
 
 class CreateOrganizationRoleForm(ModelForm):
     class Meta:

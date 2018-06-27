@@ -85,7 +85,7 @@ class ProjectTaskService():
         return ProjectTaskRole.objects.filter(task=taskid, role=TaskRole.VOLUNTEER).exists()
 
     @staticmethod
-    def save_task(request_user, project_task):
+    def save_task(request_user, projid, taskid, project_task):
         project_task.save()
         # TODO calculate the project status correctly based on all the tasks
         # project_task.project.status = ProjectStatus.WAITING_REVIEW
@@ -102,7 +102,7 @@ class ProjectTaskService():
                 project_task_review.review_result = ReviewStatus.NEW
                 project_task_review.save()
                 project_task.stage = TaskStatus.WAITING_REVIEW
-                ProjectTaskService.save_task(request_user, project_task)
+                ProjectTaskService.save_task(request_user, projid, taskid, project_task)
         else:
             if not project:
                 raise KeyError('Project not found ' + str(projid))
@@ -121,10 +121,10 @@ class ProjectTaskService():
                     project_task.stage = TaskStatus.COMPLETED
                     project_task.percentage_complete = 1.0
                     project_task.actual_effort_hours = task_review.volunteer_effort_hours
-                    ProjectTaskService.save_task(request_user, project_task)
+                    ProjectTaskService.save_task(request_user, projid, taskid, project_task)
                 elif task_review.review_result == ReviewStatus.REJECTED:
                     project_task.stage = TaskStatus.STARTED
-                    ProjectTaskService.save_task(request_user, project_task)
+                    ProjectTaskService.save_task(request_user, projid, taskid, project_task)
         else:
             raise ValueError('Task review does not match project or task')
 
@@ -165,7 +165,7 @@ class ProjectTaskService():
                 if not ProjectTaskService.task_has_volunteers(request_user, taskid):
                     project_task.stage = TaskStatus.STARTED ## or not started?
                     project_task.accepting_volunteers = True
-                    ProjectTaskService.save_task(request_user, project_task)
+                    ProjectTaskService.save_task(request_user, projid, taskid, project_task)
 
                 # NotificationService.add_user_notification(request_user,
                 #                                             "You left " + organization_role.organization.name,
