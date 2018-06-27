@@ -171,7 +171,7 @@ class ProjectVolunteerInstructionsView(generic.ListView):
     context_object_name = 'project_tasks'
 
     def get_queryset(self):
-        return ProjectTaskService.get_volunteer_current_tasks(self.request.user, self.kwargs['proj_pk'])
+        return ProjectTaskService.get_volunteer_current_tasks(self.request.user, self.request.user, self.kwargs['proj_pk'])
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

@@ -69,7 +69,7 @@ class ProjectTaskService():
 
 
     @staticmethod
-    def get_volunteer_current_tasks(request_user, projid):
+    def get_volunteer_current_tasks(request_user, volunteer, projid):
         return ProjectTask.objects.filter(project__pk = projid,
-                                          projecttaskrole__user = request_user,
+                                          projecttaskrole__user = volunteer,
                                           stage__in=[TaskStatus.STARTED, TaskStatus.WAITING_REVIEW])
