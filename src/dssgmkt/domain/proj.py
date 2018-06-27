@@ -296,3 +296,28 @@ class ProjectTaskService():
     @staticmethod
     def delete_task_requirement(request_user, projid, taskid, requirement):  # TODO check the integrity of all the primary keys
         requirement.delete()
+
+    @staticmethod
+    def save_project_task_role(request_user, projid, taskid, project_task_role):
+        # Do not check the task ID because we are changing it so it does not match
+        if project_task_role.task.project.id == projid:
+            project_task_role.save()
+            # NotificationService.add_user_notification(organization_role.user,
+            #                                             "Your role within " + organization_role.organization.name + " has been changed to " + organization_role.get_role_display() + ".",
+            #                                             NotificationSeverity.INFO,
+            #                                             NotificationSource.ORGANIZATION,
+            #                                             organization_role.organization.id)
+        else:
+            raise ValueError('Role does not match project and task')
+
+    @staticmethod
+    def delete_project_task_role(request_user, projid, taskid, project_task_role):
+        if project_task_role.task.id == taskid and project_task_role.task.project.id == projid:
+            project_task_role.delete()
+            # NotificationService.add_user_notification(organization_role.user,
+            #                                             "Your role within " + organization_role.organization.name + " has been changed to " + organization_role.get_role_display() + ".",
+            #                                             NotificationSeverity.INFO,
+            #                                             NotificationSource.ORGANIZATION,
+            #                                             organization_role.organization.id)
+        else:
+            raise ValueError('Role does not match project and task')

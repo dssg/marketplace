@@ -700,6 +700,14 @@ class ProjectTaskRoleEdit(SuccessMessageMixin, UpdateView):
         else:
             raise Http404
 
+    def form_valid(self, form):
+        project_task_role = form.save(commit = False)
+        try:
+            ProjectTaskService.save_project_task_role(self.request.user, self.kwargs['proj_pk'], self.kwargs['task_pk'], project_task_role)
+            return HttpResponseRedirect(self.get_success_url())
+        except KeyError:
+            return super().form_invalid(form)
+
 class ProjectTaskRoleRemove(DeleteView):
     model = ProjectTaskRole
     template_name = 'dssgmkt/proj_volunteer_remove.html'
@@ -720,6 +728,17 @@ class ProjectTaskRoleRemove(DeleteView):
                                                     ('Remove volunteer', None))
         add_project_task_common_context(self.request, project_task, 'volunteers', context)
         return context
+
+    def delete(self, request,  *args, **kwargs):
+        project_task_role = self.get_object()
+        self.object = project_task_role
+        try:
+            ProjectTaskService.delete_project_task_role(request.user, self.kwargs['proj_pk'], self.kwargs['task_pk'], project_task_role)
+            return HttpResponseRedirect(self.get_success_url())
+        except ValueError as err:
+            messages.error(request, 'There was a problem with your request.')
+            # logger.error("Error when user {0} tried to leave organization {1}: {2}".format(request.user.id, organization_role.organization.id, err))
+            return HttpResponseRedirect(self.get_success_url())
 
 class ProjectVolunteerApplicationEdit(UpdateView):
     model = VolunteerApplication
