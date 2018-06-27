@@ -101,6 +101,18 @@ class ProjectService():
             raise ValueError('Role does not match project')
 
     @staticmethod
+    def delete_project_role(request_user, projid, project_role):
+        if project_role.project.id == projid:
+            project_role.delete()
+            # NotificationService.add_user_notification(organization_role.user,
+            #                                             "Your role within " + organization_role.organization.name + " has been changed to " + organization_role.get_role_display() + ".",
+            #                                             NotificationSeverity.INFO,
+            #                                             NotificationSource.ORGANIZATION,
+            #                                             organization_role.organization.id)
+        else:
+            raise ValueError('Role does not match project')
+
+    @staticmethod
     def get_all_project_staff(request_user, projid):
         return ProjectRole.objects.filter(project=projid).order_by('role')
 

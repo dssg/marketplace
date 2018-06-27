@@ -655,6 +655,17 @@ class ProjectRoleRemove(DeleteView):
         else:
             raise Http404
 
+    def delete(self, request,  *args, **kwargs):
+        project_role = self.get_object()
+        self.object = project_role
+        try:
+            ProjectService.delete_project_role(request.user, self.kwargs['proj_pk'], project_role)
+            return HttpResponseRedirect(self.get_success_url())
+        except ValueError as err:
+            messages.error(request, 'There was a problem with your request.')
+            # logger.error("Error when user {0} tried to leave organization {1}: {2}".format(request.user.id, organization_role.organization.id, err))
+            return HttpResponseRedirect(self.get_success_url())
+
 class EditProjectTaskRoleForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super(EditProjectTaskRoleForm, self).__init__(*args, **kwargs)
