@@ -320,13 +320,12 @@ class ProjectTaskApply(CreateView):
 
     def form_valid(self, form):
         task_application_request = form.save(commit=False)
-        task = get_object_or_404(ProjectTask, pk=self.kwargs['task_pk'])
-
-        task_application_request.status = ReviewStatus.NEW
-        task_application_request.task = task
-        task_application_request.volunteer = self.request.user
-        task_application_request.save()
-        return HttpResponseRedirect(self.get_success_url())
+        try:
+            ProjectTaskService.apply_to_volunteer(self.request.user, self.kwargs['proj_pk'], self.kwargs['task_pk'], task_application_request)
+            return HttpResponseRedirect(self.get_success_url())
+        except KeyError:
+            raise Http404
+        task = get_object_or_404(ProjectTask, pk=self.kwargs['task_pk'])        
 
 
 class ProjectTaskIndex(generic.ListView):

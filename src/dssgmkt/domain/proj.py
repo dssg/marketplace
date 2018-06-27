@@ -176,3 +176,15 @@ class ProjectTaskService():
                 #                                             NotificationSeverity.INFO,
                 #                                             NotificationSource.ORGANIZATION,
                 #                                             organization_role.organization.id)
+
+
+    @staticmethod
+    def apply_to_volunteer(request_user, projid, taskid, task_application_request):
+        project_task = ProjectTask.objects.get(pk=taskid)
+        if project_task.project.id != projid:
+            raise KeyError('Project does not match task')
+        else:
+            task_application_request.status = ReviewStatus.NEW
+            task_application_request.task = project_task
+            task_application_request.volunteer = request_user
+            task_application_request.save()
