@@ -210,6 +210,47 @@ class ProjectTaskReviewCreate(CreateView):
         except KeyError:
             raise Http404
 
+
+class ProjectTaskReviewForm(ModelForm):
+    class Meta:
+        model = ProjectTaskReview
+        fields = ['public_reviewer_comments', 'private_reviewer_notes']
+
+
+def process_task_review_request_view(request, proj_pk, task_pk, review_pk, action=None):
+    project_task_review = get_object_or_404(ProjectTaskReview, pk=review_pk)
+    if request.method == 'POST':
+        form = ProjectTaskReviewForm(request.POST, instance=project_task_review)
+        if form.is_valid():
+            project_task_review = form.save(commit = False)
+            try:
+                if action == 'accept':
+                    ProjectTaskService.accept_task_review(request.user, proj_pk, task_pk, project_task_review)
+                    # messages.info(request, 'Membership request accepted.')
+                else:
+                    ProjectTaskService.reject_task_review(request.user, proj_pk, task_pk, project_task_review)
+                    # messages.info(request, 'Membership request rejected.')
+                return redirect('dssgmkt:proj_task_list', proj_pk=proj_pk)
+            except KeyError:
+                raise Http404
+    elif request.method == 'GET':
+        form = ProjectTaskReviewForm()
+    project_task = get_object_or_404(ProjectTask, pk=task_pk)
+    project = project_task.project
+
+    return render(request, 'dssgmkt/proj_task_review.html',
+                    add_project_task_common_context(
+                        request,
+                        project_task,
+                        'tasks',
+                        {'project_task_review': project_task_review,
+                        'breadcrumb': project_breadcrumb(project,
+                                                            tasks_link(project),
+                                                            ('Review completed task', None)),
+                        'form': form,
+                        }))
+
+
 class ProjectTaskCancel(DeleteView):
     model = ProjectTaskRole
     template_name = 'dssgmkt/proj_task_cancel.html'

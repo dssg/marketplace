@@ -1,0 +1,30 @@
+{% extends "dssgmkt/proj.html" %}
+
+{% block tabcontents %}
+
+  {% if project_task %}
+
+    <h2>Task final review</h2>
+    <p>This task has been marked as completed by the volunteer, and needs to be reviewed before is accepted as finished.</p>
+
+
+    <form id="taskreview">
+      {% csrf_token %}
+      {{ form.as_p }}
+
+      <button type="submit"
+              form="taskreview"
+              formaction="{% url 'dssgmkt:proj_task_review_do' project.id project_task.id project_task_review.id 'accept' %}"
+              formmethod="post">Accept task as finished</button>
+
+      <button type="submit"
+              form="taskreview"
+              formaction="{% url 'dssgmkt:proj_task_review_do' project.id project_task.id project_task_review.id 'reject' %}"
+              formmethod="post">Reject task and reopen it</button>
+
+    </form>
+    <a href="{% url 'dssgmkt:proj_task_list' project.id %}">Cancel</a>
+
+  {% endif %}
+
+{% endblock %}

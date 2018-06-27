@@ -5,8 +5,8 @@
   <h3>Project tasks</h3>
   {% if project_tasks %}
     {% for project_task in project_tasks %}
-      <h3>Description of work</h3>
-      <p>{{ project_task.name }}</p>
+      <h3>{{ project_task.name }}</h3>
+      <p>Description of work</p>
       <p>{{ project_task.description }}</p>
       <p>{{ project_task.get_type_display }}</p>
       <p>{{ project_task.onboarding_instructions }}</p>
@@ -50,11 +50,37 @@
       <a href="{% url 'dssgmkt:proj_task_edit' project.id project_task.id %}">Edit task info</a>
       <a href="{% url 'dssgmkt:proj_task_requirements_edit' project.id project_task.id %}">Edit task requirements</a>
       <a href="{% url 'dssgmkt:proj_task_remove' project.id project_task.id %}">Delete task</a>
+
+      <h4>Task review requests</h4>
+      <table>
+        <thead>
+          <tr>
+            <th>Review request date</th>
+            <th>Review result</th>
+            <th>Resolution date</th>
+            <th>Accept/Reject</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for task_review in project_task.projecttaskreview_set.all %}
+            <tr>
+              <td>{{ task_review.review_request_date }}</td>
+              <td>{{ task_review.get_review_result_display }}</td>
+              <td>{{ task_review.review_date }}</td>
+              <td>
+                {% if task_review.is_pending %}
+                  <a href="{% url 'dssgmkt:proj_task_review' project.id project_task.id task_review.id %}">Review task</a>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     {% endfor %}
   {% else %}
     <p>This project does not have any tasks listed.</p>
   {% endif %}
-  
+
   <form id="addtask">
     {% csrf_token %}
     <button type="submit"

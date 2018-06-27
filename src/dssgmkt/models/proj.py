@@ -387,9 +387,16 @@ class ProjectTaskReview(models.Model):
         verbose_name="Effort spent (in hours)",
         help_text="How many hours did you spend in this work?",
     )
-    reviewer_comment = models.TextField(
+    public_reviewer_comments = models.TextField(
         verbose_name="Reviewer's comments",
         help_text="Add your feedback about the task. This is not private and will be shared with the volunteer.",
+        max_length=2000,
+        blank=True,
+        null=True,
+    )
+    private_reviewer_notes = models.TextField(
+        verbose_name="Private reviewer's notes",
+        help_text="Private notes about the task. These notes will be shared with the rest of the project staff but not with the volunteer or anybody else.",
         max_length=2000,
         blank=True,
         null=True,
@@ -418,6 +425,9 @@ class ProjectTaskReview(models.Model):
         verbose_name="Task",
         help_text="Project task this review is related to.",
     )
+
+    def is_pending(self):
+        return self.review_result == ReviewStatus.NEW
 
 class TaskRequirementImportance():
     NICE_TO_HAVE = 0

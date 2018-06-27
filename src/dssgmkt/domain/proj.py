@@ -1,4 +1,5 @@
 from django.db import transaction
+from datetime import datetime
 
 from ..models.proj import (
     Project, ProjectStatus, ProjectRole, ProjRole, ProjectFollower, ProjectLog, ProjectComment,
@@ -97,3 +98,48 @@ class ProjectTaskService():
                 raise KeyError('Project not found ' + str(projid))
             else:
                 raise KeyError('Task not found ' + str(taskid))
+
+
+
+
+
+    @staticmethod
+    def save_task_review(request_user, projid, taskid, task_review):
+        project_task = ProjectTask.objects.get(pk=taskid)
+        project = Project.objects.get(pk=projid)
+        if project and project_task and task_review.task == project_task and task_review.task.project == project:
+            with transaction.atomic():
+                task_review.save()
+                if task_review.review_result == ReviewStatus.ACCEPTED:
+                    project_task.stage = TaskStatus.COMPLETED
+                    project_task.save()
+                elif task_review.review_result == ReviewStatus.REJECTED:
+                    project_task.stage = TaskStatus.STARTED
+                    project_task.save()
+                # if task_review.res == ReviewStatus.ACCEPTED and not OrganizationService.user_is_organization_member(membership_request.user, membership_request.organization):
+                #     new_role = OrganizationRole(role = membership_request.role, user = membership_request.user, organization = membership_request.organization)
+                #     new_role.save()
+        else:
+            raise ValueError('Task review does not match project or task')
+
+    @staticmethod
+    def accept_task_review(request_user, projid, taskid, task_review):
+        task_review.review_result = ReviewStatus.ACCEPTED
+        task_review.review_date = datetime.now()
+        ProjectTaskService.save_task_review(request_user, projid, taskid, task_review)
+        # NotificationService.add_user_notification(membership_request.user,
+        #                                             "Congratulations! Your membership request for " + membership_request.organization.name + " was accepted.",
+        #                                             NotificationSeverity.INFO,
+        #                                             NotificationSource.ORGANIZATION_MEMBERSHIP_REQUEST,
+        #                                             membership_request.id)
+
+    @staticmethod
+    def reject_task_review(request_user, projid, taskid, task_review):
+        task_review.review_result = ReviewStatus.REJECTED
+        task_review.review_date = datetime.now()
+        ProjectTaskService.save_task_review(request_user, projid, taskid, task_review)
+        # NotificationService.add_user_notification(membership_request.user,
+        #                                             "Congratulations! Your membership request for " + membership_request.organization.name + " was accepted.",
+        #                                             NotificationSeverity.INFO,
+        #                                             NotificationSource.ORGANIZATION_MEMBERSHIP_REQUEST,
+        #                                             membership_request.id)
