@@ -65,6 +65,10 @@ class ProjectService():
         else:
             raise KeyError('Project not found ' + str(projid))
 
+    @staticmethod
+    def save_project(request_user, projid, project): # TODO check the integrity of all the primary keys
+        project.save()
+
 class ProjectTaskService():
     @staticmethod
     def get_all_tasks(request_user, proj): # TODO check that the user has permissions to take a look at all the tasks
@@ -85,7 +89,7 @@ class ProjectTaskService():
         return ProjectTaskRole.objects.filter(task=taskid, role=TaskRole.VOLUNTEER).exists()
 
     @staticmethod
-    def save_task(request_user, projid, taskid, project_task):
+    def save_task(request_user, projid, taskid, project_task): # TODO check the integrity of all the primary keys
         project_task.save()
         # TODO calculate the project status correctly based on all the tasks
         # project_task.project.status = ProjectStatus.WAITING_REVIEW

@@ -393,6 +393,14 @@ class ProjectEdit(UpdateView):
         add_project_common_context(self.request, project, 'info', context)
         return context
 
+    def form_valid(self, form):
+        project = form.save(commit = False)
+        try:
+            ProjectService.save_project(self.request.user, self.kwargs['proj_pk'], project)
+            return HttpResponseRedirect(self.get_success_url())
+        except ValueError:
+            return super().form_invalid(form)
+
 
 class CreateTaskRequirementForm(ModelForm):
     class Meta:
