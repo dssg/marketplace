@@ -626,6 +626,14 @@ class ProjectRoleEdit(SuccessMessageMixin, UpdateView):
         else:
             raise Http404
 
+    def form_valid(self, form):
+        project_role = form.save(commit = False)
+        try:
+            ProjectService.save_project_role(self.request.user, self.kwargs['proj_pk'], project_role)
+            return HttpResponseRedirect(self.get_success_url())
+        except KeyError:
+            return super().form_invalid(form)
+
 class ProjectRoleRemove(DeleteView):
     model = ProjectRole
     template_name = 'dssgmkt/proj_staff_remove.html'
