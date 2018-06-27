@@ -2,7 +2,7 @@
 
 from ..models.proj import (
     Project, ProjectStatus, ProjectRole, ProjRole, ProjectFollower, ProjectLog, ProjectComment,
-    ProjectTask,
+    ProjectTask, TaskStatus,
 )
 
 
@@ -66,3 +66,10 @@ class ProjectTaskService():
     def get_open_tasks(request_user, proj):
         return ProjectTask.objects.filter(accepting_volunteers = True,
                                           project = proj).order_by('estimated_start_date')
+
+
+    @staticmethod
+    def get_volunteer_current_tasks(request_user, projid):
+        return ProjectTask.objects.filter(project__pk = projid,
+                                          projecttaskrole__user = request_user,
+                                          stage__in=[TaskStatus.STARTED, TaskStatus.WAITING_REVIEW])

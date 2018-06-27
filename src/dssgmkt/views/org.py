@@ -93,7 +93,7 @@ def add_organization_common_context(request, organization, page_tab, context):
         context['user_is_member'] = OrganizationService.user_is_organization_member(request.user, organization)
     return context
 
-class OrganizationView(generic.DetailView):
+class OrganizationView(generic.DetailView): # TODO override the get_queryset method to get the organization from the domain layer
     model = Organization
     template_name = 'dssgmkt/org_info.html'
     pk_url_kwarg = 'org_pk'
@@ -200,7 +200,7 @@ class OrganizationMembershipRequestCreate(CreateView):
         except KeyError:
             raise Http404
 
-class OrganizationMembershipRequestView(PermissionRequiredMixin, generic.DetailView):
+class OrganizationMembershipRequestView(PermissionRequiredMixin, generic.DetailView): # TODO override get_queryset to use the domain logic service?
     model = OrganizationMembershipRequest
     template_name = 'dssgmkt/org_staff_request_detail.html'
     pk_url_kwarg = 'request_pk'

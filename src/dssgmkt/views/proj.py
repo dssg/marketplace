@@ -154,7 +154,7 @@ def project_comments_view(request, proj_pk):
                             'form': form,
                         }))
 
-class ProjectDeliverablesView(generic.DetailView):
+class ProjectDeliverablesView(generic.DetailView): # TODO override the get_queryset method to get the project from the domain layer
     model = Project
     template_name = 'dssgmkt/proj_deliverables.html'
     pk_url_kwarg = 'proj_pk'
@@ -165,26 +165,20 @@ class ProjectDeliverablesView(generic.DetailView):
         add_project_common_context(self.request, project, 'deliverables', context)
         return context
 
-class ProjectVolunteerInstructionsView(generic.DetailView):
-    model = ProjectTask
+# TODO change this to a list view of all the tasks the user is working on
+class ProjectVolunteerInstructionsView(generic.ListView):
     template_name = 'dssgmkt/proj_instructions.html'
-    pk_url_kwarg = 'proj_pk'
+    context_object_name = 'project_tasks'
 
-    def get_object(self):
-        return ProjectTask.objects.filter(project__pk = self.kwargs['proj_pk'],
-                                          projecttaskrole__user = self.request.user,
-                                          stage__in=[TaskStatus.STARTED, TaskStatus.WAITING_REVIEW]).first()
+    def get_queryset(self):
+        return ProjectTaskService.get_volunteer_current_tasks(self.request.user, self.kwargs['proj_pk'])
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        if not self.object:
-            project_pk = self.kwargs['proj_pk']
-            project = get_object_or_404(Project, pk = project_pk)
-        else:
-            project = self.object.project
+        project_pk = self.kwargs['proj_pk']
+        project = get_object_or_404(Project, pk = project_pk)
         context['breadcrumb'] = project_breadcrumb(project, ('Volunteer instructions', None))
         add_project_common_context(self.request, project, 'instructions', context)
-        context['project_task'] = self.object
         return context
 
 class CreateProjectTaskReviewForm(ModelForm):
