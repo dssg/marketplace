@@ -1,4 +1,4 @@
-from django.db import models, IntegrityError, transaction
+from django.db import IntegrityError, transaction
 from django.db.models import Case, Q, When
 
 from ..models.common import OrgRole, ReviewStatus

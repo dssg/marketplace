@@ -550,29 +550,35 @@ class CreateProjectRoleForm(ModelForm):
         fields = ['role', 'user']
 
 def project_staff_view(request, proj_pk):
-    if request.method == 'GET':
-        project = get_object_or_404(Project, pk = proj_pk)
-        staff_page_size = 50
-        project_staff = project.projectrole_set.all().order_by('role')
-        staff_paginator = Paginator(project_staff, staff_page_size)
-        staff_page = staff_paginator.get_page(request.GET.get('staff_page', 1))
-
-        return render(request, 'dssgmkt/proj_staff.html',
-                        add_project_common_context(request, project, 'staff',
-                            {
-                                'breadcrumb': project_breadcrumb(project, ('Staff', None)),
-                                'project_staff': staff_page,
-                                'add_staff_form': CreateProjectRoleForm(),
-                            }))
     ## TODO this is a security hole as staff can post to this view and create new members
-    elif request.method == 'POST':
+    if request.method == 'POST':
         form = CreateProjectRoleForm(request.POST)
         if form.is_valid:
             project_role = form.save(commit = False)
-            project = get_object_or_404(Project, pk = proj_pk)
-            project_role.project = project
-            project_role.save()
-            return redirect('dssgmkt:proj_staff', proj_pk = proj_pk)
+            try:
+                ProjectService.add_staff_member(request.user, proj_pk, project_role)
+                messages.info(request, 'Staff member added successfully.')
+                return redirect('dssgmkt:proj_staff', proj_pk = proj_pk)
+            except KeyError:
+                raise Http404
+            except ValueError:
+                form.add_error(None, "This user is already a member of the project.")
+    elif request.method == 'GET':
+        form = CreateProjectRoleForm()
+    project = get_object_or_404(Project, pk = proj_pk)
+    staff_page_size = 50
+    project_staff = project.projectrole_set.all().order_by('role')
+    staff_paginator = Paginator(project_staff, staff_page_size)
+    staff_page = staff_paginator.get_page(request.GET.get('staff_page', 1))
+
+    return render(request, 'dssgmkt/proj_staff.html',
+                    add_project_common_context(request, project, 'staff',
+                        {
+                            'breadcrumb': project_breadcrumb(project, ('Staff', None)),
+                            'project_staff': staff_page,
+                            'add_staff_form': form,
+                        }))
+
 
 
 

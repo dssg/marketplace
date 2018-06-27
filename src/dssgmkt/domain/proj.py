@@ -1,4 +1,4 @@
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.utils import timezone
 from datetime import date
 
@@ -69,6 +69,24 @@ class ProjectService():
     @staticmethod
     def save_project(request_user, projid, project): # TODO check the integrity of all the primary keys
         project.save()
+
+    # TODO check for permissions (user is admin role of the organization in question)
+    @staticmethod
+    def add_staff_member(request_user, projid, project_role):
+        project = Project.objects.get(pk=projid)
+        if project:
+            project_role.project = project
+            try:
+                project_role.save()
+                # NotificationService.add_user_notification(organization_role.user,
+                #                                             "You have been added as a member of " + organization_role.organization.name + " with " + organization_role.get_role_display() + " role.",
+                #                                             NotificationSeverity.INFO,
+                #                                             NotificationSource.ORGANIZATION,
+                #                                             organization_role.organization.id)
+            except IntegrityError:
+                raise ValueError('Duplicate user role')
+        else:
+            raise KeyError('Project not found ' + str(projid))
 
 class ProjectTaskService():
     @staticmethod
