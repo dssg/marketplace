@@ -5,7 +5,6 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
-from django.db.models import Case, Q, When
 from django.forms import CharField, ModelForm, Textarea
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
@@ -25,6 +24,7 @@ from ..models.proj import (
 from .common import build_breadcrumb, home_link, paginate
 from dssgmkt.domain.proj import ProjectService, ProjectTaskService
 
+## TODO use the paginate function from the common module all over this module
 
 def projects_link(include_link=True):
     return ('Projects', reverse('dssgmkt:proj_list') if include_link else None)
@@ -566,7 +566,7 @@ def project_staff_view(request, proj_pk):
     elif request.method == 'GET':
         form = CreateProjectRoleForm()
     project = get_object_or_404(Project, pk = proj_pk) ## TODO move this to the domain logic
-    staff_page_size = 50 
+    staff_page_size = 50
     project_staff = ProjectService.get_all_project_staff(request.user, proj_pk)
     staff_paginator = Paginator(project_staff, staff_page_size)
     staff_page = staff_paginator.get_page(request.GET.get('staff_page', 1))
@@ -580,22 +580,17 @@ def project_staff_view(request, proj_pk):
                         }))
 
 
-
-
 def project_volunteers_view(request, proj_pk):
     if request.method == 'GET':
-        project = get_object_or_404(Project, pk = proj_pk)
+        project = get_object_or_404(Project, pk = proj_pk) # TODO move this to the domain logic
 
-        volunteers_page_size = 1
-        volunteers = ProjectTaskRole.objects.filter(task__project__id = proj_pk)
+        volunteers_page_size = 20
+        volunteers = ProjectService.get_all_project_volunteers(request.user, proj_pk)
         volunteers_paginator = Paginator(volunteers, volunteers_page_size)
         volunteers_page = volunteers_paginator.get_page(request.GET.get('volunteers_page', 1))
 
         applications_page_size = 50
-        volunteer_applications = VolunteerApplication.objects.filter(task__project__id = proj_pk).order_by(
-                Case(When(status=ReviewStatus.NEW, then=0),
-                     When(status=ReviewStatus.ACCEPTED, then=1),
-                     When(status=ReviewStatus.REJECTED, then=2)), '-application_date')
+        volunteer_applications = ProjectService.get_all_volunteer_applications(request.user, proj_pk)
         volunteer_applications_paginator = Paginator(volunteer_applications, applications_page_size)
         applications_page = volunteer_applications_paginator.get_page(request.GET.get('applications_page', 1))
 

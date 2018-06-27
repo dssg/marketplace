@@ -4,12 +4,12 @@ from datetime import date
 
 from ..models.proj import (
     Project, ProjectStatus, ProjectRole, ProjRole, ProjectFollower, ProjectLog, ProjectComment,
-    ProjectTask, TaskStatus, TaskRole, ProjectTaskRole,
+    ProjectTask, TaskStatus, TaskRole, ProjectTaskRole, VolunteerApplication,
 )
 from ..models.common import (
     ReviewStatus,
 )
-
+from django.db.models import Case, When
 
 def filter_public_projects(query_set):
     return query_set.exclude(status=ProjectStatus.DRAFT) \
@@ -91,6 +91,17 @@ class ProjectService():
     @staticmethod
     def get_all_project_staff(request_user, projid):
         return ProjectRole.objects.filter(project=projid).order_by('role')
+
+    @staticmethod
+    def get_all_project_volunteers(request_user, projid):
+        return ProjectTaskRole.objects.filter(task__project__id=projid)
+
+    @staticmethod
+    def get_all_volunteer_applications(request_user, projid):
+        return VolunteerApplication.objects.filter(task__project__id = projid).order_by(
+                        Case(When(status=ReviewStatus.NEW, then=0),
+                             When(status=ReviewStatus.ACCEPTED, then=1),
+                             When(status=ReviewStatus.REJECTED, then=2)), '-application_date')
 
 class ProjectTaskService():
     @staticmethod
