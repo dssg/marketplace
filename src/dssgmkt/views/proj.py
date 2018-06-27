@@ -467,7 +467,7 @@ class ProjectTaskRequirementEdit(UpdateView):
         except KeyError:
             return super().form_invalid(form)
 
-class ProjectTaskRequirementRemove(DeleteView):
+class ProjectTaskRequirementRemove(DeleteView): # override the get_object / get_queryset method to use the domain logic
     model = ProjectTaskRequirement
     template_name = 'dssgmkt/proj_task_requirements_requirement_remove.html'
     pk_url_kwarg = 'requirement_pk'
@@ -490,6 +490,17 @@ class ProjectTaskRequirementRemove(DeleteView):
             return context
         else:
             raise Http404
+
+    def delete(self, request,  *args, **kwargs):
+        task_requirement = self.get_object()
+        self.object = task_requirement
+        try:
+            ProjectTaskService.delete_task_requirement(request.user, self.kwargs['proj_pk'], self.kwargs['task_pk'], task_requirement)
+            return HttpResponseRedirect(self.get_success_url())
+        except ValueError as err:
+            messages.error(request, 'There was a problem with your request.')
+            # logger.error("Error when user {0} tried to leave organization {1}: {2}".format(request.user.id, organization_role.organization.id, err))
+            return HttpResponseRedirect(self.get_success_url())
 
 class ProjectTaskRemove(DeleteView):
     model = ProjectTask

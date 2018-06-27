@@ -201,7 +201,10 @@ class ProjectTaskService():
         requirement.task = project_task
         requirement.save()
 
-
     @staticmethod
     def save_task_requirement(request_user, projid, taskid, requirement):  # TODO check the integrity of all the primary keys
         requirement.save()
+
+    @staticmethod
+    def delete_task_requirement(request_user, projid, taskid, requirement):  # TODO check the integrity of all the primary keys
+        requirement.delete()
