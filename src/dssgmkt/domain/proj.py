@@ -1,5 +1,6 @@
 from django.db import transaction
 from django.utils import timezone
+from datetime import date
 
 from ..models.proj import (
     Project, ProjectStatus, ProjectRole, ProjRole, ProjectFollower, ProjectLog, ProjectComment,
@@ -120,6 +121,29 @@ class ProjectTaskService():
         # project_task.project.status = ProjectStatus.WAITING_REVIEW
         # project_task.project.save()
          # TODO move this to a separate method that modifies tasks (so effects are passed on to the project as needed)
+
+    @staticmethod
+    def create_default_task(request_user, projid): # TODO check permissions of the user within this project
+        # TODO calculate the project status correctly based on all the tasks
+        # project_task.project.status = ProjectStatus.WAITING_REVIEW
+        # project_task.project.save()
+        # TODO move this to a separate method that modifies tasks (so effects are passed on to the project as needed)
+        project = Project.objects.get(pk=projid)
+        if project:
+            project_task = ProjectTask()
+            project_task.name = 'New project task'
+            project_task.description = 'This is the task description'
+            project_task.onboarding_instructions = 'These are the volunteer onboarding instructions'
+            project_task.stage = TaskStatus.NOT_STARTED
+            project_task.accepting_volunteers = False
+            project_task.project = project
+            project_task.percentage_complete = 0
+            project_task.business_area = 'no'
+            project_task.estimated_start_date = date.today()
+            project_task.estimated_end_date = date.today()
+            project_task.save()
+        else:
+            raise KeyError('Project not found')
 
     @staticmethod
     def save_task_review(request_user, projid, taskid, task_review):

@@ -540,18 +540,7 @@ def create_default_project_task(request, proj_pk):
         raise Http404
     ## TODO this is a security hole as anybody can post to this view and create new skills
     elif request.method == 'POST': ## TODO move this to the ProjectTaskService in the domain logic layer
-        project_task = ProjectTask()
-        project_task.name = 'New project task'
-        project_task.description = 'This is the task description'
-        project_task.onboarding_instructions = 'These are the volunteer onboarding instructions'
-        project_task.stage = TaskStatus.NOT_STARTED
-        project_task.accepting_volunteers = False
-        project_task.project = get_object_or_404(Project, pk = proj_pk)
-        project_task.percentage_complete = 0
-        project_task.business_area = 'no'
-        project_task.estimated_start_date = date.today()
-        project_task.estimated_end_date = date.today()
-        project_task.save()
+        ProjectTaskService.create_default_task(request.user, proj_pk)
         return redirect('dssgmkt:proj_task_list', proj_pk = proj_pk)
 
 
