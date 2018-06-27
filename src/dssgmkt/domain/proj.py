@@ -1,8 +1,11 @@
-
+from django.db import transaction
 
 from ..models.proj import (
     Project, ProjectStatus, ProjectRole, ProjRole, ProjectFollower, ProjectLog, ProjectComment,
     ProjectTask, TaskStatus,
+)
+from ..models.common import (
+    ReviewStatus,
 )
 
 
@@ -73,3 +76,24 @@ class ProjectTaskService():
         return ProjectTask.objects.filter(project__pk = projid,
                                           projecttaskrole__user = volunteer,
                                           stage__in=[TaskStatus.STARTED, TaskStatus.WAITING_REVIEW])
+
+
+    @staticmethod
+    def mark_task_as_completed(request_user, projid, taskid, project_task_review):
+        project_task = ProjectTask.objects.get(pk=taskid)
+        project = Project.objects.get(pk=projid)
+        if project and project_task:
+            with transaction.atomic():
+                project_task_review.task = project_task
+                project_task_review.review_result = ReviewStatus.NEW
+                project_task_review.save()
+                project_task.stage = TaskStatus.WAITING_REVIEW
+                project_task.save()
+                # TODO calculate the project status correctly based on all the tasks, not just this one.
+                # project_task.project.status = ProjectStatus.WAITING_REVIEW
+                # project_task.project.save()
+        else:
+            if not project:
+                raise KeyError('Project not found ' + str(projid))
+            else:
+                raise KeyError('Task not found ' + str(taskid))

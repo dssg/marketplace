@@ -165,7 +165,6 @@ class ProjectDeliverablesView(generic.DetailView): # TODO override the get_query
         add_project_common_context(self.request, project, 'deliverables', context)
         return context
 
-# TODO change this to a list view of all the tasks the user is working on
 class ProjectVolunteerInstructionsView(generic.ListView):
     template_name = 'dssgmkt/proj_instructions.html'
     context_object_name = 'project_tasks'
@@ -176,7 +175,7 @@ class ProjectVolunteerInstructionsView(generic.ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         project_pk = self.kwargs['proj_pk']
-        project = get_object_or_404(Project, pk = project_pk)
+        project = get_object_or_404(Project, pk = project_pk) # TODO get the object from the domain layer
         context['breadcrumb'] = project_breadcrumb(project, ('Volunteer instructions', None))
         add_project_common_context(self.request, project, 'instructions', context)
         return context
@@ -196,7 +195,7 @@ class ProjectTaskReviewCreate(CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        project_task = get_object_or_404(ProjectTask, pk=self.kwargs['task_pk'])
+        project_task = get_object_or_404(ProjectTask, pk=self.kwargs['task_pk']) # TODO get this from the domain layer
         context['breadcrumb'] = project_breadcrumb(project_task.project,
                                                     volunteer_instructions_link(project_task.project),
                                                     ('Mark work as completed', None))
@@ -205,16 +204,11 @@ class ProjectTaskReviewCreate(CreateView):
 
     def form_valid(self, form):
         project_task_review = form.save(commit=False)
-        project_task = get_object_or_404(ProjectTask, pk=self.kwargs['task_pk'])
-        project = get_object_or_404(Project, pk=self.kwargs['proj_pk'])
-        project_task_review.task = project_task
-        project_task_review.review_result = ReviewStatus.NEW
-        project_task_review.save()
-        project_task.stage = TaskStatus.WAITING_REVIEW
-        project_task.save()
-        project_task.project.status = ProjectStatus.WAITING_REVIEW
-        project_task.project.save()
-        return HttpResponseRedirect(self.get_success_url())
+        try:
+            ProjectTaskService.mark_task_as_completed(self.request.user, self.kwargs['proj_pk'], self.kwargs['task_pk'], project_task_review)
+            return HttpResponseRedirect(self.get_success_url())
+        except KeyError:
+            raise Http404
 
 class ProjectTaskCancel(DeleteView):
     model = ProjectTaskRole
