@@ -441,7 +441,7 @@ class ProjectTaskRequirementEdit(UpdateView):
     pk_url_kwarg = 'requirement_pk'
 
     def get_success_url(self):
-        return reverse('dssgmkt:proj_task_requirements_edit', args=[self.kwargs['proj_pk'],self.kwargs['task_pk']])
+        return reverse('dssgmkt:proj_task_requirements_edit', args=[self.kwargs['proj_pk'], self.kwargs['task_pk']])
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -458,6 +458,14 @@ class ProjectTaskRequirementEdit(UpdateView):
             return context
         else:
             raise Http404
+
+    def form_valid(self, form):
+        requirement = form.save(commit = False)
+        try:
+            ProjectTaskService.save_task_requirement(self.request.user, self.kwargs['proj_pk'], self.kwargs['task_pk'], requirement)
+            return HttpResponseRedirect(self.get_success_url())
+        except KeyError:
+            return super().form_invalid(form)
 
 class ProjectTaskRequirementRemove(DeleteView):
     model = ProjectTaskRequirement
