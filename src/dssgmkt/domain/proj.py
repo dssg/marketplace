@@ -1,5 +1,5 @@
 from django.db import transaction
-from datetime import datetime
+from django.utils import timezone
 
 from ..models.proj import (
     Project, ProjectStatus, ProjectRole, ProjRole, ProjectFollower, ProjectLog, ProjectComment,
@@ -112,6 +112,8 @@ class ProjectTaskService():
                 task_review.save()
                 if task_review.review_result == ReviewStatus.ACCEPTED:
                     project_task.stage = TaskStatus.COMPLETED
+                    project_task.percentage_complete = 1.0
+                    project_task.actual_effort_hours = task_review.volunteer_effort_hours
                     project_task.save()
                 elif task_review.review_result == ReviewStatus.REJECTED:
                     project_task.stage = TaskStatus.STARTED
@@ -123,9 +125,9 @@ class ProjectTaskService():
             raise ValueError('Task review does not match project or task')
 
     @staticmethod
-    def accept_task_review(request_user, projid, taskid, task_review):
+    def accept_task_review(request_user, projid, taskid, task_review): # TODO check that the review request is in status NEW
         task_review.review_result = ReviewStatus.ACCEPTED
-        task_review.review_date = datetime.now()
+        task_review.review_date = timezone.now()
         ProjectTaskService.save_task_review(request_user, projid, taskid, task_review)
         # NotificationService.add_user_notification(membership_request.user,
         #                                             "Congratulations! Your membership request for " + membership_request.organization.name + " was accepted.",
@@ -134,9 +136,9 @@ class ProjectTaskService():
         #                                             membership_request.id)
 
     @staticmethod
-    def reject_task_review(request_user, projid, taskid, task_review):
+    def reject_task_review(request_user, projid, taskid, task_review): # TODO check that the review request is in status NEW
         task_review.review_result = ReviewStatus.REJECTED
-        task_review.review_date = datetime.now()
+        task_review.review_date = timezone.now()
         ProjectTaskService.save_task_review(request_user, projid, taskid, task_review)
         # NotificationService.add_user_notification(membership_request.user,
         #                                             "Congratulations! Your membership request for " + membership_request.organization.name + " was accepted.",

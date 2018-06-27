@@ -210,6 +210,22 @@ class ProjectTaskReviewCreate(CreateView):
         except KeyError:
             raise Http404
 
+class ProjectTaskReviewView(generic.DetailView): # TODO override get_queryset to use the domain logic service?
+    model = ProjectTaskReview
+    template_name = 'dssgmkt/proj_task_review_detail.html'
+    pk_url_kwarg = 'review_pk'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        task_review = self.object
+        project_task = task_review.task
+        project = project_task.project
+        context['breadcrumb'] = project_breadcrumb(project,
+                                                    tasks_link(project),
+                                                    ('Task review request', None))
+        add_project_task_common_context(self.request, project_task, 'tasklist', context)
+        context['task_review'] = task_review
+        return context
 
 class ProjectTaskReviewForm(ModelForm):
     class Meta:
@@ -242,7 +258,7 @@ def process_task_review_request_view(request, proj_pk, task_pk, review_pk, actio
                     add_project_task_common_context(
                         request,
                         project_task,
-                        'tasks',
+                        'tasklist',
                         {'project_task_review': project_task_review,
                         'breadcrumb': project_breadcrumb(project,
                                                             tasks_link(project),
