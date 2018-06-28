@@ -740,27 +740,48 @@ class ProjectTaskRoleRemove(DeleteView):
             # logger.error("Error when user {0} tried to leave organization {1}: {2}".format(request.user.id, organization_role.organization.id, err))
             return HttpResponseRedirect(self.get_success_url())
 
-class ProjectVolunteerApplicationEdit(UpdateView):
-    model = VolunteerApplication
-    fields = ['status', 'public_reviewer_comments', 'private_reviewer_notes']
-    template_name = 'dssgmkt/proj_volunteer_application_review.html'
-    pk_url_kwarg = 'volunteer_application_pk'
+class VolunteerApplicationReviewForm(ModelForm):
 
-    def get_success_url(self):
-        return reverse('dssgmkt:proj_volunteers', args=[self.kwargs['proj_pk']])
+    class Meta:
+        model = VolunteerApplication
+        fields = ['public_reviewer_comments', 'private_reviewer_notes']
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        project = get_object_or_404(Project, pk=self.kwargs['proj_pk'])
-        volunteer_application = self.object
-        if volunteer_application and volunteer_application.task.id == self.kwargs['task_pk'] and volunteer_application.task.project.id == self.kwargs['proj_pk']:
-            context['breadcrumb'] = project_breadcrumb(project,
-                                                        volunteers_link(project),
-                                                        ('Review volunteer', None))
-            add_project_common_context(self.request, project, 'volunteers', context)
-            return context
-        else:
-            raise Http404
+def volunteer_application_view(request, proj_pk, task_pk, volunteer_application_pk, action=None):
+    volunteer_application = VolunteerApplication.objects.get(pk=volunteer_application_pk)
+    if request.method == 'POST':
+        form = VolunteerApplicationReviewForm(request.POST, instance=volunteer_application)
+        if form.is_valid():
+            volunteer_application = form.save(commit = False)
+            try:
+                if action == 'accept':
+                    ProjectTaskService.accept_volunteer(request.user, proj_pk, task_pk, volunteer_application)
+                    messages.info(request, 'Volunteer application accepted.')
+                else:
+                    ProjectTaskService.reject_volunteer(request.user, proj_pk, task_pk, volunteer_application)
+                    messages.info(request, 'Volunteer application rejected.')
+                return redirect('dssgmkt:proj_volunteers', proj_pk=proj_pk)
+            except KeyError:
+                raise Http404
+    elif request.method == 'GET':
+        form = VolunteerApplicationReviewForm()
+
+    project = get_object_or_404(Project, pk=proj_pk) ## TODO move this to the domain
+    if volunteer_application and volunteer_application.task.id == task_pk and volunteer_application.task.project.id == proj_pk:
+        return render(request, 'dssgmkt/proj_volunteer_application_review.html',
+                        add_project_common_context(
+                            request,
+                            project,
+                            'volunteers',
+                            {
+                                'volunteerapplication': volunteer_application,
+                                'breadcrumb': project_breadcrumb(project,
+                                                                    volunteers_link(project),
+                                                                    ('Review volunteer', None)),
+                                'form': form,
+                            }))
+    else:
+        raise Http404
+
 
 def follow_project_view(request, proj_pk):
     if request.method == 'GET':

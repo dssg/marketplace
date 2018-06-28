@@ -2,9 +2,8 @@
 
 {% block tabcontents %}
 
-  <h2>Volunteer application review</h2>
-  <p>This person has applied to volunteer in your project. Please review the
-  application and accept or reject it.</p>
+  <h2>Volunteer application</h2>
+  <p>This person has applied to volunteer in your project.</p>
 
   <p>Full name:<a href="">{{ volunteerapplication.volunteer.first_name }} {{ volunteerapplication.volunteer.last_name }}</a></p>
   <p>Email addres:<a href="">{{ volunteerapplication.volunteer.email }}</a></p>
@@ -13,14 +12,27 @@
   <h4>Volunteer application letter</h4>
   <p>{{ volunteerapplication.volunteer_application_letter }}</p>
 
-  <form id="volunteerapplicationreview">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit"
-            form="volunteerapplicationreview"
-            formaction="{% url 'dssgmkt:proj_volunteer_application_review' project.id volunteerapplication.task.id volunteerapplication.id %}"
-            formmethod="post">Save</button>
-  </form>
-  <a href="{% url 'dssgmkt:proj_volunteers' project.id %}">Cancel</a>
+  {% if volunteerapplication.is_new %}
+    {% if user_is_project_owner %}
+      <form id="volunteerapplicationreview">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit"
+                form="volunteerapplicationreview"
+                formaction="{% url 'dssgmkt:proj_volunteer_application_review_do' project.id volunteerapplication.task.id volunteerapplication.id 'accept' %}"
+                formmethod="post">Accept volunteer application</button>
+        <button type="submit"
+                form="volunteerapplicationreview"
+                formaction="{% url 'dssgmkt:proj_volunteer_application_review_do' project.id volunteerapplication.task.id volunteerapplication.id 'reject' %}"
+                formmethod="post">Reject volunteer application</button>
+
+      </form>
+    {% endif %}
+  {% else %}
+    <p>Status: {{ volunteerapplication.get_status_display }}</p>
+    <p>Resolution date: {{ volunteerapplication.resolution_date }}</p>
+    <p>Reviewer's comments: {{ volunteerapplication.public_reviewer_comments }}</p>
+    <p>Private reviewer's notes: {{ volunteerapplication.private_reviewer_notes }}</p> <!-- TODO check the user is a project member! -->
+  {% endif %}
 
 {% endblock %}

@@ -284,6 +284,46 @@ class ProjectTaskService():
             task_application_request.save()
 
     @staticmethod
+    def save_volunteer_application(request_user, projid, taskid, volunteer_application):
+        project_task = ProjectTask.objects.get(pk=taskid)
+        project = Project.objects.get(pk=projid)
+        if project and project_task and volunteer_application.task == project_task and volunteer_application.task.project == project:
+            with transaction.atomic():
+                if not volunteer_application.is_new():
+                    volunteer_application.resolution_date = timezone.now()
+                volunteer_application.save()
+                if volunteer_application.status == ReviewStatus.ACCEPTED:
+                    task_role = ProjectTaskRole()
+                    task_role.role = TaskRole.VOLUNTEER
+                    task_role.task = project_task
+                    task_role.user = volunteer_application.volunteer
+                    task_role.save()
+        else:
+            raise ValueError('Task review does not match project or task')
+
+    @staticmethod
+    def accept_volunteer(request_user, projid, taskid, volunteer_application): # TODO check that the review request is in status NEW
+        volunteer_application.status = ReviewStatus.ACCEPTED
+        volunteer_application.review_date = timezone.now()
+        ProjectTaskService.save_volunteer_application(request_user, projid, taskid, volunteer_application)
+        # NotificationService.add_user_notification(membership_request.user,
+        #                                             "Congratulations! Your membership request for " + membership_request.organization.name + " was accepted.",
+        #                                             NotificationSeverity.INFO,
+        #                                             NotificationSource.ORGANIZATION_MEMBERSHIP_REQUEST,
+        #                                             membership_request.id)
+
+    @staticmethod
+    def reject_volunteer(request_user, projid, taskid, volunteer_application): # TODO check that the review request is in status NEW
+        volunteer_application.status = ReviewStatus.REJECTED
+        volunteer_application.review_date = timezone.now()
+        ProjectTaskService.save_volunteer_application(request_user, projid, taskid, volunteer_application)
+        # NotificationService.add_user_notification(membership_request.user,
+        #                                             "Congratulations! Your membership request for " + membership_request.organization.name + " was accepted.",
+        #                                             NotificationSeverity.INFO,
+        #                                             NotificationSource.ORGANIZATION_MEMBERSHIP_REQUEST,
+        #                                             membership_request.id)
+
+    @staticmethod
     def add_task_requirement(request_user, projid, taskid, requirement):  # TODO check the integrity of all the primary keys
         project_task = ProjectTask.objects.get(pk=taskid)
         requirement.task = project_task

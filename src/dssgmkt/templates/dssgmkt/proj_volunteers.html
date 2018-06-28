@@ -48,11 +48,7 @@
             <th>Application date</th>
             <th>Status</th>
             <th>Resolution date</th>
-            <th>Public comments</th>
-            <th>Private notes</th>
-            {% if user_is_project_owner %}
-            <th>Acept/Reject</th>
-            {% endif %}
+            <th>Details</th>
         </tr>
       </thead>
       <tbody>
@@ -64,15 +60,9 @@
               <td>{{ application.application_date }}</td>
               <td>{{ application.get_status_display }}</td>
               <td>{{ application.resolution_date|default_if_none:"" }}</td>
-              <td>{{ application.public_reviewer_comments|default_if_none:"" }}</td>
-              <td>{{ application.private_reviewer_notes|default_if_none:"" }}</td>
-              {% if user_is_project_owner %}
                 <td>
-                  {% if application.is_new %}
-                    <a href="{% url 'dssgmkt:proj_volunteer_application_review' project.id application.task.id application.id %}">Accept/Reject</a>
-                  {% endif %}
+                    <a href="{% url 'dssgmkt:proj_volunteer_application_review' project.id application.task.id application.id %}">Details</a>
                 </td>
-              {% endif %}
           </tr>
         {% endfor %}
       </tbody>
