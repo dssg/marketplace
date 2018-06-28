@@ -206,22 +206,20 @@ class VolunteerProfile(models.Model):
 
 class VolunteerSkill(models.Model):
     level = models.IntegerField(
-        verbose_name="Phone number",
-        help_text="Type your phone number in the format +999999999999999",
+        verbose_name="Skill level",
+        help_text="How proficient are you in this skill?",
         choices = SkillLevel.get_choices(),
         default=SkillLevel.BEGINNER,
     )
     skill = models.ForeignKey(
         Skill,
         on_delete=models.CASCADE,
-        verbose_name="Phone number",
-        help_text="Type your phone number in the format +999999999999999",
+        verbose_name="Skill",
     )
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-            verbose_name="Phone number",
-            help_text="Type your phone number in the format +999999999999999",
+        verbose_name="User",
     )
 
     class Meta:

@@ -171,6 +171,9 @@ class ProjectTaskService():
                                           projecttaskrole__user=volunteer,
                                           stage__in=[TaskStatus.STARTED, TaskStatus.WAITING_REVIEW])
 
+    def get_volunteer_all_tasks(request_user, target_user):
+        return ProjectTask.objects.filter(projecttaskrole__user=target_user).exclude(project__status=ProjectStatus.DRAFT)
+
     @staticmethod
     def task_has_volunteers(request_user, taskid):
         return ProjectTaskRole.objects.filter(task=taskid, role=TaskRole.VOLUNTEER).exists()

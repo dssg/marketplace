@@ -134,7 +134,7 @@ class ProjectView(generic.ListView): ## This is a listview because it is actuall
     model = ProjectTask
     template_name = 'dssgmkt/proj_info.html'
     context_object_name = 'project_tasks'
-    paginate_by = 50
+    paginate_by = 25
 
     def get_queryset(self):
         return ProjectTaskService.get_open_tasks(self.request.user, self.kwargs['proj_pk'])
@@ -587,7 +587,7 @@ def project_staff_view(request, proj_pk):
             try:
                 ProjectService.add_staff_member(request.user, proj_pk, project_role)
                 messages.info(request, 'Staff member added successfully.')
-                return redirect('dssgmkt:proj_staff', proj_pk = proj_pk)
+                return redirect('dssgmkt:proj_staff', proj_pk=proj_pk)
             except KeyError:
                 raise Http404
             except ValueError:

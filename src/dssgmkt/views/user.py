@@ -2,6 +2,7 @@ from datetime import date
 
 from django.contrib.auth import logout
 from django.contrib.messages.views import SuccessMessageMixin
+from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.forms import ModelForm
@@ -17,8 +18,10 @@ from rules.contrib.views import (
 from ..models.org import OrganizationMembershipRequest
 from ..models.proj import Project, ProjectStatus, ProjectTask
 from ..models.user import Skill, User, VolunteerProfile, VolunteerSkill, UserNotification, NotificationSource
-from .common import build_breadcrumb, home_link
+from .common import build_breadcrumb, home_link, paginate
 
+from dssgmkt.domain.user import UserService
+from dssgmkt.domain.proj import ProjectTaskService
 from dssgmkt.domain.notifications import NotificationService
 
 
@@ -40,7 +43,7 @@ def get_url_for_notification(source_type, source_id):
         elif source_type == NotificationSource.VOLUNTEER_APPLICATION:
             url = None
         elif source_type == NotificationSource.ORGANIZATION_MEMBERSHIP_REQUEST:
-            membership_request = get_object_or_404(OrganizationMembershipRequest, pk=source_id)
+            membership_request = get_object_or_404(OrganizationMembershipRequest, pk=source_id) # TODO fix this so it uses the organization view method to get orgrequests
             url = reverse('dssgmkt:org_staff_request_review', args=[membership_request.organization.id, source_id])
     return url
 
@@ -50,7 +53,7 @@ class VolunteerIndexView(generic.ListView):
     paginate_by = 1
 
     def get_queryset(self):
-        return VolunteerProfile.objects.order_by('user__first_name', 'user__last_name')[:50]
+        return UserService.get_all_volunteer_profiles(self.request.user)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -100,13 +103,16 @@ class UserProfileView(generic.DetailView):
     template_name = 'dssgmkt/user_profile.html'
     context_object_name = 'userprofile'
 
+    def get_object(self):
+        return UserService.get_user(self.request.user, self.kwargs['user_pk'])
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['breadcrumb'] = build_breadcrumb([home_link(),
                                                   ("My profile" , None)])
 
-        project_tasks_page_size = 1
-        project_tasks = ProjectTask.objects.filter(projecttaskrole__user=self.object.id).filter(~Q(project__status = ProjectStatus.DRAFT)) # TODO create a proxy model for active projects
+        project_tasks_page_size = 1 # TODO use the common module pagination
+        project_tasks = ProjectTaskService.get_volunteer_all_tasks(self.request.user, self.object)
         project_tasks_paginator = Paginator(project_tasks, project_tasks_page_size)
         project_tasks_page = project_tasks_paginator.get_page(self.request.GET.get('project_tasks_page', 1))
         context['project_tasks'] = project_tasks_page
@@ -131,6 +137,14 @@ class UserProfileEdit(UpdateView):
                                                   ("Edit profile", None)])
         return context
 
+    def form_valid(self, form):
+        user = form.save(commit = False)
+        try:
+            UserService.save_user(self.request.user, self.kwargs['user_pk'], user)
+            return HttpResponseRedirect(self.get_success_url())
+        except ValueError:
+            return super().form_invalid(form)
+
 class VolunteerProfileEdit(UpdateView):
     model = VolunteerProfile
     fields = ['portfolio_url', 'github_url', 'linkedin_url', 'degree_name', 'degree_level',
@@ -154,31 +168,47 @@ class VolunteerProfileEdit(UpdateView):
         else:
             raise Http404
 
+    def form_valid(self, form):
+        volunteer_profile = form.save(commit = False)
+        try:
+            UserService.save_volunteer_profile(self.request.user, self.kwargs['volunteer_pk'], volunteer_profile)
+            return HttpResponseRedirect(self.get_success_url())
+        except ValueError:
+            return super().form_invalid(form)
+
 class CreateSkillForm(ModelForm):
     class Meta:
         model = VolunteerSkill
         fields = ['skill', 'level']
 
 def user_profile_skills_edit_view(request, user_pk):
-    if request.method == 'GET':
-        volunteerskills = VolunteerSkill.objects.filter(user__id = user_pk)
-
-        return render(request, 'dssgmkt/user_profile_skills_edit.html',
-                            {'volunteerskills': volunteerskills,
-                            'breadcrumb': build_breadcrumb([home_link(),
-                                                              ("My profile" , reverse('dssgmkt:user_profile', args=[user_pk])),
-                                                              ("Edit skills", None)]),
-
-                            'add_skill_form': CreateSkillForm(),
-                            })
     ## TODO this is a security hole as anybody can post to this view and create new skills
-    elif request.method == 'POST':
+    if request.method == 'POST':
         form = CreateSkillForm(request.POST)
         if form.is_valid:
             skill = form.save(commit = False)
-            skill.user = request.user
-            skill.save()
-            return redirect('dssgmkt:user_profile_skills_edit', user_pk = user_pk)
+            try:
+                UserService.add_volunteer_skill(request.user, user_pk, skill)
+                messages.info(request, 'Skill added successfully.')
+                return redirect('dssgmkt:user_profile_skills_edit', user_pk=user_pk)
+            except KeyError:
+                raise Http404
+            except ValueError:
+                form.add_error(None, "Skill already present.")
+    elif request.method == 'GET':
+        form = CreateSkillForm()
+    volunteerskills = UserService.get_volunteer_skills(request.user, user_pk)
+
+    return render(request, 'dssgmkt/user_profile_skills_edit.html',
+                        {
+                            'volunteerskills': volunteerskills,
+                            'breadcrumb': build_breadcrumb([home_link(),
+                                                              ("My profile" , reverse('dssgmkt:user_profile', args=[user_pk])),
+                                                              ("Edit skills", None)]),
+                            'add_skill_form': form,
+                        })
+
+
 
 class VolunteerSkillEdit(UpdateView):
     model = VolunteerSkill
@@ -202,6 +232,14 @@ class VolunteerSkillEdit(UpdateView):
         else:
             raise Http404
 
+    def form_valid(self, form):
+        volunteer_skill = form.save(commit = False)
+        try:
+            UserService.save_volunteer_skill(self.request.user, self.kwargs['user_pk'], self.kwargs['skill_pk'], volunteer_skill)
+            return HttpResponseRedirect(self.get_success_url())
+        except KeyError:
+            return super().form_invalid(form)
+
 class VolunteerSkillRemove(DeleteView):
     model = VolunteerSkill
     template_name = 'dssgmkt/user_profile_skills_skill_remove.html'
@@ -222,3 +260,14 @@ class VolunteerSkillRemove(DeleteView):
             return context
         else:
             raise Http404
+
+    def delete(self, request,  *args, **kwargs):
+        volunteer_skill = self.get_object()
+        self.object = volunteer_skill
+        try:
+            UserService.delete_volunteer_skill(request.user, self.kwargs['user_pk'], self.kwargs['skill_pk'], volunteer_skill)
+            return HttpResponseRedirect(self.get_success_url())
+        except ValueError as err:
+            messages.error(request, 'There was a problem with your request.')
+            # logger.error("Error when user {0} tried to leave organization {1}: {2}".format(request.user.id, organization_role.organization.id, err))
+            return HttpResponseRedirect(self.get_success_url())
