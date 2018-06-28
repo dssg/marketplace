@@ -93,10 +93,13 @@ def add_organization_common_context(request, organization, page_tab, context):
         context['user_is_member'] = OrganizationService.user_is_organization_member(request.user, organization)
     return context
 
-class OrganizationView(generic.DetailView): # TODO override the get_queryset method to get the organization from the domain layer
+class OrganizationView(generic.DetailView):
     model = Organization
     template_name = 'dssgmkt/org_info.html'
     pk_url_kwarg = 'org_pk'
+
+    def get_object(self):
+        return get_organization(self.request, self.kwargs['org_pk'])
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
