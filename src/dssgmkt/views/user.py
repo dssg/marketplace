@@ -3,7 +3,6 @@ from datetime import date
 from django.contrib.auth import logout
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib import messages
-from django.core.paginator import Paginator
 from django.db.models import Q
 from django.forms import ModelForm
 from django.http import Http404, HttpResponseRedirect
@@ -50,7 +49,7 @@ def get_url_for_notification(source_type, source_id):
 class VolunteerIndexView(generic.ListView):
     template_name = 'dssgmkt/volunteer_list.html'
     context_object_name = 'volunteer_list'
-    paginate_by = 1
+    paginate_by = 25
 
     def get_queryset(self):
         return UserService.get_all_volunteer_profiles(self.request.user)
@@ -111,11 +110,8 @@ class UserProfileView(generic.DetailView):
         context['breadcrumb'] = build_breadcrumb([home_link(),
                                                   ("My profile" , None)])
 
-        project_tasks_page_size = 1 # TODO use the common module pagination
         project_tasks = ProjectTaskService.get_volunteer_all_tasks(self.request.user, self.object)
-        project_tasks_paginator = Paginator(project_tasks, project_tasks_page_size)
-        project_tasks_page = project_tasks_paginator.get_page(self.request.GET.get('project_tasks_page', 1))
-        context['project_tasks'] = project_tasks_page
+        context['project_tasks'] = paginate(self.request, project_tasks, request_key='project_tasks_page', page_size=15)
 
         return context
 

@@ -103,7 +103,7 @@ def get_volunteer_application(request, proj_pk, task_pk, volunteer_application_p
 class ProjectIndexView(generic.ListView):
     template_name = 'dssgmkt/proj_list.html'
     context_object_name = 'proj_list'
-    paginate_by = 1
+    paginate_by = 20
 
     def get_queryset(self):
         # This gets paginated by the view so we are not retrieving all the projects in one query
