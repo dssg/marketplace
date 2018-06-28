@@ -788,13 +788,9 @@ def follow_project_view(request, proj_pk):
         raise Http404
     ## TODO this is a security hole as anybody can post to this view and create new skills
     elif request.method == 'POST':
-        project = get_object_or_404(Project, pk = proj_pk)
-        project_follower = ProjectFollower.objects.filter(project = project, user = request.user).first()
-        if project_follower:
-            project_follower.delete()
-        else:
-            project_follower = ProjectFollower()
-            project_follower.project = project
-            project_follower.user = request.user
-            project_follower.save()
-        return redirect('dssgmkt:proj_info', proj_pk = proj_pk)
+        try:
+            ProjectService.toggle_follower(request.user, proj_pk)
+            return redirect('dssgmkt:proj_info', proj_pk=proj_pk)
+        except KeyError:
+            messages.error(request, 'There was an error while processing your request.')
+            return redirect('dssgmkt:proj_info', proj_pk=proj_pk)

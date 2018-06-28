@@ -127,6 +127,21 @@ class ProjectService():
                              When(status=ReviewStatus.ACCEPTED, then=1),
                              When(status=ReviewStatus.REJECTED, then=2)), '-application_date')
 
+    @staticmethod
+    def toggle_follower(request_user, projid):
+        project = Project.objects.get(pk=projid)
+        if project:
+            project_follower = ProjectFollower.objects.filter(project=project, user=request_user).first()
+            if project_follower:
+                project_follower.delete()
+            else:
+                project_follower = ProjectFollower()
+                project_follower.project = project
+                project_follower.user = request_user
+                project_follower.save()
+        else:
+            raise KeyError('Project not found')
+
 class ProjectTaskService():
     @staticmethod
     def get_all_tasks(request_user, proj): # TODO check that the user has permissions to take a look at all the tasks

@@ -47,6 +47,20 @@
     <p>This project does not have any volunteer openings at this moment.</p>
   {% endif %}
 
+  <form id="followproject">
+    {% csrf_token %}
+    <button type="submit"
+            form="followproject"
+            formaction="{% url 'dssgmkt:proj_follow' project.id %}"
+            formmethod="post">
+            {% if user_is_following_project %}
+              Unfollow project
+            {% else %}
+              Follow project
+            {% endif %}
+    </button>
+  </form>
+
   	<!-- <if status is new>
   		Description of the scoping task:
   			description

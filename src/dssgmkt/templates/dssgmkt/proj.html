@@ -10,19 +10,6 @@ This is the page for basic project info.
   <h2>{{ project.name }}</h2>
   <h4><a href="{% url 'dssgmkt:org_info' project.organization.id %}">{{ project.organization.name }}</a></h4>
   <p>{{ project.get_status_display }}</p>
-  <form id="followproject">
-    {% csrf_token %}
-    <button type="submit"
-            form="followproject"
-            formaction="{% url 'dssgmkt:proj_follow' project.id %}"
-            formmethod="post">
-            {% if user_is_following_project %}
-              Unfollow project
-            {% else %}
-              Follow project
-            {% endif %}
-    </button>
-  </form>
   <p>{{ project.short_summary }}</p>
   <p>{{ project.get_project_cause_display }}</p>
 
