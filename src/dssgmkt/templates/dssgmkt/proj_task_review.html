@@ -2,25 +2,57 @@
 
 {% block tabcontents %}
 
-    <h2>Task final review</h2>
-    <p>This task has been marked as completed by the volunteer, and needs to be reviewed before is accepted as finished.</p>
+  <h2>Task final review request</h2>
+  <p>{{ project_task.name }}</p>
+  <p>Estimated effort in hours: {{ project_task.estimated_effort_hours }}</p>
+  <p>Total effort spent (in hours): {{ task_review.volunteer_effort_hours }}</p>
+  <p>Volunteer's comments: {{ task_review.volunteer_comment }}</p>
+
+  {% if project_task.task_home_url %}
+    <p>External task home: <a href="{{ project_task.task_home_url }}">{{ project_task.task_home_url }}</a></p>
+  {% endif %}
+  {% if project_task.task_deliverables_url %}
+    <p>External deliverables page: <a href="{{ project_task.task_deliverables_url }}">{{ project_task.task_deliverables_url }}</a></p>
+  {% endif %}
+  <p>Request date: {{ task_review.review_request_date }} </p>
 
 
-    <form id="taskreview">
-      {% csrf_token %}
-      {{ form.as_p }}
 
-      <button type="submit"
-              form="taskreview"
-              formaction="{% url 'dssgmkt:proj_task_review_do' project.id project_task.id project_task_review.id 'accept' %}"
-              formmethod="post">Accept task as finished</button>
+  {% if task_review.is_pending %}
 
-      <button type="submit"
-              form="taskreview"
-              formaction="{% url 'dssgmkt:proj_task_review_do' project.id project_task.id project_task_review.id 'reject' %}"
-              formmethod="post">Reject task and reopen it</button>
+      <form id="taskreview">
+        {% csrf_token %}
+        {{ form.as_p }}
 
-    </form>
-    <a href="{% url 'dssgmkt:proj_task_review_detail' project.id project_task.id project_task_review.id %}">Cancel</a>
+        <button type="submit"
+                form="taskreview"
+                formaction="{% url 'dssgmkt:proj_task_review_do' project.id project_task.id task_review.id 'accept' %}"
+                formmethod="post">Accept task as finished</button>
+
+        <button type="submit"
+                form="taskreview"
+                formaction="{% url 'dssgmkt:proj_task_review_do' project.id project_task.id task_review.id 'reject' %}"
+                formmethod="post">Reject task and reopen it</button>
+
+      </form>
+      <a href="{% url 'dssgmkt:proj_task_list' project.id %}">Cancel</a>
+
+  {% else %}
+
+    <p>Request status: {{ task_review.get_review_result_display }}
+        {% if task_review.is_pending %} <!-- TODO check permissions of the user -->
+          <a href="{% url 'dssgmkt:proj_task_review' project.id project_task.id task_review.id %}">Accept/reject task<a>
+        {% endif %}
+    </p>
+      <p>Resolution date: {{ task_review.review_date }}</p>
+    {% if task_review.public_reviewer_comments %}
+      <p>Reviewer's comments: {{ task_review.public_reviewer_comments }}</p>
+    {% endif %}
+    {% if task_review.private_reviewer_notes %} <!-- TODO check the permissions of the user -->
+      <p>Private reviewer's notes: {{ task_review.private_reviewer_notes }}</p>
+    {% endif %}
+
+  {% endif %}
+
 
 {% endblock %}

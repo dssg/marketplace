@@ -257,26 +257,6 @@ class ProjectTaskReviewCreate(CreateView):
         except KeyError:
             raise Http404
 
-class ProjectTaskReviewView(generic.DetailView):
-    model = ProjectTaskReview
-    template_name = 'dssgmkt/proj_task_review_detail.html'
-    pk_url_kwarg = 'review_pk'
-
-    def get_object(self):
-        return get_project_task_review(self.request, self.kwargs['proj_pk'], self.kwargs['task_pk'], self.kwargs['review_pk'])
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        task_review = self.object
-        project_task = task_review.task
-        project = project_task.project
-        context['breadcrumb'] = project_breadcrumb(project,
-                                                    tasks_link(project),
-                                                    ('Task review request', None))
-        add_project_task_common_context(self.request, project_task, 'tasklist', context)
-        context['task_review'] = task_review
-        return context
-
 class ProjectTaskReviewForm(ModelForm):
     class Meta:
         model = ProjectTaskReview
@@ -309,7 +289,7 @@ def process_task_review_request_view(request, proj_pk, task_pk, review_pk, actio
                         request,
                         project_task,
                         'tasklist',
-                        {'project_task_review': project_task_review,
+                        {'task_review': project_task_review,
                         'breadcrumb': project_breadcrumb(project,
                                                             tasks_link(project),
                                                             ('Review completed task', None)),
@@ -635,7 +615,7 @@ def project_volunteers_view(request, proj_pk):
         volunteers_page = paginate(request, volunteers, request_key='volunteers_page', page_size=20)
 
         volunteer_applications = ProjectService.get_all_volunteer_applications(request.user, proj_pk)
-        applications_page = paginate(request, volunteer_applications, request_key='applications_page', page_size=1)
+        applications_page = paginate(request, volunteer_applications, request_key='applications_page', page_size=20)
 
         return render(request, 'dssgmkt/proj_volunteers.html',
                         add_project_common_context(request, project, 'volunteers',

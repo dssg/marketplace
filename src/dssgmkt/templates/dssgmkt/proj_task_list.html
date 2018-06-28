@@ -68,7 +68,7 @@
               <td>{{ task_review.get_review_result_display }}</td>
               <td>{{ task_review.review_date }}</td>
               <td>
-                  <a href="{% url 'dssgmkt:proj_task_review_detail' project.id project_task.id task_review.id %}">Details</a>
+                  <a href="{% url 'dssgmkt:proj_task_review' project.id project_task.id task_review.id %}">Details</a>
               </td>
             </tr>
           {% endfor %}
