@@ -24,6 +24,15 @@ from dssgmkt.domain.proj import ProjectTaskService
 from dssgmkt.domain.notifications import NotificationService
 
 
+def users_link(include_link=True):
+    return ('Users', reverse('dssgmkt:volunteer_list') if include_link else None)
+
+def my_profile_link(user_pk, include_link=True):
+    return ("My profile" , reverse('dssgmkt:user_profile', args=[user_pk]) if include_link else None)
+
+def edit_my_skills_link(user_pk, include_link=True):
+    return ("Edit my skills" , reverse('dssgmkt:user_profile_skills_edit', args=[user_pk]) if include_link else None)
+
 def logout_view(request):
     logout(request)
     return HttpResponseRedirect(reverse('dssgmkt:home'))
@@ -57,7 +66,7 @@ class VolunteerIndexView(generic.ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['breadcrumb'] = build_breadcrumb([home_link(),
-                                                  ('Volunteers', None)])
+                                                  users_link(include_link=False)])
         return context
 
 
@@ -72,7 +81,7 @@ class UserHomeView(generic.ListView): ## This is a listview because it is actual
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['breadcrumb'] = build_breadcrumb([("Home", None)])
+        context['breadcrumb'] = build_breadcrumb([home_link(include_link=False)])
         for notification in context['notification_list']:
             notification.url = get_url_for_notification(notification.source, notification.target_id)
         return context
@@ -108,7 +117,8 @@ class UserProfileView(generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['breadcrumb'] = build_breadcrumb([home_link(),
-                                                  ("My profile" , None)])
+                                                    users_link(),
+                                                    my_profile_link(self.object.id, include_link=False) if self.object.id == self.request.user.id else (self.object.full_name(), None)])
 
         project_tasks = ProjectTaskService.get_volunteer_all_tasks(self.request.user, self.object)
         context['project_tasks'] = paginate(self.request, project_tasks, request_key='project_tasks_page', page_size=15)
@@ -129,7 +139,7 @@ class UserProfileEdit(UpdateView):
         userprofile = get_object_or_404(User, pk=self.kwargs['user_pk'])
         context['userprofile'] = userprofile
         context['breadcrumb'] = build_breadcrumb([home_link(),
-                                                  ("My profile" , reverse('dssgmkt:user_profile', args=[userprofile.id])),
+                                                  my_profile_link(self.kwargs['user_pk']),
                                                   ("Edit profile", None)])
         return context
 
@@ -158,8 +168,8 @@ class VolunteerProfileEdit(UpdateView):
         if volunteerprofile and volunteerprofile.user.id == self.request.user.id and self.request.user.id == self.kwargs['user_pk']:
             context['volunteerprofile'] = volunteerprofile
             context['breadcrumb'] = build_breadcrumb([home_link(),
-                                                      ("My profile" , reverse('dssgmkt:user_profile', args=[volunteerprofile.user.id])),
-                                                      ("Edit volunteer information", None)])
+                                                        my_profile_link(volunteerprofile.user.id),
+                                                        ("Edit volunteer information", None)])
             return context
         else:
             raise Http404
@@ -199,8 +209,8 @@ def user_profile_skills_edit_view(request, user_pk):
                         {
                             'volunteerskills': volunteerskills,
                             'breadcrumb': build_breadcrumb([home_link(),
-                                                              ("My profile" , reverse('dssgmkt:user_profile', args=[user_pk])),
-                                                              ("Edit skills", None)]),
+                                                            my_profile_link(user_pk),
+                                                            edit_my_skills_link(user_pk, include_link=False)]),
                             'add_skill_form': form,
                         })
 
@@ -221,8 +231,8 @@ class VolunteerSkillEdit(UpdateView):
         if volunteer_skill and volunteer_skill.user.id == self.request.user.id and self.request.user.id == self.kwargs['user_pk']:
             context['volunteerskill'] = volunteer_skill
             context['breadcrumb'] =  build_breadcrumb([home_link(),
-                                                      ("My profile" , reverse('dssgmkt:user_profile', args=[self.kwargs['user_pk']])),
-                                                      ("Edit skills", reverse('dssgmkt:user_profile_skills_edit', args=[self.kwargs['user_pk']])),
+                                                      my_profile_link(self.kwargs['user_pk']),
+                                                      edit_my_skills_link(self.kwargs['user_pk']),
                                                       ("Edit skill", None)])
             return context
         else:
@@ -250,8 +260,8 @@ class VolunteerSkillRemove(DeleteView):
         if volunteer_skill and volunteer_skill.user.id == self.request.user.id and self.request.user.id == self.kwargs['user_pk']:
             context['volunteerskill'] = volunteer_skill
             context['breadcrumb'] =  build_breadcrumb([home_link(),
-                                                      ("My profile" , reverse('dssgmkt:user_profile', args=[self.kwargs['user_pk']])),
-                                                      ("Edit skills", reverse('dssgmkt:user_profile_skills_edit', args=[self.kwargs['user_pk']])),
+                                                      my_profile_link(self.kwargs['user_pk']),
+                                                      edit_my_skills_link(self.kwargs['user_pk']),
                                                       ("Remove skill", None)])
             return context
         else:

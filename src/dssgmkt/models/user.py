@@ -46,6 +46,9 @@ class User(AbstractUser):
         null=True,
     )
 
+    def full_name(self):
+        return self.first_name + " " + self.last_name
+        
 class NotificationSeverity():
     INFO = 0
     WARNING = 1
