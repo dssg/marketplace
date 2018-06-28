@@ -23,8 +23,6 @@ from ..models.proj import (
 from .common import build_breadcrumb, home_link, paginate
 from dssgmkt.domain.proj import ProjectService, ProjectTaskService
 
-## TODO use the paginate function from the common module all over this module
-
 def projects_link(include_link=True):
     return ('Projects', reverse('dssgmkt:proj_list') if include_link else None)
 

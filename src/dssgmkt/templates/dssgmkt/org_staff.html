@@ -78,7 +78,7 @@
               <td><a href="{% url 'dssgmkt:user_profile' request.user.id %}">{{ request.user.first_name }} {{ request.user.last_name }}</a></td>
               <td><a href="{% url 'dssgmkt:user_profile' request.user.id %}">{{ request.user.email }}</a></td>
               <td>{{ request.request_date }}</td>
-              <td><a href="{% url 'dssgmkt:org_staff_request_detail' organization.id request.id %}">{{ request.get_status_display }}</a></td>
+              <td><a href="{% url 'dssgmkt:org_staff_request_review' organization.id request.id %}">{{ request.get_status_display }}</a></td>
               <td>{% if not request.is_new %}
                     {{ request.resolution_date|default_if_none:"" }}
                   {% endif %}</td>

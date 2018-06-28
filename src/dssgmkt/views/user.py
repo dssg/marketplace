@@ -41,7 +41,7 @@ def get_url_for_notification(source_type, source_id):
             url = None
         elif source_type == NotificationSource.ORGANIZATION_MEMBERSHIP_REQUEST:
             membership_request = get_object_or_404(OrganizationMembershipRequest, pk=source_id)
-            url = reverse('dssgmkt:org_staff_request_detail', args=[membership_request.organization.id, source_id])
+            url = reverse('dssgmkt:org_staff_request_review', args=[membership_request.organization.id, source_id])
     return url
 
 class VolunteerIndexView(generic.ListView):

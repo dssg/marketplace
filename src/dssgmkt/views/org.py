@@ -36,7 +36,7 @@ def organization_staff_link(organization, include_link=True):
     return ('Staff', reverse('dssgmkt:org_staff', args=[organization.id]) if include_link else None)
 
 def organization_membership_request_link(membership_request, include_link=True):
-    return ('Membership request', reverse('dssgmkt:org_staff_request_detail',
+    return ('Membership request', reverse('dssgmkt:org_staff_request_review',
                                             args=[membership_request.organization.id, membership_request.id ]) if include_link else None)
 
 def organization_breadcrumb(organization, *items):
@@ -199,22 +199,6 @@ class OrganizationMembershipRequestCreate(CreateView):
             return HttpResponseRedirect(self.get_success_url())
         except KeyError:
             raise Http404
-
-class OrganizationMembershipRequestView(PermissionRequiredMixin, generic.DetailView): # TODO override get_queryset to use the domain logic service?
-    model = OrganizationMembershipRequest
-    template_name = 'dssgmkt/org_staff_request_detail.html'
-    pk_url_kwarg = 'request_pk'
-    permission_required = 'organization.membership_request_view'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        membership_request = self.object
-        organization = membership_request.organization
-        context['breadcrumb'] = organization_breadcrumb(organization,
-                                                        organization_staff_link(organization),
-                                                        ('Membership request', None))
-        add_organization_common_context(self.request, organization, 'staff', context)
-        return context
 
 class OrganizationMembershipRequestForm(ModelForm):
     class Meta:
