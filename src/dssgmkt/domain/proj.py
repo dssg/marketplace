@@ -4,7 +4,8 @@ from datetime import date
 
 from ..models.proj import (
     Project, ProjectStatus, ProjectRole, ProjRole, ProjectFollower, ProjectLog, ProjectComment,
-    ProjectTask, TaskStatus, TaskRole, ProjectTaskRole, VolunteerApplication,
+    ProjectTask, TaskStatus, TaskRole, ProjectTaskRole, ProjectTaskReview, VolunteerApplication,
+    ProjectTaskRequirement,
 )
 from ..models.common import (
     ReviewStatus,
@@ -17,6 +18,10 @@ def filter_public_projects(query_set):
                     .exclude(status=ProjectStatus.DELETED)
 
 class ProjectService():
+    @staticmethod
+    def get_project(request_user, projid):
+        return Project.objects.get(pk=projid)
+
     @staticmethod
     def get_all_projects(request_user):
         # We could also add the projects that are non-public but that also belong
@@ -144,12 +149,21 @@ class ProjectService():
 
 class ProjectTaskService():
     @staticmethod
+    def get_project_task(request_user, projid, taskid): # TODO check pk integrity
+        return ProjectTask.objects.get(pk=taskid)
+
+    @staticmethod
     def get_all_tasks(request_user, proj): # TODO check that the user has permissions to take a look at all the tasks
-        return ProjectTask.objects.filter(project = proj).order_by('estimated_start_date')
+        return ProjectTask.objects.filter(project=proj).order_by('estimated_start_date')
+
     @staticmethod
     def get_open_tasks(request_user, proj):
         return ProjectTask.objects.filter(accepting_volunteers = True,
-                                          project = proj).order_by('estimated_start_date')
+                                          project=proj).order_by('estimated_start_date')
+
+    @staticmethod
+    def get_non_finished_tasks(request_user, proj):
+        return ProjectTask.objects.filter(project=proj).exclude(stage=TaskStatus.COMPLETED).exclude(stage=TaskStatus.DELETED).order_by('estimated_start_date')
 
     @staticmethod
     def get_volunteer_current_tasks(request_user, volunteer, projid):
@@ -216,6 +230,10 @@ class ProjectTaskService():
             project_task.save()
         else:
             raise KeyError('Project not found')
+
+    @staticmethod
+    def get_project_task_review(request_user, projid, taskid, reviewid): # TODO check pk integrity
+        return ProjectTaskReview.objects.get(pk=reviewid)
 
     @staticmethod
     def save_task_review(request_user, projid, taskid, task_review):
@@ -299,6 +317,10 @@ class ProjectTaskService():
             task_application_request.save()
 
     @staticmethod
+    def get_volunteer_application(request_user, projid, taskid, volunteer_application_pk): # TODO check pk integrity
+        return VolunteerApplication.objects.get(pk=volunteer_application_pk)
+
+    @staticmethod
     def save_volunteer_application(request_user, projid, taskid, volunteer_application):
         project_task = ProjectTask.objects.get(pk=taskid)
         project = Project.objects.get(pk=projid)
@@ -338,6 +360,11 @@ class ProjectTaskService():
         #                                             NotificationSource.ORGANIZATION_MEMBERSHIP_REQUEST,
         #                                             membership_request.id)
 
+
+    @staticmethod
+    def get_project_task_requirements(request_user, projid, taskid): # TODO check pk integrity
+        return ProjectTaskRequirement.objects.filter(task=taskid)
+
     @staticmethod
     def add_task_requirement(request_user, projid, taskid, requirement):  # TODO check the integrity of all the primary keys
         project_task = ProjectTask.objects.get(pk=taskid)
@@ -351,6 +378,14 @@ class ProjectTaskService():
     @staticmethod
     def delete_task_requirement(request_user, projid, taskid, requirement):  # TODO check the integrity of all the primary keys
         requirement.delete()
+
+    @staticmethod
+    def get_project_task_role(request_user, projid, taskid, roleid): # TODO check pk integrity
+        return ProjectTaskRole.objects.get(pk=roleid)
+
+    @staticmethod
+    def get_own_project_task_role(request_user, projid, taskid): # TODO check pk integrity
+        return ProjectTaskRole.objects.get(task=taskid, user=request_user)
 
     @staticmethod
     def save_project_task_role(request_user, projid, taskid, project_task_role):

@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.forms import CharField, ModelForm, Textarea
 from django.http import Http404, HttpResponseRedirect
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views import generic
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
@@ -54,6 +54,55 @@ def project_breadcrumb(project, *items):
     breadcrumb_items += items
     return build_breadcrumb(breadcrumb_items)
 
+def get_project(request, proj_pk):
+    project = ProjectService.get_project(request.user, proj_pk)
+    if project:
+        return project
+    else:
+        raise Http404
+
+def get_project_task(request, proj_pk, task_pk):
+    project_task = ProjectTaskService.get_project_task(request.user, proj_pk, task_pk)
+    if project_task:
+        return project_task
+    else:
+        raise Http404
+
+def get_project_task_role(request, proj_pk, task_pk, role_pk):
+    project_task_role = ProjectTaskService.get_project_task_role(request.user, proj_pk, task_pk, role_pk)
+    if project_task_role:
+        return project_task_role
+    else:
+        raise Http404
+
+def get_own_project_task_role(request, proj_pk, task_pk):
+    project_task_role = ProjectTaskService.get_own_project_task_role(request.user, proj_pk, task_pk)
+    if project_task_role:
+        return project_task_role
+    else:
+        raise Http404
+
+def get_project_task_review(request, proj_pk, task_pk, review_pk):
+    project_task_review = ProjectTaskService.get_project_task_review(request.user, proj_pk, task_pk, review_pk)
+    if project_task_review:
+        return project_task_review
+    else:
+        raise Http404
+
+def get_project_task_requirements(request, proj_pk, task_pk):
+    project_task_requirements = ProjectTaskService.get_project_task_requirements(request.user, proj_pk, task_pk)
+    if project_task_requirements:
+        return project_task_requirements
+    else:
+        raise Http404
+
+def get_volunteer_application(request, proj_pk, task_pk, volunteer_application_pk):
+    volunteer_application = ProjectTaskService.get_volunteer_application(request.user, proj_pk, task_pk, volunteer_application_pk)
+    if volunteer_application:
+        return volunteer_application
+    else:
+        raise Http404
+
 class ProjectIndexView(generic.ListView):
     template_name = 'dssgmkt/proj_list.html'
     context_object_name = 'proj_list'
@@ -95,7 +144,7 @@ class ProjectView(generic.ListView): ## This is a listview because it is actuall
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        project = get_object_or_404(Project, pk = self.kwargs['proj_pk'])
+        project = get_project(self.request, self.kwargs['proj_pk'])
         context['breadcrumb'] = project_breadcrumb(project)
         add_project_common_context(self.request, project, 'info', context)
         return context
@@ -106,14 +155,12 @@ class ProjectLogView(generic.ListView):
     paginate_by = 1
 
     def get_queryset(self):
-        project_pk = self.kwargs['proj_pk']
-        project = get_object_or_404(Project, pk = project_pk)
+        project = get_project(self.request, self.kwargs['proj_pk'])
         return ProjectService.get_project_changes(self.request.user, project)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        project_pk = self.kwargs['proj_pk']
-        project = get_object_or_404(Project, pk = project_pk)
+        project = get_project(self.request, self.kwargs['proj_pk'])
         context['breadcrumb'] = project_breadcrumb(project, ('Change log', None))
         add_project_common_context(self.request, project, 'log', context)
         return context
@@ -140,7 +187,7 @@ def project_comments_view(request, proj_pk):
                 form.add_error(None, "Invalid comment.")
     elif request.method == 'GET':
         form = CreateProjectCommentForm()
-    project = get_object_or_404(Project, pk=proj_pk) ## TODO move this to the logic layer
+    project = get_project(request, proj_pk)
     project_comments = ProjectService.get_project_comments(request.user, project)
     project_comments_page = paginate(request, project_comments, page_size=20)
     return render(request, 'dssgmkt/proj_discussion.html',
@@ -154,14 +201,18 @@ def project_comments_view(request, proj_pk):
                             'form': form,
                         }))
 
-class ProjectDeliverablesView(generic.DetailView): # TODO override the get_queryset method to get the project from the domain layer
+class ProjectDeliverablesView(generic.DetailView):
     model = Project
     template_name = 'dssgmkt/proj_deliverables.html'
     pk_url_kwarg = 'proj_pk'
 
+    def get_object(self):
+        return get_project(self.request, self.kwargs['proj_pk'])
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['breadcrumb'] = project_breadcrumb(context['project'], ('Project deliverables', None))
+        project = get_project(self.request, self.kwargs['proj_pk'])
         add_project_common_context(self.request, project, 'deliverables', context)
         return context
 
@@ -174,8 +225,7 @@ class ProjectVolunteerInstructionsView(generic.ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        project_pk = self.kwargs['proj_pk']
-        project = get_object_or_404(Project, pk = project_pk) # TODO get the object from the domain layer
+        project = get_project(self.request, self.kwargs['proj_pk'])
         context['breadcrumb'] = project_breadcrumb(project, ('Volunteer instructions', None))
         add_project_common_context(self.request, project, 'instructions', context)
         return context
@@ -195,7 +245,7 @@ class ProjectTaskReviewCreate(CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        project_task = get_object_or_404(ProjectTask, pk=self.kwargs['task_pk']) # TODO get this from the domain layer
+        project_task = get_project_task(self.request, self.kwargs['proj_pk'], self.kwargs['task_pk'])
         context['breadcrumb'] = project_breadcrumb(project_task.project,
                                                     volunteer_instructions_link(project_task.project),
                                                     ('Mark work as completed', None))
@@ -210,10 +260,13 @@ class ProjectTaskReviewCreate(CreateView):
         except KeyError:
             raise Http404
 
-class ProjectTaskReviewView(generic.DetailView): # TODO override get_queryset to use the domain logic service?
+class ProjectTaskReviewView(generic.DetailView):
     model = ProjectTaskReview
     template_name = 'dssgmkt/proj_task_review_detail.html'
     pk_url_kwarg = 'review_pk'
+
+    def get_object(self):
+        return get_project_task_review(self.request, self.kwargs['proj_pk'], self.kwargs['task_pk'], self.kwargs['review_pk'])
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -234,7 +287,7 @@ class ProjectTaskReviewForm(ModelForm):
 
 
 def process_task_review_request_view(request, proj_pk, task_pk, review_pk, action=None):
-    project_task_review = get_object_or_404(ProjectTaskReview, pk=review_pk)
+    project_task_review = get_project_task_review(request, proj_pk, task_pk, review_pk)
     if request.method == 'POST':
         form = ProjectTaskReviewForm(request.POST, instance=project_task_review)
         if form.is_valid():
@@ -251,7 +304,7 @@ def process_task_review_request_view(request, proj_pk, task_pk, review_pk, actio
                 raise Http404
     elif request.method == 'GET':
         form = ProjectTaskReviewForm()
-    project_task = get_object_or_404(ProjectTask, pk=task_pk)
+    project_task = get_project_task(request, proj_pk, task_pk)
     project = project_task.project
 
     return render(request, 'dssgmkt/proj_task_review.html',
@@ -272,7 +325,7 @@ class ProjectTaskCancel(DeleteView):
     template_name = 'dssgmkt/proj_task_cancel.html'
 
     def get_object(self):
-        return get_object_or_404(ProjectTaskRole, task=self.kwargs['task_pk'], user=self.request.user.id) # TODO get object from domain layer
+        return get_own_project_task_role(self.request, self.kwargs['proj_pk'], self.kwargs['task_pk'])
 
     def get_success_url(self):
         return reverse('dssgmkt:proj_info', args=[self.object.task.project.id])
@@ -312,8 +365,8 @@ class ProjectTaskApply(CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        project_task = get_object_or_404(ProjectTask, pk=self.kwargs['task_pk'])
-        project = get_object_or_404(Project, pk=self.kwargs['proj_pk'])
+        project_task = get_project_task(self.request, self.kwargs['proj_pk'], self.kwargs['task_pk'])
+        project = get_project(self.request, self.kwargs['proj_pk'])
         context['breadcrumb'] = project_breadcrumb(project, ('Apply to volunteer', None))
         add_project_task_common_context(self.request, project_task, 'info', context)
         return context
@@ -325,7 +378,6 @@ class ProjectTaskApply(CreateView):
             return HttpResponseRedirect(self.get_success_url())
         except KeyError:
             raise Http404
-        task = get_object_or_404(ProjectTask, pk=self.kwargs['task_pk'])
 
 
 class ProjectTaskIndex(generic.ListView):
@@ -338,7 +390,7 @@ class ProjectTaskIndex(generic.ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        project = get_object_or_404(Project, pk = self.kwargs['proj_pk']) # TODO move this to the domain logic
+        project = get_project(self.request, self.kwargs['proj_pk'])
         context['breadcrumb'] = project_breadcrumb(project, tasks_link(project, include_link=False))
         add_project_common_context(self.request, project, 'tasklist', context)
         return context
@@ -357,7 +409,7 @@ class ProjectTaskEdit(UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        project = get_object_or_404(Project, pk=self.kwargs['proj_pk'])
+        project = get_project(self.request, self.kwargs['proj_pk'])
         project_task = self.object
         context['breadcrumb'] = project_breadcrumb(project,
                                                     tasks_link(project),
@@ -388,7 +440,7 @@ class ProjectEdit(UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        project = get_object_or_404(Project, pk=self.kwargs['proj_pk'])
+        project = get_project(self.request, self.kwargs['proj_pk'])
         context['breadcrumb'] = project_breadcrumb(project, ('Edit project information', None))
         add_project_common_context(self.request, project, 'info', context)
         return context
@@ -420,9 +472,9 @@ def project_task_requirements_edit_view(request, proj_pk, task_pk):
                 form.add_error(None, "Invalid task requirement.")
     if request.method == 'GET':
         form = CreateTaskRequirementForm()
-    task_requirements = ProjectTaskRequirement.objects.filter(task = task_pk)
-    task = get_object_or_404(ProjectTask, pk=task_pk)
-    project = get_object_or_404(Project, pk=proj_pk)
+    task_requirements = get_project_task_requirements(request, proj_pk, task_pk)
+    task = get_project_task(request, proj_pk, task_pk)
+    project = get_project(request, proj_pk)
     return render(request, 'dssgmkt/proj_task_requirements_edit.html',
                     add_project_task_common_context(request, task, 'tasklist',
                         {
@@ -539,7 +591,7 @@ def create_default_project_task(request, proj_pk):
     if request.method == 'GET':
         raise Http404
     ## TODO this is a security hole as anybody can post to this view and create new skills
-    elif request.method == 'POST': ## TODO move this to the ProjectTaskService in the domain logic layer
+    elif request.method == 'POST':
         ProjectTaskService.create_default_task(request.user, proj_pk)
         return redirect('dssgmkt:proj_task_list', proj_pk = proj_pk)
 
@@ -565,7 +617,7 @@ def project_staff_view(request, proj_pk):
                 form.add_error(None, "This user is already a member of the project.")
     elif request.method == 'GET':
         form = CreateProjectRoleForm()
-    project = get_object_or_404(Project, pk = proj_pk) ## TODO move this to the domain logic
+    project = get_project(request, proj_pk)
     staff_page_size = 50
     project_staff = ProjectService.get_all_project_staff(request.user, proj_pk)
     staff_paginator = Paginator(project_staff, staff_page_size)
@@ -582,7 +634,7 @@ def project_staff_view(request, proj_pk):
 
 def project_volunteers_view(request, proj_pk):
     if request.method == 'GET':
-        project = get_object_or_404(Project, pk = proj_pk) # TODO move this to the domain logic
+        project = get_project(request, proj_pk)
 
         volunteers_page_size = 20
         volunteers = ProjectService.get_all_project_volunteers(request.user, proj_pk)
@@ -667,10 +719,9 @@ class ProjectRoleRemove(DeleteView):
             return HttpResponseRedirect(self.get_success_url())
 
 class EditProjectTaskRoleForm(ModelForm):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, user, *args, **kwargs):
         super(EditProjectTaskRoleForm, self).__init__(*args, **kwargs)
-        print(self.instance)
-        self.fields['task'].queryset = ProjectTask.objects.filter(project=self.instance.task.project)
+        self.fields['task'].queryset = ProjectTaskService.get_non_finished_tasks(user, self.instance.task.project)
 
     class Meta:
         model = ProjectTaskRole
@@ -682,6 +733,11 @@ class ProjectTaskRoleEdit(SuccessMessageMixin, UpdateView):
     template_name = 'dssgmkt/proj_task_volunteer_edit.html'
     pk_url_kwarg = 'task_role_pk'
     success_message = 'Volunteer edited successfully'
+
+    def get_form_kwargs(self):
+        kwargs = super(ProjectTaskRoleEdit, self).get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
 
     def get_success_url(self):
         return reverse('dssgmkt:proj_volunteers', args=[self.object.task.project.id])
@@ -713,7 +769,7 @@ class ProjectTaskRoleRemove(DeleteView):
     template_name = 'dssgmkt/proj_volunteer_remove.html'
 
     def get_object(self):
-        return get_object_or_404(ProjectTaskRole, pk = self.kwargs['task_role_pk'])
+        return get_project_task_role(self.request, self.kwargs['proj_pk'], self.kwargs['task_pk'], self.kwargs['task_role_pk'])
 
     def get_success_url(self):
         return reverse('dssgmkt:proj_volunteers', args=[self.object.task.project.id])
@@ -747,7 +803,7 @@ class VolunteerApplicationReviewForm(ModelForm):
         fields = ['public_reviewer_comments', 'private_reviewer_notes']
 
 def volunteer_application_view(request, proj_pk, task_pk, volunteer_application_pk, action=None):
-    volunteer_application = VolunteerApplication.objects.get(pk=volunteer_application_pk)
+    volunteer_application = get_volunteer_application(request, proj_pk, task_pk, volunteer_application_pk)
     if request.method == 'POST':
         form = VolunteerApplicationReviewForm(request.POST, instance=volunteer_application)
         if form.is_valid():
@@ -765,7 +821,7 @@ def volunteer_application_view(request, proj_pk, task_pk, volunteer_application_
     elif request.method == 'GET':
         form = VolunteerApplicationReviewForm()
 
-    project = get_object_or_404(Project, pk=proj_pk) ## TODO move this to the domain
+    project = get_project(request, proj_pk)
     if volunteer_application and volunteer_application.task.id == task_pk and volunteer_application.task.project.id == proj_pk:
         return render(request, 'dssgmkt/proj_volunteer_application_review.html',
                         add_project_common_context(
