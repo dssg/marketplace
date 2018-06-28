@@ -31,7 +31,7 @@
       </tbody>
     </table>
     {% url 'dssgmkt:proj_staff' as proj_staff_url %}
-    {% include 'dssgmkt/components/pagination.html' with baseurl=proj_staff_url page_obj=proj_staff pagename='staff_page' %}
+    {% include 'dssgmkt/components/pagination.html' with baseurl=proj_staff_url page_obj=project_staff pagename='staff_page' %}
   {% else %}
     <p>No staff found.</p>
   {% endif %}

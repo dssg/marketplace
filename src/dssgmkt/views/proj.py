@@ -4,7 +4,6 @@ from django.contrib.auth import logout
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib import messages
 from django.core.exceptions import ValidationError
-from django.core.paginator import Paginator
 from django.forms import CharField, ModelForm, Textarea
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import redirect, render
@@ -618,10 +617,8 @@ def project_staff_view(request, proj_pk):
     elif request.method == 'GET':
         form = CreateProjectRoleForm()
     project = get_project(request, proj_pk)
-    staff_page_size = 50
     project_staff = ProjectService.get_all_project_staff(request.user, proj_pk)
-    staff_paginator = Paginator(project_staff, staff_page_size)
-    staff_page = staff_paginator.get_page(request.GET.get('staff_page', 1))
+    staff_page = paginate(request, project_staff, request_key='staff_page', page_size=20)
 
     return render(request, 'dssgmkt/proj_staff.html',
                     add_project_common_context(request, project, 'staff',
@@ -636,15 +633,11 @@ def project_volunteers_view(request, proj_pk):
     if request.method == 'GET':
         project = get_project(request, proj_pk)
 
-        volunteers_page_size = 20
         volunteers = ProjectService.get_all_project_volunteers(request.user, proj_pk)
-        volunteers_paginator = Paginator(volunteers, volunteers_page_size)
-        volunteers_page = volunteers_paginator.get_page(request.GET.get('volunteers_page', 1))
+        volunteers_page = paginate(request, volunteers, request_key='volunteers_page', page_size=20)
 
-        applications_page_size = 50
         volunteer_applications = ProjectService.get_all_volunteer_applications(request.user, proj_pk)
-        volunteer_applications_paginator = Paginator(volunteer_applications, applications_page_size)
-        applications_page = volunteer_applications_paginator.get_page(request.GET.get('applications_page', 1))
+        applications_page = paginate(request, volunteer_applications, request_key='applications_page', page_size=1)
 
         return render(request, 'dssgmkt/proj_volunteers.html',
                         add_project_common_context(request, project, 'volunteers',
