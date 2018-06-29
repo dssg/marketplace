@@ -71,67 +71,79 @@
       {% if user == userprofile %}
         <a href="{% url 'dssgmkt:user_volunteer_profile_edit' userprofile.id userprofile.volunteerprofile.id %}">Edit my volunteer profile</a>
       {% endif %}
-    {% endif %}
 
-    <h3>Skills</h3>
-    {% if userprofile.volunteerskill_set.all %}
-      <table>
-        <thead>
-          <tr>
-              <th>Skill area</th>
-              <th>Skill name</th>
-              <th>Skill level</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for volunteerskill in userprofile.volunteerskill_set.all %}
-          <tr>
-              <td>{{ volunteerskill.skill.area }}</td>
-              <td>{{ volunteerskill.skill.name }}</td>
-              <td>{{ volunteerskill.get_level_display }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    {% else %}
-        <p>No skills listed.</p>
-    {% endif %}
-    {% if user == userprofile %}
-      <a href="{% url 'dssgmkt:user_profile_skills_edit' user.id %}">Edit my skills</a>
-    {% endif %}
-
-
-    <h3>Volunteer projects</h3>
-    {% if project_tasks %}
-      <table>
-        <thead>
-          <tr>
-              <th>Project name</th>
-              <th>Organization name</th>
-              <th>Summary</th>
-              <th>Status</th>
-              <th>Social impact area</th>
-              <th>Volunteer role</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for project_task in project_tasks %}
+      <h3>Skills</h3>
+      {% if userprofile.volunteerskill_set.all %}
+        <table>
+          <thead>
             <tr>
-                <td><a href="{% url 'dssgmkt:proj_info' project_task.project.id %}">{{ project_task.project.name }}</a></td>
-                <td><a href="{% url 'dssgmkt:org_info' project_task.project.organization.id %}">{{ project_task.project.organization.name }}</a></td>
-                <td>{{ project_task.project.summary }}</td>
-                <td>{{ project_task.project.get_status_display }}</td>
-                <td>{{ project_task.project.get_project_cause_display }}</td>
-                <td>{{ project_task.get_type_display }}</td>
+                <th>Skill area</th>
+                <th>Skill name</th>
+                <th>Skill level</th>
             </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-      {% url 'dssgmkt:user_profile' as user_profile_url %}
-      {% include 'dssgmkt/components/pagination.html' with baseurl=user_profile_url page_obj=project_tasks pagename='project_tasks_page' %}
+          </thead>
+          <tbody>
+            {% for volunteerskill in userprofile.volunteerskill_set.all %}
+            <tr>
+                <td>{{ volunteerskill.skill.area }}</td>
+                <td>{{ volunteerskill.skill.name }}</td>
+                <td>{{ volunteerskill.get_level_display }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+          <p>No skills listed.</p>
+      {% endif %}
+      {% if user == userprofile %}
+        <a href="{% url 'dssgmkt:user_profile_skills_edit' user.id %}">Edit my skills</a>
+      {% endif %}
+
+
+      <h3>Volunteer projects</h3>
+      {% if project_tasks %}
+        <table>
+          <thead>
+            <tr>
+                <th>Project name</th>
+                <th>Organization name</th>
+                <th>Summary</th>
+                <th>Status</th>
+                <th>Social impact area</th>
+                <th>Volunteer role</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for project_task in project_tasks %}
+              <tr>
+                  <td><a href="{% url 'dssgmkt:proj_info' project_task.project.id %}">{{ project_task.project.name }}</a></td>
+                  <td><a href="{% url 'dssgmkt:org_info' project_task.project.organization.id %}">{{ project_task.project.organization.name }}</a></td>
+                  <td>{{ project_task.project.summary }}</td>
+                  <td>{{ project_task.project.get_status_display }}</td>
+                  <td>{{ project_task.project.get_project_cause_display }}</td>
+                  <td>{{ project_task.get_type_display }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% url 'dssgmkt:user_profile' as user_profile_url %}
+        {% include 'dssgmkt/components/pagination.html' with baseurl=user_profile_url page_obj=project_tasks pagename='project_tasks_page' %}
+
+      {% else %}
+          <p>No volunteer work yet.</p>
+      {% endif %}
 
     {% else %}
-        <p>No volunteer work yet.</p>
+
+      <form id="addvolunteerprofile">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit"
+                form="addvolunteerprofile"
+                formaction="{% url 'dssgmkt:user_volunteer_profile_create' user.id %}"
+                formmethod="post">Create a volunteer profile</button>
+      </form>
+
     {% endif %}
 
 

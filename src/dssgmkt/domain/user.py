@@ -21,6 +21,17 @@ class UserService():
         user.save()
 
     @staticmethod
+    def create_volunteer_profile(request_user, user_pk):  # TODO check the integrity of all the primary keys
+        # TODO check both users are the same
+        if not VolunteerProfile.objects.filter(user=request_user).exists():
+            volunteer_profile = VolunteerProfile()
+            volunteer_profile.user = request_user
+            try:
+                volunteer_profile.save()
+            except IntegrityError:
+                raise ValueError('User already has a volunteer profile')
+
+    @staticmethod
     def save_volunteer_profile(request_user, volunteer_pk, volunteer_profile):  # TODO check the integrity of all the primary keys
         volunteer_profile.save()
 

@@ -291,3 +291,16 @@ class VolunteerSkillRemove(PermissionRequiredMixin, DeleteView):
 
     def get_permission_object(self):
         return UserService.get_user(self.request.user, self.kwargs['user_pk'])
+
+@permission_required('user.is_same_user', fn=objectgetter(User, 'user_pk'))
+def create_volunteer_profile_view(request, user_pk):
+    if request.method == 'GET':
+        raise Http404
+    ## TODO this is a security hole as anybody can post to this view and create new skills
+    elif request.method == 'POST':
+        try:
+            UserService.create_volunteer_profile(request.user, user_pk)
+            return redirect('dssgmkt:user_profile', user_pk=user_pk)
+        except KeyError:
+            messages.error(request, 'There was an error while processing your request.')
+            return redirect('dssgmkt:user_profile', user_pk=user_pk)

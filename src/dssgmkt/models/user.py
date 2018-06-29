@@ -48,7 +48,7 @@ class User(AbstractUser):
 
     def full_name(self):
         return self.first_name + " " + self.last_name
-        
+
 class NotificationSeverity():
     INFO = 0
     WARNING = 1
@@ -161,6 +161,8 @@ class VolunteerProfile(models.Model):
         help_text="The level of the highest level degree you have.",
         choices=EducationLevel.get_choices(),
         default=EducationLevel.BACHELORS,
+        blank=True,
+        null=True,
     )
     university = models.CharField(
         verbose_name="Educational institution",
@@ -179,6 +181,8 @@ class VolunteerProfile(models.Model):
     weekly_availability_hours = models.PositiveSmallIntegerField(
         verbose_name="Weekly availability (hours)",
         help_text="Roughly, how many hours can you dedicate each week to volunteer work?",
+        blank=True,
+        null=True,
     )
     availability_start_date = models.DateField(
         verbose_name="Availability start date",
