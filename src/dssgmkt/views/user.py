@@ -125,11 +125,12 @@ class UserProfileView(generic.DetailView):
 
         return context
 
-class UserProfileEdit(UpdateView):
+class UserProfileEdit(PermissionRequiredMixin, UpdateView):
     model = User
     fields = ['first_name', 'last_name', 'email', 'phone_number', 'skype_name' ]
     template_name = 'dssgmkt/user_profile_edit.html'
     pk_url_kwarg = 'user_pk'
+    permission_required = 'user.is_same_user'
 
     def get_success_url(self):
         return reverse('dssgmkt:user_profile', args=[self.kwargs['user_pk']])
@@ -151,13 +152,14 @@ class UserProfileEdit(UpdateView):
         except ValueError:
             return super().form_invalid(form)
 
-class VolunteerProfileEdit(UpdateView):
+class VolunteerProfileEdit(PermissionRequiredMixin, UpdateView):
     model = VolunteerProfile
     fields = ['portfolio_url', 'github_url', 'linkedin_url', 'degree_name', 'degree_level',
               'university', 'cover_letter', 'weekly_availability_hours', 'availability_start_date',
               'availability_end_date']
     template_name = 'dssgmkt/user_volunteer_profile_edit.html'
     pk_url_kwarg = 'volunteer_pk'
+    permission_required = 'user.is_same_user'
 
     def get_success_url(self):
         return reverse('dssgmkt:user_profile', args=[self.kwargs['user_pk']])
@@ -182,11 +184,15 @@ class VolunteerProfileEdit(UpdateView):
         except ValueError:
             return super().form_invalid(form)
 
+    def get_permission_object(self):
+        return UserService.get_user(self.request.user, self.kwargs['user_pk'])
+
 class CreateSkillForm(ModelForm):
     class Meta:
         model = VolunteerSkill
         fields = ['skill', 'level']
 
+@permission_required('user.is_same_user', fn=objectgetter(User, 'user_pk'))
 def user_profile_skills_edit_view(request, user_pk):
     ## TODO this is a security hole as anybody can post to this view and create new skills
     if request.method == 'POST':
@@ -216,11 +222,12 @@ def user_profile_skills_edit_view(request, user_pk):
 
 
 
-class VolunteerSkillEdit(UpdateView):
+class VolunteerSkillEdit(PermissionRequiredMixin, UpdateView):
     model = VolunteerSkill
     fields = ['level']
     template_name = 'dssgmkt/user_profile_skills_skill_edit.html'
     pk_url_kwarg = 'skill_pk'
+    permission_required = 'user.is_same_user'
 
     def get_success_url(self):
         return reverse('dssgmkt:user_profile_skills_edit', args=[self.object.user.id])
@@ -246,10 +253,14 @@ class VolunteerSkillEdit(UpdateView):
         except KeyError:
             return super().form_invalid(form)
 
-class VolunteerSkillRemove(DeleteView):
+    def get_permission_object(self):
+        return UserService.get_user(self.request.user, self.kwargs['user_pk'])
+
+class VolunteerSkillRemove(PermissionRequiredMixin, DeleteView):
     model = VolunteerSkill
     template_name = 'dssgmkt/user_profile_skills_skill_remove.html'
     pk_url_kwarg = 'skill_pk'
+    permission_required = 'user.is_same_user'
 
     def get_success_url(self):
         return reverse('dssgmkt:user_profile_skills_edit', args=[self.kwargs['user_pk']])
@@ -277,3 +288,6 @@ class VolunteerSkillRemove(DeleteView):
             messages.error(request, 'There was a problem with your request.')
             # logger.error("Error when user {0} tried to leave organization {1}: {2}".format(request.user.id, organization_role.organization.id, err))
             return HttpResponseRedirect(self.get_success_url())
+
+    def get_permission_object(self):
+        return UserService.get_user(self.request.user, self.kwargs['user_pk'])
