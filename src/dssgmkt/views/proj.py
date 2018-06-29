@@ -123,11 +123,16 @@ def add_project_common_context(request, project, page_tab, context):
         context['user_is_following_project'] = ProjectService.user_is_project_follower(request.user, project)
         context['user_is_project_member'] = ProjectService.user_is_project_member(request.user, project)
         context['user_is_project_owner'] = ProjectService.user_is_project_owner(request.user, project)
+        context['user_is_project_volunteer'] = ProjectService.user_is_project_volunteer(request.user, project)
+        context['user_is_task_editor'] = ProjectService.user_is_task_editor(request.user, project)
+        context['user_is_project_official'] = ProjectService.user_is_project_official(request.user, project)
     return context
 
 def add_project_task_common_context(request, project_task, page_tab, context):
     add_project_common_context(request, project_task.project, page_tab, context)
     context['project_task'] = project_task
+    if not request.user.is_anonymous:
+        context['user_is_task_reviewer'] = ProjectTaskService.user_can_review_task(request.user, project_task)
     return context
 
 class ProjectView(generic.ListView): ## This is a listview because it is actually showing the list of open tasks
@@ -137,6 +142,7 @@ class ProjectView(generic.ListView): ## This is a listview because it is actuall
     paginate_by = 25
 
     def get_queryset(self):
+        # TODO also show the tasks that have been completed and the ones that are already staffed and in progress
         return ProjectTaskService.get_open_tasks(self.request.user, self.kwargs['proj_pk'])
 
     def get_context_data(self, **kwargs):
@@ -146,10 +152,11 @@ class ProjectView(generic.ListView): ## This is a listview because it is actuall
         add_project_common_context(self.request, project, 'info', context)
         return context
 
-class ProjectLogView(generic.ListView):
+class ProjectLogView(PermissionRequiredMixin, generic.ListView):
     template_name = 'dssgmkt/proj_log.html'
     context_object_name = 'project_logs'
-    paginate_by = 1
+    paginate_by = 20
+    permission_required = 'project.log_view'
 
     def get_queryset(self):
         project = get_project(self.request, self.kwargs['proj_pk'])
@@ -161,6 +168,9 @@ class ProjectLogView(generic.ListView):
         context['breadcrumb'] = project_breadcrumb(project, ('Change log', None))
         add_project_common_context(self.request, project, 'log', context)
         return context
+
+    def get_permission_object(self):
+        return get_project(self.request, self.kwargs['proj_pk'])
 
 class CreateProjectCommentForm(ModelForm):
     class Meta:
@@ -213,9 +223,10 @@ class ProjectDeliverablesView(generic.DetailView):
         add_project_common_context(self.request, project, 'deliverables', context)
         return context
 
-class ProjectVolunteerInstructionsView(generic.ListView):
+class ProjectVolunteerInstructionsView(PermissionRequiredMixin, generic.ListView):
     template_name = 'dssgmkt/proj_instructions.html'
     context_object_name = 'project_tasks'
+    permission_required = 'project.volunteer_instructions_view'
 
     def get_queryset(self):
         return ProjectTaskService.get_volunteer_current_tasks(self.request.user, self.request.user, self.kwargs['proj_pk'])
@@ -227,15 +238,19 @@ class ProjectVolunteerInstructionsView(generic.ListView):
         add_project_common_context(self.request, project, 'instructions', context)
         return context
 
+    def get_permission_object(self):
+        return get_project(self.request, self.kwargs['proj_pk'])
+
 class CreateProjectTaskReviewForm(ModelForm):
     class Meta:
         model = ProjectTaskReview
         fields = ['volunteer_comment', 'volunteer_effort_hours']
 
-class ProjectTaskReviewCreate(CreateView):
+class ProjectTaskReviewCreate(PermissionRequiredMixin, CreateView):
     model = ProjectTaskReview
     fields = ['volunteer_comment', 'volunteer_effort_hours']
     template_name = 'dssgmkt/proj_task_finish.html'
+    permission_required = 'project.volunteer_task_finish'
 
     def get_success_url(self):
         return reverse('dssgmkt:proj_info', args=[self.kwargs['proj_pk']])
@@ -257,12 +272,16 @@ class ProjectTaskReviewCreate(CreateView):
         except KeyError:
             raise Http404
 
+    def get_permission_object(self):
+        return get_project_task(self.request, self.kwargs['proj_pk'], self.kwargs['task_pk'])
+
 class ProjectTaskReviewForm(ModelForm):
     class Meta:
         model = ProjectTaskReview
         fields = ['public_reviewer_comments', 'private_reviewer_notes']
 
 
+@permission_required('project.task_review_view', fn=objectgetter(Project, 'proj_pk'))
 def process_task_review_request_view(request, proj_pk, task_pk, review_pk, action=None):
     project_task_review = get_project_task_review(request, proj_pk, task_pk, review_pk)
     if request.method == 'POST':
@@ -289,17 +308,19 @@ def process_task_review_request_view(request, proj_pk, task_pk, review_pk, actio
                         request,
                         project_task,
                         'tasklist',
-                        {'task_review': project_task_review,
-                        'breadcrumb': project_breadcrumb(project,
-                                                            tasks_link(project),
-                                                            ('Review completed task', None)),
-                        'form': form,
+                        {
+                            'task_review': project_task_review,
+                            'breadcrumb': project_breadcrumb(project,
+                                                                tasks_link(project),
+                                                                ('Review completed task', None)),
+                            'form': form,
                         }))
 
 
-class ProjectTaskCancel(DeleteView):
+class ProjectTaskCancel(PermissionRequiredMixin, DeleteView):
     model = ProjectTaskRole
     template_name = 'dssgmkt/proj_task_cancel.html'
+    permission_required = 'project.volunteer_task_cancel'
 
     def get_object(self):
         return get_own_project_task_role(self.request, self.kwargs['proj_pk'], self.kwargs['task_pk'])
@@ -331,11 +352,15 @@ class ProjectTaskCancel(DeleteView):
             return HttpResponseRedirect(self.get_success_url())
         return context
 
+    def get_permission_object(self):
+        return get_project_task(self.request, self.kwargs['proj_pk'], self.kwargs['task_pk'])
 
-class ProjectTaskApply(CreateView):
+
+class ProjectTaskApply(PermissionRequiredMixin, CreateView):
     model = VolunteerApplication
     fields = ['volunteer_application_letter']
     template_name = 'dssgmkt/proj_task_apply.html'
+    permission_required = 'user.is_authenticated'
 
     def get_success_url(self):
         return reverse('dssgmkt:proj_info', args=[self.kwargs['proj_pk']])
@@ -357,10 +382,11 @@ class ProjectTaskApply(CreateView):
             raise Http404
 
 
-class ProjectTaskIndex(generic.ListView):
+class ProjectTaskIndex(PermissionRequiredMixin, generic.ListView):
     model = ProjectTask
     template_name = 'dssgmkt/proj_task_list.html'
     context_object_name = 'project_tasks'
+    permission_required = 'project.tasks_view'
 
     def get_queryset(self):
         return ProjectTaskService.get_all_tasks(self.request.user, self.kwargs['proj_pk'])
@@ -372,14 +398,17 @@ class ProjectTaskIndex(generic.ListView):
         add_project_common_context(self.request, project, 'tasklist', context)
         return context
 
+    def get_permission_object(self):
+        return get_project(self.request, self.kwargs['proj_pk'])
 
 
-class ProjectTaskEdit(UpdateView):
+class ProjectTaskEdit(PermissionRequiredMixin, UpdateView):
     model = ProjectTask
     fields = ['name', 'description', 'type', 'onboarding_instructions', 'stage', 'accepting_volunteers', 'estimated_start_date',
                 'estimated_end_date', 'estimated_effort_hours', 'task_home_url', 'task_deliverables_url']
     template_name = 'dssgmkt/proj_task_edit.html'
     pk_url_kwarg = 'task_pk'
+    permission_required = 'project.task_edit'
 
     def get_success_url(self):
         return reverse('dssgmkt:proj_task_list', args=[self.kwargs['proj_pk']])
@@ -402,8 +431,10 @@ class ProjectTaskEdit(UpdateView):
         except ValueError:
             return super().form_invalid(form)
 
+    def get_permission_object(self):
+        return get_project(self.request, self.kwargs['proj_pk'])
 
-class ProjectEdit(UpdateView):
+class ProjectEdit(PermissionRequiredMixin, UpdateView):
     model = Project
     fields = ['name', 'short_summary', 'motivation','solution_description', 'challenges', 'banner_image_url', 'project_cause',
             'project_impact', 'scoping_process', 'available_staff', 'available_data', 'developer_agreement', 'intended_start_date',
@@ -411,6 +442,7 @@ class ProjectEdit(UpdateView):
             'deliverable_reports_url']
     template_name = 'dssgmkt/proj_info_edit.html'
     pk_url_kwarg = 'proj_pk'
+    permission_required = 'project.information_edit'
 
     def get_success_url(self):
         return reverse('dssgmkt:proj_info', args=[self.kwargs['proj_pk']])
@@ -436,6 +468,7 @@ class CreateTaskRequirementForm(ModelForm):
         model = ProjectTaskRequirement
         fields = ['skill', 'level']
 
+@permission_required('project.task_requirements_view', fn=objectgetter(Project, 'proj_pk'))
 def project_task_requirements_edit_view(request, proj_pk, task_pk):
     ## TODO this is a security hole as anybody can post to this view and create new skills
     if request.method == 'POST':
@@ -463,11 +496,12 @@ def project_task_requirements_edit_view(request, proj_pk, task_pk):
                         }))
     el
 
-class ProjectTaskRequirementEdit(UpdateView):
+class ProjectTaskRequirementEdit(PermissionRequiredMixin, UpdateView):
     model = ProjectTaskRequirement
     fields = ['level']
     template_name = 'dssgmkt/proj_task_requirements_requirement_edit.html'
     pk_url_kwarg = 'requirement_pk'
+    permission_required = 'project.task_requirements_edit'
 
     def get_success_url(self):
         return reverse('dssgmkt:proj_task_requirements_edit', args=[self.kwargs['proj_pk'], self.kwargs['task_pk']])
@@ -496,10 +530,14 @@ class ProjectTaskRequirementEdit(UpdateView):
         except KeyError:
             return super().form_invalid(form)
 
-class ProjectTaskRequirementRemove(DeleteView): # override the get_object / get_queryset method to use the domain logic
+    def get_permission_object(self):
+        return get_project(self.request, self.kwargs['proj_pk'])
+
+class ProjectTaskRequirementRemove(PermissionRequiredMixin, DeleteView): # override the get_object / get_queryset method to use the domain logic
     model = ProjectTaskRequirement
     template_name = 'dssgmkt/proj_task_requirements_requirement_remove.html'
     pk_url_kwarg = 'requirement_pk'
+    permission_required = 'project.task_requirements_delete'
 
     def get_success_url(self):
         return reverse('dssgmkt:proj_task_requirements_edit', args=[self.kwargs['proj_pk'],self.kwargs['task_pk']])
@@ -531,10 +569,14 @@ class ProjectTaskRequirementRemove(DeleteView): # override the get_object / get_
             # logger.error("Error when user {0} tried to leave organization {1}: {2}".format(request.user.id, organization_role.organization.id, err))
             return HttpResponseRedirect(self.get_success_url())
 
-class ProjectTaskRemove(DeleteView):
+    def get_permission_object(self):
+        return get_project(self.request, self.kwargs['proj_pk'])
+
+class ProjectTaskRemove(PermissionRequiredMixin, DeleteView):
     model = ProjectTask
     template_name = 'dssgmkt/proj_task_remove.html'
     pk_url_kwarg = 'task_pk'
+    permission_required = 'project.task_delete'
 
     def get_success_url(self):
         return reverse('dssgmkt:proj_task_list', args=[self.kwargs['proj_pk']])
@@ -563,6 +605,9 @@ class ProjectTaskRemove(DeleteView):
             # logger.error("Error when user {0} tried to leave organization {1}: {2}".format(request.user.id, organization_role.organization.id, err))
             return HttpResponseRedirect(self.get_success_url())
 
+    def get_permission_object(self):
+        return get_project(self.request, self.kwargs['proj_pk'])
+
 
 def create_default_project_task(request, proj_pk):
     if request.method == 'GET':
@@ -578,6 +623,7 @@ class CreateProjectRoleForm(ModelForm):
         model = ProjectRole
         fields = ['role', 'user']
 
+@permission_required('project.staff_view', fn=objectgetter(Project, 'proj_pk'))
 def project_staff_view(request, proj_pk):
     ## TODO this is a security hole as staff can post to this view and create new members
     if request.method == 'POST':
@@ -607,6 +653,7 @@ def project_staff_view(request, proj_pk):
                         }))
 
 
+@permission_required('project.volunteers_view', fn=objectgetter(Project, 'proj_pk'))
 def project_volunteers_view(request, proj_pk):
     if request.method == 'GET':
         project = get_project(request, proj_pk)
@@ -626,12 +673,13 @@ def project_volunteers_view(request, proj_pk):
                             }))
 
 
-class ProjectRoleEdit(SuccessMessageMixin, UpdateView):
+class ProjectRoleEdit(PermissionRequiredMixin, SuccessMessageMixin, UpdateView):
     model = ProjectRole
     fields = ['role']
     template_name = 'dssgmkt/proj_staff_edit.html'
     pk_url_kwarg = 'role_pk'
     success_message = 'Role edited successfully'
+    permission_required = 'project.staff_edit'
 
     def get_success_url(self):
         return reverse('dssgmkt:proj_staff', args=[self.object.project.id])
@@ -657,10 +705,14 @@ class ProjectRoleEdit(SuccessMessageMixin, UpdateView):
         except KeyError:
             return super().form_invalid(form)
 
-class ProjectRoleRemove(DeleteView):
+    def get_permission_object(self):
+        return get_project(self.request, self.kwargs['proj_pk'])
+
+class ProjectRoleRemove(PermissionRequiredMixin, DeleteView):
     model = ProjectRole
     template_name = 'dssgmkt/proj_staff_remove.html'
     pk_url_kwarg = 'role_pk'
+    permission_required = 'project.staff_remove'
 
     def get_success_url(self):
         return reverse('dssgmkt:proj_staff', args=[self.object.project.id])
@@ -689,6 +741,9 @@ class ProjectRoleRemove(DeleteView):
             # logger.error("Error when user {0} tried to leave organization {1}: {2}".format(request.user.id, organization_role.organization.id, err))
             return HttpResponseRedirect(self.get_success_url())
 
+    def get_permission_object(self):
+        return get_project(self.request, self.kwargs['proj_pk'])
+
 class EditProjectTaskRoleForm(ModelForm):
     def __init__(self, user, *args, **kwargs):
         super(EditProjectTaskRoleForm, self).__init__(*args, **kwargs)
@@ -698,12 +753,13 @@ class EditProjectTaskRoleForm(ModelForm):
         model = ProjectTaskRole
         fields = ['task']
 
-class ProjectTaskRoleEdit(SuccessMessageMixin, UpdateView):
+class ProjectTaskRoleEdit(PermissionRequiredMixin, SuccessMessageMixin, UpdateView):
     model = ProjectTaskRole
     form_class = EditProjectTaskRoleForm
     template_name = 'dssgmkt/proj_task_volunteer_edit.html'
     pk_url_kwarg = 'task_role_pk'
     success_message = 'Volunteer edited successfully'
+    permission_required = 'project.volunteers_edit'
 
     def get_form_kwargs(self):
         kwargs = super(ProjectTaskRoleEdit, self).get_form_kwargs()
@@ -735,9 +791,13 @@ class ProjectTaskRoleEdit(SuccessMessageMixin, UpdateView):
         except KeyError:
             return super().form_invalid(form)
 
-class ProjectTaskRoleRemove(DeleteView):
+    def get_permission_object(self):
+        return get_project(self.request, self.kwargs['proj_pk'])
+
+class ProjectTaskRoleRemove(PermissionRequiredMixin, DeleteView):
     model = ProjectTaskRole
     template_name = 'dssgmkt/proj_volunteer_remove.html'
+    permission_required = 'project.volunteers_remove'
 
     def get_object(self):
         return get_project_task_role(self.request, self.kwargs['proj_pk'], self.kwargs['task_pk'], self.kwargs['task_role_pk'])
@@ -767,12 +827,16 @@ class ProjectTaskRoleRemove(DeleteView):
             # logger.error("Error when user {0} tried to leave organization {1}: {2}".format(request.user.id, organization_role.organization.id, err))
             return HttpResponseRedirect(self.get_success_url())
 
+    def get_permission_object(self):
+        return get_project(self.request, self.kwargs['proj_pk'])
+
 class VolunteerApplicationReviewForm(ModelForm):
 
     class Meta:
         model = VolunteerApplication
         fields = ['public_reviewer_comments', 'private_reviewer_notes']
 
+@permission_required('project.volunteers_application_view', fn=objectgetter(VolunteerApplication, 'volunteer_application_pk'))
 def volunteer_application_view(request, proj_pk, task_pk, volunteer_application_pk, action=None):
     volunteer_application = get_volunteer_application(request, proj_pk, task_pk, volunteer_application_pk)
     if request.method == 'POST':
@@ -804,6 +868,7 @@ def volunteer_application_view(request, proj_pk, task_pk, volunteer_application_
                                 'breadcrumb': project_breadcrumb(project,
                                                                     volunteers_link(project),
                                                                     ('Review volunteer', None)),
+                                'user_is_applicant': volunteer_application.volunteer == request.user,
                                 'form': form,
                             }))
     else:

@@ -3,7 +3,7 @@
 {% block tabcontents %}
   <p></p>
 
-  {% if user_is_project_member %}
+  {% if user_is_project_member or user_is_project_volunteer %}
     <form id="addcomment">
       {% csrf_token %}
       {{ form.as_p }}
@@ -11,6 +11,7 @@
               form="addcomment"
               formaction="{% url 'dssgmkt:proj_discussion_add' project.id %}"
               formmethod="post">Add comment</button>
+      IMPORTANT: remember this discussion channel is public and can be seen by anybody that accesses this project's page (even anonymous visitors).
     </form>
   {% endif %}
 
@@ -23,6 +24,7 @@
     </ol>
     {% url 'dssgmkt:proj_discussion' as proj_discussion_url %}
     {% include 'dssgmkt/components/pagination.html' with baseurl=proj_discusion_url page_obj=project_comments %}
+    
   {% else %}
     There are no comments in this discussion.
   {% endif %}

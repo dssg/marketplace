@@ -5,7 +5,7 @@ from datetime import date
 from ..models.proj import (
     Project, ProjectStatus, ProjectRole, ProjRole, ProjectFollower, ProjectLog, ProjectComment,
     ProjectTask, TaskStatus, TaskRole, ProjectTaskRole, ProjectTaskReview, VolunteerApplication,
-    ProjectTaskRequirement,
+    ProjectTaskRequirement, TaskType,
 )
 from ..models.common import (
     ReviewStatus,
@@ -38,16 +38,40 @@ class ProjectService():
         return filter_public_projects(ProjectService.get_all_organization_projects(request_user, org))
 
     @staticmethod
-    def user_is_project_member(user, proj):
-        return user.is_authenticated and ProjectRole.objects.filter(project=proj, user=user).exists()
-
-    @staticmethod
     def user_is_project_owner(user, proj):
         return user.is_authenticated and ProjectRole.objects.filter(project=proj, user=user, role=ProjRole.OWNER).exists()
 
     @staticmethod
     def user_is_project_follower(user, proj):
         return user.is_authenticated and ProjectFollower.objects.filter(project=proj, user=user).exists()
+
+    @staticmethod
+    def user_is_project_volunteer(user, proj):
+        return user.is_authenticated and ProjectTaskRole.objects.filter(user=user, role=TaskRole.VOLUNTEER, task__project=proj).exists()
+
+    @staticmethod
+    def user_is_project_scoper(user, proj):
+        return user.is_authenticated and ProjectTaskRole.objects.filter(user=user, role=TaskRole.VOLUNTEER, task__project=proj, task__type=TaskType.SCOPING_TASK, task__stage__in=[TaskStatus.STARTED, TaskStatus.WAITING_REVIEW]).exists()
+
+    @staticmethod
+    def user_is_project_manager(user, proj):
+        return user.is_authenticated and ProjectTaskRole.objects.filter(user=user, role=TaskRole.VOLUNTEER, task__project=proj, task__type=TaskType.PROJECT_MANAGEMENT_TASK, task__stage__in=[TaskStatus.STARTED, TaskStatus.WAITING_REVIEW]).exists()
+
+    @staticmethod
+    def user_is_project_volunteer_official(user, proj):
+        return user.is_authenticated and ProjectTaskRole.objects.filter(user=user, role=TaskRole.VOLUNTEER, task__project=proj, task__type__in=[TaskType.SCOPING_TASK, TaskType.PROJECT_MANAGEMENT_TASK], task__stage__in=[TaskStatus.STARTED, TaskStatus.WAITING_REVIEW]).exists()
+
+    @staticmethod
+    def user_is_task_editor(user, proj):
+        return ProjectService.user_is_project_owner(user, proj) or ProjectService.user_is_project_scoper(user, proj)
+
+    @staticmethod
+    def user_is_project_official(user, proj):
+        return ProjectService.user_is_project_owner(user, proj) or ProjectService.user_is_project_volunteer_official(user, proj)
+
+    @staticmethod
+    def user_is_project_member(user, proj):
+        return user.is_authenticated and (ProjectRole.objects.filter(project=proj, user=user).exists() or ProjectService.user_is_project_volunteer_official(user, proj))
 
     @staticmethod
     def get_project_changes(request_user, proj):
@@ -171,8 +195,21 @@ class ProjectTaskService():
                                           projecttaskrole__user=volunteer,
                                           stage__in=[TaskStatus.STARTED, TaskStatus.WAITING_REVIEW])
 
+    @staticmethod
     def get_volunteer_all_tasks(request_user, target_user):
         return ProjectTask.objects.filter(projecttaskrole__user=target_user).exclude(project__status=ProjectStatus.DRAFT)
+
+    @staticmethod
+    def user_is_task_volunteer(user, task):
+        return user.is_authenticated and ProjectTaskRole.objects.filter(user=user, role=TaskRole.VOLUNTEER, task=task).exists()
+
+    @staticmethod
+    def user_can_view_volunteer_application(user, volunteer_application):
+        return user == volunteer_application.volunteer or ProjectService.user_is_project_official(user, volunteer_application.task.project)
+
+    @staticmethod
+    def user_can_review_task(user, task):
+        return ProjectService.user_is_project_official(user, task.project) and not ProjectTaskRole.objects.filter(user=user, task=task).exists()
 
     @staticmethod
     def task_has_volunteers(request_user, taskid):
@@ -243,7 +280,7 @@ class ProjectTaskService():
         project_task = ProjectTask.objects.get(pk=taskid)
         project = Project.objects.get(pk=projid)
         if project and project_task and task_review.task == project_task and task_review.task.project == project:
-            with transaction.atomic():
+            with transaction.atomic(): # TODO check that there are no other active volunteers in this task before marking the task as completed? Some data model improvements are needed
                 task_review.save()
                 if task_review.review_result == ReviewStatus.ACCEPTED:
                     project_task.stage = TaskStatus.COMPLETED

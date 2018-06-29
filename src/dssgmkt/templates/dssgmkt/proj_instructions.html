@@ -33,6 +33,8 @@
       {% elif project_task.is_pending_review %}
         <p>This task is pending a review from the project owners.</p>
       {% endif %}
+
+      {# TODO add the completed task reviews of this task (so the volunteer has feedback about the task always available) #}
     {% endfor %}
   {% else %}
     <p>You don't have any active task in this project.</p>

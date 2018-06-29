@@ -10,7 +10,10 @@
   <h4>Main challenges</h4>
   <p>{{ project.challenges }}</p>
 
-  <a href="{% url 'dssgmkt:proj_info_edit' project.id %}">Edit project information</a>
+  {% if user_is_project_owner %}
+    <a href="{% url 'dssgmkt:proj_info_edit' project.id %}">Edit project information</a>
+  {% endif %}
+
   <h3>Schedule</h3>
   <p>Start date: {{ project.intended_start_date }}</p>
   <p>End date: {{ project.intended_end_date }}</p>
@@ -18,10 +21,10 @@
   <h3>Volunteer openings</h3>
   {% if project_tasks %}
     {% for project_task in project_tasks %}
-      <h3>Description of work</h3>
-      <p>{{ project_task.name }}</p>
+      <h3>{{ project_task.name }}</h3>
+      <p>Description of work</p>
       <p>{{ project_task.description }}</p>
-      <h4>Required skills</h4>
+      <h4>Required skills</h4> {# TODO change this from table to paragraph form #}
       <table>
         <thead>
           <tr>
@@ -40,7 +43,7 @@
           {% endfor %}
         </tbody>
       </table>
-
+      {# TODO show a message "You have applied to this task" instead of the link when the user has applied already #}
       <a href="{% url 'dssgmkt:proj_task_apply' project.id project_task.id %}">Apply to volunteer</a>
     {% endfor %}
   {% else %}

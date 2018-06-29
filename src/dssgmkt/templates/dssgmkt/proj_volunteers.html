@@ -22,9 +22,9 @@
               <td><a href="{% url 'dssgmkt:user_profile' volunteer.user.id %}">{{ volunteer.user.first_name }} {{ volunteer.user.last_name }}</a></td>
               <td><a href="{% url 'dssgmkt:user_profile' volunteer.user.id %}">{{ volunteer.user.email }}</a></td>
               <td>{{ volunteer.task.name }}</td>
-              {% if user_is_project_owner %}
-              <td><a href="{% url 'dssgmkt:proj_volunteer_edit' volunteer.task.project.id volunteer.task.id volunteer.id %}">Change task</a></td>
-              <td><a href="{% url 'dssgmkt:proj_volunteer_remove' volunteer.task.project.id volunteer.task.id volunteer.id %}">Remove</a></td>
+              {% if user_is_project_official %}
+                <td><a href="{% url 'dssgmkt:proj_volunteer_edit' volunteer.task.project.id volunteer.task.id volunteer.id %}">Change task</a></td>
+                <td><a href="{% url 'dssgmkt:proj_volunteer_remove' volunteer.task.project.id volunteer.task.id volunteer.id %}">Remove</a></td>
               {% endif %}
           </tr>
         {% endfor %}

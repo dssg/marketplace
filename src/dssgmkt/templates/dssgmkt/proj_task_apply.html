@@ -11,10 +11,10 @@
     {{ form.as_p }}
 
     {% if project.developer_agreement %}
-      <p>By applying to this volunteer opening you agree to the below terms of this project:</p>
+      <p>By applying to this volunteer posiiton you agree to the below terms of this project:</p>
       <p>{{ project.developer_agreement }}<p>
     {% endif %}
-    
+
     <button type="submit"
             form="projtaskapply"
             formaction="{% url 'dssgmkt:proj_task_apply' project.id project_task.id %}"

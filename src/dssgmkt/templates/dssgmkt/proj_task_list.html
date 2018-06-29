@@ -47,10 +47,12 @@
         </tbody>
       </table>
 
-      <a href="{% url 'dssgmkt:proj_task_edit' project.id project_task.id %}">Edit task info</a>
-      <a href="{% url 'dssgmkt:proj_task_requirements_edit' project.id project_task.id %}">Edit task requirements</a>
-      <a href="{% url 'dssgmkt:proj_task_remove' project.id project_task.id %}">Delete task</a>
-
+      {% if user_is_task_editor %}
+        <a href="{% url 'dssgmkt:proj_task_edit' project.id project_task.id %}">Edit task info</a>
+        <a href="{% url 'dssgmkt:proj_task_requirements_edit' project.id project_task.id %}">Edit task requirements</a>
+        <a href="{% url 'dssgmkt:proj_task_remove' project.id project_task.id %}">Delete task</a>
+      {% endif %}
+      
       <h4>Task review requests</h4>
       <table>
         <thead>

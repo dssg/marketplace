@@ -19,6 +19,7 @@
 
 
   {% if task_review.is_pending %}
+    {% if user_is_task_reviewer %}
 
       <form id="taskreview">
         {% csrf_token %}
@@ -37,19 +38,17 @@
       </form>
       <a href="{% url 'dssgmkt:proj_task_list' project.id %}">Cancel</a>
 
+    {% endif %}
   {% else %}
-
-    <p>Request status: {{ task_review.get_review_result_display }}
-        {% if task_review.is_pending %} <!-- TODO check permissions of the user -->
-          <a href="{% url 'dssgmkt:proj_task_review' project.id project_task.id task_review.id %}">Accept/reject task<a>
-        {% endif %}
-    </p>
-      <p>Resolution date: {{ task_review.review_date }}</p>
+    <p>Request status: {{ task_review.get_review_result_display }}</p>
+    <p>Resolution date: {{ task_review.review_date }}</p>
     {% if task_review.public_reviewer_comments %}
       <p>Reviewer's comments: {{ task_review.public_reviewer_comments }}</p>
     {% endif %}
-    {% if task_review.private_reviewer_notes %} <!-- TODO check the permissions of the user -->
-      <p>Private reviewer's notes: {{ task_review.private_reviewer_notes }}</p>
+    {% if task_review.private_reviewer_notes %}
+      {% if user_is_task_reviewer %}
+        <p>Private reviewer's notes: {{ task_review.private_reviewer_notes }}</p>
+      {% endif %}
     {% endif %}
 
   {% endif %}

@@ -13,7 +13,7 @@
   <p>{{ volunteerapplication.volunteer_application_letter }}</p>
 
   {% if volunteerapplication.is_new %}
-    {% if user_is_project_owner %}
+    {% if user_is_project_official %}
       <form id="volunteerapplicationreview">
         {% csrf_token %}
         {{ form.as_p }}
@@ -32,7 +32,9 @@
     <p>Status: {{ volunteerapplication.get_status_display }}</p>
     <p>Resolution date: {{ volunteerapplication.resolution_date }}</p>
     <p>Reviewer's comments: {{ volunteerapplication.public_reviewer_comments }}</p>
-    <p>Private reviewer's notes: {{ volunteerapplication.private_reviewer_notes }}</p> <!-- TODO check the user is a project member! -->
+    {% if not user_is_applicant %}
+      <p>Private reviewer's notes: {{ volunteerapplication.private_reviewer_notes }}</p>
+    {% endif %}
   {% endif %}
 
 {% endblock %}
