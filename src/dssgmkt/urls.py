@@ -54,7 +54,8 @@ urlpatterns = [
     path('logout/', user.logout_view, name='logout'),
     path('login/', auth_views.LoginView.as_view(template_name='dssgmkt/login.html'), name='login'),
     path('user/pwdchange', auth_views.PasswordChangeView.as_view(template_name='dssgmkt/user_pwd_change.html',
-                                                                 success_url=reverse_lazy('dssgmkt:my_user_profile')), name='user_pwd_change'),
+                                                                 success_url=reverse_lazy('dssgmkt:my_user_profile'),
+                                                                 extra_context={'breadcrumb':[("ello", None)]}),name='user_pwd_change'), ## TODO use a real breadcrumb
     path('pwd/resetrequest', auth_views.PasswordResetView.as_view(template_name='dssgmkt/pwd_reset_request.html',
                                                                  success_url=reverse_lazy('dssgmkt:pwd_reset_request_done'),
                                                                  email_template_name='dssgmkt/password_reset_email.html',

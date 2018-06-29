@@ -21,6 +21,13 @@ class OrganizationService():
         return Organization.objects.get(pk=org_pk)
 
     @staticmethod
+    def save_organization_info(request_user, orgid, organization):
+        if organization.id == orgid:
+            organization.save()
+        else:
+            raise ValueError('Request does not match organization')
+
+    @staticmethod
     def get_organization_membership_request(request_user, request_pk):
         return OrganizationMembershipRequest.objects.get(pk=request_pk)
 

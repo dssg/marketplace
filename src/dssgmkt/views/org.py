@@ -132,7 +132,14 @@ class OrganizationEdit(PermissionRequiredMixin, UpdateView):
                                                         ('Edit information', None))
         add_organization_common_context(self.request, organization, 'info', context)
         return context
-# TODO move the saving of the organization info to the domain logic
+
+    def form_valid(self, form):
+        organization = form.save(commit = False)
+        try:
+            OrganizationService.save_organization_info(self.request.user, self.kwargs['org_pk'], organization)
+            return HttpResponseRedirect(self.get_success_url())
+        except KeyError:
+            return super().form_invalid(form)
 
 class CreateOrganizationRoleForm(ModelForm):
     class Meta:
