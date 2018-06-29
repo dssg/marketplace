@@ -20,7 +20,7 @@ from ..models.org import (
     Organization, OrganizationMembershipRequest, OrganizationRole,
 )
 from dssgmkt.domain.org import OrganizationService
-from .common import build_breadcrumb, home_link, paginate
+from .common import build_breadcrumb, home_link, paginate, generic_getter
 
 
 
@@ -48,25 +48,13 @@ def organization_breadcrumb(organization, *items):
 
 
 def get_organization(request, org_pk):
-    organization = OrganizationService.get_organization(request.user, org_pk)
-    if organization:
-        return organization
-    else:
-        raise Http404
+    return generic_getter(OrganizationService.get_organization,request.user, org_pk)
 
-def get_organization_membership_request(request, request_pk):
-    membership_request = OrganizationService.get_organization_membership_request(request.user, request_pk)
-    if membership_request:
-        return membership_request
-    else:
-        raise Http404
+def get_organization_membership_request(request, org_pk, request_pk):
+    return generic_getter(OrganizationService.get_organization_membership_request, request.user, org_pk, request_pk)
 
 def get_organization_role(request, org_pk, user_pk):
-    role = OrganizationService.get_organization_role(request.user, org_pk, user_pk)
-    if role:
-        return role
-    else:
-        raise Http404
+    return generic_getter(OrganizationService.get_organization_role, request.user, org_pk, user_pk)
 
 
 class OrganizationIndexView(generic.ListView):
@@ -218,7 +206,7 @@ class OrganizationMembershipRequestForm(ModelForm):
 
 @permission_required('organization.membership_review', fn=objectgetter(OrganizationMembershipRequest, 'request_pk'))
 def process_organization_membership_request_view(request, org_pk, request_pk, action=None):
-    membership_request = get_organization_membership_request(request, request_pk)
+    membership_request = get_organization_membership_request(request, org_pk, request_pk)
     if request.method == 'POST':
         form = OrganizationMembershipRequestForm(request.POST, instance=membership_request)
         if form.is_valid():

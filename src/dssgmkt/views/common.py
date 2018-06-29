@@ -25,3 +25,14 @@ def build_breadcrumb(elements):
 def paginate(request, query_set, page_size=25, request_key='page'):
     paginator = Paginator(query_set, page_size)
     return paginator.get_page(request.GET.get(request_key, 1))
+
+
+def generic_getter(domain_function, *args):
+    try:
+        result_object = domain_function(*args)
+    except:
+        result_object = None
+    if result_object:
+        return result_object
+    else:
+        raise Http404

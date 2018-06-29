@@ -11,6 +11,8 @@ from ..models.user import (
 from .notifications import NotificationService
 from .proj import ProjectService
 
+from .common import validate_consistent_keys
+
 class OrganizationService():
     @staticmethod
     def get_all_organizations(request_user):
@@ -22,14 +24,16 @@ class OrganizationService():
 
     @staticmethod
     def save_organization_info(request_user, orgid, organization):
+        validate_consistent_keys(organization, ('id', orgid))
         if organization.id == orgid:
             organization.save()
         else:
             raise ValueError('Request does not match organization')
 
     @staticmethod
-    def get_organization_membership_request(request_user, request_pk):
-        return OrganizationMembershipRequest.objects.get(pk=request_pk)
+    def get_organization_membership_request(request_user, org_pk, request_pk):
+        print("Getting org membership request ", request_user, org_pk, request_pk)
+        return OrganizationMembershipRequest.objects.get(pk=request_pk, organization=org_pk)
 
     @staticmethod
     def get_organization_role(request_user, org_pk, user_pk):
@@ -115,6 +119,7 @@ class OrganizationService():
 
     @staticmethod
     def save_membership_request(request_user, orgid, membership_request):
+        validate_consistent_keys(membership_request, (['organization','id'], orgid))
         if membership_request.organization.id == orgid:
             with transaction.atomic():
                 membership_request.save()
@@ -126,6 +131,7 @@ class OrganizationService():
 
     @staticmethod
     def accept_membership_request(request_user, orgid, membership_request):
+        validate_consistent_keys(membership_request, (['organization','id'], orgid))
         membership_request.status = ReviewStatus.ACCEPTED
         OrganizationService.save_membership_request(request_user, orgid, membership_request)
         NotificationService.add_user_notification(membership_request.user,
@@ -136,6 +142,7 @@ class OrganizationService():
 
     @staticmethod
     def reject_membership_request(request_user, orgid, membership_request):
+        validate_consistent_keys(membership_request, (['organization','id'], orgid))
         membership_request.status = ReviewStatus.REJECTED
         OrganizationService.save_membership_request(request_user, orgid, membership_request)
         NotificationService.add_user_notification(membership_request.user,
@@ -146,6 +153,7 @@ class OrganizationService():
 
     @staticmethod
     def save_organization_role(request_user, orgid, organization_role):
+        validate_consistent_keys(organization_role, (['organization','id'], orgid))
         if organization_role.organization.id == orgid:
             organization_role.save()
             NotificationService.add_user_notification(organization_role.user,
@@ -158,9 +166,8 @@ class OrganizationService():
 
     @staticmethod
     def leave_organization(request_user, orgid, organization_role):
-        if organization_role.organization.id != orgid:
-            raise ValueError('Role does not match organization')
-        elif organization_role.user != request_user:
+        validate_consistent_keys(organization_role, (['organization','id'], orgid))
+        if organization_role.user != request_user:
             raise ValueError('Role does not match current user')
         else:
             organization_role.delete()
@@ -179,12 +186,10 @@ class OrganizationService():
 
     @staticmethod
     def delete_organization_role(request_user, orgid, organization_role):
-        if organization_role.organization.id != orgid:
-            raise ValueError('Role does not match organization')
-        else:
-            organization_role.delete()
-            NotificationService.add_user_notification(organization_role.user,
-                                                        "You were removed as a staff member of " + organization_role.organization.name,
-                                                        NotificationSeverity.INFO,
-                                                        NotificationSource.ORGANIZATION,
-                                                        organization_role.organization.id)
+        validate_consistent_keys(organization_role, (['organization','id'], orgid))
+        organization_role.delete()
+        NotificationService.add_user_notification(organization_role.user,
+                                                    "You were removed as a staff member of " + organization_role.organization.name,
+                                                    NotificationSeverity.INFO,
+                                                    NotificationSource.ORGANIZATION,
+                                                    organization_role.organization.id)

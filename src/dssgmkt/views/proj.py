@@ -20,7 +20,7 @@ from ..models.proj import (
     ProjectTask, ProjectTaskRequirement, ProjectStatus, TaskStatus,
     ProjectTaskReview, ProjectTaskRole, VolunteerApplication,
 )
-from .common import build_breadcrumb, home_link, paginate
+from .common import build_breadcrumb, home_link, paginate, generic_getter
 from dssgmkt.domain.proj import ProjectService, ProjectTaskService
 
 def projects_link(include_link=True):
@@ -52,53 +52,25 @@ def project_breadcrumb(project, *items):
     return build_breadcrumb(breadcrumb_items)
 
 def get_project(request, proj_pk):
-    project = ProjectService.get_project(request.user, proj_pk)
-    if project:
-        return project
-    else:
-        raise Http404
+    return generic_getter(ProjectService.get_project, request.user, proj_pk)
 
 def get_project_task(request, proj_pk, task_pk):
-    project_task = ProjectTaskService.get_project_task(request.user, proj_pk, task_pk)
-    if project_task:
-        return project_task
-    else:
-        raise Http404
+    return generic_getter(ProjectTaskService.get_project_task,request.user, proj_pk, task_pk)
 
 def get_project_task_role(request, proj_pk, task_pk, role_pk):
-    project_task_role = ProjectTaskService.get_project_task_role(request.user, proj_pk, task_pk, role_pk)
-    if project_task_role:
-        return project_task_role
-    else:
-        raise Http404
+    return generic_getter(ProjectTaskService.get_project_task_role, request.user, proj_pk, task_pk, role_pk)
 
 def get_own_project_task_role(request, proj_pk, task_pk):
-    project_task_role = ProjectTaskService.get_own_project_task_role(request.user, proj_pk, task_pk)
-    if project_task_role:
-        return project_task_role
-    else:
-        raise Http404
+    return generic_getter(ProjectTaskService.get_own_project_task_role, request.user, proj_pk, task_pk)
 
 def get_project_task_review(request, proj_pk, task_pk, review_pk):
-    project_task_review = ProjectTaskService.get_project_task_review(request.user, proj_pk, task_pk, review_pk)
-    if project_task_review:
-        return project_task_review
-    else:
-        raise Http404
+    return generic_getter(ProjectTaskService.get_project_task_review, request.user, proj_pk, task_pk, review_pk)
 
 def get_project_task_requirements(request, proj_pk, task_pk):
-    project_task_requirements = ProjectTaskService.get_project_task_requirements(request.user, proj_pk, task_pk)
-    if project_task_requirements:
-        return project_task_requirements
-    else:
-        raise Http404
+    return generic_getter(ProjectTaskService.get_project_task_requirements, request.user, proj_pk, task_pk)
 
 def get_volunteer_application(request, proj_pk, task_pk, volunteer_application_pk):
-    volunteer_application = ProjectTaskService.get_volunteer_application(request.user, proj_pk, task_pk, volunteer_application_pk)
-    if volunteer_application:
-        return volunteer_application
-    else:
-        raise Http404
+    return generic_getter(ProjectTaskService.get_volunteer_application, request.user, proj_pk, task_pk, volunteer_application_pk)
 
 class ProjectIndexView(generic.ListView):
     template_name = 'dssgmkt/proj_list.html'
@@ -702,7 +674,8 @@ class ProjectRoleEdit(PermissionRequiredMixin, SuccessMessageMixin, UpdateView):
         try:
             ProjectService.save_project_role(self.request.user, self.kwargs['proj_pk'], project_role)
             return HttpResponseRedirect(self.get_success_url())
-        except KeyError:
+        except KeyError as k:
+            print(k)
             return super().form_invalid(form)
 
     def get_permission_object(self):

@@ -12,6 +12,8 @@ from ..models.common import (
 )
 from django.db.models import Case, When
 
+from .common import validate_consistent_keys
+
 def filter_public_projects(query_set):
     return query_set.exclude(status=ProjectStatus.DRAFT) \
                     .exclude(status=ProjectStatus.EXPIRED) \
@@ -96,7 +98,8 @@ class ProjectService():
             raise KeyError('Project not found ' + str(projid))
 
     @staticmethod
-    def save_project(request_user, projid, project): # TODO check the integrity of all the primary keys
+    def save_project(request_user, projid, project):
+        validate_consistent_keys(project, ('id', projid))
         project.save()
 
     # TODO check for permissions (user is admin role of the organization in question)
@@ -119,27 +122,23 @@ class ProjectService():
 
     @staticmethod
     def save_project_role(request_user, projid, project_role):
-        if project_role.project.id == projid:
-            project_role.save()
-            # NotificationService.add_user_notification(organization_role.user,
-            #                                             "Your role within " + organization_role.organization.name + " has been changed to " + organization_role.get_role_display() + ".",
-            #                                             NotificationSeverity.INFO,
-            #                                             NotificationSource.ORGANIZATION,
-            #                                             organization_role.organization.id)
-        else:
-            raise ValueError('Role does not match project')
+        validate_consistent_keys(project_role, 'Role does not match project', (['project', 'id'], projid))
+        project_role.save()
+        # NotificationService.add_user_notification(organization_role.user,
+        #                                             "Your role within " + organization_role.organization.name + " has been changed to " + organization_role.get_role_display() + ".",
+        #                                             NotificationSeverity.INFO,
+        #                                             NotificationSource.ORGANIZATION,
+        #                                             organization_role.organization.id)
 
     @staticmethod
     def delete_project_role(request_user, projid, project_role):
-        if project_role.project.id == projid:
-            project_role.delete()
-            # NotificationService.add_user_notification(organization_role.user,
-            #                                             "Your role within " + organization_role.organization.name + " has been changed to " + organization_role.get_role_display() + ".",
-            #                                             NotificationSeverity.INFO,
-            #                                             NotificationSource.ORGANIZATION,
-            #                                             organization_role.organization.id)
-        else:
-            raise ValueError('Role does not match project')
+        validate_consistent_keys(project_role, 'Role does not match project', (['project', 'id'], projid))
+        project_role.delete()
+        # NotificationService.add_user_notification(organization_role.user,
+        #                                             "Your role within " + organization_role.organization.name + " has been changed to " + organization_role.get_role_display() + ".",
+        #                                             NotificationSeverity.INFO,
+        #                                             NotificationSource.ORGANIZATION,
+        #                                             organization_role.organization.id)
 
     @staticmethod
     def get_all_project_staff(request_user, projid):
@@ -173,9 +172,9 @@ class ProjectService():
 
 class ProjectTaskService():
     @staticmethod
-    def get_project_task(request_user, projid, taskid): # TODO check pk integrity
-        return ProjectTask.objects.get(pk=taskid)
-
+    def get_project_task(request_user, projid, taskid):
+        return ProjectTask.objects.get(pk=taskid, project=projid)
+############## continue from here
     @staticmethod
     def get_all_tasks(request_user, proj): # TODO check that the user has permissions to take a look at all the tasks
         return ProjectTask.objects.filter(project=proj).order_by('estimated_start_date')
