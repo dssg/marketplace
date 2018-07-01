@@ -144,7 +144,6 @@ class CreateProjectCommentForm(ModelForm):
 
 
 def project_comments_view(request, proj_pk):
-    ## TODO this is a security hole as anybody can post to this view and create new skills
     if request.method == 'POST':
         form = CreateProjectCommentForm(request.POST)
         if form.is_valid():
@@ -435,7 +434,6 @@ class CreateTaskRequirementForm(ModelForm):
 
 @permission_required('project.task_requirements_view', fn=objectgetter(Project, 'proj_pk'))
 def project_task_requirements_edit_view(request, proj_pk, task_pk):
-    ## TODO this is a security hole as anybody can post to this view and create new skills
     if request.method == 'POST':
         form = CreateTaskRequirementForm(request.POST)
         if form.is_valid():
@@ -577,7 +575,6 @@ class ProjectTaskRemove(PermissionRequiredMixin, DeleteView):
 def create_default_project_task(request, proj_pk):
     if request.method == 'GET':
         raise Http404
-    ## TODO this is a security hole as anybody can post to this view and create new skills
     elif request.method == 'POST':
         ProjectTaskService.create_default_task(request.user, proj_pk)
         return redirect('dssgmkt:proj_task_list', proj_pk = proj_pk)
@@ -590,7 +587,6 @@ class CreateProjectRoleForm(ModelForm):
 
 @permission_required('project.staff_view', fn=objectgetter(Project, 'proj_pk'))
 def project_staff_view(request, proj_pk):
-    ## TODO this is a security hole as staff can post to this view and create new members
     if request.method == 'POST':
         form = CreateProjectRoleForm(request.POST)
         if form.is_valid:
@@ -843,7 +839,6 @@ def volunteer_application_view(request, proj_pk, task_pk, volunteer_application_
 def follow_project_view(request, proj_pk):
     if request.method == 'GET':
         raise Http404
-    ## TODO this is a security hole as anybody can post to this view and create new skills
     elif request.method == 'POST':
         try:
             ProjectService.toggle_follower(request.user, proj_pk)

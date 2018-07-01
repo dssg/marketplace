@@ -194,7 +194,6 @@ class CreateSkillForm(ModelForm):
 
 @permission_required('user.is_same_user', fn=objectgetter(User, 'user_pk'))
 def user_profile_skills_edit_view(request, user_pk):
-    ## TODO this is a security hole as anybody can post to this view and create new skills
     if request.method == 'POST':
         form = CreateSkillForm(request.POST)
         if form.is_valid:
@@ -296,7 +295,6 @@ class VolunteerSkillRemove(PermissionRequiredMixin, DeleteView):
 def create_volunteer_profile_view(request, user_pk):
     if request.method == 'GET':
         raise Http404
-    ## TODO this is a security hole as anybody can post to this view and create new skills
     elif request.method == 'POST':
         try:
             UserService.create_volunteer_profile(request.user, user_pk)

@@ -81,7 +81,6 @@ class OrganizationService():
                      When(status=ReviewStatus.ACCEPTED, then=1),
                      When(status=ReviewStatus.REJECTED, then=2)), '-request_date')
 
-    # TODO check for permissions (user is admin role of the organization in question)
     @staticmethod
     def add_staff_member(request_user, orgid, organization_role):
         organization = Organization.objects.get(pk=orgid)

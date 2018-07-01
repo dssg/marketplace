@@ -136,7 +136,6 @@ class CreateOrganizationRoleForm(ModelForm):
 
 @permission_required('organization.staff_view', fn=objectgetter(Organization, 'org_pk'))
 def organization_staff_view(request, org_pk):
-## TODO this is a security hole as staff can post to this view and create new members
     if request.method == 'POST':
         form = CreateOrganizationRoleForm(request.POST)
         if form.is_valid():

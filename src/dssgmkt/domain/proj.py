@@ -112,7 +112,6 @@ class ProjectService():
         ensure_user_has_permission(request_user, project, 'project.information_edit')
         project.save()
 
-    # TODO check for permissions (user is admin role of the organization in question)
     @staticmethod
     def add_staff_member(request_user, projid, project_role):
         project = Project.objects.get(pk=projid)
