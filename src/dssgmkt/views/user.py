@@ -131,6 +131,7 @@ class UserProfileEdit(PermissionRequiredMixin, UpdateView):
     template_name = 'dssgmkt/user_profile_edit.html'
     pk_url_kwarg = 'user_pk'
     permission_required = 'user.is_same_user'
+    raise_exception = True
 
     def get_success_url(self):
         return reverse('dssgmkt:user_profile', args=[self.kwargs['user_pk']])
@@ -160,6 +161,7 @@ class VolunteerProfileEdit(PermissionRequiredMixin, UpdateView):
     template_name = 'dssgmkt/user_volunteer_profile_edit.html'
     pk_url_kwarg = 'volunteer_pk'
     permission_required = 'user.is_same_user'
+    raise_exception = True
 
     def get_success_url(self):
         return reverse('dssgmkt:user_profile', args=[self.kwargs['user_pk']])
@@ -192,7 +194,7 @@ class CreateSkillForm(ModelForm):
         model = VolunteerSkill
         fields = ['skill', 'level']
 
-@permission_required('user.is_same_user', fn=objectgetter(User, 'user_pk'))
+@permission_required('user.is_same_user', raise_exception=True, fn=objectgetter(User, 'user_pk'))
 def user_profile_skills_edit_view(request, user_pk):
     if request.method == 'POST':
         form = CreateSkillForm(request.POST)
@@ -227,6 +229,7 @@ class VolunteerSkillEdit(PermissionRequiredMixin, UpdateView):
     template_name = 'dssgmkt/user_profile_skills_skill_edit.html'
     pk_url_kwarg = 'skill_pk'
     permission_required = 'user.is_same_user'
+    raise_exception = True
 
     def get_success_url(self):
         return reverse('dssgmkt:user_profile_skills_edit', args=[self.object.user.id])
@@ -260,6 +263,7 @@ class VolunteerSkillRemove(PermissionRequiredMixin, DeleteView):
     template_name = 'dssgmkt/user_profile_skills_skill_remove.html'
     pk_url_kwarg = 'skill_pk'
     permission_required = 'user.is_same_user'
+    raise_exception = True
 
     def get_success_url(self):
         return reverse('dssgmkt:user_profile_skills_edit', args=[self.kwargs['user_pk']])
@@ -291,7 +295,7 @@ class VolunteerSkillRemove(PermissionRequiredMixin, DeleteView):
     def get_permission_object(self):
         return UserService.get_user(self.request.user, self.kwargs['user_pk'])
 
-@permission_required('user.is_same_user', fn=objectgetter(User, 'user_pk'))
+@permission_required('user.is_same_user', raise_exception=True, fn=objectgetter(User, 'user_pk'))
 def create_volunteer_profile_view(request, user_pk):
     if request.method == 'GET':
         raise Http404

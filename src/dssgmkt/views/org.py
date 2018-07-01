@@ -108,6 +108,7 @@ class OrganizationEdit(PermissionRequiredMixin, UpdateView):
     template_name = 'dssgmkt/org_info_edit.html'
     pk_url_kwarg = 'org_pk'
     permission_required = 'organization.information_edit'
+    raise_exception = True
 
     def get_success_url(self):
         return reverse('dssgmkt:org_info', args=[self.kwargs['org_pk']])
@@ -134,7 +135,7 @@ class CreateOrganizationRoleForm(ModelForm):
         model = OrganizationRole
         fields = ['role', 'user']
 
-@permission_required('organization.staff_view', fn=objectgetter(Organization, 'org_pk'))
+@permission_required('organization.staff_view', raise_exception=True, fn=objectgetter(Organization, 'org_pk'))
 def organization_staff_view(request, org_pk):
     if request.method == 'POST':
         form = CreateOrganizationRoleForm(request.POST)
@@ -203,7 +204,7 @@ class OrganizationMembershipRequestForm(ModelForm):
         fields = ['role', 'public_reviewer_comments', 'private_reviewer_notes']
 
 
-@permission_required('organization.membership_review', fn=objectgetter(OrganizationMembershipRequest, 'request_pk'))
+@permission_required('organization.membership_review', raise_exception=True, fn=objectgetter(OrganizationMembershipRequest, 'request_pk'))
 def process_organization_membership_request_view(request, org_pk, request_pk, action=None):
     membership_request = get_organization_membership_request(request, org_pk, request_pk)
     if request.method == 'POST':
@@ -244,6 +245,7 @@ class OrganizationRoleEdit(PermissionRequiredMixin, UpdateView):
     template_name = 'dssgmkt/org_staff_edit.html'
     pk_url_kwarg = 'role_pk'
     permission_required = 'organization.role_edit'
+    raise_exception = True
 
     def get_success_url(self):
         return reverse('dssgmkt:org_staff', args=[self.object.organization.id])
@@ -276,6 +278,7 @@ class OrganizationLeave(PermissionRequiredMixin, DeleteView):
     model = OrganizationRole
     template_name = 'dssgmkt/org_staff_leave.html'
     permission_required = 'organization.membership_leave'
+    raise_exception = True
 
     def get_object(self):
         return get_organization_role(self.request, self.kwargs['org_pk'], self.request.user.id)
@@ -312,6 +315,7 @@ class OrganizationRoleRemove(PermissionRequiredMixin, DeleteView):
     template_name = 'dssgmkt/org_staff_remove.html'
     pk_url_kwarg = 'role_pk'
     permission_required = 'organization.role_delete'
+    raise_exception = True
 
     def get_success_url(self):
         return reverse('dssgmkt:org_staff', args=[self.object.organization.id])
