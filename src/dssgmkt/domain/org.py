@@ -13,6 +13,8 @@ from .proj import ProjectService
 
 from .common import validate_consistent_keys
 
+from dssgmkt.authorization.common import ensure_user_has_permission
+
 class OrganizationService():
     @staticmethod
     def get_all_organizations(request_user):
@@ -24,6 +26,7 @@ class OrganizationService():
 
     @staticmethod
     def save_organization_info(request_user, orgid, organization):
+        ensure_user_has_permission(request_user, organization, 'organization.information_edit')
         validate_consistent_keys(organization, ('id', orgid))
         if organization.id == orgid:
             organization.save()
@@ -32,7 +35,6 @@ class OrganizationService():
 
     @staticmethod
     def get_organization_membership_request(request_user, org_pk, request_pk):
-        print("Getting org membership request ", request_user, org_pk, request_pk)
         return OrganizationMembershipRequest.objects.get(pk=request_pk, organization=org_pk)
 
     @staticmethod
@@ -73,6 +75,7 @@ class OrganizationService():
 
     @staticmethod
     def get_membership_requests(request_user, org):
+        ensure_user_has_permission(request_user, org, 'organization.staff_view')
         return org.organizationmembershiprequest_set.all().order_by(
                 Case(When(status=ReviewStatus.NEW, then=0),
                      When(status=ReviewStatus.ACCEPTED, then=1),
@@ -83,6 +86,7 @@ class OrganizationService():
     def add_staff_member(request_user, orgid, organization_role):
         organization = Organization.objects.get(pk=orgid)
         if organization:
+            ensure_user_has_permission(request_user, organization, 'organization.staff_edit')
             organization_role.organization = organization
             try:
                 organization_role.save()
@@ -97,7 +101,7 @@ class OrganizationService():
             raise KeyError('Organization not found ' + str(orgid))
 
     @staticmethod
-    def create_membership_request(request_user, user, orgid, membership_request):
+    def create_membership_request(request_user, user, orgid, membership_request): # TODO check the user is not already a member
         organization = Organization.objects.get(pk=orgid)
         if organization:
             membership_request.organization = organization
@@ -120,6 +124,7 @@ class OrganizationService():
     @staticmethod
     def save_membership_request(request_user, orgid, membership_request):
         validate_consistent_keys(membership_request, (['organization','id'], orgid))
+        ensure_user_has_permission(request_user, membership_request, 'organization.membership_review')
         if membership_request.organization.id == orgid:
             with transaction.atomic():
                 membership_request.save()
@@ -132,6 +137,7 @@ class OrganizationService():
     @staticmethod
     def accept_membership_request(request_user, orgid, membership_request):
         validate_consistent_keys(membership_request, (['organization','id'], orgid))
+        ensure_user_has_permission(request_user, membership_request, 'organization.membership_review')
         membership_request.status = ReviewStatus.ACCEPTED
         OrganizationService.save_membership_request(request_user, orgid, membership_request)
         NotificationService.add_user_notification(membership_request.user,
@@ -143,6 +149,7 @@ class OrganizationService():
     @staticmethod
     def reject_membership_request(request_user, orgid, membership_request):
         validate_consistent_keys(membership_request, (['organization','id'], orgid))
+        ensure_user_has_permission(request_user, membership_request, 'organization.membership_review')
         membership_request.status = ReviewStatus.REJECTED
         OrganizationService.save_membership_request(request_user, orgid, membership_request)
         NotificationService.add_user_notification(membership_request.user,
@@ -154,6 +161,7 @@ class OrganizationService():
     @staticmethod
     def save_organization_role(request_user, orgid, organization_role):
         validate_consistent_keys(organization_role, (['organization','id'], orgid))
+        ensure_user_has_permission(request_user, organization_role, 'organization.role_edit')
         if organization_role.organization.id == orgid:
             organization_role.save()
             NotificationService.add_user_notification(organization_role.user,
@@ -167,6 +175,7 @@ class OrganizationService():
     @staticmethod
     def leave_organization(request_user, orgid, organization_role):
         validate_consistent_keys(organization_role, (['organization','id'], orgid))
+        ensure_user_has_permission(request_user, organization_role, 'organization.membership_leave')
         if organization_role.user != request_user:
             raise ValueError('Role does not match current user')
         else:
@@ -187,6 +196,7 @@ class OrganizationService():
     @staticmethod
     def delete_organization_role(request_user, orgid, organization_role):
         validate_consistent_keys(organization_role, (['organization','id'], orgid))
+        ensure_user_has_permission(request_user, organization_role, 'organization.role_delete')
         organization_role.delete()
         NotificationService.add_user_notification(organization_role.user,
                                                     "You were removed as a staff member of " + organization_role.organization.name,

@@ -51,7 +51,7 @@ def get_url_for_notification(source_type, source_id):
         elif source_type == NotificationSource.VOLUNTEER_APPLICATION:
             url = None
         elif source_type == NotificationSource.ORGANIZATION_MEMBERSHIP_REQUEST:
-            membership_request = get_object_or_404(OrganizationMembershipRequest, pk=source_id) # TODO fix this so it uses the organization view method to get orgrequests
+            membership_request = get_object_or_404(OrganizationMembershipRequest, pk=source_id) # TODO fix this so it uses the organization view method to get orgrequests? We don't know the org_pk at this point...
             url = reverse('dssgmkt:org_staff_request_review', args=[membership_request.organization.id, source_id])
     return url
 
