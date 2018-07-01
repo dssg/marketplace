@@ -3,7 +3,7 @@
 {% block tabcontents %}
   <p></p>
 
-  {% if user_is_project_member or user_is_project_volunteer %}
+  {% if user_is_project_commenter %}
     <form id="addcomment">
       {% csrf_token %}
       {{ form.as_p }}
@@ -24,7 +24,7 @@
     </ol>
     {% url 'dssgmkt:proj_discussion' as proj_discussion_url %}
     {% include 'dssgmkt/components/pagination.html' with baseurl=proj_discusion_url page_obj=project_comments %}
-    
+
   {% else %}
     There are no comments in this discussion.
   {% endif %}

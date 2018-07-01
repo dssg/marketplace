@@ -11,7 +11,6 @@ def get_field_value(object, path):
 
 def validate_consistent_keys(object, error_message='Detected primary key inconsistency', *items):
     for (field_path, field_value) in items:
-        print(get_field_value(object, field_path))
         if not get_field_value(object, field_path) == field_value:
             raise KeyError(error_message)
     return True
