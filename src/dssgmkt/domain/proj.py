@@ -174,7 +174,7 @@ class ProjectTaskService():
     @staticmethod
     def get_project_task(request_user, projid, taskid):
         return ProjectTask.objects.get(pk=taskid, project=projid)
-############## continue from here
+
     @staticmethod
     def get_all_tasks(request_user, proj): # TODO check that the user has permissions to take a look at all the tasks
         return ProjectTask.objects.filter(project=proj).order_by('estimated_start_date')
@@ -215,7 +215,8 @@ class ProjectTaskService():
         return ProjectTaskRole.objects.filter(task=taskid, role=TaskRole.VOLUNTEER).exists()
 
     @staticmethod
-    def save_task(request_user, projid, taskid, project_task): # TODO check the integrity of all the primary keys
+    def save_task(request_user, projid, taskid, project_task):
+        validate_consistent_keys(project_task, 'Task not found in that project', ('id', taskid), (['project', 'id'], projid))
         project_task.save()
         # TODO calculate the project status correctly based on all the tasks
         # project_task.project.status = ProjectStatus.WAITING_REVIEW
@@ -224,7 +225,7 @@ class ProjectTaskService():
 
     @staticmethod
     def mark_task_as_completed(request_user, projid, taskid, project_task_review):
-        project_task = ProjectTask.objects.get(pk=taskid)
+        project_task = ProjectTask.objects.get(pk=taskid, project__id=projid)
         project = Project.objects.get(pk=projid)
         if project and project_task:
             with transaction.atomic():
@@ -240,7 +241,8 @@ class ProjectTaskService():
                 raise KeyError('Task not found ' + str(taskid))
 
     @staticmethod
-    def delete_task(request_user, projid, project_task): # TODO check the integrity of all the primary keys
+    def delete_task(request_user, projid, project_task):
+        validate_consistent_keys(project_task, 'Task not found in that project', (['project', 'id'], projid))
         project_task.delete()
         # TODO calculate the project status correctly based on all the tasks
         # project_task.project.status = ProjectStatus.WAITING_REVIEW
@@ -271,29 +273,30 @@ class ProjectTaskService():
             raise KeyError('Project not found')
 
     @staticmethod
-    def get_project_task_review(request_user, projid, taskid, reviewid): # TODO check pk integrity
-        return ProjectTaskReview.objects.get(pk=reviewid)
+    def get_project_task_review(request_user, projid, taskid, reviewid):
+        task_review = ProjectTaskReview.objects.get(pk=reviewid)
+        validate_consistent_keys(task_review, 'Task review not found in that project', (['task', 'id'], taskid), (['task', 'project', 'id'], projid))
+        return task_review
 
     @staticmethod
     def save_task_review(request_user, projid, taskid, task_review):
+        validate_consistent_keys(task_review, 'Task review not found in that project', (['task', 'id'], taskid), (['task', 'project', 'id'], projid))
         project_task = ProjectTask.objects.get(pk=taskid)
         project = Project.objects.get(pk=projid)
-        if project and project_task and task_review.task == project_task and task_review.task.project == project:
-            with transaction.atomic(): # TODO check that there are no other active volunteers in this task before marking the task as completed? Some data model improvements are needed
-                task_review.save()
-                if task_review.review_result == ReviewStatus.ACCEPTED:
-                    project_task.stage = TaskStatus.COMPLETED
-                    project_task.percentage_complete = 1.0
-                    project_task.actual_effort_hours = task_review.volunteer_effort_hours
-                    ProjectTaskService.save_task(request_user, projid, taskid, project_task)
-                elif task_review.review_result == ReviewStatus.REJECTED:
-                    project_task.stage = TaskStatus.STARTED
-                    ProjectTaskService.save_task(request_user, projid, taskid, project_task)
-        else:
-            raise ValueError('Task review does not match project or task')
+        with transaction.atomic(): # TODO check that there are no other active volunteers in this task before marking the task as completed? Some data model improvements are needed
+            task_review.save()
+            if task_review.review_result == ReviewStatus.ACCEPTED:
+                project_task.stage = TaskStatus.COMPLETED
+                project_task.percentage_complete = 1.0
+                project_task.actual_effort_hours = task_review.volunteer_effort_hours
+                ProjectTaskService.save_task(request_user, projid, taskid, project_task)
+            elif task_review.review_result == ReviewStatus.REJECTED:
+                project_task.stage = TaskStatus.STARTED
+                ProjectTaskService.save_task(request_user, projid, taskid, project_task)
 
     @staticmethod
     def accept_task_review(request_user, projid, taskid, task_review): # TODO check that the review request is in status NEW
+        validate_consistent_keys(task_review, 'Task review not found in that project', (['task', 'id'], taskid), (['task', 'project', 'id'], projid))
         task_review.review_result = ReviewStatus.ACCEPTED
         task_review.review_date = timezone.now()
         ProjectTaskService.save_task_review(request_user, projid, taskid, task_review)
@@ -305,6 +308,7 @@ class ProjectTaskService():
 
     @staticmethod
     def reject_task_review(request_user, projid, taskid, task_review): # TODO check that the review request is in status NEW
+        validate_consistent_keys(task_review, 'Task review not found in that project', (['task', 'id'], taskid), (['task', 'project', 'id'], projid))
         task_review.review_result = ReviewStatus.REJECTED
         task_review.review_date = timezone.now()
         ProjectTaskService.save_task_review(request_user, projid, taskid, task_review)
@@ -316,11 +320,8 @@ class ProjectTaskService():
 
     @staticmethod
     def cancel_volunteering(request_user, projid, taskid, project_task_role):
-        if project_task_role.task.id != taskid:
-            raise ValueError('Role does not match task')
-        elif project_task_role.task.project.id != projid:
-            raise ValueError('Role does not match project')
-        elif project_task_role.user != request_user:
+        validate_consistent_keys(project_task_role, 'Task role not found in that project', (['task', 'id'], taskid), (['task', 'project', 'id'], projid))
+        if project_task_role.user != request_user:
             raise ValueError('Role does not match current user')
         else:
             with transaction.atomic():
@@ -346,39 +347,41 @@ class ProjectTaskService():
 
     @staticmethod
     def apply_to_volunteer(request_user, projid, taskid, task_application_request):
-        project_task = ProjectTask.objects.get(pk=taskid)
-        if project_task.project.id != projid:
-            raise KeyError('Project does not match task')
-        else:
-            task_application_request.status = ReviewStatus.NEW
-            task_application_request.task = project_task
-            task_application_request.volunteer = request_user
-            task_application_request.save()
+        project_task = ProjectTask.objects.get(pk=taskid, project__id=projid)
+        validate_consistent_keys(project_task, 'Task not found in that project', (['project', 'id'], projid))
+        task_application_request.status = ReviewStatus.NEW
+        task_application_request.task = project_task
+        task_application_request.volunteer = request_user
+        task_application_request.save()
 
     @staticmethod
-    def get_volunteer_application(request_user, projid, taskid, volunteer_application_pk): # TODO check pk integrity
-        return VolunteerApplication.objects.get(pk=volunteer_application_pk)
+    def get_volunteer_application(request_user, projid, taskid, volunteer_application_pk):
+        ## We can avoid doing this by using all the constraints in the DB query
+        # volunteer_application = VolunteerApplication.objects.get(pk=volunteer_application_pk)
+        # validate_consistent_keys(volunteer_application, (['task', 'id'], taskid), (['task', 'project', 'id'], projid))
+        # return volunteer_application
+        ## ... like so
+        return VolunteerApplication.objects.get(pk=volunteer_application_pk, task__id=taskid, task__project__id=projid)
 
     @staticmethod
     def save_volunteer_application(request_user, projid, taskid, volunteer_application):
+        validate_consistent_keys(volunteer_application, (['task', 'id'], taskid), (['task', 'project', 'id'], projid))
         project_task = ProjectTask.objects.get(pk=taskid)
         project = Project.objects.get(pk=projid)
-        if project and project_task and volunteer_application.task == project_task and volunteer_application.task.project == project:
-            with transaction.atomic():
-                if not volunteer_application.is_new():
-                    volunteer_application.resolution_date = timezone.now()
-                volunteer_application.save()
-                if volunteer_application.status == ReviewStatus.ACCEPTED:
-                    task_role = ProjectTaskRole()
-                    task_role.role = TaskRole.VOLUNTEER
-                    task_role.task = project_task
-                    task_role.user = volunteer_application.volunteer
-                    task_role.save()
-        else:
-            raise ValueError('Task review does not match project or task')
+        with transaction.atomic():
+            if not volunteer_application.is_new():
+                volunteer_application.resolution_date = timezone.now()
+            volunteer_application.save()
+            if volunteer_application.status == ReviewStatus.ACCEPTED:
+                task_role = ProjectTaskRole()
+                task_role.role = TaskRole.VOLUNTEER
+                task_role.task = project_task
+                task_role.user = volunteer_application.volunteer
+                task_role.save()
 
     @staticmethod
     def accept_volunteer(request_user, projid, taskid, volunteer_application): # TODO check that the review request is in status NEW
+        validate_consistent_keys(volunteer_application, (['task', 'id'], taskid), (['task', 'project', 'id'], projid))
         volunteer_application.status = ReviewStatus.ACCEPTED
         volunteer_application.review_date = timezone.now()
         ProjectTaskService.save_volunteer_application(request_user, projid, taskid, volunteer_application)
@@ -390,6 +393,7 @@ class ProjectTaskService():
 
     @staticmethod
     def reject_volunteer(request_user, projid, taskid, volunteer_application): # TODO check that the review request is in status NEW
+        validate_consistent_keys(volunteer_application, (['task', 'id'], taskid), (['task', 'project', 'id'], projid))
         volunteer_application.status = ReviewStatus.REJECTED
         volunteer_application.review_date = timezone.now()
         ProjectTaskService.save_volunteer_application(request_user, projid, taskid, volunteer_application)
@@ -401,52 +405,51 @@ class ProjectTaskService():
 
 
     @staticmethod
-    def get_project_task_requirements(request_user, projid, taskid): # TODO check pk integrity
-        return ProjectTaskRequirement.objects.filter(task=taskid)
+    def get_project_task_requirements(request_user, projid, taskid):
+        return ProjectTaskRequirement.objects.filter(task=taskid, task__project__id=projid)
 
     @staticmethod
-    def add_task_requirement(request_user, projid, taskid, requirement):  # TODO check the integrity of all the primary keys
+    def add_task_requirement(request_user, projid, taskid, requirement):
         project_task = ProjectTask.objects.get(pk=taskid)
+        validate_consistent_keys(project_task, (['project', 'id'], projid))
         requirement.task = project_task
         requirement.save()
 
     @staticmethod
-    def save_task_requirement(request_user, projid, taskid, requirement):  # TODO check the integrity of all the primary keys
+    def save_task_requirement(request_user, projid, taskid, requirement):
+        validate_consistent_keys(requirement, (['task', 'id'], taskid), (['task', 'project', 'id'], projid))
         requirement.save()
 
     @staticmethod
-    def delete_task_requirement(request_user, projid, taskid, requirement):  # TODO check the integrity of all the primary keys
+    def delete_task_requirement(request_user, projid, taskid, requirement):
+        validate_consistent_keys(requirement, (['task', 'id'], taskid), (['task', 'project', 'id'], projid))
         requirement.delete()
 
     @staticmethod
-    def get_project_task_role(request_user, projid, taskid, roleid): # TODO check pk integrity
-        return ProjectTaskRole.objects.get(pk=roleid)
+    def get_project_task_role(request_user, projid, taskid, roleid):
+        return ProjectTaskRole.objects.get(pk=roleid, task__id=taskid, task__project__id=projid)
 
     @staticmethod
-    def get_own_project_task_role(request_user, projid, taskid): # TODO check pk integrity
-        return ProjectTaskRole.objects.get(task=taskid, user=request_user)
+    def get_own_project_task_role(request_user, projid, taskid):
+        return ProjectTaskRole.objects.get(task=taskid, task__id=taskid, task__project__id=projid, user=request_user)
 
     @staticmethod
     def save_project_task_role(request_user, projid, taskid, project_task_role):
-        # Do not check the task ID because we are changing it so it does not match
-        if project_task_role.task.project.id == projid:
-            project_task_role.save()
-            # NotificationService.add_user_notification(organization_role.user,
-            #                                             "Your role within " + organization_role.organization.name + " has been changed to " + organization_role.get_role_display() + ".",
-            #                                             NotificationSeverity.INFO,
-            #                                             NotificationSource.ORGANIZATION,
-            #                                             organization_role.organization.id)
-        else:
-            raise ValueError('Role does not match project and task')
+        # Do not check the task ID because we are changing it, so it does not match
+        validate_consistent_keys(project_task_role, (['task', 'project', 'id'], projid))
+        project_task_role.save()
+        # NotificationService.add_user_notification(organization_role.user,
+        #                                             "Your role within " + organization_role.organization.name + " has been changed to " + organization_role.get_role_display() + ".",
+        #                                             NotificationSeverity.INFO,
+        #                                             NotificationSource.ORGANIZATION,
+        #                                             organization_role.organization.id)
 
     @staticmethod
     def delete_project_task_role(request_user, projid, taskid, project_task_role):
-        if project_task_role.task.id == taskid and project_task_role.task.project.id == projid:
-            project_task_role.delete()
-            # NotificationService.add_user_notification(organization_role.user,
-            #                                             "Your role within " + organization_role.organization.name + " has been changed to " + organization_role.get_role_display() + ".",
-            #                                             NotificationSeverity.INFO,
-            #                                             NotificationSource.ORGANIZATION,
-            #                                             organization_role.organization.id)
-        else:
-            raise ValueError('Role does not match project and task')
+        validate_consistent_keys(project_task_role, (['task', 'id'], taskid), (['task', 'project', 'id'], projid))
+        project_task_role.delete()
+        # NotificationService.add_user_notification(organization_role.user,
+        #                                             "Your role within " + organization_role.organization.name + " has been changed to " + organization_role.get_role_display() + ".",
+        #                                             NotificationSeverity.INFO,
+        #                                             NotificationSource.ORGANIZATION,
+        #                                             organization_role.organization.id)
