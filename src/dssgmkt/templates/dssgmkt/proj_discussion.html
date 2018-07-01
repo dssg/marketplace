@@ -3,6 +3,9 @@
 {% block tabcontents %}
   <p></p>
 
+  {% load rules %}
+  {% has_perm 'project.comment_add' user project as user_is_project_commenter %}
+
   {% if user_is_project_commenter %}
     <form id="addcomment">
       {% csrf_token %}

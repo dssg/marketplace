@@ -91,21 +91,13 @@ class ProjectIndexView(generic.ListView):
 def add_project_common_context(request, project, page_tab, context):
     context['project'] = project
     context['page_tab'] = page_tab
-    if not request.user.is_anonymous: # TODO remove these in all the project pages, and have the templates use the auth system selectively
+    if not request.user.is_anonymous:
         context['user_is_following_project'] = ProjectService.user_is_project_follower(request.user, project)
-        context['user_is_project_member'] = ProjectService.user_is_project_member(request.user, project)
-        context['user_is_project_owner'] = ProjectService.user_is_project_owner(request.user, project)
-        context['user_is_project_volunteer'] = ProjectService.user_is_project_volunteer(request.user, project)
-        context['user_is_task_editor'] = ProjectService.user_is_task_editor(request.user, project)
-        context['user_is_project_official'] = ProjectService.user_is_project_official(request.user, project)
-        context['user_is_project_commenter'] = ProjectService.user_is_project_commenter(request.user, project)
     return context
 
 def add_project_task_common_context(request, project_task, page_tab, context):
     add_project_common_context(request, project_task.project, page_tab, context)
     context['project_task'] = project_task
-    if not request.user.is_anonymous:
-        context['user_is_task_reviewer'] = ProjectTaskService.user_can_review_task(request.user, project_task)
     return context
 
 class ProjectView(generic.ListView): ## This is a listview because it is actually showing the list of open tasks

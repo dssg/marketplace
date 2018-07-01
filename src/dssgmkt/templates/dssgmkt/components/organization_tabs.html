@@ -5,6 +5,7 @@
   <a href="{% url 'dssgmkt:org_info' organization.id %}">Organization information</a>
 {% endif %}
 
+{# TODO use the rules permission system instead of these boolean flags #}
 {% if user_is_staff or user_is_administrator %}
   {% if page_tab == 'staff' %}
     Staff

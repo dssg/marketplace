@@ -4,15 +4,21 @@
 
   <h2>Project volunteers</h2>
   {% if volunteers %}
+    {% load rules %}
+    {% has_perm 'project.volunteers_application_review' user project as user_is_project_official %}
+    {% has_perm 'project.volunteers_edit' user project as perm_volunteers_edit %}
+    {% has_perm 'project.volunteers_remove' user project as perm_volunteers_remove %}
     <table>
       <thead>
         <tr>
             <th>Full name</th>
             <th>Email address</th>
             <th>Task</th>
-            {% if user_is_project_owner %}
-            <th>Reassign</th>
-            <th>Remove</th>
+            {% if perm_volunteers_edit %}
+              <th>Change task</th>
+            {% endif %}
+            {% if perm_volunteers_remove %}
+              <th>Remove</th>
             {% endif %}
         </tr>
       </thead>
@@ -22,8 +28,10 @@
               <td><a href="{% url 'dssgmkt:user_profile' volunteer.user.id %}">{{ volunteer.user.first_name }} {{ volunteer.user.last_name }}</a></td>
               <td><a href="{% url 'dssgmkt:user_profile' volunteer.user.id %}">{{ volunteer.user.email }}</a></td>
               <td>{{ volunteer.task.name }}</td>
-              {% if user_is_project_official %}
+              {% if perm_volunteers_edit %}
                 <td><a href="{% url 'dssgmkt:proj_volunteer_edit' volunteer.task.project.id volunteer.task.id volunteer.id %}">Change task</a></td>
+              {% endif %}
+              {% if perm_volunteers_remove %}
                 <td><a href="{% url 'dssgmkt:proj_volunteer_remove' volunteer.task.project.id volunteer.task.id volunteer.id %}">Remove</a></td>
               {% endif %}
           </tr>

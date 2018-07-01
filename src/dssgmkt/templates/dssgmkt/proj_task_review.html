@@ -16,10 +16,11 @@
   {% endif %}
   <p>Request date: {{ task_review.review_request_date }} </p>
 
-
+  {% load rules %}
+  {% has_perm 'project.task_review_do' user project as perm_task_reviewer %}
 
   {% if task_review.is_pending %}
-    {% if user_is_task_reviewer %}
+    {% if perm_task_reviewer %}
 
       <form id="taskreview">
         {% csrf_token %}
@@ -46,7 +47,7 @@
       <p>Reviewer's comments: {{ task_review.public_reviewer_comments }}</p>
     {% endif %}
     {% if task_review.private_reviewer_notes %}
-      {% if user_is_task_reviewer %}
+      {% if perm_task_reviewer %}
         <p>Private reviewer's notes: {{ task_review.private_reviewer_notes }}</p>
       {% endif %}
     {% endif %}

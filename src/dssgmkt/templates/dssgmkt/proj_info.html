@@ -10,7 +10,9 @@
   <h4>Main challenges</h4>
   <p>{{ project.challenges }}</p>
 
-  {% if user_is_project_owner %}
+  {% load rules %}
+  {% has_perm 'project.information_edit' user project as perm_information_edit %}
+  {% if perm_information_edit %}
     <a href="{% url 'dssgmkt:proj_info_edit' project.id %}">Edit project information</a>
   {% endif %}
 

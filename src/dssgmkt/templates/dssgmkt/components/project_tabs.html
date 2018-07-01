@@ -1,4 +1,6 @@
 
+{% load rules %}
+
 {% if page_tab == 'info' %}
   Project information
 {% else %}
@@ -19,35 +21,44 @@
   {% endif %}
 {% endif %}
 
-{% if user_is_project_member %}
-
+{% has_perm 'project.tasks_view' user project as perm_tasks_view %}
+{% if perm_tasks_view %}
   {% if page_tab == 'tasklist' %}
     Tasks
   {% else %}
     <a href="{% url 'dssgmkt:proj_task_list' project.id %}">Tasks</a>
   {% endif %}
+{% endif %}
 
+{% has_perm 'project.log_view' user project as perm_log_view %}
+{% if perm_log_view %}
   {% if page_tab == 'log' %}
     Changelog
   {% else %}
     <a href="{% url 'dssgmkt:proj_log' project.id %}">Changelog</a>
   {% endif %}
+{% endif %}
 
+{% has_perm 'project.staff_view' user project as perm_staff_view %}
+{% if perm_staff_view %}
   {% if page_tab == 'staff' %}
     Staff
   {% else %}
     <a href="{% url 'dssgmkt:proj_staff' project.id %}">Staff</a>
   {% endif %}
+{% endif %}
 
+{% has_perm 'project.volunteers_view' user project as perm_volunteers_view %}
+{% if perm_volunteers_view %}
   {% if page_tab == 'volunteers' %}
     Volunteers
   {% else %}
     <a href="{% url 'dssgmkt:proj_volunteers' project.id %}">Volunteers</a>
   {% endif %}
-
 {% endif %}
 
-{% if user_is_project_volunteer %}
+{% has_perm 'project.volunteer_instructions_view' user project as perm_volunteer_instructions_view %}
+{% if perm_volunteer_instructions_view %}
   {% if page_tab == 'instructions' %}
     Volunteer instructions
   {% else %}

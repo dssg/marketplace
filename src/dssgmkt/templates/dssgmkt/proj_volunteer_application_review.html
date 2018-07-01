@@ -13,6 +13,10 @@
   <p>{{ volunteerapplication.volunteer_application_letter }}</p>
 
   {% if volunteerapplication.is_new %}
+
+    {% load rules %}
+    {% has_perm 'project.volunteers_application_review' user project as user_is_project_official %}
+
     {% if user_is_project_official %}
       <form id="volunteerapplicationreview">
         {% csrf_token %}

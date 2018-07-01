@@ -4,6 +4,9 @@
 
   <h3>Project tasks</h3>
   {% if project_tasks %}
+    {% load rules %}
+    {% has_perm 'project.task_edit' user project as user_is_task_editor %}
+
     {% for project_task in project_tasks %}
       <h3>{{ project_task.name }}</h3>
       <p>Description of work</p>
@@ -52,7 +55,7 @@
         <a href="{% url 'dssgmkt:proj_task_requirements_edit' project.id project_task.id %}">Edit task requirements</a>
         <a href="{% url 'dssgmkt:proj_task_remove' project.id project_task.id %}">Delete task</a>
       {% endif %}
-      
+
       <h4>Task review requests</h4>
       <table>
         <thead>

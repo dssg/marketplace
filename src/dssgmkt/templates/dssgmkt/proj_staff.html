@@ -2,6 +2,10 @@
 
 {% block tabcontents %}
 
+  {% load rules %}
+  {% has_perm 'project.staff_edit' user project as perm_staff_edit %}
+  {% has_perm 'project.staff_remove' user project as perm_staff_remove %}
+
   <h2>Staff members</h2>
   {% if project_staff %}
     <table>
@@ -10,9 +14,11 @@
             <th>Full name</th>
             <th>Email address</th>
             <th>Role</th>
-            {% if user_is_project_owner %}
-            <th>Edit</th>
-            <th>Remove</th>
+            {% if perm_staff_edit %}
+              <th>Edit</th>
+            {% endif %}
+            {% if perm_staff_remove %}
+              <th>Remove</th>
             {% endif %}
         </tr>
       </thead>
@@ -22,9 +28,11 @@
               <td><a href="{% url 'dssgmkt:user_profile' staff.user.id %}">{{ staff.user.first_name }} {{ staff.user.last_name }}</a></td>
               <td><a href="{% url 'dssgmkt:user_profile' staff.user.id %}">{{ staff.user.email }}</a></td>
               <td>{{ staff.get_role_display }}</td>
-              {% if user_is_project_owner %}
-              <td><a href="{% url 'dssgmkt:proj_staff_edit' staff.project.id staff.id %}">Edit</a></td>
-              <td><a href="{% url 'dssgmkt:proj_staff_remove' staff.project.id staff.id %}">Remove</a></td>
+              {% if perm_staff_edit %}
+                <td><a href="{% url 'dssgmkt:proj_staff_edit' staff.project.id staff.id %}">Edit</a></td>
+              {% endif %}
+              {% if perm_staff_remove %}
+                <td><a href="{% url 'dssgmkt:proj_staff_remove' staff.project.id staff.id %}">Remove</a></td>
               {% endif %}
           </tr>
         {% endfor %}
@@ -36,7 +44,7 @@
     <p>No staff found.</p>
   {% endif %}
 
-  {% if user_is_project_owner %}
+  {% if perm_staff_edit %}
     <h2>Add staff member</h2>
     <form id="addstaff">
       {% csrf_token %}

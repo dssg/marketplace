@@ -50,6 +50,8 @@ class ProjectService():
 
     @staticmethod
     def user_is_project_volunteer(user, proj):
+        print("checing user volunteer", user, proj)
+        print(ProjectTaskRole.objects.filter(user=user, role=TaskRole.VOLUNTEER, task__project=proj))
         return user.is_authenticated and ProjectTaskRole.objects.filter(user=user, role=TaskRole.VOLUNTEER, task__project=proj).exists()
 
     @staticmethod
