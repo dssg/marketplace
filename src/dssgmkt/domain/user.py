@@ -8,6 +8,7 @@ from ..models.user import (
 )
 
 from .common import validate_consistent_keys
+from dssgmkt.authorization.common import ensure_user_has_permission
 
 class UserService():
     @staticmethod
@@ -25,6 +26,8 @@ class UserService():
 
     @staticmethod
     def create_volunteer_profile(request_user, user_pk):
+        target_user = UserService.get_user(request_user, user_pk)
+        ensure_user_has_permission(request_user, target_user, 'user.is_same_user')
         # TODO check both users are the same
         if not VolunteerProfile.objects.filter(user=request_user).exists():
             volunteer_profile = VolunteerProfile()
@@ -37,11 +40,14 @@ class UserService():
     @staticmethod
     def save_volunteer_profile(request_user, volunteer_pk, volunteer_profile):
         validate_consistent_keys(volunteer_profile, ('id', volunteer_pk))
+        ensure_user_has_permission(request_user, volunteer_profile.user, 'user.is_same_user')
         volunteer_profile.save()
 
     @staticmethod
     def add_volunteer_skill(request_user, user_pk, volunteer_skill):
-        volunteer_skill.user = UserService.get_user(request_user, user_pk)
+        target_user = UserService.get_user(request_user, user_pk)
+        ensure_user_has_permission(request_user, target_user, 'user.is_same_user')
+        volunteer_skill.user = target_user
         try:
             volunteer_skill.save()
         except IntegrityError:
@@ -54,9 +60,11 @@ class UserService():
     @staticmethod
     def save_volunteer_skill(request_user, user_pk, skill_pk, volunteer_skill):
         validate_consistent_keys(volunteer_skill, ('id', skill_pk), (['user','id'], user_pk))
+        ensure_user_has_permission(request_user, volunteer_skill.user, 'user.is_same_user')
         volunteer_skill.save()
 
     @staticmethod
     def delete_volunteer_skill(request_user, user_pk, skill_pk, volunteer_skill):
         validate_consistent_keys(volunteer_skill, ('id', skill_pk), (['user','id'], user_pk))
+        ensure_user_has_permission(request_user, volunteer_skill.user, 'user.is_same_user')
         volunteer_skill.delete()
