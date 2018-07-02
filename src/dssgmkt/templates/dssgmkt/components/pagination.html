@@ -1,17 +1,31 @@
 {% if page_obj.has_other_pages %}
-<div class="pagination">
-    <span class="page-links">
+
+<nav aria-label="Page navigation example">
+  <ul class="pagination justify-content-center">
         {% if page_obj.has_previous %}
-            <a href="{{ baseurl }}?{{ pagename|default:'page' }}=1"> &lt;&lt; First</a>
-            <a href="{{ baseurl }}?{{ pagename|default:'page' }}={{ page_obj.previous_page_number }}"> &lt; Previous</a>
+            <li class="page-item"><a class="page-link" href="{{ baseurl }}?{{ pagename|default:'page' }}=1"> &lt;&lt; First</a></li>
+            <li class="page-item"><a class="page-link" href="{{ baseurl }}?{{ pagename|default:'page' }}={{ page_obj.previous_page_number }}"> &lt; Previous</a></li>
+        {% else %}
+            <li class="page-item disabled"><a class="page-link disabled" href="#">&lt;&lt; First</a></li>
+            <li class="page-item disabled"><a class="page-link disabled" href="#">&lt; Previous</a></li>
         {% endif %}
-        <span class="page-current">
-            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
-        </span>
+
+
+        {% for i in page_obj.paginator.page_range %}
+          {% if page_obj.number == i %}
+            <li class="page-item active"><span class="page-link">{{ i }} <span class="sr-only">(current)</span></span></li>
+          {% else %}
+            <li class="page-item"><a class="page-link" href="{{ baseurl }}?{{ pagename|default:'page' }}={{ i }}">{{ i }}</a></li>
+          {% endif %}
+        {% endfor %}
+
         {% if page_obj.has_next %}
-            <a href="{{ baseurl }}?{{ pagename|default:'page' }}={{ page_obj.next_page_number }}">Next &gt; </a>
-            <a href="{{ baseurl }}?{{ pagename|default:'page' }}={{ page_obj.paginator.num_pages }}">Last &gt;&gt; </a>
+            <li class="page-item"><a class="page-link" href="{{ baseurl }}?{{ pagename|default:'page' }}={{ page_obj.next_page_number }}">Next &gt; </a></li>
+            <li class="page-item"><a class="page-link" href="{{ baseurl }}?{{ pagename|default:'page' }}={{ page_obj.paginator.num_pages }}">Last &gt;&gt; </a></li>
+        {% else %}
+            <li class="page-item disabled"><a class="page-link disabled" href="#">Next &gt;</a></li>
+            <li class="page-item disabled"><a class="page-link disabled" href="#">Last &gt;&gt;</a></li>
         {% endif %}
-    </span>
-</div>
+  </ul>
+</nav>
 {% endif %}
