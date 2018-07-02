@@ -22,17 +22,18 @@
 
   {% include "dssgmkt/components/navbar.html" %}
 
-  <div class="container">
+  <div class="container main-page-container">
 
+    {% include 'dssgmkt/components/flash_messages.html' %}
 
-  {% include 'dssgmkt/components/flash_messages.html' %}
+    {% include 'dssgmkt/components/breadcrumb.html' %}
 
-  {% include 'dssgmkt/components/breadcrumb.html' %}
+    {% block pagecontents %}
+    {% endblock %}
 
-  {% block pagecontents %}
-  {% endblock %}
+  </div>
 
-</div>
+  {% include "dssgmkt/components/footer.html" %}
 
 </body>
 </html>
