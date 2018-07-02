@@ -8,12 +8,20 @@
   <meta name="description" content="">
   <meta name="author" content="The University of Chicago">
 
-  <!-- <link rel="stylesheet" href="/css/styles.css?v=1.0"> -->
+  {% load static %}
+  {# Our custom Bootswatch Flatly theme #}
+  <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}"/>
+
+  {# Other generic CSS #}
+  <link rel="stylesheet" href="{% static 'css/dssgsolve.css' %}"/>
 </head>
 
 <body>
-
+  
   {% include "dssgmkt/components/navbar.html" %}
+
+  <div class="container">
+
 
   {% include 'dssgmkt/components/flash_messages.html' %}
 
@@ -21,6 +29,8 @@
 
   {% block pagecontents %}
   {% endblock %}
+
+</div>
 
 </body>
 </html>

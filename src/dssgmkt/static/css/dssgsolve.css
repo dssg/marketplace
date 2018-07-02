@@ -1,0 +1,20 @@
+
+#dssglogo {
+  position: absolute;
+  top: 0;
+  padding: 0px;
+  width: 100px;
+}
+
+#dssglogo img {
+  width: 100px;
+  height: 100px;
+}
+
+.navbar-padder {
+    width: 120px;
+}
+
+.navbar {
+  text-transform: uppercase;
+}
