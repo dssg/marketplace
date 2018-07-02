@@ -1,21 +1,23 @@
 {% extends 'dssgmkt/org.html' %}
 
 {% block tabcontents %}
-
-  <form id="orgmembershiprequest">
-    <h2>Join organization</h2>
+  <div class="row">
+    <form id="orgmembershiprequest" class="form col-lg-6 offset-lg-3">
+    <h4 class="section-header">Join organization</h4>
     <p>Are you part of this organization? Send a membership request so
     the administrators can add you to the organization's staff.</p>
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit"
-            form="orgmembershiprequest"
-            formaction="{% url 'dssgmkt:org_staff_request' organization.id %}"
-            formmethod="post">
-        Request organization membership
-    </button>
-  </form>
-  
-  <a href="{% url 'dssgmkt:org_info' organization.id %}">Cancel</a>
-
+      {% csrf_token %}
+      {{ form.as_p }}
+      <div class="form-row">
+        <button type="submit"
+                form="orgmembershiprequest"
+                formaction="{% url 'dssgmkt:org_staff_request' organization.id %}"
+                formmethod="post"
+                class="btn btn-success mr-3">
+            Request organization membership
+        </button>
+        <a class="btn btn-outline-primary" href="{% url 'dssgmkt:org_info' organization.id %}">Cancel</a>
+      </div>
+    </form>
+  </div>
 {% endblock %}

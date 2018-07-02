@@ -2,18 +2,22 @@
 
 {% block tabcontents %}
 
-  <h2>Leave organization</h2>
-  <p>Are you sure you want to leave this organization?</p>
-  <form id="leaveorg">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit"
-            form="leaveorg"
-            formaction="{% url 'dssgmkt:org_staff_leave' organization.id %}"
-            formmethod="post">
-        Yes, leave organization
-    </button>
-  </form>
-  <a href="{% url 'dssgmkt:org_info' organization.id %}">No, stay in the organization</a>
-
+  <div class="row">
+    <form id="leaveorg" class="form col-lg-6 offset-lg-3">
+    <h4 class="section-header">Leave organization</h4>
+    <p>Are you sure you want to leave this organization?</p>
+      {% csrf_token %}
+      {{ form.as_p }}
+      <div class="form-row">
+        <button type="submit"
+                form="leaveorg"
+                formaction="{% url 'dssgmkt:org_staff_leave' organization.id %}"
+                formmethod="post"
+                class="btn btn-danger mr-3">
+            Yes, leave organization
+        </button>
+        <a class="btn btn-outline-primary" href="{% url 'dssgmkt:org_info' organization.id %}">No, stay in the organization</a>
+      </div>
+    </form>
+  </div>
 {% endblock %}
