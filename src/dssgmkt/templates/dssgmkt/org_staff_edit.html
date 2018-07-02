@@ -2,19 +2,24 @@
 
 {% block tabcontents %}
 
-  <h2>Edit staff member</h2>
-  <p>Name: {{ organizationrole.user.first_name }} {{ organizationrole.user.last_name }}</p>
-  <p>Email: {{ organizationrole.user.email }}</p>
-  <form id="editstaff">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit"
-            form="editstaff"
-            formaction="{% url 'dssgmkt:org_staff_edit' organization.id organizationrole.id %}"
-            formmethod="post">
-      Save
-    </button>
-  </form>
-  <a href="{% url 'dssgmkt:org_staff' organization.id %}">Cancel</a>
-
+  <div class="row">
+    <form id="editstaff" class="col-lg-6 offset-lg-3">
+      <h4 class="section-header">Edit staff member</h4>
+      <p>Name: {{ organizationrole.user.first_name }} {{ organizationrole.user.last_name }}</p>
+      <p>Email: {{ organizationrole.user.email }}</p>
+      {% csrf_token %}
+      {{ form.as_p }}
+      <div class="form-row">
+        <button type="submit"
+                form="editstaff"
+                formaction="{% url 'dssgmkt:org_staff_edit' organization.id organizationrole.id %}"
+                formmethod="post"
+                class="btn btn-success mr-3">
+          Save
+        </button>
+        <a class="btn btn-outline-primary" href="{% url 'dssgmkt:org_staff' organization.id %}">Cancel</a>
+      </div>
+    </form>
+  </div>
+  
 {% endblock %}
