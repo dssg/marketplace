@@ -1,15 +1,25 @@
 
-{% if page_tab == 'info' %}
-  Organization information
-{% else %}
-  <a href="{% url 'dssgmkt:org_info' organization.id %}">Organization information</a>
-{% endif %}
+<ul class="nav nav-tabs">
 
-{# TODO use the rules permission system instead of these boolean flags #}
-{% if user_is_staff or user_is_administrator %}
-  {% if page_tab == 'staff' %}
-    Staff
-  {% else %}
-    <a href="{% url 'dssgmkt:org_staff' organization.id %}">Staff</a>
+  <li class="nav-item">
+    {% if page_tab == 'info' %}
+      <span class="nav-link active">Organization information</span>
+    {% else %}
+        <a class="nav-link" href="{% url 'dssgmkt:org_info' organization.id %}">Organization information</a>
+    {% endif %}
+  </li>
+
+  {# TODO use the rules permission system instead of these boolean flags #}
+  {% if user_is_staff or user_is_administrator %}
+
+    <li class="nav-item">
+      {% if page_tab == 'staff' %}
+        <span class="nav-link active">Staff</span>
+      {% else %}
+          <a class="nav-link" href="{% url 'dssgmkt:org_staff' organization.id %}">Staff</a>
+      {% endif %}
+    </li>
+
   {% endif %}
-{% endif %}
+
+</ul>
