@@ -3,13 +3,13 @@
 {% block pagecontents %}
   <section>
     <div class="row">
-      <div class="col-lg-7">
+      <div class="col-lg-9">
         <h1>{{ organization.name }}</h1>
         <h4>{{ organization.get_main_cause_display }} <a href="{{ organization.website_url }}">External website</a></h4>
         <!-- <div><</div> -->
       </div>
-      <div class="col-lg-5">
-        <img src="{{ organization.logo_url }}"></img>
+      <div class="col-lg-3">
+        <img class="img-fluid" src="{{ organization.logo_url }}"></img>
       </div>
     </div>
 
