@@ -108,7 +108,7 @@
                     {% if request.status == "ACC" %}
                       check
                     {% elif request.status == "REJ"%}
-                      clear
+                      block
                     {% elif request.status == "NEW"%}
                       edit
                     {% endif %}
