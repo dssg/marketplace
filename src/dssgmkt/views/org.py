@@ -233,8 +233,7 @@ def process_organization_membership_request_view(request, org_pk, request_pk, ac
                         {'organizationmembershiprequest': membership_request,
                         'breadcrumb': organization_breadcrumb(organization,
                                                                 organization_staff_link(organization),
-                                                                organization_membership_request_link(membership_request),
-                                                                ('Review request', None)),
+                                                                organization_membership_request_link(membership_request, include_link=False)),
                         'form': form,
                         }))
 
