@@ -41,7 +41,7 @@
   {% if user_is_administrator %}
     <h4 class="section-header">Add staff member</h4>
     <form id="addstaff" class="form-inline">
-      {% if form.subject.errors %}
+      {% if form.errors %}
         <ol>
         {% for error in form.subject.errors %}
             <li><strong>{{ error|escape }}</strong></li>
@@ -50,30 +50,8 @@
       {% endif %}
 
       {% csrf_token %}
+      {% include 'dssgmkt/components/form_fields.html' with form=add_staff_form %}
 
-      {% load widget_tweaks %}
-
-      {% for field in add_staff_form %}
-        {% if field.errors %}
-            <div class="form-group has-error">
-                <label class="col-sm-2 control-label" for="id_{{ field.name }}">{{ field.label }}</label>
-                <div class="col-sm-2">
-                    {{ field|attr:"class:form-control" }}
-                    <span class="help-block">
-                        {% for error in  field.errors %}{{ error }}{% endfor %}
-                    </span>
-                </div>
-            </div>
-        {% else %}
-            <label class="col-sm-2 control-label" for="id_{{ field.name }}">{{ field.label }}</label>
-            <div class="col-sm-2">
-                {{ field|attr:"class:form-control" }}
-                {% if field.help_text %}
-                    <p class="help-block"><small>{{ field.help_text }}</small></p>
-                {% endif %}
-            </div>
-        {% endif %}
-      {% endfor %}
       <div class="form-group col-lg-3">
         <div>
           <button type="submit"
