@@ -1,67 +1,86 @@
 
 {% load rules %}
+<ul class="nav nav-tabs">
 
-{% if page_tab == 'info' %}
-  Project information
-{% else %}
-  <a href="{% url 'dssgmkt:proj_info' project.id %}">Project information</a>
-{% endif %}
+  <li class="nav-item">
+    {% if page_tab == 'info' %}
+      <span class="nav-link active">Project information</span>
+    {% else %}
+        <a class="nav-link" href="{% url 'dssgmkt:proj_info' project.id %}">Project information</a>
+    {% endif %}
+  </li>
 
-{% if page_tab == 'discussion' %}
-  Discussion
-{% else %}
-  <a href="{% url 'dssgmkt:proj_discussion' project.id %}">Discussion</a>
-{% endif %}
+  <li class="nav-item">
+    {% if page_tab == 'discussion' %}
+      <span class="nav-link active">Discussion</span>
+    {% else %}
+      <a class="nav-link" href="{% url 'dssgmkt:proj_discussion' project.id %}">Discussion</a>
+    {% endif %}
+  </li>
 
-{% if project.is_completed %}
-  {% if page_tab == 'deliverables' %}
-    Deliverables
-  {% else %}
-    <a href="{% url 'dssgmkt:proj_deliverables' project.id %}">Deliverables</a>
+  {% if project.is_completed %}
+    <li class="nav-item">
+      {% if page_tab == 'deliverables' %}
+        <span class="nav-link active">Deliverables</span>
+      {% else %}
+        <a class="nav-link" href="{% url 'dssgmkt:proj_deliverables' project.id %}">Deliverables</a>
+      {% endif %}
+    </li>
   {% endif %}
-{% endif %}
 
-{% has_perm 'project.tasks_view' user project as perm_tasks_view %}
-{% if perm_tasks_view %}
-  {% if page_tab == 'tasklist' %}
-    Tasks
-  {% else %}
-    <a href="{% url 'dssgmkt:proj_task_list' project.id %}">Tasks</a>
+  {% has_perm 'project.tasks_view' user project as perm_tasks_view %}
+  {% if perm_tasks_view %}
+    <li class="nav-item">
+      {% if page_tab == 'tasklist' %}
+        <span class="nav-link active">Tasks</span>
+      {% else %}
+        <a class="nav-link" href="{% url 'dssgmkt:proj_task_list' project.id %}">Tasks</a>
+      {% endif %}
+    </li>
   {% endif %}
-{% endif %}
 
-{% has_perm 'project.log_view' user project as perm_log_view %}
-{% if perm_log_view %}
-  {% if page_tab == 'log' %}
-    Changelog
-  {% else %}
-    <a href="{% url 'dssgmkt:proj_log' project.id %}">Changelog</a>
+  {% has_perm 'project.log_view' user project as perm_log_view %}
+  {% if perm_log_view %}
+    <li class="nav-item">
+      {% if page_tab == 'log' %}
+        <span class="nav-link active">Changelog</span>
+      {% else %}
+        <a class="nav-link" href="{% url 'dssgmkt:proj_log' project.id %}">Changelog</a>
+      {% endif %}
+    </li>
   {% endif %}
-{% endif %}
 
-{% has_perm 'project.staff_view' user project as perm_staff_view %}
-{% if perm_staff_view %}
-  {% if page_tab == 'staff' %}
-    Staff
-  {% else %}
-    <a href="{% url 'dssgmkt:proj_staff' project.id %}">Staff</a>
+  {% has_perm 'project.staff_view' user project as perm_staff_view %}
+  {% if perm_staff_view %}
+    <li class="nav-item">
+      {% if page_tab == 'staff' %}
+        <span class="nav-link active">Staff</span>
+      {% else %}
+        <a class="nav-link" href="{% url 'dssgmkt:proj_staff' project.id %}">Staff</a>
+      {% endif %}
+    </li>
   {% endif %}
-{% endif %}
 
-{% has_perm 'project.volunteers_view' user project as perm_volunteers_view %}
-{% if perm_volunteers_view %}
-  {% if page_tab == 'volunteers' %}
-    Volunteers
-  {% else %}
-    <a href="{% url 'dssgmkt:proj_volunteers' project.id %}">Volunteers</a>
+  {% has_perm 'project.volunteers_view' user project as perm_volunteers_view %}
+  {% if perm_volunteers_view %}
+    <li class="nav-item">
+      {% if page_tab == 'volunteers' %}
+        <span class="nav-link active">Volunteers</span>
+      {% else %}
+        <a class="nav-link" href="{% url 'dssgmkt:proj_volunteers' project.id %}">Volunteers</a>
+      {% endif %}
+    </li>
   {% endif %}
-{% endif %}
 
-{% has_perm 'project.volunteer_instructions_view' user project as perm_volunteer_instructions_view %}
-{% if perm_volunteer_instructions_view %}
-  {% if page_tab == 'instructions' %}
-    Volunteer instructions
-  {% else %}
-    <a href="{% url 'dssgmkt:proj_instructions' project.id %}">Volunteer instructions</a>
+  {% has_perm 'project.volunteer_instructions_view' user project as perm_volunteer_instructions_view %}
+  {% if perm_volunteer_instructions_view %}
+    <li class="nav-item">
+      {% if page_tab == 'instructions' %}
+        <span class="nav-link active">Volunteer instructions</span>
+      {% else %}
+        <a class="nav-link" href="{% url 'dssgmkt:proj_instructions' project.id %}">Volunteer instructions</a>
+      {% endif %}
+    </li>
   {% endif %}
-{% endif %}
+
+</ul>
