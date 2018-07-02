@@ -2,9 +2,9 @@
 
 {% block tabcontents %}
 
-  <h2>Staff members</h2>
+  <h4 class="section-header">Staff members</h4>
   {% if organization_staff %}
-    <table>
+    <table class="table table-hover">
       <thead>
         <tr>
             <th>Full name</th>
@@ -39,8 +39,8 @@
   {% endif %}
 
   {% if user_is_administrator %}
-    <h2>Add staff member</h2>
-    <form id="addstaff">
+    <h4 class="section-header">Add staff member</h4>
+    <form id="addstaff" class="form-inline">
       {% if form.subject.errors %}
         <ol>
         {% for error in form.subject.errors %}
@@ -50,19 +50,47 @@
       {% endif %}
 
       {% csrf_token %}
-      {{ add_staff_form.as_p }}
-      <button type="submit"
-              form="addstaff"
-              formaction="{% url 'dssgmkt:org_staff' organization.id %}"
-              formmethod="post">
-        Add staff member
-      </button>
+
+      {% load widget_tweaks %}
+
+      {% for field in add_staff_form %}
+        {% if field.errors %}
+            <div class="form-group has-error">
+                <label class="col-sm-2 control-label" for="id_{{ field.name }}">{{ field.label }}</label>
+                <div class="col-sm-2">
+                    {{ field|attr:"class:form-control" }}
+                    <span class="help-block">
+                        {% for error in  field.errors %}{{ error }}{% endfor %}
+                    </span>
+                </div>
+            </div>
+        {% else %}
+            <label class="col-sm-2 control-label" for="id_{{ field.name }}">{{ field.label }}</label>
+            <div class="col-sm-2">
+                {{ field|attr:"class:form-control" }}
+                {% if field.help_text %}
+                    <p class="help-block"><small>{{ field.help_text }}</small></p>
+                {% endif %}
+            </div>
+        {% endif %}
+      {% endfor %}
+      <div class="form-group col-lg-3">
+        <div>
+          <button type="submit"
+                  form="addstaff"
+                  formaction="{% url 'dssgmkt:org_staff' organization.id %}"
+                  formmethod="post"
+                  class="btn btn-success">
+            Add staff member
+          </button>
+        </div>
+      </div>
     </form>
   {% endif %}
 
-  <h2>Organization membership requests</h2>
+  <h4 class="section-header">Organization membership requests</h4>
   {% if organization_requests %}
-    <table>
+    <table class="table table-hover">
       <thead>
         <tr>
             <th>Full name</th>

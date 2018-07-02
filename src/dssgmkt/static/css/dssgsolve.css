@@ -18,3 +18,7 @@
 .navbar {
   text-transform: uppercase;
 }
+
+.section-header {
+  margin-top: 25px;
+}
