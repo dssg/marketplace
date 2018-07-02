@@ -1,16 +1,22 @@
 {% extends 'dssgmkt/base.html' %}
 
 {% block pagecontents %}
+  <section>
+    <div class="row">
+      <div class="col-lg-7">
+        <h1>{{ organization.name }}</h1>
+        <h4>{{ organization.get_main_cause_display }} <a href="{{ organization.website_url }}">External website</a></h4>
+        <!-- <div><</div> -->
+      </div>
+      <div class="col-lg-5">
+        <img src="{{ organization.logo_url }}"></img>
+      </div>
+    </div>
 
-  <a href="{{ organization.website_url }}"><img src="missing.jpg"></img></a>
-  <h1>{{ organization.name }}</h1>
-  <h4>{{ organization.get_main_cause_display }}</h4>
-  <div><a href="{{ organization.website_url }}">Website</a></div>
-  <img src="{{ organization.logo_url }}"></img>
+    {% include 'dssgmkt/components/organization_tabs.html' %}
 
-  {% include 'dssgmkt/components/organization_tabs.html' %}
+    {% block tabcontents %}
+    {% endblock %}
 
-  {% block tabcontents %}
-  {% endblock %}
-
+  </section>
 {% endblock %}
