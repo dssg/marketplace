@@ -1,5 +1,7 @@
 from django.db import models
 from django_countries.fields import CountryField
+from django.utils.safestring import mark_safe
+
 
 from dssgsolve import settings
 
@@ -156,7 +158,7 @@ class Organization(models.Model):
 class OrganizationMembershipRequest(models.Model):
     role = models.IntegerField(
         verbose_name="User role",
-        help_text="Select the role of this user in the organization. IMPORTANT: Administrators will have full permissions over the organization so only assign this permission if you are sure you grant this user full control of the organization.",
+        help_text=mark_safe("Select the role of this user in the organization. <strong>IMPORTANT: Administrators will have full permissions over the organization</strong> so only assign this permission if you are sure you want to grant this user full control of the organization."),
         choices = OrgRole.get_choices(),
         default=OrgRole.STAFF,
     )
@@ -168,14 +170,14 @@ class OrganizationMembershipRequest(models.Model):
     )
     public_reviewer_comments = models.TextField(
         verbose_name="Public reviewer comments",
-        help_text="Write any comments you have for the applicant. IMPORTANT: These comments will be public and can be viewed by users outside ot the organization.",
+        help_text=mark_safe("Write any comments you have for the applicant. <strong>IMPORTANT: These comments will be public and can be viewed by users outside ot the organization.</strong>"),
         max_length=5000,
         blank=True,
         null=True,
     )
     private_reviewer_notes = models.TextField(
         verbose_name="Private review notes",
-        help_text="Write any private comments regarding this decision. IMPORTANT: these notes are private to the organization, but all members of the organization will be able to see them.",
+        help_text=mark_safe("Write any private comments regarding this decision. <strong>IMPORTANT: these notes are private to the organization, but all members of the organization will be able to see them.</strong>"),
         max_length=5000,
         blank=True,
         null=True,

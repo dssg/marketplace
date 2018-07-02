@@ -2,36 +2,56 @@
 
 {% block tabcontents %}
 
-  <h2>Membership request review</h2>
-  <p>This person has requested to join your organization. Please review the
-  application and accept or reject it.</p>
+  <div class="row">
+    <div class="col-lg-12">
+      <h4 class="section-header">Membership request review</h4>
 
-  <p>Full name:<a href="{% url 'dssgmkt:user_profile' organizationmembershiprequest.user.id %}">
-    {{ organizationmembershiprequest.user.first_name }} {{ organizationmembershiprequest.user.last_name }}</a></p>
-  <p>Email addres:<a href="{% url 'dssgmkt:user_profile' organizationmembershiprequest.user.id %}">
-    {{ organizationmembershiprequest.user.email }}</a></p>
-  <p>Request date: {{ organizationmembershiprequest.request_date }} </p>
+      <p>This person has requested to join your organization. Please review the
+      application and accept or reject it.</p>
+
+      <p>Full name:<a href="{% url 'dssgmkt:user_profile' organizationmembershiprequest.user.id %}">
+        {{ organizationmembershiprequest.user.first_name }} {{ organizationmembershiprequest.user.last_name }}</a></p>
+      <p>Email addres:<a href="{% url 'dssgmkt:user_profile' organizationmembershiprequest.user.id %}">
+        {{ organizationmembershiprequest.user.email }}</a></p>
+      <p>Request date: {{ organizationmembershiprequest.request_date }} </p>
+    </div>
+  </div>
 
 
   {% if organizationmembershiprequest.is_new %}
     {% if user_is_administrator %}
-      <form id="orgmembershiprequestreview">
-      {% csrf_token %}
-      {{ form.as_p }}
+      <div class="row">
+        <div class="col-lg-12">
+          <form id="orgmembershiprequestreview">
+            {% csrf_token %}
 
-      <button type="submit"
-              form="orgmembershiprequestreview"
-              formaction="{% url 'dssgmkt:org_staff_request_review_do' organization.id organizationmembershiprequest.id 'accept' %}"
-              formmethod="post">Accept membership request</button>
+            {% include 'dssgmkt/components/standard_form_fields.html' %}
 
-      <button type="submit"
-              form="orgmembershiprequestreview"
-              formaction="{% url 'dssgmkt:org_staff_request_review_do' organization.id organizationmembershiprequest.id 'reject' %}"
-              formmethod="post">Reject membership request</button>
+            <div class="form-row">
+              <div class="col-lg-9 offset-lg-3">
+                <button type="submit"
+                        form="orgmembershiprequestreview"
+                        formaction="{% url 'dssgmkt:org_staff_request_review_do' organization.id organizationmembershiprequest.id 'accept' %}"
+                        formmethod="post"
+                        class="btn btn-success mr-3">Accept membership request</button>
 
-      </form>
+                <button type="submit"
+                        form="orgmembershiprequestreview"
+                        formaction="{% url 'dssgmkt:org_staff_request_review_do' organization.id organizationmembershiprequest.id 'reject' %}"
+                        formmethod="post"
+                        class="btn btn-danger mr-3">Reject membership request</button>
+
+                <a class="btn btn-outline-primary" href="{% url 'dssgmkt:org_staff' organization.id %}">Cancel</a>
+              </div>
+            </div>
+
+          </form>
+        </div>
+      </div>
     {% endif %}
+
   {% else %}
+
     <p>Request status: {{ organizationmembershiprequest.get_status_display }}
         {% if organizationmembershiprequest.is_new and user_is_administrator %}
           <a href="{% url 'dssgmkt:org_staff_request_review' organization.id organizationmembershiprequest.id %}">Accept/reject request<a>
@@ -44,7 +64,8 @@
     {% if user_is_member and organizationmembershiprequest.private_reviewer_notes %}
       <p>Private reviewer's notes: {{ organizationmembershiprequest.private_reviewer_notes }}</p>
     {% endif %}
+    <a href="{% url 'dssgmkt:org_staff' organization.id %}">Back</a>
+
   {% endif %}
 
-  <a href="{% url 'dssgmkt:org_staff' organization.id %}">Back</a>
 {% endblock %}
