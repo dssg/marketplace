@@ -1,76 +1,75 @@
 {% extends 'dssgmkt/base.html' %}
 
 {% block pagecontents %}
-  <form>
-    <h2>Filter</h2>
-    <label for="orgname">
-      Organization name
-      <input type="text" id="orgname" name="orgname" placeholder=""></input></label>
+  <div class="row">
+    <div class="col-lg-3">
+      <form>
+        <h4>Filter</h4>
+        <label for="orgname">
+          Organization name
+          <input class="form-control" type="text" id="orgname" name="orgname" placeholder=""></input></label>
 
-    <fieldset name="socialcause">
-      <legend>Organization's main cause</legend>
-      <label for="education">
-        <input type="checkbox" id="education" name="education"></input>Education</label>
-      <label for="health">
-        <input type="checkbox" id="health" name="health"></input>Health</label>
-      <label for="environment">
-        <input type="checkbox" id="environment" name="environment"></input>Environment</label>
-      <label for="socialservices">
-        <input type="checkbox" id="socialservices" name="socialservices"></input>Social Services</label>
-      <label for="transportation">
-        <input type="checkbox" id="transportation" name="transportation"></input>Transportation</label>
-      <label for="energy">
-        <input type="checkbox" id="energy" name="energy"></input>Energy and Environment</label>
-      <label for="internationaldev">
-        <input type="checkbox" id="internationaldev" name="internationaldev"></input>International Development</label>
-      <label for="publicsafety">
-        <input type="checkbox" id="publicsafety" name="publicsafety"></input>Public Safety</label>
-      <label for="economicdev">
-        <input type="checkbox" id="economicdev" name="economicdev"></input>Economic Development</label>
-      <label for="other">
-        <input type="checkbox" id="other" name="other"></input>Other</label>
-    </fieldset>
+        <fieldset name="socialcause">
+          <legend>Organization's main cause</legend>
+          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='education' field_text='Education' %}
+          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='health' field_text='Health' %}
+          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='environment' field_text='Environment' %}
+          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='socialservices' field_text='Social Services' %}
+          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='transportation' field_text='Transportation' %}
+          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='energy' field_text='Energy and Environment' %}
+          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='internationaldev' field_text='International Development' %}
+          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='publicsafety' field_text='Public Safety' %}
+          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='economicdev' field_text='Economic Development' %}
+          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='other' field_text='Other' %}
 
-    <fieldset name="status">
-      <legend>Project status</legend>
-      <label for="new">
-        <input type="checkbox" id="new" name="new"></input>With new projects</label>
-      <label for="inprogress">
-        <input type="checkbox" id="inprogress" name="inprogress"></input>With projects in progress</label>
-      <label for="acceptingvolunteers">
-        <input type="checkbox" id="acceptingvolunteers" name="acceptingvolunteers"></input>With projects looking for volunteers</label>
-      <label for="completed">
-        <input type="checkbox" id="completed" name="completed"></input>With completed projects</label>
-    </fieldset>
-    <button type="submit">Apply filters</button>
-  </form>
+        </fieldset>
 
-  {% if org_list %}
-    <table>
-      <thead>
-        <tr>
-            <th>Organization name</th>
-            <th>Logo</th>
-            <th>Social impact area</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for organization in org_list %}
-          <tr>
-              <td><a href="{% url 'dssgmkt:org_info' organization.id %}">{{ organization.name }}</a></td>
-              <td><img src="{{ organization.logo_url }}"></img></td>
-              <td>{{ organization.get_main_cause_display }}</td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+        <fieldset name="status">
+          <legend>Project status</legend>
+          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='new' field_text='With new projects' %}
+          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='inprogress' field_text='With progress in progress' %}
+          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='acceptingvolunteers' field_text='With projects looking for volunteers' %}
+          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='completed' field_text='With completed projects' %}
+        </fieldset>
+        <button type="submit"
+                formmethod="get"
+                class="btn btn-success">
+          Apply filters
+        </button>
+      </form>
+    </div>
+    <div class="col-lg-9">
+      {% if org_list %}
+        <table class="table table-hover">
+          <thead>
+            <tr>
+                <th>Organization name</th>
+                <th>Description</th>
+                <th>Social impact area</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for organization in org_list %}
+              <tr>
+                  <td><a href="{% url 'dssgmkt:org_info' organization.id %}">{{ organization.name }}</a></td>
+                  <td>{{ organization.short_summary }}</img></td>
+                  <td>{{ organization.get_main_cause_display }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
 
-    {% url 'dssgmkt:org_list' as org_list_url %}
-    {% include 'dssgmkt/components/pagination.html' with baseurl=org_list_url %}
+        {% url 'dssgmkt:org_list' as org_list_url %}
+        {% include 'dssgmkt/components/pagination.html' with baseurl=org_list_url %}
 
 
-  {% else %}
-      <p>No organizations found.</p>
-  {% endif %}
+      {% else %}
+          <p>No organizations found.</p>
+      {% endif %}
+    </div>
+  </div>
+
+
+
 
 {% endblock %}
