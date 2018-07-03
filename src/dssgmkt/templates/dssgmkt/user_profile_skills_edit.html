@@ -2,16 +2,16 @@
 
 {% block pagecontents %}
 
-  <h2>My skills</h2>
+  <h4 class="section-header">My skills</h4>
   {% if volunteerskills %}
-    <table>
+    <table class="table table-hover">
       <thead>
         <tr>
             <th>Area</th>
             <th>Skill</th>
             <th>Level</th>
-            <th>Edit</th>
-            <th>Remove</th>
+            <th></th>
+            <th></th>
         </tr>
       </thead>
       <tbody>
@@ -20,8 +20,18 @@
               <td>{{ volunteerskill.skill.area }}</td>
               <td>{{ volunteerskill.skill.name }}</td>
               <td>{{ volunteerskill.get_level_display }}</td>
-              <td><a href="{% url 'dssgmkt:user_profile_skills_skill_edit' user.id volunteerskill.id %}">Edit</a></td>
-              <td><a href="{% url 'dssgmkt:user_profile_skills_skill_remove' user.id volunteerskill.id %}">Remove</a></td>
+              <td>
+                <a href="{% url 'dssgmkt:user_profile_skills_skill_edit' user.id volunteerskill.id %}">
+                  <i class="material-icons md-12" style="vertical-align: middle">edit</i>
+                  Edit
+                </a>
+              </td>
+              <td>
+                <a class="text-danger" href="{% url 'dssgmkt:user_profile_skills_skill_remove' user.id volunteerskill.id %}">
+                  <i class="material-icons md-12" style="vertical-align: middle">remove_circle</i>
+                  Remove
+                </a>
+              </td>
           </tr>
         {% endfor %}
       </tbody>
@@ -30,16 +40,22 @@
     <p>No skills listed.</p>
   {% endif %}
 
-    <h2>Add new skill</h2>
-    <form id="addskill">
-      {% csrf_token %}
-      {{ add_skill_form.as_p }}
-      <button type="submit"
-              form="addskill"
-              formaction="{% url 'dssgmkt:user_profile_skills_edit' user.id %}"
-              formmethod="post">
-        Add skill
-      </button>
-    </form>
+  <h4 class="section-header">Add new skill</h4>
+  <form id="addskill" class="form-inline">
+    {% csrf_token %}
+    {% include 'dssgmkt/components/inline_form_fields.html' with form=add_skill_form %}
+    <div class="form-group col-lg-3">
+      <div>
+        <button type="submit"
+                form="addskill"
+                formaction="{% url 'dssgmkt:user_profile_skills_edit' user.id %}"
+                formmethod="post"
+                class="btn btn-success">
+          <i class="material-icons" style="vertical-align: middle">add_circle</i>
+          Add skill
+        </button>
+      </div>
+    </div>
+  </form>
 
 {% endblock %}

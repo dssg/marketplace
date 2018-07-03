@@ -4,8 +4,8 @@
 {% for field in form %}
   {% if field.errors %}
     <div class="form-group has-error">
-        <label class="col-sm-2 control-label" for="id_{{ field.name }}">{{ field.label }}</label>
-        <div class="col-sm-2">
+        <label class="control-label mr-1" for="id_{{ field.name }}">{{ field.label }}</label>
+        <div class="mr-5">
             {{ field|attr:"class:form-control" }}
             <span class="help-block">
                 {% for error in  field.errors %}{{ error }}{% endfor %}
@@ -13,12 +13,9 @@
         </div>
     </div>
   {% else %}
-    <label class="col-sm-2 control-label" for="id_{{ field.name }}">{{ field.label }}</label>
-    <div class="col-sm-2">
+    <label class="control-label mr-1" for="id_{{ field.name }}">{{ field.label }}</label>
+    <div class="mr-5">
         {{ field|attr:"class:form-control" }}
-        {% if field.help_text %}
-            <p class="help-block"><small>{{ field.help_text }}</small></p>
-        {% endif %}
     </div>
   {% endif %}
 {% endfor %}
