@@ -2,85 +2,80 @@
 
 {% block tabcontents %}
 
-  <h3>Project description</h3>
-  <h4>Context and motivation</h4>
-  <p>{{ project.motivation }}</p>
-  <h4>Proposed solution</h4>
-  <p>{{ project.solution_description }}</p>
-  <h4>Main challenges</h4>
-  <p>{{ project.challenges }}</p>
 
-  {% load rules %}
-  {% has_perm 'project.information_edit' user project as perm_information_edit %}
-  {% if perm_information_edit %}
-    <a href="{% url 'dssgmkt:proj_info_edit' project.id %}">Edit project information</a>
-  {% endif %}
+  <div class="row mt-5 mb-5">
+    <div class="col-lg-8">
+      <h3>Project description</h3>
+      <h4 class="section-header">Context and motivation</h4>
+      <p>{{ project.motivation }}</p>
+      <h4 class="section-header">Proposed solution</h4>
+      <p>{{ project.solution_description }}</p>
+      <h4 class="section-header">Main challenges</h4>
+      <p>{{ project.challenges }}</p>
+    </div>
 
-  <h3>Schedule</h3>
-  <p>Start date: {{ project.intended_start_date }}</p>
-  <p>End date: {{ project.intended_end_date }}</p>
+    <div class="col-lg-4">
+      <form id="followproject">
+        {% csrf_token %}
+        <button type="submit"
+                form="followproject"
+                formaction="{% url 'dssgmkt:proj_follow' project.id %}"
+                formmethod="post"
+                class="btn btn-success col-lg-12 mb-1">
+          {% if user_is_following_project %}
+            <i class="material-icons" style="vertical-align: middle">visibility_off</i>
+            Unfollow project
+          {% else %}
+            <i class="material-icons" style="vertical-align: middle">visibility</i>
+            Follow project
+          {% endif %}
+        </button>
+      </form>
+      {% load rules %}
+      {% has_perm 'project.information_edit' user project as perm_information_edit %}
+      {% if perm_information_edit %}
+        <a class="btn btn-success col-lg-12 mb-1"
+           href="{% url 'dssgmkt:proj_info_edit' project.id %}">
+          <i class="material-icons" style="vertical-align: middle">edit</i>
+          Edit project information
+        </a>
+      {% endif %}
 
-  <h3>Volunteer openings</h3>
-  {% if project_tasks %}
-    {% for project_task in project_tasks %}
-      <h3>{{ project_task.name }}</h3>
-      <p>Description of work</p>
-      <p>{{ project_task.description }}</p>
-      <h4>Required skills</h4> {# TODO change this from table to paragraph form #}
-      <table>
-        <thead>
-          <tr>
-            <th>Area</th>
-            <th>Skill</th>
-            <th>Level</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for task_requirement in project_task.projecttaskrequirement_set.all %}
-            <tr>
-              <td>{{ task_requirement.skill.area }}</td>
-              <td>{{ task_requirement.skill.name }}</td>
-              <td>{{ task_requirement.get_level_display }}</td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-      {# TODO show a message "You have applied to this task" instead of the link when the user has applied already #}
-      <a href="{% url 'dssgmkt:proj_task_apply' project.id project_task.id %}">Apply to volunteer</a>
-    {% endfor %}
-  {% else %}
-    <p>This project does not have any volunteer openings at this moment.</p>
-  {% endif %}
+      <div class="card mb-3 section-header">
+        <div class="card-header">Schedule</div>
+        <div class="card-body">
+          <p>Start date: {{ project.intended_start_date }}</p>
+          <p>End date: {{ project.intended_end_date }}</p>
+        </div>
+      </div>
 
-  <form id="followproject">
-    {% csrf_token %}
-    <button type="submit"
-            form="followproject"
-            formaction="{% url 'dssgmkt:proj_follow' project.id %}"
-            formmethod="post">
-            {% if user_is_following_project %}
-              Unfollow project
-            {% else %}
-              Follow project
-            {% endif %}
-    </button>
-  </form>
+      <h4 class="section-header">Volunteer openings</h4>
+      {% if project_tasks %}
+        {% for project_task in project_tasks %}
+          <div class="card mb-3">
+            <div class="card-header">{{ project_task.name }}</div>
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item">{{ project_task.description }}</li>
+              <li class="list-group-item">Required skills:
+                {% for task_requirement in project_task.projecttaskrequirement_set.all %}
+                  <div>{{ task_requirement.skill.area }}/{{ task_requirement.skill.name }}:{{ task_requirement.get_level_display }}</div>
+                {% endfor %}
+              </li>
+              <li class="list-group-item">
+                {# TODO show a message "You have applied to this task" instead of the link when the user has applied already #}
+                <a class="btn btn-success col-lg-12" href="{% url 'dssgmkt:proj_task_apply' project.id project_task.id %}">
+                  <i class="material-icons" style="vertical-align: middle">how_to_vote</i>
+                  Apply to volunteer
+                </a>
+              </li>
+            </ul>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p>This project does not have any volunteer openings at this moment.</p>
+      {% endif %}
+    </div>
+  </div>
 
-  	<!-- <if status is new>
-  		Description of the scoping task:
-  			description
-  			business area
-  			List of required skills
-  				<if accepting volunteers>
-  					Apply button -> Volunteer apply page
-  				<else if not following project>
-  					Follow this project to be notified when volunteer positions become available
-  					Follow -> link to the same page
 
-  	<if status is design>
-  		"This project is being defined."
-  	<if status is waiting_staff or in_progress>
-  		"This project is now open and needs volunteers"
-  		Description of the project management task -- Same as the description of the scoping task
-  		Description of the work task -- same as the description of the scoping task -->
 {% endblock %}

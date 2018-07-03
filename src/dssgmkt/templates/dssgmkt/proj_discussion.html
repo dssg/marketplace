@@ -7,29 +7,55 @@
   {% has_perm 'project.comment_add' user project as user_is_project_commenter %}
 
   {% if user_is_project_commenter %}
-    <form id="addcomment">
+    <form id="addcomment" class="section-header">
+
       {% csrf_token %}
-      {{ form.as_p }}
-      <button type="submit"
-              form="addcomment"
-              formaction="{% url 'dssgmkt:proj_discussion_add' project.id %}"
-              formmethod="post">Add comment</button>
-      IMPORTANT: remember this discussion channel is public and can be seen by anybody that accesses this project's page (even anonymous visitors).
+      {% include 'dssgmkt/components/standard_form_fields.html' %}
+      <div class="form-row mb-3">
+        <div class="col-lg-9 offset-lg-3">
+          <div><strong>IMPORTANT</strong>: remember this discussion channel is public and can be seen by anybody that accesses this project's page (even anonymous visitors).</div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="col-lg-9 offset-lg-3">
+          <button type="submit"
+                  form="addcomment"
+                  formaction="{% url 'dssgmkt:proj_discussion_add' project.id %}"
+                  formmethod="post"
+                  class="btn btn-success mr-3">
+            <i class="material-icons" style="vertical-align: middle">add_comment</i>
+            Add comment
+          </button>
+        </div>
+      </div>
+
     </form>
   {% endif %}
 
-  {% if project_comments %}
-    <ol>
-      {% for log in project_comments %}
-        <li>({{ log.comment_date }}) {{ log.author }}: {{ log.comment }}
-        </li>
-      {% endfor %}
-    </ol>
-    {% url 'dssgmkt:proj_discussion' as proj_discussion_url %}
-    {% include 'dssgmkt/components/pagination.html' with baseurl=proj_discusion_url page_obj=project_comments %}
+  <div class="section-header">
+    {% if project_comments %}
+      <ul class="list-group list-group-flush">
+        {% for log in project_comments %}
+          <li class="list-group-item">
+            <div class="row">
+              <div class="col-lg-3">
+                <div class="text-right"><a href="{% url 'dssgmkt:user_profile' log.author.id %}">{{ log.author }}</a></div>
+                <div class="text-right text-muted">{{ log.comment_date }}</div>
+              </div>
+              <div class="col-lg-9">
+                {{ log.comment }}
+              </div>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+      {% url 'dssgmkt:proj_discussion' as proj_discussion_url %}
+      {% include 'dssgmkt/components/pagination.html' with baseurl=proj_discusion_url page_obj=project_comments %}
 
-  {% else %}
-    There are no comments in this discussion.
-  {% endif %}
+    {% else %}
+      There are no comments in this discussion.
+    {% endif %}
+  </div>
 
 {% endblock %}

@@ -1,17 +1,18 @@
 {% extends 'dssgmkt/base.html' %}
 
 {% block pagecontents %}
-<!--
-ID pu/proj/info
-This is the page for basic project info.
- -->
 
-  <img src="{{ project.banner_image_url }}"></img>
-  <h2>{{ project.name }}</h2>
-  <h4><a href="{% url 'dssgmkt:org_info' project.organization.id %}">{{ project.organization.name }}</a></h4>
-  <p>{{ project.get_status_display }}</p>
-  <p>{{ project.short_summary }}</p>
-  <p>{{ project.get_project_cause_display }}</p>
+  <div class="row">
+    <div class="col-lg-9">
+      <h1>{{ project.name }}</h1>
+      <h4>{{ project.get_project_cause_display }}</h4>
+      <p>{{ project.get_status_display }}</p>
+      <p>{{ project.short_summary }}</p>
+    </div>
+    <div class="col-lg-3">
+      <img class="img-fluid" src="{{ project.banner_image_url }}"></img>
+    </div>
+  </div>
 
   {% include 'dssgmkt/components/project_tabs.html' %}
 
