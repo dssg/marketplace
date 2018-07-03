@@ -61,10 +61,24 @@
 
   {% else %}
 
-    <p>Request status: {{ organizationmembershiprequest.get_status_display }}
-        {% if organizationmembershiprequest.is_new and user_is_administrator %}
-          <a href="{% url 'dssgmkt:org_staff_request_review' organization.id organizationmembershiprequest.id %}">Accept/reject request<a>
-        {% endif %}
+    <p>Request status:    <span class="{% if organizationmembershiprequest.is_accepted %}
+                                         text-success
+                                       {% elif organizationmembershiprequest.is_rejected %}
+                                         text-danger
+                                       {% elif organizationmembershiprequest.is_new %}
+                                         text-info
+                                       {% endif %}">
+                               <i class="material-icons" style="vertical-align: middle">
+                                  {% if organizationmembershiprequest.is_accepted %}
+                                    check
+                                  {% elif organizationmembershiprequest.is_rejected %}
+                                    block
+                                  {% elif organizationmembershiprequest.is_new %}
+                                    edit
+                                  {% endif %}
+                                </i>
+                                {{ organizationmembershiprequest.get_status_display }}
+                            </span>
     </p>
       <p>Resolution date: {{ organizationmembershiprequest.resolution_date }}</p>
     {% if organizationmembershiprequest.public_reviewer_comments %}

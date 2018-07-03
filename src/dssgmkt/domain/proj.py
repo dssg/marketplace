@@ -226,7 +226,7 @@ class ProjectTaskService():
         return user == volunteer_application.volunteer or ProjectService.user_is_project_official(user, volunteer_application.task.project)
 
     @staticmethod
-    def user_can_review_task(user, task):
+    def user_can_review_task(user, task): # TODO use this for the authorization of task_review_do ?
         return ProjectService.user_is_project_official(user, task.project) and not ProjectTaskRole.objects.filter(user=user, task=task).exists()
 
     @staticmethod
