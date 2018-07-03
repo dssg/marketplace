@@ -1,12 +1,14 @@
 
-<nav aria-label="breadcrumb">
-  <ol class="breadcrumb">
-    {% for elementtext, elementurl in breadcrumb %}
-      {% if elementurl %}
-        <li class="breadcrumb-item"><a href="{{ elementurl }}">{{ elementtext }}</a></li>
-      {% else %}
-        <li class="breadcrumb-item">{{ elementtext }}</li>
-      {% endif %}
-    {% endfor %}
-  </ol>
-</nav>
+{% if breadcrumb %}
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      {% for elementtext, elementurl in breadcrumb %}
+        {% if elementurl %}
+          <li class="breadcrumb-item"><a href="{{ elementurl }}">{{ elementtext }}</a></li>
+        {% else %}
+          <li class="breadcrumb-item">{{ elementtext }}</li>
+        {% endif %}
+      {% endfor %}
+    </ol>
+  </nav>
+{% endif %}
