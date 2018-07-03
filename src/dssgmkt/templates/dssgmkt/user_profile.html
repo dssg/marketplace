@@ -3,13 +3,17 @@
 {% block pagecontents %}
 
 
-    <div class="row mt-5 mb-5">
-      <div class="{% if user == userprofile %}col-lg-8{% else %}col-lg-12{% endif %}">
+    <div class="row section-header">
+      <div class="col-lg-12">
         {% if user == userprofile %}
           <h2>My profile</h2>
         {% else %}
           <h2>{{ userprofile.full_name }} ({{ userprofile.username }})</h2>
         {% endif %}
+      </div>
+    </div>
+    <div class="row mb-5">
+      <div class="{% if user == userprofile %}col-lg-8{% else %}col-lg-12{% endif %}">
         {% if userprofile.volunteerprofile %}
           <p>{{ userprofile.volunteerprofile.cover_letter }}</p>
         {% endif %}
@@ -17,11 +21,27 @@
 
       {% if user == userprofile %}
         <div class="col-lg-4">
-          <a class="btn btn-success col-lg-12 mb-1" href="{% url 'dssgmkt:user_profile_edit' userprofile.id %}">Edit my basic information</a>
-          <a class="btn btn-success col-lg-12 mb-1" href="{% url 'dssgmkt:user_pwd_change' %}">Change my password</a>
+          <a class="btn btn-success col-lg-12 mb-1"
+             href="{% url 'dssgmkt:user_profile_edit' userprofile.id %}">
+             <i class="material-icons" style="vertical-align: middle">account_circle</i>
+            Edit my basic information
+          </a>
+          <a class="btn btn-success col-lg-12 mb-1"
+             href="{% url 'dssgmkt:user_pwd_change' %}">
+             <i class="material-icons" style="vertical-align: middle">lock_open</i>
+            Change my password
+          </a>
           {% if userprofile.volunteerprofile %}
-            <a class="btn btn-success col-lg-12 mb-1" href="{% url 'dssgmkt:user_volunteer_profile_edit' userprofile.id userprofile.volunteerprofile.id %}">Edit my volunteer profile</a>
-            <a class="btn btn-success col-lg-12 mb-1" href="{% url 'dssgmkt:user_profile_skills_edit' user.id %}">Edit my skills</a>
+            <a class="btn btn-success col-lg-12 mb-1"
+               href="{% url 'dssgmkt:user_volunteer_profile_edit' userprofile.id userprofile.volunteerprofile.id %}">
+               <i class="material-icons" style="vertical-align: middle">build</i>
+              Edit my volunteer profile
+            </a>
+            <a class="btn btn-success col-lg-12 mb-1"
+               href="{% url 'dssgmkt:user_profile_skills_edit' user.id %}">
+               <i class="material-icons" style="vertical-align: middle">donut_small</i>
+              Edit my skills
+            </a>
           {% else %}
             <form id="addvolunteerprofile">
               {% csrf_token %}
@@ -30,7 +50,10 @@
                       form="addvolunteerprofile"
                       formaction="{% url 'dssgmkt:user_volunteer_profile_create' user.id %}"
                       formmethod="post"
-                      class="btn btn-success col-lg-12 mb-1">Create a volunteer profile</button>
+                      class="btn btn-success col-lg-12 mb-1">
+                <i class="material-icons" style="vertical-align: middle">person_add</i>
+                Create a volunteer profile
+              </button>
             </form>
           {% endif %}
         </div>
@@ -69,7 +92,9 @@
         <div class="card">
           <div class="card-header">Volunteer background</div>
           <div class="card-body">
-            <p>Education: {{ userprofile.volunteerprofile.get_degree_level_display }} on {{ userprofile.volunteerprofile.degree_name }} ({{ userprofile.volunteerprofile.university }})</p>
+            {% if userprofile.volunteerprofile.degree_name %}
+              <p>Education: {{ userprofile.volunteerprofile.get_degree_level_display }} on {{ userprofile.volunteerprofile.degree_name }} ({{ userprofile.volunteerprofile.university }})</p>
+            {% endif %}
             {% if userprofile.volunteerprofile.linkedin_url %}
               <p><a href="{{ userprofile.volunteerprofile.linkedin_url }}">LinkedIn profile</a></p>
             {% endif %}
