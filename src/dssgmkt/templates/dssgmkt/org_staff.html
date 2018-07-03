@@ -105,6 +105,7 @@
                              text-info
                            {% endif %}">
                   <i class="material-icons" style="vertical-align: middle">
+                    {# TODO edit the request model so it provides three methods, is_accepted, is_rejected, is_new. Replace the comparisons here with using the methods in the model, so we remove the dependency with the actual constants #}
                     {% if request.status == "ACC" %}
                       check
                     {% elif request.status == "REJ"%}

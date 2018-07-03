@@ -9,15 +9,27 @@
     <div class="btn-group-vertical col-lg-4">
 
       {% if user_is_administrator %}
-        <a class="btn btn-success" role="button" href="{% url 'dssgmkt:org_info_edit' organization.id %}">Edit organization information</a>
+        <a class="btn btn-success" role="button" href="{% url 'dssgmkt:org_info_edit' organization.id %}">
+          <i class="material-icons" style="vertical-align: middle">edit</i>
+          Edit organization information
+        </a>
       {% endif %}
 
       {% if user_is_member %}
-        <a class="btn btn-success" role="button" href="{% url 'dssgmkt:org_staff_leave' organization.id %}">Leave organization</a>
+        <a class="btn btn-success" role="button" href="{% url 'dssgmkt:org_staff_leave' organization.id %}">
+          <i class="material-icons" style="vertical-align: middle">meeting_room</i>
+          Leave organization
+        </a>
       {% elif user_is_pending_membership %}
-        Membership requested
+        <a class="btn btn-light disabled">
+          <i class="material-icons" style="vertical-align: middle">check</i>
+          Membership requested
+        </a>
       {% else %}
-        <a class="btn btn-success" role="button" href="{% url 'dssgmkt:org_staff_request' organization.id %}">Request membership</a>
+        <a class="btn btn-success" role="button" href="{% url 'dssgmkt:org_staff_request' organization.id %}">
+          <i class="material-icons" style="vertical-align: middle">person_add</i>
+          Request membership
+        </a>
       {% endif %}
 
     </div>

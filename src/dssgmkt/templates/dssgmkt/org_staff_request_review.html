@@ -33,15 +33,24 @@
                         form="orgmembershiprequestreview"
                         formaction="{% url 'dssgmkt:org_staff_request_review_do' organization.id organizationmembershiprequest.id 'accept' %}"
                         formmethod="post"
-                        class="btn btn-success mr-3">Accept membership request</button>
+                        class="btn btn-success mr-3">
+                  <i class="material-icons" style="vertical-align: middle">check</i>
+                  Accept membership request
+                </button>
 
                 <button type="submit"
                         form="orgmembershiprequestreview"
                         formaction="{% url 'dssgmkt:org_staff_request_review_do' organization.id organizationmembershiprequest.id 'reject' %}"
                         formmethod="post"
-                        class="btn btn-danger mr-3">Reject membership request</button>
+                        class="btn btn-danger mr-3">
+                  <i class="material-icons" style="vertical-align: middle">block</i>
+                  Reject membership request
+                </button>
 
-                <a class="btn btn-outline-primary" href="{% url 'dssgmkt:org_staff' organization.id %}">Cancel</a>
+                <a class="btn btn-outline-primary" href="{% url 'dssgmkt:org_staff' organization.id %}">
+                  <i class="material-icons" style="vertical-align: middle">close</i>
+                  Cancel
+                </a>
               </div>
             </div>
 

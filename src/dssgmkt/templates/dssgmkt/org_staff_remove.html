@@ -15,9 +15,13 @@
                 formaction="{% url 'dssgmkt:org_staff_remove' organization.id organizationrole.id %}"
                 formmethod="post"
                 class="btn btn-danger mr-3">
-            Yes, remove this staff member
+          <i class="material-icons" style="vertical-align: middle">remove_circle</i>
+          Yes, remove this staff member
         </button>
-        <a class="btn btn-outline-primary" href="{% url 'dssgmkt:org_staff' organization.id %}">No, keep this staff member</a>
+        <a class="btn btn-outline-primary" href="{% url 'dssgmkt:org_staff' organization.id %}">
+          <i class="material-icons" style="vertical-align: middle">close</i>
+          No, keep this staff member
+        </a>
       </div>
     </form>
   </div>

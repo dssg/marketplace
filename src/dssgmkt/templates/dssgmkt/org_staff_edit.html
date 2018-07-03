@@ -15,11 +15,15 @@
                 formaction="{% url 'dssgmkt:org_staff_edit' organization.id organizationrole.id %}"
                 formmethod="post"
                 class="btn btn-success mr-3">
+          <i class="material-icons" style="vertical-align: middle">save</i>
           Save
         </button>
-        <a class="btn btn-outline-primary" href="{% url 'dssgmkt:org_staff' organization.id %}">Cancel</a>
+        <a class="btn btn-outline-primary" href="{% url 'dssgmkt:org_staff' organization.id %}">
+          <i class="material-icons" style="vertical-align: middle">close</i>
+          Cancel
+        </a>
       </div>
     </form>
   </div>
-  
+
 {% endblock %}
