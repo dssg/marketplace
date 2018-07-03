@@ -97,20 +97,19 @@
               <td>{{ request.request_date }}</td>
               <td>
                 <a href="{% url 'dssgmkt:org_staff_request_review' organization.id request.id %}"
-                   class="{% if request.status == "ACC" %}
+                   class="{% if request.is_accepted %}
                              text-success
-                           {% elif request.status == "REJ"%}
+                           {% elif request.is_rejected %}
                              text-danger
-                           {% elif request.status == "NEW"%}
+                           {% elif request.is_new %}
                              text-info
                            {% endif %}">
                   <i class="material-icons" style="vertical-align: middle">
-                    {# TODO edit the request model so it provides three methods, is_accepted, is_rejected, is_new. Replace the comparisons here with using the methods in the model, so we remove the dependency with the actual constants #}
-                    {% if request.status == "ACC" %}
+                    {% if request.is_accepted %}
                       check
-                    {% elif request.status == "REJ"%}
+                    {% elif request.is_rejected %}
                       block
-                    {% elif request.status == "NEW"%}
+                    {% elif request.is_new %}
                       edit
                     {% endif %}
                 </i>
