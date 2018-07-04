@@ -3,26 +3,36 @@
 {% block tabcontents %}
 
   <form id="projtaskapply">
-    <h2>Apply to volunteer</h2>
+    <h4 class="section-header">Apply to volunteer</h4>
     <p>Thank you for your interest in this project! Please fill out this form so the
       project owners can review your application and your volunteering background.</p>
 
     {% csrf_token %}
-    {{ form.as_p }}
+    {% include 'dssgmkt/components/standard_form_fields.html' %}
 
     {% if project.developer_agreement %}
+      <h5 class="section-header">Volunteer agreement</h4>
       <p>By applying to this volunteer posiiton you agree to the below terms of this project:</p>
       <p>{{ project.developer_agreement }}<p>
     {% endif %}
 
-    <button type="submit"
-            form="projtaskapply"
-            formaction="{% url 'dssgmkt:proj_task_apply' project.id project_task.id %}"
-            formmethod="post">
-        Apply to volunteer
-    </button>
+    <div class="form-row">
+      <div class="col-lg-9 offset-lg-3">
+        <button type="submit"
+                form="projtaskapply"
+                formaction="{% url 'dssgmkt:proj_task_apply' project.id project_task.id %}"
+                formmethod="post"
+                class="btn btn-success mr-3">
+          <i class="material-icons" style="vertical-align: middle">build</i>
+          Apply to volunteer
+        </button>
+        <a class="btn btn-outline-primary" href="{% url 'dssgmkt:proj_info' project.id %}">
+          <i class="material-icons" style="vertical-align: middle">close</i>
+          Cancel
+        </a>
+      </div>
+    </div>
   </form>
 
-  <a href="{% url 'dssgmkt:proj_info' project.id %}">Cancel</a>
 
 {% endblock %}

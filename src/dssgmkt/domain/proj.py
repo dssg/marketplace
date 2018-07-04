@@ -169,7 +169,7 @@ class ProjectService():
         return VolunteerApplication.objects.filter(task__project__id = projid).order_by(
                         Case(When(status=ReviewStatus.NEW, then=0),
                              When(status=ReviewStatus.ACCEPTED, then=1),
-                             When(status=ReviewStatus.REJECTED, then=2)), '-application_date')
+                             When(status=ReviewStatus.REJECTED, then=1)), '-application_date')
 
     @staticmethod
     def toggle_follower(request_user, projid):

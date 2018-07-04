@@ -529,6 +529,12 @@ class VolunteerApplication(models.Model):
     def is_new(self):
         return self.status == ReviewStatus.NEW
 
+    def is_accepted(self):
+        return self.status == ReviewStatus.ACCEPTED
+
+    def is_rejected(self):
+        return self.status == ReviewStatus.REJECTED
+
 class ProjRole():
     OWNER = 0
     STAFF = 1
