@@ -83,29 +83,29 @@ class Project(models.Model):
         default=SocialCause.EDUCATION,
     )
     project_impact = models.TextField(
-        verbose_name="",
-        help_text="",
+        verbose_name="Project impact",
+        help_text="How critical is this project for your organization? How you're solving this problem today? What's the impact if this project is completed successfully?",
         max_length=5000,
         blank=True,
         null=True,
     )
     scoping_process = models.TextField(
-        verbose_name="",
-        help_text="",
+        verbose_name="Scoping process",
+        help_text="Describe the internal process for scoping and implementing this project (Who are the stakeholders, what discussions have already happened, etc.)",
         max_length=5000,
         blank=True,
         null=True,
     )
     available_staff = models.TextField(
-        verbose_name="",
-        help_text="",
+        verbose_name="Available staff",
+        help_text="Who from your organization would be available to provide assistance (approximately 1-3 hours per week) throughout the summer? (Technical staff, subject matter experts, etc.)",
         max_length=5000,
         blank=True,
         null=True,
     )
     available_data = models.TextField(
-        verbose_name="",
-        help_text="",
+        verbose_name="Available data",
+        help_text="Describe the data available to use for this project. (Size, variables, completeness, availability, privacy, etc.)",
         max_length=5000,
         blank=True,
         null=True,

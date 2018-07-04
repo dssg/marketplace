@@ -4,16 +4,26 @@
 
 
   <form id="editproj">
-    <h2>Edit project information</h2>
+    <h4 class="section-header">Edit project information</h4>
     {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit"
-            form="editproj"
-            formaction="{% url 'dssgmkt:proj_info_edit' project.id %}"
-            formmethod="post">
-      Save
-    </button>
+    {% include 'dssgmkt/components/standard_form_fields.html' %}
+
+    <div class="form-row">
+      <div class="col-lg-9 offset-lg-3">
+        <button type="submit"
+                form="editproj"
+                formaction="{% url 'dssgmkt:proj_info_edit' project.id %}"
+                formmethod="post"
+                class="btn btn-success mr-3">
+          <i class="material-icons" style="vertical-align: middle">save</i>
+          Save
+        </button>
+        <a class="btn btn-outline-primary" href="{% url 'dssgmkt:proj_info' project.id %}">
+          <i class="material-icons" style="vertical-align: middle">close</i>
+          Cancel
+        </a>
+      </div>
+    </div>
   </form>
-  <a href="{% url 'dssgmkt:proj_info' project.id %}">Cancel</a>
 
 {% endblock %}
