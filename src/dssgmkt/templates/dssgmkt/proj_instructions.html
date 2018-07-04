@@ -6,33 +6,51 @@
   {% if project_tasks %}
 
     {% for project_task in project_tasks %}
-      <h3>{{ project_task.name }}</h3>
-      <h4>Volunteer instructions</h4>
-      <p>{{ project_task.description }}</p>
-      <p>{{ project_task.onboarding_instructions }}</p>
-      <p>Start date: {{ project_task.estimated_start_date }}</p>
-      <p>End date: {{ project_task.estimated_end_date }}</p>
+      <h4 class="section-header">{{ project_task.name }}</h4>
 
-      {% if project.deliverable_management_url %}
-        <a href="{{ project.deliverable_management_url }}">External project home</a>
-      {% endif %}
-      {% if project.deliverable_github_url %}
-        <a href="{{ project.deliverable_github_url }}">Project github page</a>
-      {% endif %}
-      {% if project.deliverable_reports_url %}
-        <a href="{{ project.deliverable_reports_url }}">Project reports</a>
-      {% endif %}
-      {% if project.deliverable_documentation_url %}
-        <a href="{{ project.deliverable_documentation_url }}">Project documentation</a>
-      {% endif %}
+      <div class="row mt-5 mb-5">
+        <div class="col-lg-8">
+          <h4>Volunteer instructions</h4>
+          <p>{{ project_task.description }}</p>
+          <p>{{ project_task.onboarding_instructions }}</p>
+          <p>Start date: {{ project_task.estimated_start_date }}</p>
+          <p>End date: {{ project_task.estimated_end_date }}</p>
 
-      <a href="{% url 'dssgmkt:proj_task_cancel' project.id project_task.id %}">Cancel this volunteer work</a>
+          {% if project.deliverable_management_url %}
+            <a href="{{ project.deliverable_management_url }}">External project home</a>
+          {% endif %}
+          {% if project.deliverable_github_url %}
+            <a href="{{ project.deliverable_github_url }}">Project github page</a>
+          {% endif %}
+          {% if project.deliverable_reports_url %}
+            <a href="{{ project.deliverable_reports_url }}">Project reports</a>
+          {% endif %}
+          {% if project.deliverable_documentation_url %}
+            <a href="{{ project.deliverable_documentation_url }}">Project documentation</a>
+          {% endif %}
 
-      {% if project_task.is_in_progress %}
-        <a href="{% url 'dssgmkt:proj_task_finish' project.id project_task.id %}">Mark this task as completed</a>
-      {% elif project_task.is_pending_review %}
-        <p>This task is pending a review from the project owners.</p>
-      {% endif %}
+        </div>
+
+        <div class="col-lg-4">
+          <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'dssgmkt:proj_task_cancel' project.id project_task.id %}">
+            <i class="material-icons" style="vertical-align: middle">clear</i>
+            Cancel this volunteer work
+          </a>
+
+          {% if project_task.is_in_progress %}
+            <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'dssgmkt:proj_task_finish' project.id project_task.id %}">
+              <i class="material-icons" style="vertical-align: middle">check_circle</i>
+              Mark this task as completed
+            </a>
+            <a href=></a>
+          {% elif project_task.is_pending_review %}
+            <a class="btn btn-light disabled col-lg-12 mb-1">
+              <i class="material-icons" style="vertical-align: middle">reply</i>
+              Task QA review pending
+            </a>
+          {% endif %}
+        </div>
+      </div>
 
       {# TODO add the completed task reviews of this task (so the volunteer has feedback about the task always available) #}
     {% endfor %}

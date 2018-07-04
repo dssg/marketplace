@@ -4,7 +4,7 @@
 
   {% if project_task %}
 
-    <h2>Mark work as done</h2>
+    <h4 class="section-header">Mark work as done</h4>
 
     <p>Task:<a href="{% url 'dssgmkt:proj_instructions' project.id %}">{{ project_task.name }}</a></p>
 
@@ -25,13 +25,25 @@
 
     <form id="completetask">
       {% csrf_token %}
-      {{ form.as_p }}
-      <button type="submit"
-              form="completetask"
-              formaction="{% url 'dssgmkt:proj_task_finish' project.id project_task.id %}"
-              formmethod="post">Mark work as done</button>
+      {% include 'dssgmkt/components/standard_form_fields.html' %}
+
+      <div class="form-row">
+        <div class="col-lg-9 offset-lg-3">
+          <button type="submit"
+                  form="completetask"
+                  formaction="{% url 'dssgmkt:proj_task_finish' project.id project_task.id %}"
+                  formmethod="post"
+                  class="btn btn-success mr-3">
+            <i class="material-icons" style="vertical-align: middle">check</i>
+            Mark work as done
+          </button>
+          <a class="btn btn-outline-primary" href="{% url 'dssgmkt:proj_instructions' project.id %}">
+            <i class="material-icons" style="vertical-align: middle">close</i>
+            Cancel
+          </a>
+        </div>
+      </div>
     </form>
-    <a href="{% url 'dssgmkt:proj_instructions' project.id %}">Cancel</a>
 
   {% else %}
     <p>You don't have any active task in this project.</p>
