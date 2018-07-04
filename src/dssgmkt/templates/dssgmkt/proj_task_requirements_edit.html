@@ -2,9 +2,9 @@
 
 {% block tabcontents %}
 
-  <h2>Task requirements</h2>
+  <h4 class="section-header">Task requirements</h4>
   {% if task_requirements %}
-    <table>
+    <table class="table table-hover">
       <thead>
         <tr>
             <th>Area</th>
@@ -20,8 +20,17 @@
               <td>{{ task_requirement.skill.area }}</td>
               <td>{{ task_requirement.skill.name }}</td>
               <td>{{ task_requirement.get_level_display }}</td>
-              <td><a href="{% url 'dssgmkt:proj_task_requirements_requirement_edit' project.id  project_task.id task_requirement.id %}">Edit</a></td>
-              <td><a href="{% url 'dssgmkt:proj_task_requirements_requirement_remove' project.id  project_task.id task_requirement.id %}">Remove</a></td>
+              <td>
+                <a href="{% url 'dssgmkt:proj_task_requirements_requirement_edit' project.id  project_task.id task_requirement.id %}">
+                  <i class="material-icons md-12" style="vertical-align: middle">edit</i>
+                  Edit
+                </a>
+              </td>
+              <td>
+                <a class="text-danger" href="{% url 'dssgmkt:proj_task_requirements_requirement_remove' project.id  project_task.id task_requirement.id %}">
+                  <i class="material-icons md-12" style="vertical-align: middle">remove_circle</i>
+                  Remove
+                </a>
           </tr>
         {% endfor %}
       </tbody>
@@ -30,17 +39,23 @@
     <p>No requirements listed.</p>
   {% endif %}
 
-  <h2>Add new task requirement</h2>
-  <form id="addrequirement">
+  <h4 class="section-header">Add new task requirement</h4>
+  <form id="addrequirement" class="form-inline">
     {% csrf_token %}
-    {{ add_requirement_form.as_p }}
-    <button type="submit"
-            form="addrequirement"
-            formaction="{% url 'dssgmkt:proj_task_requirements_edit' project.id project_task.id %}"
-            formmethod="post">
-      Add requirement
-    </button>
+    {% include 'dssgmkt/components/inline_form_fields.html' with form=add_requirement_form %}
+    <div class="form-group col-lg-3">
+      <div>
+        <button type="submit"
+                form="addrequirement"
+                formaction="{% url 'dssgmkt:proj_task_requirements_edit' project.id project_task.id %}"
+                formmethod="post"
+                class="btn btn-success">
+          <i class="material-icons" style="vertical-align: middle">add_circle</i>
+          Add requirement
+        </button>
+      </div>
+    </div>
   </form>
-
-  <a href="{% url 'dssgmkt:proj_task_list' project.id %}">Back</a>
+<!--
+  <a href="{% url 'dssgmkt:proj_task_list' project.id %}">Back</a> -->
 {% endblock %}

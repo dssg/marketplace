@@ -2,95 +2,144 @@
 
 {% block tabcontents %}
 
-  <h3>Project tasks</h3>
   {% if project_tasks %}
     {% load rules %}
     {% has_perm 'project.task_edit' user project as user_is_task_editor %}
 
-    {% for project_task in project_tasks %}
-      <h3>{{ project_task.name }}</h3>
-      <p>Description of work</p>
-      <p>{{ project_task.description }}</p>
-      <p>{{ project_task.get_type_display }}</p>
-      <p>{{ project_task.onboarding_instructions }}</p>
-      <p>{{ project_task.get_stage_display }}</p>
+    <ul class="list-group list-group-flush mt-5">
+      {% for project_task in project_tasks %}
+        <li class="list-group-item">
+          <div class="row section-header">
+            <div class="col-lg-8">
+              <span class="text-muted">{{ project_task.get_type_display }}</span>
+              <h4>{{ project_task.name }}</h4>
+            </div>
+
+            <div class="col-lg-4">
+              <p>{{ project_task.get_stage_display }}</p>
+            </div>
+          </div>
+          <div class="row mb-5">
+            <div class="col-lg-8">
+              <p>{{ project_task.description }}</p>
+              <p>{{ project_task.onboarding_instructions }}</p>
+            </div>
+
+            <div class="col-lg-4">
+              {% if user_is_task_editor %}
+                <a class="btn btn-success col-lg-12 mb-1"
+                   href="{% url 'dssgmkt:proj_task_edit' project.id project_task.id %}">
+                  <i class="material-icons" style="vertical-align: middle">edit</i>
+                  Edit task info
+                </a>
+                <a class="btn btn-success col-lg-12 mb-1"
+                   href="{% url 'dssgmkt:proj_task_requirements_edit' project.id project_task.id %}">
+                  <i class="material-icons" style="vertical-align: middle">donut_small</i>
+                  Edit task requirements
+                </a>
+                <a class="btn btn-success col-lg-12 mb-1"
+                   href="{% url 'dssgmkt:proj_task_remove' project.id project_task.id %}">
+                  <i class="material-icons" style="vertical-align: middle">remove_circle</i>
+                  Delete task
+                </a>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="card-deck">
+            <div class="card">
+              <div class="card-header">Schedule</div>
+              <div class="card-body">
+                <p>Created on: {{ project_task.creation_date }}</p>
+                <p>Last modified: {{ project_task.last_modified_date }}</p>
+                <p>Start: {{ project_task.estimated_start_date }} (estimated), {{ project_task.actual_start_date }} (actual)</p>
+                <p>End: {{ project_task.estimated_end_date }} (estimated), {{ project_task.actual_end_date }} (actual)</p>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">Work details</div>
+              <div class="card-body">
+                <p>Estimated effort in hours: {{ project_task.estimated_effort_hours }}</p>
+                <p>Actual effort spent in hours: {{ project_task.actual_effort_hours }}</p>
+
+                <p>External task home: <a href="{{ project_task.task_home_url }}">{{ project_task.task_home_url }}</a></p>
+                <p>External deliverables page: <a href="{{ project_task.task_deliverables_url }}">{{ project_task.task_deliverables_url }}</a></p>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">Requirements</div>
+              <div class="card-body">
+                {% for task_requirement in project_task.projecttaskrequirement_set.all %}
+                  <p>{{ task_requirement.skill.area }}/{{ task_requirement.skill.name }}:{{ task_requirement.get_level_display }}
+                  </p>
+                {% endfor %}
+              </div>
+            </div>
+            </div>
 
 
-      <p>Created on: {{ project_task.creation_date }}</p>
-      <p>Last modified: {{ project_task.last_modified_date }}</p>
 
-      <p>Estimated start date: {{ project_task.estimated_start_date }}</p>
-      <p>Actual start date: {{ project_task.actual_start_date }}</p>
-      <p>Estimated end date: {{ project_task.estimated_end_date }}</p>
-      <p>Actual end date: {{ project_task.actual_end_date }}</p>
+          <h5 class="section-header">Task review requests</h5>
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Review request date</th>
+                <th>Review result</th>
+                <th>Resolution date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for task_review in project_task.projecttaskreview_set.all %}
+                <tr>
+                  <td>{{ task_review.review_request_date }}</td>
 
-      <p>Estimated effort in hours: {{ project_task.estimated_effort_hours }}</p>
-      <p>Actual effort spent in hours: {{ project_task.actual_effort_hours }}</p>
+                  <td>
+                    <a href="{% url 'dssgmkt:proj_task_review' project.id project_task.id task_review.id %}"
+                       class="{% if task_review.is_accepted %}
+                                 text-success
+                               {% elif task_review.is_rejected %}
+                                 text-danger
+                               {% elif task_review.is_pending %}
+                                 text-info
+                               {% endif %}">
+                      <i class="material-icons" style="vertical-align: middle">
+                        {% if task_review.is_accepted %}
+                          check
+                        {% elif task_review.is_rejected %}
+                          block
+                        {% elif task_review.is_pending %}
+                          edit
+                        {% endif %}
+                    </i>
+                      {{ task_review.get_review_result_display }}
+                    </a>
+                  </td>
 
-      <p>External task home: <a href="{{ project_task.task_home_url }}">{{ project_task.task_home_url }}</a></p>
-      <p>External deliverables page: <a href="{{ project_task.task_deliverables_url }}">{{ project_task.task_deliverables_url }}</a></p>
-
-      <h4>Required skills</h4>
-      <table>
-        <thead>
-          <tr>
-            <th>Area</th>
-            <th>Skill</th>
-            <th>Level</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for task_requirement in project_task.projecttaskrequirement_set.all %}
-            <tr>
-              <td>{{ task_requirement.skill.area }}</td>
-              <td>{{ task_requirement.skill.name }}</td>
-              <td>{{ task_requirement.get_level_display }}</td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-
-      {% if user_is_task_editor %}
-        <a href="{% url 'dssgmkt:proj_task_edit' project.id project_task.id %}">Edit task info</a>
-        <a href="{% url 'dssgmkt:proj_task_requirements_edit' project.id project_task.id %}">Edit task requirements</a>
-        <a href="{% url 'dssgmkt:proj_task_remove' project.id project_task.id %}">Delete task</a>
-      {% endif %}
-
-      <h4>Task review requests</h4>
-      <table>
-        <thead>
-          <tr>
-            <th>Review request date</th>
-            <th>Review result</th>
-            <th>Resolution date</th>
-            <th>Details</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for task_review in project_task.projecttaskreview_set.all %}
-            <tr>
-              <td>{{ task_review.review_request_date }}</td>
-              <td>{{ task_review.get_review_result_display }}</td>
-              <td>{{ task_review.review_date }}</td>
-              <td>
-                  <a href="{% url 'dssgmkt:proj_task_review' project.id project_task.id task_review.id %}">Details</a>
-              </td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    {% endfor %}
+                  <td>{{ task_review.review_date }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </li>
+      {% endfor %}
+    </ul>
   {% else %}
     <p>This project does not have any tasks listed.</p>
   {% endif %}
 
-  <form id="addtask">
-    {% csrf_token %}
-    <button type="submit"
-            form="addtask"
-            formaction="{% url 'dssgmkt:proj_task_add' project.id %}"
-            formmethod="post">
-        Add new task
-    </button>
-  </form>
+  <div class="section-header row">
+    <div class="col-lg-4 offset-lg-4">
+      <form id="addtask">
+        {% csrf_token %}
+        <button type="submit"
+                form="addtask"
+                formaction="{% url 'dssgmkt:proj_task_add' project.id %}"
+                formmethod="post"
+                class="btn btn-success col-lg-12">
+            <i class="material-icons" style="vertical-align: middle">add_circle</i>
+            Add new task
+        </button>
+      </form>
+    </div>
+  </div>
 {% endblock %}

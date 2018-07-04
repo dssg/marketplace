@@ -6,6 +6,7 @@
     <div class="col-lg-9">
       <h1>{{ project.name }}</h1>
       <h4>{{ project.get_project_cause_display }}</h4>
+      <h4><a href="{% url 'dssgmkt:org_info' project.organization.id %}">{{ project.organization.name }}</a></h4>
       <p>{{ project.get_status_display }}</p>
       <p>{{ project.short_summary }}</p>
     </div>

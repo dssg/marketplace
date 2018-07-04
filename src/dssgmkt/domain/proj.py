@@ -50,8 +50,6 @@ class ProjectService():
 
     @staticmethod
     def user_is_project_volunteer(user, proj):
-        print("checing user volunteer", user, proj)
-        print(ProjectTaskRole.objects.filter(user=user, role=TaskRole.VOLUNTEER, task__project=proj))
         return user.is_authenticated and ProjectTaskRole.objects.filter(user=user, role=TaskRole.VOLUNTEER, task__project=proj).exists()
 
     @staticmethod
@@ -282,6 +280,7 @@ class ProjectTaskService():
         # project_task.project.save()
         # TODO move this to a separate method that modifies tasks (so effects are passed on to the project as needed)
         project = Project.objects.get(pk=projid)
+        print("Hello ", project)
         ensure_user_has_permission(request_user, project, 'project.task_edit')
         if project:
             project_task = ProjectTask()
@@ -302,7 +301,7 @@ class ProjectTaskService():
     @staticmethod
     def get_project_task_review(request_user, projid, taskid, reviewid):
         project = Project.objects.get(pk=projid)
-        ensure_user_has_permission(request_user, project_task.project, 'project.task_review_view')
+        ensure_user_has_permission(request_user, project, 'project.task_review_view')
         task_review = ProjectTaskReview.objects.get(pk=reviewid)
         validate_consistent_keys(task_review, 'Task review not found in that project', (['task', 'id'], taskid), (['task', 'project', 'id'], projid))
         return task_review

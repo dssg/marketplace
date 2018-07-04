@@ -2,8 +2,8 @@
 
 {% block tabcontents %}
 
-  <h2>Task final review request</h2>
-  <p>{{ project_task.name }}</p>
+  <h4 class="section-header">Completed task review</h4>
+  <p>Task: {{ project_task.name }}</p>
   <p>Estimated effort in hours: {{ project_task.estimated_effort_hours }}</p>
   <p>Total effort spent (in hours): {{ task_review.volunteer_effort_hours }}</p>
   <p>Volunteer's comments: {{ task_review.volunteer_comment }}</p>
@@ -22,26 +22,62 @@
   {% if task_review.is_pending %}
     {% if perm_task_reviewer %}
 
-      <form id="taskreview">
-        {% csrf_token %}
-        {{ form.as_p }}
+      <div class="row">
+        <div class="col-lg-12">
+          <form id="taskreview">
+            {% csrf_token %}
+            {% include 'dssgmkt/components/standard_form_fields.html' %}
 
-        <button type="submit"
-                form="taskreview"
-                formaction="{% url 'dssgmkt:proj_task_review_do' project.id project_task.id task_review.id 'accept' %}"
-                formmethod="post">Accept task as finished</button>
 
-        <button type="submit"
-                form="taskreview"
-                formaction="{% url 'dssgmkt:proj_task_review_do' project.id project_task.id task_review.id 'reject' %}"
-                formmethod="post">Reject task and reopen it</button>
+            <div class="form-row">
+              <div class="col-lg-9 offset-lg-3">
+                <button type="submit"
+                        form="taskreview"
+                        formaction="{% url 'dssgmkt:proj_task_review_do' project.id project_task.id task_review.id 'accept' %}"
+                        formmethod="post"
+                        class="btn btn-success mr-3">
+                  <i class="material-icons" style="vertical-align: middle">check</i>
+                  Accept task as finished
+                </button>
+                <button type="submit"
+                        form="taskreview"
+                        formaction="{% url 'dssgmkt:proj_task_review_do' project.id project_task.id task_review.id 'reject' %}"
+                        formmethod="post"
+                        class="btn btn-danger mr-3">
+                  <i class="material-icons" style="vertical-align: middle">block</i>
+                  Reject task and reopen it
+                </button>
+                <a class="btn btn-outline-primary mr-3"
+                   href="{% url 'dssgmkt:proj_task_list' project.id %}">
+                   <i class="material-icons" style="vertical-align: middle">close</i>
+                  Cancel
+                </a>
+              </div>
+            </div>
 
-      </form>
-      <a href="{% url 'dssgmkt:proj_task_list' project.id %}">Cancel</a>
-
+          </form>
+        </div>
+      </div>
     {% endif %}
   {% else %}
-    <p>Request status: {{ task_review.get_review_result_display }}</p>
+    <p>Request status: <span class="{% if task_review.is_accepted %}
+                                         text-success
+                                       {% elif task_review.is_rejected %}
+                                         text-danger
+                                       {% elif task_review.is_pending %}
+                                         text-info
+                                       {% endif %}">
+                               <i class="material-icons" style="vertical-align: middle">
+                                  {% if task_review.is_accepted %}
+                                    check
+                                  {% elif task_review.is_rejected %}
+                                    block
+                                  {% elif task_review.is_pending %}
+                                    edit
+                                  {% endif %}
+                                </i>
+                                {{ task_review.get_review_result_display }}
+                            </span></p>
     <p>Resolution date: {{ task_review.review_date }}</p>
     {% if task_review.public_reviewer_comments %}
       <p>Reviewer's comments: {{ task_review.public_reviewer_comments }}</p>

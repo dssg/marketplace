@@ -429,6 +429,12 @@ class ProjectTaskReview(models.Model):
     def is_pending(self):
         return self.review_result == ReviewStatus.NEW
 
+    def is_accepted(self):
+        return self.review_result == ReviewStatus.ACCEPTED
+
+    def is_rejected(self):
+        return self.review_result == ReviewStatus.REJECTED
+
 class TaskRequirementImportance():
     NICE_TO_HAVE = 0
     IMPORTANT = 1
