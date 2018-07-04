@@ -6,19 +6,19 @@
   {% has_perm 'project.staff_edit' user project as perm_staff_edit %}
   {% has_perm 'project.staff_remove' user project as perm_staff_remove %}
 
-  <h2>Staff members</h2>
+  <h4 class="section-header">Staff members</h4>
   {% if project_staff %}
-    <table>
+    <table class="table table-hover">
       <thead>
         <tr>
             <th>Full name</th>
             <th>Email address</th>
             <th>Role</th>
             {% if perm_staff_edit %}
-              <th>Edit</th>
+              <th></th>
             {% endif %}
             {% if perm_staff_remove %}
-              <th>Remove</th>
+              <th></th>
             {% endif %}
         </tr>
       </thead>
@@ -29,10 +29,20 @@
               <td><a href="{% url 'dssgmkt:user_profile' staff.user.id %}">{{ staff.user.email }}</a></td>
               <td>{{ staff.get_role_display }}</td>
               {% if perm_staff_edit %}
-                <td><a href="{% url 'dssgmkt:proj_staff_edit' staff.project.id staff.id %}">Edit</a></td>
+                <td>
+                  <a href="{% url 'dssgmkt:proj_staff_edit' staff.project.id staff.id %}">
+                    <i class="material-icons md-12" style="vertical-align: middle">edit</i>
+                    Edit
+                  </a>
+                </td>
               {% endif %}
               {% if perm_staff_remove %}
-                <td><a href="{% url 'dssgmkt:proj_staff_remove' staff.project.id staff.id %}">Remove</a></td>
+                <td>
+                  <a class="text-danger" href="{% url 'dssgmkt:proj_staff_remove' staff.project.id staff.id %}">
+                    <i class="material-icons" style="vertical-align: middle">remove_circle</i>
+                    Remove
+                  </a>
+                </td>
               {% endif %}
           </tr>
         {% endfor %}
@@ -45,16 +55,23 @@
   {% endif %}
 
   {% if perm_staff_edit %}
-    <h2>Add staff member</h2>
-    <form id="addstaff">
+    <h4 class="section-header">Add staff member</h4>
+    <form id="addstaff" class="form-inline">
       {% csrf_token %}
-      {{ add_staff_form.as_p }}
-      <button type="submit"
-              form="addstaff"
-              formaction="{% url 'dssgmkt:proj_staff' project.id %}"
-              formmethod="post">
-        Add staff member
-      </button>
+      {% include 'dssgmkt/components/inline_form_fields.html' with form=add_staff_form %}
+
+      <div class="form-group col-lg-3">
+        <div>
+          <button type="submit"
+                  form="addstaff"
+                  formaction="{% url 'dssgmkt:proj_staff' project.id %}"
+                  formmethod="post"
+                  class="btn btn-success">
+            <i class="material-icons" style="vertical-align: middle">add_circle</i>
+            Add staff member
+          </button>
+        </div>
+      </div>
     </form>
   {% endif %}
 
