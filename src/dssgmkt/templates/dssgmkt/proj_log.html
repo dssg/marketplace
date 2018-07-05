@@ -9,11 +9,28 @@
             <div class="text-right"><a href="{% url 'dssgmkt:user_profile' log.author.id %}">{{ log.author }}</a></div>
             <div class="text-right text-muted">{{ log.change_date }}</div>
           </div>
-          <div class="col-lg-3">
-          {{ log.change_type }}
-          {{ log.change_target }}
+          <div class="col-lg-2">
+            {% if log.is_type_add %}
+              <i class="material-icons" style="vertical-align: middle">add_circle</i>
+            {% elif log.is_type_edit %}
+              <i class="material-icons" style="vertical-align: middle">edit</i>
+            {% elif log.is_type_remove %}
+              <i class="material-icons" style="vertical-align: middle">remove_circle</i>
+            {% elif log.is_type_complete %}
+              <i class="material-icons" style="vertical-align: middle">check</i>
+            {% endif %}
+
+            {% if log.is_source_task %}
+              <i class="material-icons" style="vertical-align: middle">build</i>
+            {% elif log.is_source_task_review %}
+              <i class="material-icons" style="vertical-align: middle">search</i>
+            {% elif log.is_source_staff %}
+              <i class="material-icons" style="vertical-align: middle">group</i>
+            {% elif log.is_source_volunteer_application %}
+              <i class="material-icons" style="vertical-align: middle">how_to_vote</i>
+            {% endif %}
           </div>
-          <div class="col-lg-6">
+          <div class="col-lg-7">
             {{ log.change_description }}
           </div>
         </div>

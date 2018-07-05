@@ -83,7 +83,6 @@ class ProjectService():
     @staticmethod
     def get_project_changes(request_user, proj):
         ensure_user_has_permission(request_user, proj, 'project.log_view')
-        ## verify user permissions
         return ProjectLog.objects.filter(project = proj).order_by('-change_date')
 
     @staticmethod

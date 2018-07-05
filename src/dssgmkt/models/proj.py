@@ -193,12 +193,62 @@ class Project(models.Model):
         return self.status == ProjectStatus.COMPLETED
 
 
+class ProjectLogSource():
+    VOLUNTEER_APPLICATION = 'VA'
+    STAFF = 'ST'
+    TASK = 'TK'
+    TASK_REVIEW = 'TK'
+
+    def get_choices():
+        return (
+                    (ProjectLogSource.TASK, 'Task'),
+                    (ProjectLogSource.VOLUNTEER_APPLICATION, 'Volunteer application'),
+                    (ProjectLogSource.STAFF, 'Staff'),
+                    (ProjectLogSource.TASK_REVIEW, 'Task review'),
+                )
+
+class ProjectLogType():
+    ADD = 'AD'
+    REMOVE = 'RM'
+    EDIT = 'ED'
+    COMPLETE = 'FN'
+
+    def get_choices():
+        return (
+                    (ProjectLogType.ADD, 'Added'),
+                    (ProjectLogType.REMOVE, 'Removed'),
+                    (ProjectLogType.EDIT, 'Edited'),
+                    (ProjectLogType.COMPLETE, 'Completed'),
+                )
+
 
 class ProjectLog(models.Model):
-    change_type = models.CharField(max_length=100)
-    change_target = models.IntegerField()
-    change_description = models.TextField(max_length=1000)
-    change_date = models.DateTimeField(auto_now_add=True)
+    change_target = models.CharField(
+        max_length=2,
+        choices=ProjectLogSource.get_choices(),
+        default=ProjectLogSource.TASK,
+        blank=True,
+        null=True,
+    )
+    change_type = models.CharField(
+        max_length=2,
+        choices=ProjectLogType.get_choices(),
+        default=ProjectLogType.ADD,
+        blank=True,
+        null=True,
+    )
+    change_target_id = models.IntegerField(
+        blank=True,
+        null=True,
+    )
+    change_description = models.TextField(
+        max_length=1000,
+        blank=True,
+        null=True,
+    )
+    change_date = models.DateTimeField(
+        auto_now_add=True,
+    )
     project = models.ForeignKey(
         Project,
         on_delete=models.CASCADE,
@@ -207,6 +257,30 @@ class ProjectLog(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
     )
+
+    def is_type_add(self):
+        return self.change_type == ProjectLogType.ADD
+
+    def is_type_edit(self):
+        return self.change_type == ProjectLogType.EDIT
+
+    def is_type_remove(self):
+        return self.change_type == ProjectLogType.REMOVE
+
+    def is_type_complete(self):
+        return self.change_type == ProjectLogType.COMPLETE
+
+    def is_source_volunteer_application(self):
+        return self.change_target == ProjectLogSource.VOLUNTEER_APPLICATION
+
+    def is_source_task(self):
+        return self.change_target == ProjectLogSource.TASK
+
+    def is_source_task_review(self):
+        return self.change_target == ProjectLogSource.TASK_REVIEW
+
+    def is_source_staff(self):
+        return self.change_target == ProjectLogSource.STAFF
 
     def __str__(self):
         return self.change_date.strftime('%Y-%m-%d %H:%M') + ": " + self.change_description

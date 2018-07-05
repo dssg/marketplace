@@ -235,6 +235,7 @@ class ProjectTaskReviewCreate(PermissionRequiredMixin, CreateView):
         project_task_review = form.save(commit=False)
         try:
             ProjectTaskService.mark_task_as_completed(self.request.user, self.kwargs['proj_pk'], self.kwargs['task_pk'], project_task_review)
+            messages.info(self.request, "Task marked as completed, waiting for QA review.")
             return HttpResponseRedirect(self.get_success_url())
         except KeyError:
             raise Http404
@@ -258,10 +259,10 @@ def process_task_review_request_view(request, proj_pk, task_pk, review_pk, actio
             try:
                 if action == 'accept':
                     ProjectTaskService.accept_task_review(request.user, proj_pk, task_pk, project_task_review)
-                    # messages.info(request, 'Membership request accepted.')
+                    messages.info(request, 'Task accepted as completed.')
                 else:
                     ProjectTaskService.reject_task_review(request.user, proj_pk, task_pk, project_task_review)
-                    # messages.info(request, 'Membership request rejected.')
+                    messages.warning(request, 'Task rejected as completed and reopened.')
                 return redirect('dssgmkt:proj_task_list', proj_pk=proj_pk)
             except KeyError:
                 raise Http404
@@ -346,6 +347,7 @@ class ProjectTaskApply(PermissionRequiredMixin, CreateView):
         task_application_request = form.save(commit=False)
         try:
             ProjectTaskService.apply_to_volunteer(self.request.user, self.kwargs['proj_pk'], self.kwargs['task_pk'], task_application_request)
+            messages.info(self.request, 'You have applied to work on ' + task_application_request.task.name + '. The project staff will evaluate your request and notify you of the results of the review.')
             return HttpResponseRedirect(self.get_success_url())
         except KeyError:
             raise Http404
