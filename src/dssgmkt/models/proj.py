@@ -198,6 +198,7 @@ class ProjectLogSource():
     STAFF = 'ST'
     TASK = 'TK'
     TASK_REVIEW = 'TK'
+    VOLUNTEER = 'VO'
 
     def get_choices():
         return (
@@ -205,6 +206,7 @@ class ProjectLogSource():
                     (ProjectLogSource.VOLUNTEER_APPLICATION, 'Volunteer application'),
                     (ProjectLogSource.STAFF, 'Staff'),
                     (ProjectLogSource.TASK_REVIEW, 'Task review'),
+                    (ProjectLogSource.VOLUNTEER, 'Volunteer'),
                 )
 
 class ProjectLogType():
@@ -272,6 +274,9 @@ class ProjectLog(models.Model):
 
     def is_source_volunteer_application(self):
         return self.change_target == ProjectLogSource.VOLUNTEER_APPLICATION
+
+    def is_source_volunteer(self):
+        return self.change_target == ProjectLogSource.VOLUNTEER
 
     def is_source_task(self):
         return self.change_target == ProjectLogSource.TASK
