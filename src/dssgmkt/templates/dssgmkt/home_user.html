@@ -2,35 +2,42 @@
 
 {% block pagecontents %}
 
-  {% if notification_list %}
-        {% for notification in notification_list %}
-            {% if notification.url %}
-              <a class="alert-link" href="{{ notification.url }}">
-            {% endif %}
-          <div class="normal-link alert {% if not notification.is_read %}alert-{{ notification.get_severity_display }}{% else %}alert-light border border-{{ notification.get_severity_display }}{% endif %}">
-              [{{ notification.notification_date }}]
-
-              {% if notification.is_source_task %}
-                <i class="material-icons" style="vertical-align: middle">build</i>
-              {% elif notification.is_source_project %}
-                <i class="material-icons" style="vertical-align: middle">business_center</i>
-              {% elif notification.is_source_organization %}
-                <i class="material-icons" style="vertical-align: middle">business</i>
-              {% elif notification.is_source_volunteer_application %}
-                <i class="material-icons" style="vertical-align: middle">how_to_vote</i>
-              {% elif notification.is_source_organization_membership_request %}
-                <i class="material-icons" style="vertical-align: middle">person_add</i>
+  <div class="row">
+    <div class="col-lg-4">
+      Hello
+    </div>
+    <div class="col-lg-8">
+    {% if notification_list %}
+          {% for notification in notification_list %}
+              {% if notification.url %}
+                <a class="alert-link" href="{{ notification.url }}">
               {% endif %}
-              {{ notification.notification_description }}
-          </div>
-          {% if notification.url %}
-            </a>
-          {% endif %}
-        {% endfor %}
+            <div class="normal-link alert {% if not notification.is_read %}alert-{{ notification.get_severity_display }}{% else %}alert-light border border-{{ notification.get_severity_display }}{% endif %}">
+                [{{ notification.notification_date }}]
 
-    {% url 'dssgmkt:home' as home_url %}
-    {% include 'dssgmkt/components/pagination.html' with baseurl=home_url %}
+                {% if notification.is_source_task %}
+                  <i class="material-icons" style="vertical-align: middle">build</i>
+                {% elif notification.is_source_project %}
+                  <i class="material-icons" style="vertical-align: middle">business_center</i>
+                {% elif notification.is_source_organization %}
+                  <i class="material-icons" style="vertical-align: middle">business</i>
+                {% elif notification.is_source_volunteer_application %}
+                  <i class="material-icons" style="vertical-align: middle">how_to_vote</i>
+                {% elif notification.is_source_organization_membership_request %}
+                  <i class="material-icons" style="vertical-align: middle">person_add</i>
+                {% endif %}
+                {{ notification.notification_description }}
+            </div>
+            {% if notification.url %}
+              </a>
+            {% endif %}
+          {% endfor %}
 
-  {% endif %}
+      {% url 'dssgmkt:home' as home_url %}
+      {% include 'dssgmkt/components/pagination.html' with baseurl=home_url %}
+
+    {% endif %}
+    </div>
+  </div>
 
 {% endblock %}

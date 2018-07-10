@@ -14,13 +14,13 @@ from rules.contrib.views import (
     PermissionRequiredMixin, objectgetter, permission_required,
 )
 
-from ..models.org import OrganizationMembershipRequest
-from ..models.proj import Project, ProjectStatus, ProjectTask
+from ..models.org import Organization, OrganizationMembershipRequest
+from ..models.proj import Project, ProjectStatus, ProjectTask, VolunteerApplication
 from ..models.user import Skill, User, VolunteerProfile, VolunteerSkill, UserNotification, NotificationSource
 from .common import build_breadcrumb, home_link, paginate
 
 from dssgmkt.domain.user import UserService
-from dssgmkt.domain.proj import ProjectTaskService, VolunteerApplication
+from dssgmkt.domain.proj import ProjectTaskService
 from dssgmkt.domain.notifications import NotificationService
 
 
