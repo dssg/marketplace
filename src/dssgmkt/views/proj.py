@@ -467,7 +467,6 @@ def project_task_requirements_edit_view(request, proj_pk, task_pk):
                                                                 edit_task_requirements_link(project, task, include_link=False)),
                             'add_requirement_form': form,
                         }))
-    el
 
 class ProjectTaskRequirementEdit(PermissionRequiredMixin, UpdateView):
     model = ProjectTaskRequirement

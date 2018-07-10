@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/2.0/ref/settings/
 import os
 
 from decouple import Csv, config
+from django.contrib.messages import constants as messages
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -181,4 +182,14 @@ LOGGING = {
             'level': config('DSSG_LOG_LEVEL', default='WARN'),
         },
     }
+}
+
+
+
+MESSAGE_TAGS = {
+    messages.DEBUG: 'bg-light',
+    messages.INFO: 'alert-info',
+    messages.SUCCESS: 'alert-success',
+    messages.WARNING: 'alert-warning',
+    messages.ERROR: 'alert-danger',
 }
