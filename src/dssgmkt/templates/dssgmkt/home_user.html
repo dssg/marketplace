@@ -2,36 +2,86 @@
 
 {% block pagecontents %}
 
-  <div class="row">
-    <div class="col-lg-6">
-      Hello
+  <div class="row section-header">
+    <div class="col-lg-5">
+      <div class="col-lg-12">
+          <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'dssgmkt:org_list' %}">
+            <i class="material-icons" style="vertical-align: middle">edit</i>
+            Create new organization
+          </a>
+          <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'dssgmkt:org_list' %}">
+            <i class="material-icons" style="vertical-align: middle">meeting_room</i>
+            Create my volunteer profile
+          </a>
+          <a class="btn btn-light disabled col-lg-12 mb-1">
+            <i class="material-icons" style="vertical-align: middle">check</i>
+            Search for projects
+          </a>
+          <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'dssgmkt:org_list' %}">
+            <i class="material-icons" style="vertical-align: middle">person_add</i>
+            Create a new project
+          </a>
+      </a>
+      <div class="col-lg-12">
+        <h3 class="section-header">My pending TODOs</h3>
+      </div>
     </div>
-    <div class="col-lg-6">
+  </div>
+    <div class="col-lg-7">
     {% if notification_list %}
           {% for notification in notification_list %}
               {% if notification.url %}
                 <a class="alert-link" href="{{ notification.url }}">
               {% endif %}
-            <div class="normal-link alert {% if not notification.is_read %}alert-{{ notification.get_severity_display }}{% else %}alert-light border border-{{ notification.get_severity_display }}{% endif %}">
-                [{{ notification.notification_date }}]
-
-                {% if notification.is_source_task %}
-                  <i class="material-icons" style="vertical-align: middle">build</i>
-                {% elif notification.is_source_project %}
-                  <i class="material-icons" style="vertical-align: middle">business_center</i>
-                {% elif notification.is_source_organization %}
-                  <i class="material-icons" style="vertical-align: middle">business</i>
-                {% elif notification.is_source_volunteer_application %}
-                  <i class="material-icons" style="vertical-align: middle">how_to_vote</i>
-                {% elif notification.is_source_organization_membership_request %}
-                  <i class="material-icons" style="vertical-align: middle">person_add</i>
-                {% endif %}
-                {{ notification.notification_description }}
-            </div>
+              {% if not notification.is_read %}
+                <div class="normal-link alert alert-{{ notification.get_severity_display }}">
+                    <div>
+                    {% if notification.is_source_task %}
+                      <i class="material-icons" style="vertical-align: middle">build</i>
+                    {% elif notification.is_source_project %}
+                      <i class="material-icons" style="vertical-align: middle">business_center</i>
+                    {% elif notification.is_source_organization %}
+                      <i class="material-icons" style="vertical-align: middle">business</i>
+                    {% elif notification.is_source_volunteer_application %}
+                      <i class="material-icons" style="vertical-align: middle">how_to_vote</i>
+                    {% elif notification.is_source_organization_membership_request %}
+                      <i class="material-icons" style="vertical-align: middle">person_add</i>
+                    {% endif %}
+                    {{ notification.notification_description }}
+                  </div>
+                  <div class="text-right">
+                    {{ notification.notification_date }}
+                  </div>
+                </div>
+              {% else %}
+                <div class="read-alert-outer normal-link alert alert-{{ notification.get_severity_display }}">
+                  <div class="bg-light rounded-right border-top border-bottom boder-right read-alert-inner">
+                    <div>
+                      {% if notification.is_source_task %}
+                        <i class="material-icons" style="vertical-align: middle">build</i>
+                      {% elif notification.is_source_project %}
+                        <i class="material-icons" style="vertical-align: middle">business_center</i>
+                      {% elif notification.is_source_organization %}
+                        <i class="material-icons" style="vertical-align: middle">business</i>
+                      {% elif notification.is_source_volunteer_application %}
+                        <i class="material-icons" style="vertical-align: middle">how_to_vote</i>
+                      {% elif notification.is_source_organization_membership_request %}
+                        <i class="material-icons" style="vertical-align: middle">person_add</i>
+                      {% endif %}
+                      {{ notification.notification_description }}
+                    </div>
+                    <div class="text-right">
+                      {{ notification.notification_date }}
+                    </div>
+                  </div>
+                </div>
+              {% endif %}
             {% if notification.url %}
               </a>
             {% endif %}
           {% endfor %}
+
+
 
       {% url 'dssgmkt:home' as home_url %}
       {% include 'dssgmkt/components/pagination.html' with baseurl=home_url %}
