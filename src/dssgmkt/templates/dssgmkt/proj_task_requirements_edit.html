@@ -10,6 +10,7 @@
             <th>Area</th>
             <th>Skill</th>
             <th>Level</th>
+            <th>Importance</th>
             <th>Edit</th>
             <th>Remove</th>
         </tr>
@@ -20,6 +21,7 @@
               <td>{{ task_requirement.skill.area }}</td>
               <td>{{ task_requirement.skill.name }}</td>
               <td>{{ task_requirement.get_level_display }}</td>
+              <td>{{ task_requirement.get_importance_display }}</td>
               <td>
                 <a href="{% url 'dssgmkt:proj_task_requirements_requirement_edit' project.id  project_task.id task_requirement.id %}">
                   <i class="material-icons md-12" style="vertical-align: middle">edit</i>

@@ -67,10 +67,10 @@
               </div>
             </div>
             <div class="card">
-              <div class="card-header">Requirements</div>
+              <div class="card-header">Skill requirements</div>
               <div class="card-body">
                 {% for task_requirement in project_task.projecttaskrequirement_set.all %}
-                  <p>{{ task_requirement.skill.area }}/{{ task_requirement.skill.name }}:{{ task_requirement.get_level_display }}
+                  <p>{{ task_requirement.skill.area }}/{{ task_requirement.skill.name }}:{{ task_requirement.get_level_display }} ({{ task_requirement.get_importance_display }})
                   </p>
                 {% endfor %}
               </div>

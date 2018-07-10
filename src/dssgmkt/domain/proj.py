@@ -11,11 +11,12 @@ from ..models.common import (
     ReviewStatus,
 )
 from ..models.user import (
-    User,
+    User, NotificationSeverity, NotificationSource,
 )
 from django.db.models import Case, When
 
 from .common import validate_consistent_keys
+from .notifications import NotificationService
 from dssgmkt.authorization.common import ensure_user_has_permission
 
 def filter_public_projects(query_set):
@@ -84,6 +85,16 @@ class ProjectService():
         return user.is_authenticated and (ProjectService.user_is_project_member(user, proj) or ProjectService.user_is_project_volunteer(user, proj))
 
     @staticmethod
+    def get_project_officials(request_user, proj):
+        return User.objects.filter(projectrole__project=proj, projectrole__role=ProjRole.OWNER).union(
+            User.objects.filter(projecttaskrole__task__project=proj,
+                                projecttaskrole__role=TaskRole.VOLUNTEER,
+                                projecttaskrole__task__type__in=[TaskType.SCOPING_TASK, TaskType.PROJECT_MANAGEMENT_TASK],
+                                projecttaskrole__task__stage__in=[TaskStatus.STARTED, TaskStatus.WAITING_REVIEW]
+                                )
+        )
+
+    @staticmethod
     def get_project_members(request_user, proj):
         return User.objects.filter(projectrole__project=proj).union(
             User.objects.filter(projecttaskrole__task__project=proj,
@@ -92,6 +103,26 @@ class ProjectService():
                                 projecttaskrole__task__stage__in=[TaskStatus.STARTED, TaskStatus.WAITING_REVIEW]
                                 )
         )
+
+    @staticmethod
+    def get_all_project_users(request_user, proj):
+        return User.objects.filter(projectrole__project=proj).union(
+            User.objects.filter(projecttaskrole__task__project=proj,
+                                projecttaskrole__role=TaskRole.VOLUNTEER,
+                                projecttaskrole__task__stage__in=[TaskStatus.STARTED, TaskStatus.WAITING_REVIEW]
+                                )
+        )
+
+    @staticmethod
+    def get_public_notification_users(request_user, proj):
+        return User.objects.filter(projectrole__project=proj).union(
+            User.objects.filter(projecttaskrole__task__project=proj,
+                                projecttaskrole__role=TaskRole.VOLUNTEER,
+                                projecttaskrole__task__stage__in=[TaskStatus.STARTED, TaskStatus.WAITING_REVIEW]
+                                ).union(
+                                    User.objects.filter(projectfollower__project=proj)
+                                )
+        ).distinct()
 
     @staticmethod
     def get_project_changes(request_user, proj):
@@ -111,6 +142,11 @@ class ProjectService():
             project_comment.author = request_user
             try:
                 project_comment.save()
+                NotificationService.add_multiuser_notification(ProjectService.get_public_notification_users(request_user, project),
+                                                            "New comment added to the discussion of project {0}.".format(project.name),
+                                                            NotificationSeverity.INFO,
+                                                            NotificationSource.PROJECT,
+                                                            project.id)
             except IntegrityError:
                 raise ValueError('Cannot save comment')
         else:
@@ -129,12 +165,18 @@ class ProjectService():
         if project:
             project_role.project = project
             try:
+                previous_members = ProjectService.get_project_members(request_user, project)
                 project_role.save()
-                # NotificationService.add_user_notification(organization_role.user,
-                #                                             "You have been added as a member of " + organization_role.organization.name + " with " + organization_role.get_role_display() + " role.",
-                #                                             NotificationSeverity.INFO,
-                #                                             NotificationSource.ORGANIZATION,
-                #                                             organization_role.organization.id)
+                NotificationService.add_multiuser_notification(previous_members,
+                                                            "New staff member {0} added to the project {1} with role {2}.".format(project_role.user.standard_display_name(), project.name, project_role.get_role_display()),
+                                                            NotificationSeverity.INFO,
+                                                            NotificationSource.PROJECT,
+                                                            project.id)
+                NotificationService.add_user_notification(project_role.user,
+                                                            "You have been added as a member of project {0} with role {1}.".format(project.name, project_role.get_role_display()),
+                                                            NotificationSeverity.INFO,
+                                                            NotificationSource.PROJECT,
+                                                            project.id)
             except IntegrityError:
                 raise ValueError('Duplicate user role')
         else:
@@ -145,22 +187,34 @@ class ProjectService():
         validate_consistent_keys(project_role, 'Role does not match project', (['project', 'id'], projid))
         ensure_user_has_permission(request_user, project_role.project, 'project.staff_edit')
         project_role.save()
-        # NotificationService.add_user_notification(organization_role.user,
-        #                                             "Your role within " + organization_role.organization.name + " has been changed to " + organization_role.get_role_display() + ".",
-        #                                             NotificationSeverity.INFO,
-        #                                             NotificationSource.ORGANIZATION,
-        #                                             organization_role.organization.id)
+        project = project_role.project
+        NotificationService.add_multiuser_notification(ProjectService.get_project_members(request_user, project),
+                                                    "The role of {0} in project {1} has been changed to {2}.".format(project_role.user.standard_display_name(), project.name, project_role.get_role_display()),
+                                                    NotificationSeverity.INFO,
+                                                    NotificationSource.PROJECT,
+                                                    project.id)
+        NotificationService.add_user_notification(project_role.user,
+                                                    "Your role within project {0} has been changed to {1}.".format(project.name, project_role.get_role_display()),
+                                                    NotificationSeverity.INFO,
+                                                    NotificationSource.PROJECT,
+                                                    project.id)
 
     @staticmethod
     def delete_project_role(request_user, projid, project_role):
         validate_consistent_keys(project_role, 'Role does not match project', (['project', 'id'], projid))
         ensure_user_has_permission(request_user, project_role.project, 'project.staff_remove')
         project_role.delete()
-        # NotificationService.add_user_notification(organization_role.user,
-        #                                             "Your role within " + organization_role.organization.name + " has been changed to " + organization_role.get_role_display() + ".",
-        #                                             NotificationSeverity.INFO,
-        #                                             NotificationSource.ORGANIZATION,
-        #                                             organization_role.organization.id)
+        project = project_role.project
+        NotificationService.add_multiuser_notification(ProjectService.get_project_members(request_user, project),
+                                                    "The user {0} has been removed from the staff of project {1}.".format(project_role.user.standard_display_name(), project.name),
+                                                    NotificationSeverity.INFO,
+                                                    NotificationSource.PROJECT,
+                                                    project.id)
+        NotificationService.add_user_notification(project_role.user,
+                                                    "You were removed from project {0} and are no longer part of its staff.".format(project.name),
+                                                    NotificationSeverity.INFO,
+                                                    NotificationSource.PROJECT,
+                                                    project.id)
 
     @staticmethod
     def get_all_project_staff(request_user, projid):
@@ -256,6 +310,12 @@ class ProjectTaskService():
         validate_consistent_keys(project_task, 'Task not found in that project', ('id', taskid), (['project', 'id'], projid))
         ensure_user_has_permission(request_user, project_task.project, 'project.task_edit')
         ProjectTaskService.save_task_internal(request_user, projid, taskid, project_task)
+        project = project_task.project
+        NotificationService.add_multiuser_notification(ProjectService.get_project_members(request_user, project),
+                                                     "The task {0} from project {1} has been edited.".format(project_task.name, project.name),
+                                                     NotificationSeverity.INFO,
+                                                     NotificationSource.TASK,
+                                                     project_task.id)
 
     @staticmethod
     def mark_task_as_completed(request_user, projid, taskid, project_task_review):
@@ -265,10 +325,21 @@ class ProjectTaskService():
             ensure_user_has_permission(request_user, project_task, 'project.volunteer_task_finish')
             with transaction.atomic():
                 project_task_review.task = project_task
+                project_task_review.volunteer = request_user
                 project_task_review.review_result = ReviewStatus.NEW
                 project_task_review.save()
                 project_task.stage = TaskStatus.WAITING_REVIEW
                 ProjectTaskService.save_task_internal(request_user, projid, taskid, project_task)
+            NotificationService.add_multiuser_notification(ProjectService.get_project_officials(request_user, project),
+                                                        "The task {0} from project {1} has been marked as completed by the volunteer and needs to be reviewed.".format(project_task.name, project.name),
+                                                        NotificationSeverity.WARNING,
+                                                        NotificationSource.TASK,
+                                                        project_task.id)
+            NotificationService.add_user_notification(request_user,
+                                                        "You marked task {0} of project {1} as finished. The project staff will review it and you will be notified when the QA .".format(project_task.name, project.name),
+                                                        NotificationSeverity.INFO,
+                                                        NotificationSource.TASK,
+                                                        project_task.id)
         else:
             if not project:
                 raise KeyError('Project not found ' + str(projid))
@@ -283,7 +354,14 @@ class ProjectTaskService():
         # TODO calculate the project status correctly based on all the tasks
         # project_task.project.status = ProjectStatus.WAITING_REVIEW
         # project_task.project.save()
-         # TODO move this to a separate method that modifies tasks (so effects are passed on to the project as needed)
+        # TODO move this to a separate method that modifies tasks (so effects are passed on to the project as needed)
+        # TODO What happens with volunteers working on this task?
+        project = project_task.project
+        NotificationService.add_multiuser_notification(ProjectService.get_project_members(request_user, project),
+                                                     "The task {0} has been deleted from project {1}.".format(project_task.name, project.name),
+                                                     NotificationSeverity.WARNING,
+                                                     NotificationSource.TASK,
+                                                     project_task.id)
 
     @staticmethod
     def create_default_task(request_user, projid):
@@ -292,7 +370,6 @@ class ProjectTaskService():
         # project_task.project.save()
         # TODO move this to a separate method that modifies tasks (so effects are passed on to the project as needed)
         project = Project.objects.get(pk=projid)
-        print("Hello ", project)
         ensure_user_has_permission(request_user, project, 'project.task_edit')
         if project:
             project_task = ProjectTask()
@@ -307,6 +384,11 @@ class ProjectTaskService():
             project_task.estimated_start_date = date.today()
             project_task.estimated_end_date = date.today()
             project_task.save()
+            NotificationService.add_multiuser_notification(ProjectService.get_project_members(request_user, project),
+                                                     "A new task {0} has been added to project {1}.".format(project_task.name, project.name),
+                                                     NotificationSeverity.WARNING,
+                                                     NotificationSource.TASK,
+                                                     project_task.id)
         else:
             raise KeyError('Project not found')
 
@@ -330,10 +412,10 @@ class ProjectTaskService():
                 project_task.stage = TaskStatus.COMPLETED
                 project_task.percentage_complete = 1.0
                 project_task.actual_effort_hours = task_review.volunteer_effort_hours
-                ProjectTaskService.save_task(request_user, projid, taskid, project_task)
+                ProjectTaskService.save_task(request_user, projid, taskid, project_task) # TODO change this to save_task_internal
             elif task_review.review_result == ReviewStatus.REJECTED:
                 project_task.stage = TaskStatus.STARTED
-                ProjectTaskService.save_task(request_user, projid, taskid, project_task)
+                ProjectTaskService.save_task(request_user, projid, taskid, project_task) # TODO change this to save_task_internal
 
     @staticmethod
     def accept_task_review(request_user, projid, taskid, task_review): # TODO check that the review request is in status NEW
@@ -342,11 +424,18 @@ class ProjectTaskService():
         task_review.review_result = ReviewStatus.ACCEPTED
         task_review.review_date = timezone.now()
         ProjectTaskService.save_task_review(request_user, projid, taskid, task_review)
-        # NotificationService.add_user_notification(membership_request.user,
-        #                                             "Congratulations! Your membership request for " + membership_request.organization.name + " was accepted.",
-        #                                             NotificationSeverity.INFO,
-        #                                             NotificationSource.ORGANIZATION_MEMBERSHIP_REQUEST,
-        #                                             membership_request.id)
+        project_task = task_review.task
+        project = project_task.project
+        NotificationService.add_multiuser_notification(ProjectService.get_project_members(request_user, project),
+                                                    "The task {0} from project {1} has been accepted during QA phase and it's now completed.".format(project_task.name, project.name),
+                                                    NotificationSeverity.INFO,
+                                                    NotificationSource.TASK,
+                                                    project_task.id)
+        NotificationService.add_user_notification(task_review.volunteer,
+                                                    "Congratulations! Your task {0} of project {1} has been reviewed by the project staff and accepted as finished, so your work has been completed. The staff comments are: {2}.".format(project_task.name, project.name, task_review.public_reviewer_comments),
+                                                    NotificationSeverity.INFO,
+                                                    NotificationSource.TASK,
+                                                    project_task.id)
 
     @staticmethod
     def reject_task_review(request_user, projid, taskid, task_review): # TODO check that the review request is in status NEW
@@ -355,11 +444,18 @@ class ProjectTaskService():
         task_review.review_result = ReviewStatus.REJECTED
         task_review.review_date = timezone.now()
         ProjectTaskService.save_task_review(request_user, projid, taskid, task_review)
-        # NotificationService.add_user_notification(membership_request.user,
-        #                                             "Congratulations! Your membership request for " + membership_request.organization.name + " was accepted.",
-        #                                             NotificationSeverity.INFO,
-        #                                             NotificationSource.ORGANIZATION_MEMBERSHIP_REQUEST,
-        #                                             membership_request.id)
+        project_task = task_review.task
+        project = project_task.project
+        NotificationService.add_multiuser_notification(ProjectService.get_project_members(request_user, project),
+                                                    "The task {0} from project {1} has been rejected during QA phase.".format(project_task.name, project.name),
+                                                    NotificationSeverity.WARNING,
+                                                    NotificationSource.TASK,
+                                                    project_task.id)
+        NotificationService.add_user_notification(task_review.volunteer,
+                                                    "Your task {0} of project {1} has been reviewed by the project staff and rejected as finished, so it has been reopened. The staff comments are: {2}.".format(project_task.name, project.name, task_review.public_reviewer_comments),
+                                                    NotificationSeverity.ERROR,
+                                                    NotificationSource.TASK,
+                                                    project_task.id)
 
     @staticmethod
     def cancel_volunteering(request_user, projid, taskid, project_task_role):
@@ -368,25 +464,24 @@ class ProjectTaskService():
         if project_task_role.user != request_user:
             raise ValueError('Role does not match current user')
         else:
+            project_task = project_task_role.task
             with transaction.atomic():
-                project_task = project_task_role.task
                 project_task_role.delete()
                 if not ProjectTaskService.task_has_volunteers(request_user, taskid):
                     project_task.stage = TaskStatus.STARTED ## or not started?
                     project_task.accepting_volunteers = True
                     ProjectTaskService.save_task_internal(request_user, projid, taskid, project_task)
-
-                # NotificationService.add_user_notification(request_user,
-                #                                             "You left " + organization_role.organization.name,
-                #                                             NotificationSeverity.INFO,
-                #                                             NotificationSource.ORGANIZATION,
-                #                                             organization_role.organization.id)
-                # admins = OrganizationService.get_organization_admins(request_user, organization_role.organization)
-                # NotificationService.add_multiuser_notification(admins,
-                #                                             organization_role.user.first_name + " " + organization_role.user.last_name + " left " + organization_role.organization.name,
-                #                                             NotificationSeverity.INFO,
-                #                                             NotificationSource.ORGANIZATION,
-                #                                             organization_role.organization.id)
+            project = project_task.project
+            NotificationService.add_multiuser_notification(ProjectService.get_project_members(request_user, project),
+                                                        "The volunteer {0} working on task {1} of project {2} has canceled the work and has stopped volunteering in the project.".format(project_task_role.user.standard_display_name(), project_task.name, project.name),
+                                                        NotificationSeverity.ERROR,
+                                                        NotificationSource.TASK,
+                                                        project_task.id)
+            NotificationService.add_user_notification(project_task_role.user,
+                                                        "You have stopped working on task {0} of project {1}.".format(project_task.name, project.name),
+                                                        NotificationSeverity.INFO,
+                                                        NotificationSource.TASK,
+                                                        project_task.id)
 
 
     @staticmethod
@@ -398,6 +493,17 @@ class ProjectTaskService():
         task_application_request.task = project_task
         task_application_request.volunteer = request_user
         task_application_request.save()
+        project = project_task.project
+        NotificationService.add_multiuser_notification(ProjectService.get_project_officials(request_user, project),
+                                                    "User {0} has applied to volunteer on task {1} of project {2}. Please review the application and accept or reject it as soon as possible.".format(task_application_request.volunteer.standard_display_name(), project_task.name, project.name),
+                                                    NotificationSeverity.WARNING,
+                                                    NotificationSource.VOLUNTEER_APPLICATION,
+                                                    task_application_request.id)
+        NotificationService.add_user_notification(task_application_request.volunteer,
+                                                    "You have applied to volunteer on task {0} of project {1}. The project staff will review the application and notify you of their decision as soon as possible.".format(project_task.name, project.name),
+                                                    NotificationSeverity.INFO,
+                                                    NotificationSource.VOLUNTEER_APPLICATION,
+                                                    task_application_request.id)
 
     @staticmethod
     def get_volunteer_application(request_user, projid, taskid, volunteer_application_pk):
@@ -434,11 +540,18 @@ class ProjectTaskService():
         volunteer_application.status = ReviewStatus.ACCEPTED
         volunteer_application.review_date = timezone.now()
         ProjectTaskService.save_volunteer_application(request_user, projid, taskid, volunteer_application)
-        # NotificationService.add_user_notification(membership_request.user,
-        #                                             "Congratulations! Your membership request for " + membership_request.organization.name + " was accepted.",
-        #                                             NotificationSeverity.INFO,
-        #                                             NotificationSource.ORGANIZATION_MEMBERSHIP_REQUEST,
-        #                                             membership_request.id)
+        project_task = volunteer_application.task
+        project = project_task.project
+        NotificationService.add_multiuser_notification(ProjectService.get_project_members(request_user, project),
+                                                    "The user {0} has been accepted as volunteer for task {1} of project {2}.".format(volunteer_application.volunteer.standard_display_name(), project_task.name, project.name),
+                                                    NotificationSeverity.INFO,
+                                                    NotificationSource.VOLUNTEER_APPLICATION,
+                                                    volunteer_application.id)
+        NotificationService.add_user_notification(volunteer_application.volunteer,
+                                                    "Congratulations! Your volunteer application for task {0} of project {1} has been accepted! You can now start working on this project. The reviewer's comments are: {2}".format(project_task.name, project.name, volunteer_application.public_reviewer_comments),
+                                                    NotificationSeverity.INFO,
+                                                    NotificationSource.VOLUNTEER_APPLICATION,
+                                                    volunteer_application.id)
 
     @staticmethod
     def reject_volunteer(request_user, projid, taskid, volunteer_application): # TODO check that the review request is in status NEW
@@ -446,12 +559,18 @@ class ProjectTaskService():
         volunteer_application.status = ReviewStatus.REJECTED
         volunteer_application.review_date = timezone.now()
         ProjectTaskService.save_volunteer_application(request_user, projid, taskid, volunteer_application)
-        # NotificationService.add_user_notification(membership_request.user,
-        #                                             "Congratulations! Your membership request for " + membership_request.organization.name + " was accepted.",
-        #                                             NotificationSeverity.INFO,
-        #                                             NotificationSource.ORGANIZATION_MEMBERSHIP_REQUEST,
-        #                                             membership_request.id)
-
+        project_task = volunteer_application.task
+        project = project_task.project
+        NotificationService.add_multiuser_notification(ProjectService.get_project_members(request_user, project),
+                                                    "The user {0} has been rejected as volunteer for task {1} of project {2}.".format(volunteer_application.volunteer.standard_display_name(), project_task.name, project.name),
+                                                    NotificationSeverity.INFO,
+                                                    NotificationSource.VOLUNTEER_APPLICATION,
+                                                    volunteer_application.id)
+        NotificationService.add_user_notification(volunteer_application.volunteer,
+                                                    "Your volunteer application for task {0} of project {1} has been rejected. The reviewer's comments are: {2}.".format(project_task.name, project.name, volunteer_application.public_reviewer_comments),
+                                                    NotificationSeverity.ERROR,
+                                                    NotificationSource.VOLUNTEER_APPLICATION,
+                                                    volunteer_application.id)
 
     @staticmethod
     def get_project_task_requirements(request_user, projid, taskid):
@@ -465,7 +584,16 @@ class ProjectTaskService():
         validate_consistent_keys(project_task, (['project', 'id'], projid))
         ensure_user_has_permission(request_user, project_task.project, 'project.task_requirements_edit')
         requirement.task = project_task
-        requirement.save()
+        try:
+            requirement.save()
+        except IntegrityError:
+            raise KeyError('Duplicate task requirement')
+        project = project_task.project
+        NotificationService.add_multiuser_notification(ProjectService.get_project_members(request_user, project),
+                                                 "A new requirement ({0}) was added to task {1} of project {2}.".format(requirement.standard_display_name(), project_task.name, project.name),
+                                                 NotificationSeverity.INFO,
+                                                 NotificationSource.TASK,
+                                                 project_task.id)
 
     @staticmethod
     def save_task_requirement(request_user, projid, taskid, requirement):
@@ -473,6 +601,12 @@ class ProjectTaskService():
         project = Project.objects.get(pk=projid)
         ensure_user_has_permission(request_user, project, 'project.task_requirements_edit')
         requirement.save()
+        project_task = requirement.task
+        NotificationService.add_multiuser_notification(ProjectService.get_project_members(request_user, project),
+                                                 "The task requirement {0} of task {1} of project {2} was edited.".format(requirement.standard_display_name(), project_task.name, project.name),
+                                                 NotificationSeverity.INFO,
+                                                 NotificationSource.TASK,
+                                                 project_task.id)
 
     @staticmethod
     def delete_task_requirement(request_user, projid, taskid, requirement):
@@ -480,6 +614,12 @@ class ProjectTaskService():
         project = Project.objects.get(pk=projid)
         ensure_user_has_permission(request_user, project, 'project.task_requirements_delete')
         requirement.delete()
+        project_task = requirement.task
+        NotificationService.add_multiuser_notification(ProjectService.get_project_members(request_user, project),
+                                                 "The task requirement {0} of task {1} of project {2} was deleted.".format(requirement.standard_display_name(), project_task.name, project.name),
+                                                 NotificationSeverity.INFO,
+                                                 NotificationSource.TASK,
+                                                 project_task.id)
 
     @staticmethod
     def get_project_task_role(request_user, projid, taskid, roleid):
@@ -496,11 +636,17 @@ class ProjectTaskService():
         project = Project.objects.get(pk=projid)
         ensure_user_has_permission(request_user, project, 'project.volunteers_edit')
         project_task_role.save()
-        # NotificationService.add_user_notification(organization_role.user,
-        #                                             "Your role within " + organization_role.organization.name + " has been changed to " + organization_role.get_role_display() + ".",
-        #                                             NotificationSeverity.INFO,
-        #                                             NotificationSource.ORGANIZATION,
-        #                                             organization_role.organization.id)
+        project_task = project_task_role.task
+        NotificationService.add_multiuser_notification(ProjectService.get_project_members(request_user, project),
+                                                    "The volunteer {0} of project {1} has been assigned to the task {2}.".format(project_task_role.user.standard_display_name(), project.name, project_task.name),
+                                                    NotificationSeverity.INFO,
+                                                    NotificationSource.TASK,
+                                                    project_task.id)
+        NotificationService.add_user_notification(project_task_role.user,
+                                                    "Your volunteer spot in project {0} has been changed to task {1}.".format(project.name, project_task.name),
+                                                    NotificationSeverity.WARNING,
+                                                    NotificationSource.TASK,
+                                                    project_task.id)
 
     @staticmethod
     def delete_project_task_role(request_user, projid, taskid, project_task_role):
@@ -508,8 +654,14 @@ class ProjectTaskService():
         project = Project.objects.get(pk=projid)
         ensure_user_has_permission(request_user, project, 'project.volunteers_remove')
         project_task_role.delete()
-        # NotificationService.add_user_notification(organization_role.user,
-        #                                             "Your role within " + organization_role.organization.name + " has been changed to " + organization_role.get_role_display() + ".",
-        #                                             NotificationSeverity.INFO,
-        #                                             NotificationSource.ORGANIZATION,
-        #                                             organization_role.organization.id)
+        project_task = project_task_role.task
+        NotificationService.add_multiuser_notification(ProjectService.get_project_members(request_user, project),
+                                                    "The volunteer {0} has been removed from task {1} of project {2}.".format(project_task_role.user.standard_display_name(), project_task.name, project.name),
+                                                    NotificationSeverity.INFO,
+                                                    NotificationSource.TASK,
+                                                    project_task.id)
+        NotificationService.add_user_notification(project_task_role.user,
+                                                    "Your volunteer role for the task {0} of project {1} has been canceled, and you have been removed from the project.".format(project_task.name, project.name),
+                                                    NotificationSeverity.ERROR,
+                                                    NotificationSource.TASK,
+                                                    project_task.id)

@@ -67,7 +67,7 @@ def get_project_task_review(request, proj_pk, task_pk, review_pk):
     return generic_getter(ProjectTaskService.get_project_task_review, request.user, proj_pk, task_pk, review_pk)
 
 def get_project_task_requirements(request, proj_pk, task_pk):
-    return generic_getter(ProjectTaskService.get_project_task_requirements, request.user, proj_pk, task_pk)
+    return ProjectTaskService.get_project_task_requirements(request.user, proj_pk, task_pk)
 
 def get_volunteer_application(request, proj_pk, task_pk, volunteer_application_pk):
     return generic_getter(ProjectTaskService.get_volunteer_application, request.user, proj_pk, task_pk, volunteer_application_pk)
@@ -76,6 +76,7 @@ class ProjectIndexView(generic.ListView):
     template_name = 'dssgmkt/proj_list.html'
     context_object_name = 'proj_list'
     paginate_by = 20
+    allow_empty = True
 
     def get_queryset(self):
         # This gets paginated by the view so we are not retrieving all the projects in one query
@@ -105,6 +106,7 @@ class ProjectView(generic.ListView): ## This is a listview because it is actuall
     template_name = 'dssgmkt/proj_info.html'
     context_object_name = 'project_tasks'
     paginate_by = 25
+    allow_empty = True
 
     def get_queryset(self):
         # TODO also show the tasks that have been completed and the ones that are already staffed and in progress
@@ -123,6 +125,7 @@ class ProjectLogView(PermissionRequiredMixin, generic.ListView):
     paginate_by = 20
     permission_required = 'project.log_view'
     raise_exception = True
+    allow_empty = True
 
     def get_queryset(self):
         project = get_project(self.request, self.kwargs['proj_pk'])
@@ -193,6 +196,7 @@ class ProjectVolunteerInstructionsView(PermissionRequiredMixin, generic.ListView
     context_object_name = 'project_tasks'
     permission_required = 'project.volunteer_instructions_view'
     raise_exception = True
+    allow_empty = True
 
     def get_queryset(self):
         return ProjectTaskService.get_volunteer_current_tasks(self.request.user, self.request.user, self.kwargs['proj_pk'])
@@ -359,6 +363,7 @@ class ProjectTaskIndex(PermissionRequiredMixin, generic.ListView):
     context_object_name = 'project_tasks'
     permission_required = 'project.tasks_view'
     raise_exception = True
+    allow_empty = True
 
     def get_queryset(self):
         return ProjectTaskService.get_all_tasks(self.request.user, self.kwargs['proj_pk'])
@@ -440,7 +445,7 @@ class ProjectEdit(PermissionRequiredMixin, UpdateView):
 class CreateTaskRequirementForm(ModelForm):
     class Meta:
         model = ProjectTaskRequirement
-        fields = ['skill', 'level']
+        fields = ['skill', 'level', 'importance']
 
 @permission_required('project.task_requirements_view', raise_exception=True, fn=objectgetter(Project, 'proj_pk'))
 def project_task_requirements_edit_view(request, proj_pk, task_pk):
@@ -452,7 +457,7 @@ def project_task_requirements_edit_view(request, proj_pk, task_pk):
                 ProjectTaskService.add_task_requirement(request.user, proj_pk, task_pk, requirement)
                 return redirect('dssgmkt:proj_task_requirements_edit', proj_pk=proj_pk, task_pk=task_pk)
             except KeyError:
-                form.add_error(None, "Invalid task requirement.")
+                form.add_error(None, "Duplicate task requirement.")
     if request.method == 'GET':
         form = CreateTaskRequirementForm()
     task_requirements = get_project_task_requirements(request, proj_pk, task_pk)
@@ -470,7 +475,7 @@ def project_task_requirements_edit_view(request, proj_pk, task_pk):
 
 class ProjectTaskRequirementEdit(PermissionRequiredMixin, UpdateView):
     model = ProjectTaskRequirement
-    fields = ['level']
+    fields = ['level', 'importance']
     template_name = 'dssgmkt/proj_task_requirements_requirement_edit.html'
     pk_url_kwarg = 'requirement_pk'
     permission_required = 'project.task_requirements_edit'

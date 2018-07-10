@@ -49,16 +49,21 @@ class User(AbstractUser):
     def full_name(self):
         return self.first_name + " " + self.last_name
 
+    def standard_display_name(self):
+        return self.full_name() + "(" + self.username + ")"
+
 class NotificationSeverity():
     INFO = 0
     WARNING = 1
-    ALERT = 2
+    ERROR = 2
+    CRITICAL = 3
 
     def get_choices():
         return (
                     (NotificationSeverity.INFO, 'Information'),
                     (NotificationSeverity.WARNING, 'Warning'),
-                    (NotificationSeverity.ALERT, 'Alert'),
+                    (NotificationSeverity.ERROR, 'Error'),
+                    (NotificationSeverity.CRITICAL, 'Critical'),
                 )
 
 class NotificationSource():
@@ -110,6 +115,9 @@ class Skill(models.Model):
 
     def __str__(self):
         return self.area + "/" + self.name
+
+    def standard_display_name(self):
+        return str(self)
 
     class Meta:
         unique_together = ('area','name')

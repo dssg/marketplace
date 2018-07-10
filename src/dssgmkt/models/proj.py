@@ -499,6 +499,12 @@ class ProjectTaskReview(models.Model):
         verbose_name="Task",
         help_text="Project task this review is related to.",
     )
+    volunteer = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        verbose_name="Volunteer",
+        help_text="The user requesting a review of this task.",
+    )
 
     def is_pending(self):
         return self.review_result == ReviewStatus.NEW
@@ -547,6 +553,12 @@ class ProjectTaskRequirement(models.Model):
         verbose_name="Task",
         help_text="Project task this requirement applies to.",
     )
+
+    def standard_display_name(self):
+        return "{0}:{1} ({2})".format(self.skill.standard_display_name(), self.get_level_display(), self.get_importance_display())
+
+    class Meta:
+        unique_together = ('skill','task')
 
 
 class VolunteerApplication(models.Model):
