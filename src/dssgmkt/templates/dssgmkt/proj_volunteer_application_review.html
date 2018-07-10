@@ -54,7 +54,27 @@
       </div>
     {% endif %}
   {% else %}
-    <p>Status: {{ volunteerapplication.get_status_display }}</p>
+    <p>Status:
+              <span
+                 class="{% if volunteerapplication.is_accepted %}
+                           text-success
+                         {% elif volunteerapplication.is_rejected %}
+                           text-danger
+                         {% elif volunteerapplication.is_new %}
+                           text-info
+                         {% endif %}">
+                <i class="material-icons" style="vertical-align: middle">
+                  {% if volunteerapplication.is_accepted %}
+                    check
+                  {% elif volunteerapplication.is_rejected %}
+                    block
+                  {% elif volunteerapplication.is_new %}
+                    edit
+                  {% endif %}
+                </i>
+                {{ volunteerapplication.get_status_display }}
+              </span>
+    </p>
     <p>Resolution date: {{ volunteerapplication.resolution_date }}</p>
     <p>Reviewer's comments: {{ volunteerapplication.public_reviewer_comments }}</p>
     {% if not user_is_applicant %}

@@ -20,7 +20,7 @@ from ..models.user import Skill, User, VolunteerProfile, VolunteerSkill, UserNot
 from .common import build_breadcrumb, home_link, paginate
 
 from dssgmkt.domain.user import UserService
-from dssgmkt.domain.proj import ProjectTaskService
+from dssgmkt.domain.proj import ProjectTaskService, VolunteerApplication
 from dssgmkt.domain.notifications import NotificationService
 
 
@@ -45,11 +45,13 @@ def get_url_for_notification(source_type, source_id):
         elif source_type == NotificationSource.ORGANIZATION:
             url = reverse('dssgmkt:org_info', args=[source_id])
         elif source_type == NotificationSource.PROJECT:
-            url = None
+            url = reverse('dssgmkt:proj_info', args=[source_id])
         elif source_type == NotificationSource.TASK:
-            url = None
+            project_task = get_object_or_404(ProjectTask, pk=source_id) # TODO fix this so it uses the organization view method to get orgrequests? We don't know the org_pk at this point...
+            url = reverse('dssgmkt:proj_info', args=[project_task.project.id])
         elif source_type == NotificationSource.VOLUNTEER_APPLICATION:
-            url = None
+            volunteer_application = get_object_or_404(VolunteerApplication, pk=source_id) # TODO fix this so it uses the organization view method to get orgrequests? We don't know the org_pk at this point...
+            url = reverse('dssgmkt:proj_volunteer_application_review', args=[volunteer_application.task.project.id, volunteer_application.task.id, source_id])
         elif source_type == NotificationSource.ORGANIZATION_MEMBERSHIP_REQUEST:
             membership_request = get_object_or_404(OrganizationMembershipRequest, pk=source_id) # TODO fix this so it uses the organization view method to get orgrequests? We don't know the org_pk at this point...
             url = reverse('dssgmkt:org_staff_request_review', args=[membership_request.organization.id, source_id])
