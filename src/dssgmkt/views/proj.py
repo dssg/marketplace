@@ -75,7 +75,7 @@ def get_volunteer_application(request, proj_pk, task_pk, volunteer_application_p
 class ProjectIndexView(generic.ListView):
     template_name = 'dssgmkt/proj_list.html'
     context_object_name = 'proj_list'
-    paginate_by = 20
+    paginate_by = 15
     allow_empty = True
 
     def get_queryset(self):

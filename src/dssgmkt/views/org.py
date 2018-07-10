@@ -60,7 +60,7 @@ def get_organization_role(request, org_pk, user_pk):
 class OrganizationIndexView(generic.ListView):
     template_name = 'dssgmkt/org_list.html'
     context_object_name = 'org_list'
-    paginate_by = 1
+    paginate_by = 15
 
     def get_queryset(self):
         # This gets paginated by the view so we are not retrieving all the organizations in one query

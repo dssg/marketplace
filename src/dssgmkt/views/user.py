@@ -73,7 +73,7 @@ def get_url_for_notification(source_type, source_id):
 class VolunteerIndexView(generic.ListView):
     template_name = 'dssgmkt/volunteer_list.html'
     context_object_name = 'volunteer_list'
-    paginate_by = 25
+    paginate_by = 15
 
     def get_queryset(self):
         return UserService.get_all_volunteer_profiles(self.request.user)
@@ -89,7 +89,7 @@ class UserHomeView(generic.ListView): ## This is a listview because it is actual
     model = UserNotification
     template_name = 'dssgmkt/home_user.html'
     context_object_name = 'notification_list'
-    paginate_by = 15
+    paginate_by = 10
 
     def get_queryset(self):
         return UserNotification.objects.filter(user=self.request.user).order_by('-notification_date')
