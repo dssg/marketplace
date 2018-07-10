@@ -10,6 +10,9 @@ from ..models.proj import (
 from ..models.common import (
     ReviewStatus,
 )
+from ..models.user import (
+    User,
+)
 from django.db.models import Case, When
 
 from .common import validate_consistent_keys
@@ -79,6 +82,16 @@ class ProjectService():
     @staticmethod
     def user_is_project_commenter(user, proj):
         return user.is_authenticated and (ProjectService.user_is_project_member(user, proj) or ProjectService.user_is_project_volunteer(user, proj))
+
+    @staticmethod
+    def get_project_members(request_user, proj):
+        return User.objects.filter(projectrole__project=proj).union(
+            User.objects.filter(projecttaskrole__task__project=proj,
+                                projecttaskrole__role=TaskRole.VOLUNTEER,
+                                projecttaskrole__task__type__in=[TaskType.SCOPING_TASK, TaskType.PROJECT_MANAGEMENT_TASK],
+                                projecttaskrole__task__stage__in=[TaskStatus.STARTED, TaskStatus.WAITING_REVIEW]
+                                )
+        )
 
     @staticmethod
     def get_project_changes(request_user, proj):
