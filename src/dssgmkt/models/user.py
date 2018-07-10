@@ -60,10 +60,10 @@ class NotificationSeverity():
 
     def get_choices():
         return (
-                    (NotificationSeverity.INFO, 'Information'),
-                    (NotificationSeverity.WARNING, 'Warning'),
-                    (NotificationSeverity.ERROR, 'Error'),
-                    (NotificationSeverity.CRITICAL, 'Critical'),
+                    (NotificationSeverity.INFO, 'info'),
+                    (NotificationSeverity.WARNING, 'warning'),
+                    (NotificationSeverity.ERROR, 'danger'),
+                    (NotificationSeverity.CRITICAL, 'primary'),
                 )
 
 class NotificationSource():
@@ -108,6 +108,21 @@ class UserNotification(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
     )
+
+    def is_source_organization(self):
+        return self.source == NotificationSource.ORGANIZATION
+
+    def is_source_project(self):
+        return self.source == NotificationSource.PROJECT
+
+    def is_source_task(self):
+        return self.source == NotificationSource.TASK
+
+    def is_source_volunteer_application(self):
+        return self.source == NotificationSource.VOLUNTEER_APPLICATION
+
+    def is_source_organization_membership_request(self):
+        return self.source == NotificationSource.ORGANIZATION_MEMBERSHIP_REQUEST
 
 class Skill(models.Model):
     area = models.CharField(max_length=50)
