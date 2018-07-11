@@ -598,8 +598,8 @@ def create_default_project_task(request, proj_pk):
     if request.method == 'GET':
         raise Http404
     elif request.method == 'POST':
-        ProjectTaskService.create_default_task(request.user, proj_pk)
-        return redirect('dssgmkt:proj_task_list', proj_pk = proj_pk)
+        new_task = ProjectTaskService.create_default_task(request.user, proj_pk)
+        return redirect('dssgmkt:proj_task_edit', proj_pk=proj_pk, task_pk=new_task.id)
 
 
 class CreateProjectRoleForm(ModelForm):

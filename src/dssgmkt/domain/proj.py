@@ -536,6 +536,7 @@ class ProjectTaskService():
                                                ProjectLogSource.TASK,
                                                project_task.id,
                                                message)
+            return project_task
         else:
             raise KeyError('Project not found')
 
