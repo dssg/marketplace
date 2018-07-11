@@ -20,7 +20,7 @@ from ..models.user import Skill, User, VolunteerProfile, VolunteerSkill, UserNot
 from .common import build_breadcrumb, home_link, paginate
 
 from dssgmkt.domain.user import UserService
-from dssgmkt.domain.proj import ProjectTaskService
+from dssgmkt.domain.proj import ProjectService, ProjectTaskService
 from dssgmkt.domain.org import OrganizationService
 from dssgmkt.domain.notifications import NotificationService
 

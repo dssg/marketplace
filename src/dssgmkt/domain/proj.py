@@ -11,7 +11,7 @@ from ..models.common import (
     ReviewStatus,
 )
 from ..models.user import (
-    User, NotificationSeverity, NotificationSource,
+    User, NotificationSeverity, NotificationSource, VolunteerProfile,
 )
 from django.db.models import Case, When
 
@@ -502,10 +502,6 @@ class ProjectTaskService():
 
     @staticmethod
     def create_default_task(request_user, projid):
-        # TODO calculate the project status correctly based on all the tasks
-        # project_task.project.status = ProjectStatus.WAITING_REVIEW
-        # project_task.project.save()
-        # TODO move this to a separate method that modifies tasks (so effects are passed on to the project as needed)
         project = Project.objects.get(pk=projid)
         ensure_user_has_permission(request_user, project, 'project.task_edit')
         if project:
@@ -564,15 +560,17 @@ class ProjectTaskService():
                 project_task.accepting_volunteers = False
                 project_task.percentage_complete = 1.0
                 project_task.actual_effort_hours = task_review.volunteer_effort_hours
-                ProjectTaskService.save_task_internal(request_user, projid, taskid, project_task) # TODO change this to save_task_internal
+                ProjectTaskService.save_task_internal(request_user, projid, taskid, project_task)
             elif task_review.review_result == ReviewStatus.REJECTED:
                 project_task.stage = TaskStatus.STARTED
-                ProjectTaskService.save_task_internal(request_user, projid, taskid, project_task) # TODO change this to save_task_internal
+                ProjectTaskService.save_task_internal(request_user, projid, taskid, project_task)
 
     @staticmethod
-    def accept_task_review(request_user, projid, taskid, task_review): # TODO check that the review request is in status NEW
+    def accept_task_review(request_user, projid, taskid, task_review):
         validate_consistent_keys(task_review, 'Task review not found in that project', (['task', 'id'], taskid), (['task', 'project', 'id'], projid))
         ensure_user_has_permission(request_user, task_review.task.project, 'project.task_review_do')
+        if task_review.review_result != ReviewStatus.NEW:
+            raise ValueError('Task review was already completed')
         task_review.review_result = ReviewStatus.ACCEPTED
         task_review.review_date = timezone.now()
         ProjectTaskService.save_task_review(request_user, projid, taskid, task_review)
@@ -597,9 +595,11 @@ class ProjectTaskService():
                                           message)
 
     @staticmethod
-    def reject_task_review(request_user, projid, taskid, task_review): # TODO check that the review request is in status NEW
+    def reject_task_review(request_user, projid, taskid, task_review):
         validate_consistent_keys(task_review, 'Task review not found in that project', (['task', 'id'], taskid), (['task', 'project', 'id'], projid))
         ensure_user_has_permission(request_user, task_review.task.project, 'project.task_review_do')
+        if task_review.review_result != ReviewStatus.NEW:
+            raise ValueError('Task review was already completed')
         task_review.review_result = ReviewStatus.REJECTED
         task_review.review_date = timezone.now()
         ProjectTaskService.save_task_review(request_user, projid, taskid, task_review)
@@ -663,10 +663,13 @@ class ProjectTaskService():
 
 
     @staticmethod
-    def apply_to_volunteer(request_user, projid, taskid, task_application_request): # TODO check the user is not already accepted for the task
-        # TODO check the user has a volunteer profile
+    def apply_to_volunteer(request_user, projid, taskid, task_application_request):
         project_task = ProjectTask.objects.get(pk=taskid, project__id=projid)
         validate_consistent_keys(project_task, 'Task not found in that project', (['project', 'id'], projid))
+        if ProjectTaskService.user_is_task_volunteer(request_user, project_task):
+            raise ValueException('User is already a volunteer of this task')
+        if not VolunteerProfile.objects.filter(user=request_user).exists(): # We cannot call UserService.user_has_volunteer_profile because a circular dependency
+            raise ValueException('User is not a volunteer')
         task_application_request.status = ReviewStatus.NEW
         task_application_request.task = project_task
         task_application_request.volunteer = request_user
@@ -733,8 +736,10 @@ class ProjectTaskService():
 
     # TODO remove all the permission validation in accept/reject methods that delegate on a save method? Document it clearly
     @staticmethod
-    def accept_volunteer(request_user, projid, taskid, volunteer_application): # TODO check that the review request is in status NEW
+    def accept_volunteer(request_user, projid, taskid, volunteer_application):
         validate_consistent_keys(volunteer_application, (['task', 'id'], taskid), (['task', 'project', 'id'], projid))
+        if volunteer_application.status != ReviewStatus.NEW:
+            raise ValueError('Volunteer application review was already completed')
         volunteer_application.status = ReviewStatus.ACCEPTED
         volunteer_application.review_date = timezone.now()
         ProjectTaskService.save_volunteer_application(request_user, projid, taskid, volunteer_application)
@@ -759,8 +764,10 @@ class ProjectTaskService():
                                           message)
 
     @staticmethod
-    def reject_volunteer(request_user, projid, taskid, volunteer_application): # TODO check that the review request is in status NEW
+    def reject_volunteer(request_user, projid, taskid, volunteer_application):
         validate_consistent_keys(volunteer_application, (['task', 'id'], taskid), (['task', 'project', 'id'], projid))
+        if volunteer_application.status != ReviewStatus.NEW:
+            raise ValueError('Volunteer application review was already completed')
         volunteer_application.status = ReviewStatus.REJECTED
         volunteer_application.review_date = timezone.now()
         ProjectTaskService.save_volunteer_application(request_user, projid, taskid, volunteer_application)
@@ -897,7 +904,7 @@ class ProjectTaskService():
                                           message)
 
     @staticmethod
-    def delete_project_task_role(request_user, projid, taskid, project_task_role): # TODO check the role is of an active task - we cannot delete roles of completed tasks
+    def delete_project_task_role(request_user, projid, taskid, project_task_role):
         validate_consistent_keys(project_task_role, (['task', 'id'], taskid), (['task', 'project', 'id'], projid))
         project = Project.objects.get(pk=projid)
         ensure_user_has_permission(request_user, project, 'project.volunteers_remove')
