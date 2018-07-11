@@ -2,18 +2,31 @@
 
 {% block pagecontents %}
 
-  <form id="pwdreset">
-    <h2>Reset your password</h2>
-    <p>You can now reset your password; just type the reset code we sent you
-      to your email	address and your new password.</p>
+  <div class="col-lg-9">
+    <form id="pwdreset">
+      <h2>Reset your password</h2>
+      <p>You can now reset your password; just type the reset code we sent you
+        to your email	address and your new password.</p>
 
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit"
-            form="pwdreset"
-            formmethod="post">Reset password</button>
-  </form>
-  <a href="{% url 'dssgmkt:login' %}">Cancel</a>
+      {% csrf_token %}
+      {% include 'dssgmkt/components/standard_form_fields.html' %}
+
+      <div class="form-row">
+        <div class="col-lg-9 offset-lg-3">
+          <button type="submit"
+                  form="pwdreset"
+                  formmethod="post"
+                  class="btn btn-success mr-3">
+            <i class="material-icons" style="vertical-align: middle">arrow_forward</i>
+            Reset password
+          </button>
+          <a class="btn btn-outline-primary"
+             href="{% url 'dssgmkt:login' %}">
+            Cancel
+          </a>
+        </div>
+      </div>
+    </form>
 
 
 {% endblock %}

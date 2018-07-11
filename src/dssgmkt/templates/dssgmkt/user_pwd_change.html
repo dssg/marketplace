@@ -2,44 +2,49 @@
 
 {% block pagecontents %}
 
-<form id="userpwdchange">
-  {% csrf_token %}
+  <div class="col-lg-9">
+    <form id="userpwdchange">
+      <h4 class="section-header">Change password</h4>
+      <p>Please enter your old password and your new password twice so we can verify you typed it in correctly.</p>
+      {% csrf_token %}
+      {% include 'dssgmkt/components/standard_form_fields.html' %}
 
-{% if form.errors %}
-    <p>
-    {% if form.errors.items|length == 1 %}Please correct the error below.{% else %}Please correct the errors below.{% endif %}
-    </p>
-{% endif %}
+      <!-- 
+      <fieldset>
 
+          {{ form.old_password.errors }}
+          {{ form.old_password.label_tag }} {{ form.old_password }}
 
-<p>Please enter your old password and your new password twice so we can verify you typed it in correctly.</p>
+          {{ form.new_password1.errors }}
+          {{ form.new_password1.label_tag }} {{ form.new_password1 }}
+          {% if form.new_password1.help_text %}
+            {{ form.new_password1.help_text|safe }}
+          {% endif %}
 
-<fieldset>
+          {{ form.new_password2.errors }}
+          {{ form.new_password2.label_tag }} {{ form.new_password2 }}
+          {% if form.new_password2.help_text %}
+            {{ form.new_password2.help_text|safe }}
+          {% endif %}
+      </fieldset> -->
 
-    {{ form.old_password.errors }}
-    {{ form.old_password.label_tag }} {{ form.old_password }}
-
-    {{ form.new_password1.errors }}
-    {{ form.new_password1.label_tag }} {{ form.new_password1 }}
-    {% if form.new_password1.help_text %}
-      {{ form.new_password1.help_text|safe }}
-    {% endif %}
-
-{{ form.new_password2.errors }}
-    {{ form.new_password2.label_tag }} {{ form.new_password2 }}
-    {% if form.new_password2.help_text %}
-      {{ form.new_password2.help_text|safe }}
-    {% endif %}
-</div>
-
-</fieldset>
-
-    <button type="submit"
-            form="userpwdchange"
-            formaction="{% url 'dssgmkt:user_pwd_change' %}"
-            formmethod="post">Change my password</button>
-</form>
-<a href="{% url 'dssgmkt:user_profile' user.id %}">Cancel</a>
+      <div class="form-row">
+        <div class="col-lg-9 offset-lg-3">
+          <button type="submit"
+                  form="userpwdchange"
+                  formaction="{% url 'dssgmkt:user_pwd_change' %}"
+                  formmethod="post"
+                  class="btn btn-success mr-3">
+            <i class="material-icons" style="vertical-align: middle">lock_open</i>
+            Change my password
+          </button>
+          <a class="btn btn-outline-primary"
+             href="{% url 'dssgmkt:user_profile' user.id %}">
+            Cancel
+          </a>
+        </div>
+      </div>
+    </form>
 
 
 {% endblock %}

@@ -33,7 +33,6 @@ class UserService():
     def create_volunteer_profile(request_user, user_pk):
         target_user = UserService.get_user(request_user, user_pk)
         ensure_user_has_permission(request_user, target_user, 'user.is_same_user')
-        # TODO check both users are the same
         if not VolunteerProfile.objects.filter(user=request_user).exists():
             volunteer_profile = VolunteerProfile()
             volunteer_profile.user = request_user

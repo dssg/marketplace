@@ -2,8 +2,11 @@
 
 {% block pagecontents %}
 
-<p>Your password has been set.  You may go ahead and log in now.</p>
+  <div class="col-lg-6 offset-lg-3">
+    <h2 class="section-header">Password reset complete</h2>
+    <p>Your password has been set.  You may go ahead and log in now.</p>
 
-<p><a href="{{ login_url }}">Log in</a></p>
+    <p><a href="{{ login_url }}">Log in</a></p>
+  </div>
 
 {% endblock %}
