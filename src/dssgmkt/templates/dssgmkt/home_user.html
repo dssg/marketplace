@@ -5,22 +5,32 @@
   <div class="row section-header">
     <div class="col-lg-5">
       <div class="col-lg-12">
+        {% if user_is_any_organization_member %}
           <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'dssgmkt:org_list' %}">
-            <i class="material-icons" style="vertical-align: middle">edit</i>
-            Create new organization
-          </a>
-          <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'dssgmkt:org_list' %}">
-            <i class="material-icons" style="vertical-align: middle">meeting_room</i>
-            Create my volunteer profile
-          </a>
-          <a class="btn btn-light disabled col-lg-12 mb-1">
-            <i class="material-icons" style="vertical-align: middle">check</i>
-            Search for projects
-          </a>
-          <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'dssgmkt:org_list' %}">
-            <i class="material-icons" style="vertical-align: middle">person_add</i>
+            <i class="material-icons" style="vertical-align: middle">business_center</i>
             Create a new project
           </a>
+        {% else %}
+          <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'dssgmkt:org_list' %}">
+            <i class="material-icons" style="vertical-align: middle">business</i>
+            Create new organization
+          </a>
+        {% endif %}
+        <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'dssgmkt:org_list' %}">
+          <i class="material-icons" style="vertical-align: middle">business</i>
+          Search for organizations to join
+        </a>
+        {% if user_is_volunteer %}
+          <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'dssgmkt:proj_list' %}">
+            <i class="material-icons" style="vertical-align: middle">search</i>
+            Search for projects
+          </a>
+        {% else %}
+          <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'dssgmkt:org_list' %}">
+            <i class="material-icons" style="vertical-align: middle">person_add</i>
+            Create my volunteer profile
+          </a>
+        {% endif %}
       </div>
       <div class="col-lg-12">
         <h3 class="section-header">My pending TODOs</h3>

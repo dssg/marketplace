@@ -21,6 +21,7 @@ from .common import build_breadcrumb, home_link, paginate
 
 from dssgmkt.domain.user import UserService
 from dssgmkt.domain.proj import ProjectTaskService
+from dssgmkt.domain.org import OrganizationService 
 from dssgmkt.domain.notifications import NotificationService
 
 
@@ -100,6 +101,8 @@ class UserHomeView(generic.ListView): ## This is a listview because it is actual
         for notification in context['notification_list']:
             notification.url = get_url_for_notification(notification.source, notification.target_id)
         context['todos'] = UserService.get_user_todos(self.request.user, self.request.user)
+        context['user_is_volunteer'] = UserService.user_has_volunteer_profile(self.request.user)
+        context['user_is_any_organization_member'] = OrganizationService.user_is_any_organization_member(self.request.user)
         return context
 
     def render_to_response(self, context):
