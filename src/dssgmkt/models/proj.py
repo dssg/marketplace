@@ -192,6 +192,26 @@ class Project(models.Model):
     def is_completed(self):
         return self.status == ProjectStatus.COMPLETED
 
+    def is_new_status(self):
+        return self.status == ProjectStatus.NEW
+
+    def is_design_status(self):
+        return self.status == ProjectStatus.DESIGN
+
+    def is_waiting_design_approval_status(self):
+        return self.status == ProjectStatus.WAITING_DESIGN_APPROVAL
+
+    def is_waiting_staff_status(self):
+        return self.status == ProjectStatus.WAITING_STAFF
+
+    def is_in_progress_status(self):
+        return self.status == ProjectStatus.IN_PROGRESS
+
+    def is_waiting_review_status(self):
+        return self.status == ProjectStatus.WAITING_REVIEW
+
+    def is_completed_status(self):
+        return self.status == ProjectStatus.COMPLETED
 
 class ProjectLogSource():
     VOLUNTEER_APPLICATION = 'VA'
@@ -447,11 +467,17 @@ class ProjectTask(models.Model):
     def __str__(self):
         return self.name
 
+    def is_not_started(self):
+        return self.stage == TaskStatus.NOT_STARTED
+
     def is_in_progress(self):
         return self.stage == TaskStatus.STARTED
 
     def is_pending_review(self):
         return self.stage == TaskStatus.WAITING_REVIEW
+
+    def is_completed(self):
+        return self.stage == TaskStatus.COMPLETED
 
 
 class ProjectTaskReview(models.Model):

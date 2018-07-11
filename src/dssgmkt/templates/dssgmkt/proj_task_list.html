@@ -16,7 +16,8 @@
             </div>
 
             <div class="col-lg-4">
-              <p>{{ project_task.get_stage_display }}</p>
+              <!-- <p>{{ project_task.get_stage_display }}</p> -->
+              {% include 'dssgmkt/components/task_status.html' with task=project_task %}
             </div>
           </div>
           <div class="row mb-5">

@@ -69,3 +69,31 @@ fieldset legend {
   margin-left: 20px;
   color: black;
 }
+
+.status-component {
+  padding: 0px;
+}
+
+.status-row {
+    padding: 0px;
+    display: flex;
+    flex-direction: row;
+}
+
+.status {
+  background-color: #212529;
+  color: white;
+  padding: 5px;
+  flex: 1;
+  text-align:  center;
+}
+
+.status-active ~ .status {
+  background-color: white;
+  color: black;
+}
+
+.status-description {
+  padding: 5px;
+  text-align:  center;
+}

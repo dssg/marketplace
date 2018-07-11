@@ -1,0 +1,21 @@
+
+
+<div class="status-component col-lg-12 border border-round border-light mt-3 mb-3">
+  <div class="status-row col-lg-12">
+    <span class="status rounded-top border-right {% if task.is_not_started %}status-active bg-success{% else %}border-bottom{% endif %}">New</span>
+    <span class="status rounded-top border-right {% if task.is_in_progress %}status-active bg-success{% else %}border-bottom{% endif %}">In progress</span>
+    <span class="status rounded-top border-right {% if task.is_waiting_review %}status-active bg-success{% else %}border-bottom{% endif %}">Task QA</span>
+    <span class="status rounded-top {% if task.is_completed %}status-active bg-success{% else %}border-bottom{% endif %}">Completed</span>
+  </div>
+  <div class="status-description col-lg-12 bg-success text-white rounded-bottom">
+    {% if task.is_not_started %}
+      This task has not started
+    {% elif task.is_in_progress %}
+      Volunteers are working on this task
+    {% elif task.is_waiting_review %}
+      This task is pending the QA review
+    {% elif task.is_completed %}
+      This task is completed
+    {% endif %}
+  </div>
+</div>

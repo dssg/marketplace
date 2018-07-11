@@ -1,0 +1,31 @@
+
+
+<div class="status-component col-lg-12 border border-round border-light mt-3 mb-3">
+  <div class="status-row col-lg-12">
+    <span class="status rounded-top border-right {% if project.is_new_status %}status-active bg-success{% else %}border-bottom{% endif %}">New</span>
+    <span class="status rounded-top border-right {% if project.is_design_status %}status-active bg-success{% else %}border-bottom{% endif %}">Scoping</span>
+    <span class="status rounded-top border-right {% if project.is_waiting_design_approval_status %}status-active bg-success{% else %}border-bottom{% endif %}">Scoping QA</span>
+    <span class="status rounded-top border-right {% if project.is_waiting_staff_status %}status-active bg-success{% else %}border-bottom{% endif %}">Staffing</span>
+    <span class="status rounded-top border-right {% if project.is_in_progress_status %}status-active bg-success{% else %}border-bottom{% endif %}">In progress</span>
+    <span class="status rounded-top border-right {% if project.is_waiting_review_status %}status-active bg-success{% else %}border-bottom{% endif %}">Final QA</span>
+    <span class="status rounded-top {% if project.is_completed_status %}status-active bg-success{% else %}border-bottom{% endif %}">Completed</span>
+  </div>
+  <div class="status-description col-lg-12 bg-success text-white rounded-bottom">
+    {% if project.is_new_status %}
+      This project is waiting to be scoped
+    {% elif project.is_design_status %}
+      This project is being scoped
+    {% elif project.is_waiting_design_approval_status %}
+      This project is waiting for the final scope approval
+    {% elif project.is_waiting_staff_status %}
+      This project is accepting new volunteers
+    {% elif project.is_in_progress_status %}
+      Volunteers are working on this project
+    {% elif project.is_waiting_review_status %}
+      This project is pending the final review
+    {% elif project.is_completed_status %}
+      This project is completed
+    {% endif %}
+    {# TODO missing non-public states, like Draft, Expired, etc. #}
+  </div>
+</div>
