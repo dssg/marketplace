@@ -8,6 +8,7 @@
     <span class="status rounded-top border-right {% if project.is_waiting_staff_status %}status-active bg-success{% else %}border-bottom{% endif %}">Staffing</span>
     <span class="status rounded-top border-right {% if project.is_in_progress_status %}status-active bg-success{% else %}border-bottom{% endif %}">In progress</span>
     <span class="status rounded-top border-right {% if project.is_waiting_review_status %}status-active bg-success{% else %}border-bottom{% endif %}">Final QA</span>
+    {# TODO fix the 1px-off right border on the last element #}
     <span class="status rounded-top {% if project.is_completed_status %}status-active bg-success{% else %}border-bottom{% endif %}">Completed</span>
   </div>
   <div class="status-description col-lg-12 bg-success text-white rounded-bottom">
@@ -26,6 +27,6 @@
     {% elif project.is_completed_status %}
       This project is completed
     {% endif %}
-    {# TODO missing non-public states, like Draft, Expired, etc. #}
+    {# TODO missing non-public states when the user is the project owner, like Draft, Expired, etc. #}
   </div>
 </div>

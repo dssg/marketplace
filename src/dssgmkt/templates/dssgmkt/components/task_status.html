@@ -5,6 +5,7 @@
     <span class="status rounded-top border-right {% if task.is_not_started %}status-active bg-success{% else %}border-bottom{% endif %}">New</span>
     <span class="status rounded-top border-right {% if task.is_in_progress %}status-active bg-success{% else %}border-bottom{% endif %}">In progress</span>
     <span class="status rounded-top border-right {% if task.is_waiting_review %}status-active bg-success{% else %}border-bottom{% endif %}">Task QA</span>
+    {# TODO fix the 1px-off right border on the last element #}
     <span class="status rounded-top {% if task.is_completed %}status-active bg-success{% else %}border-bottom{% endif %}">Completed</span>
   </div>
   <div class="status-description col-lg-12 bg-success text-white rounded-bottom">
