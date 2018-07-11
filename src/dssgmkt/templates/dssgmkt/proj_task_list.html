@@ -128,19 +128,21 @@
     <p>This project does not have any tasks listed.</p>
   {% endif %}
 
-  <div class="section-header row">
-    <div class="col-lg-4 offset-lg-4">
-      <form id="addtask">
-        {% csrf_token %}
-        <button type="submit"
-                form="addtask"
-                formaction="{% url 'dssgmkt:proj_task_add' project.id %}"
-                formmethod="post"
-                class="btn btn-success col-lg-12">
-            <i class="material-icons" style="vertical-align: middle">add_circle</i>
-            Add new task
-        </button>
-      </form>
+  {% if user_is_task_editor %}
+    <div class="section-header row">
+      <div class="col-lg-4 offset-lg-4">
+        <form id="addtask">
+          {% csrf_token %}
+          <button type="submit"
+                  form="addtask"
+                  formaction="{% url 'dssgmkt:proj_task_add' project.id %}"
+                  formmethod="post"
+                  class="btn btn-success col-lg-12">
+              <i class="material-icons" style="vertical-align: middle">add_circle</i>
+              Add new task
+          </button>
+        </form>
+      </div>
     </div>
-  </div>
+  {% endif %}
 {% endblock %}
