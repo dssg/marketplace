@@ -104,23 +104,23 @@ class OrganizationService():
             raise KeyError('Organization not found ' + str(orgid))
 
     @staticmethod
-    def create_membership_request(request_user, user, orgid, membership_request): # TODO check the user is not already a member
+    def create_membership_request(request_user, user, orgid, membership_request):
         organization = Organization.objects.get(pk=orgid)
         if organization:
-            membership_request.organization = organization
-            membership_request.user = user
-            membership_request.status = ReviewStatus.NEW
-            membership_request.role = OrgRole.STAFF
-            if not OrganizationService.user_is_pending_membership(user, organization):
-                # try:
-                membership_request.save()
-                # except IntegrityError:
-                #     raise ValueError('Duplicate user role')
-                NotificationService.add_user_notification(membership_request.user,
-                                                            "You have applied to be a member of " + membership_request.organization.name + ". You will be notified when the organization's administrators review your membership request.",
-                                                            NotificationSeverity.INFO,
-                                                            NotificationSource.ORGANIZATION_MEMBERSHIP_REQUEST,
-                                                            membership_request.id)
+            if not OrganizationService.user_is_organization_member(user, organization):
+                membership_request.organization = organization
+                membership_request.user = user
+                membership_request.status = ReviewStatus.NEW
+                membership_request.role = OrgRole.STAFF
+                if not OrganizationService.user_is_pending_membership(user, organization):
+                    membership_request.save()
+                    NotificationService.add_user_notification(membership_request.user,
+                                                                "You have applied to be a member of " + membership_request.organization.name + ". You will be notified when the organization's administrators review your membership request.",
+                                                                NotificationSeverity.INFO,
+                                                                NotificationSource.ORGANIZATION_MEMBERSHIP_REQUEST,
+                                                                membership_request.id)
+            else:
+                raise KeyError('User is already a member of the organization ' + str(orgid))
         else:
             raise KeyError('Organization not found ' + str(orgid))
 

@@ -339,7 +339,8 @@ class ProjectTaskService():
         return ProjectTask.objects.filter(project=proj).exclude(stage=TaskStatus.COMPLETED).exclude(stage=TaskStatus.DELETED).order_by('estimated_start_date')
 
     @staticmethod
-    def get_volunteer_current_tasks(request_user, volunteer, projid): ## TODO check user is the same as volunteer or user is project owner ?
+    def get_volunteer_current_tasks(request_user, volunteer, projid):
+        ensure_user_has_permission(request_user, volunteer, 'user.is_same_user')
         return ProjectTask.objects.filter(project__pk=projid,
                                           projecttaskrole__user=volunteer,
                                           stage__in=[TaskStatus.STARTED, TaskStatus.WAITING_REVIEW])
