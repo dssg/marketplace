@@ -75,12 +75,21 @@ class UserService():
         volunteer_skill.delete()
 
     @staticmethod
+    def user_has_skills(request_user):
+        return VolunteerSkill.objects.filter(user=request_user).exists()
+
+    @staticmethod
     def get_user_todos(request_user, user):
         ensure_user_has_permission(request_user, user, 'user.is_same_user')
         todos = []
         if user.initial_type == UserType.VOLUNTEER:
             if not VolunteerProfile.objects.filter(user=user).exists():
                 todos.append({'text':'You have not created a volunteer profile yet!'})
+            else:
+                if not ProjectService.user_is_volunteer(request_user):
+                    todos.append({'text':'You are not volunteering for any organization, find a new project.'})
+                if not UserService.user_has_skills(request_user):
+                    todos.append({'text':'You have no listed skills, edit your profile and add some.'})
         elif user.initial_type == UserType.ORGANIZATION:
             if not OrganizationRole.objects.filter(user=user).exists():
                 todos.append({'text':'You are not part of any organization - create or join one!'})
@@ -97,6 +106,7 @@ class UserService():
         for proj in ProjectService.get_user_projects_in_draft_status(request_user):
             todos.append({'text':'Project {0} is still in draft status and needs to be completed and published.'.format(proj.name)})
 
-        # for task in ProjectTaskService.get_user_in_progress_tasks(request_user):
-        #     todos.append({'text':'task {0} from proj {1} in draft status'.format(task.name, task.project.name)})
+        for task in ProjectTaskService.get_user_in_progress_tasks(request_user):
+            todos.append({'text':'Task {0} from proj {1} in progress.'.format(task.name, task.project.name)})
+
         return todos

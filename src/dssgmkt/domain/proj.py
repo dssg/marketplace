@@ -57,6 +57,10 @@ class ProjectService():
         return user.is_authenticated and ProjectTaskRole.objects.filter(user=user, role=TaskRole.VOLUNTEER, task__project=proj).exists()
 
     @staticmethod
+    def user_is_volunteer(user):
+        return ProjectTaskRole.objects.filter(user=user, role=TaskRole.VOLUNTEER, task__stage__in=[TaskStatus.STARTED, TaskStatus.WAITING_REVIEW]).exists()
+
+    @staticmethod
     def user_is_project_scoper(user, proj):
         return user.is_authenticated and ProjectTaskRole.objects.filter(user=user, role=TaskRole.VOLUNTEER, task__project=proj, task__type=TaskType.SCOPING_TASK, task__stage__in=[TaskStatus.STARTED, TaskStatus.WAITING_REVIEW]).exists()
 
@@ -833,3 +837,8 @@ class ProjectTaskService():
                                           ProjectLogSource.VOLUNTEER,
                                           project_task_role.id,
                                           message)
+
+    @staticmethod
+    def get_user_in_progress_tasks(request_user):
+        return ProjectTask.objects.filter(projecttaskrole__user=request_user,
+                                    stage__in=[TaskStatus.STARTED, TaskStatus.WAITING_REVIEW])
