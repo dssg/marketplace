@@ -32,6 +32,36 @@
         </button>
       </form>
       {% load rules %}
+      {% has_perm 'project.publish' user project as perm_publish %}
+      {% if perm_publish and project.is_draft_status %}
+        <form id="publishproject">
+          {% csrf_token %}
+          <button type="submit"
+                  form="publishproject"
+                  formaction="{% url 'dssgmkt:proj_publish' project.id %}"
+                  formmethod="post"
+                  class="btn btn-success col-lg-12 mb-1">
+            <i class="material-icons" style="vertical-align: middle">publish</i>
+            Publish project
+          </button>
+        </form>
+      {% endif %}
+
+      {% has_perm 'project.approve_as_completed' user project as perm_approve %}
+      {% if perm_approve and project.is_waiting_review_status %}
+        <form id="completeproject">
+          {% csrf_token %}
+          <button type="submit"
+                  form="completeproject"
+                  formaction="{% url 'dssgmkt:proj_finish' project.id %}"
+                  formmethod="post"
+                  class="btn btn-success col-lg-12 mb-1">
+            <i class="material-icons" style="vertical-align: middle">done_all</i>
+            Finish project
+          </button>
+        </form>
+      {% endif %}
+
       {% has_perm 'project.information_edit' user project as perm_information_edit %}
       {% if perm_information_edit %}
         <a class="btn btn-success col-lg-12 mb-1"

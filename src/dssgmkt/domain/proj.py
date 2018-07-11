@@ -89,6 +89,12 @@ class ProjectService():
         return user.is_authenticated and (ProjectService.user_is_project_member(user, proj) or ProjectService.user_is_project_volunteer(user, proj))
 
     @staticmethod
+    def is_project_visible_by_user(user, project):
+        if project.status == ProjectStatus.DRAFT:
+            return ProjectService.user_is_project_owner(user, project)
+        return True
+
+    @staticmethod
     def get_project_officials(request_user, proj):
         return User.objects.filter(projectrole__project=proj, projectrole__role=ProjRole.OWNER).union(
             User.objects.filter(projecttaskrole__task__project=proj,
@@ -172,6 +178,22 @@ class ProjectService():
         validate_consistent_keys(project, ('id', projid))
         ensure_user_has_permission(request_user, project, 'project.information_edit')
         project.save()
+
+    @staticmethod
+    def publish_project(request_user, projid, project):
+        validate_consistent_keys(project, ('id', projid))
+        ensure_user_has_permission(request_user, project, 'project.publish')
+        if project.status == ProjectStatus.DRAFT:
+            project.status = ProjectStatus.NEW
+            project.save()
+
+    @staticmethod
+    def finish_project(request_user, projid, project):
+        validate_consistent_keys(project, ('id', projid))
+        ensure_user_has_permission(request_user, project, 'project.approve_as_completed')
+        if project.status == ProjectStatus.WAITING_REVIEW:
+            project.status = ProjectStatus.COMPLETED
+            project.save()
 
     @staticmethod
     def add_staff_member(request_user, projid, project_role):
@@ -332,7 +354,7 @@ class ProjectTaskService():
     @staticmethod
     def get_open_tasks(request_user, proj):
         return ProjectTask.objects.filter(accepting_volunteers = True,
-                                          project=proj).order_by('estimated_start_date')
+                                          project=proj).exclude(stage=TaskStatus.COMPLETED).order_by('estimated_start_date')
 
     @staticmethod
     def get_non_finished_tasks(request_user, proj):
@@ -367,16 +389,44 @@ class ProjectTaskService():
 
     @staticmethod
     def save_task_internal(request_user, projid, taskid, project_task):
-        project_task.save()
-        # TODO calculate the project status correctly based on all the tasks
-        # project_task.project.status = ProjectStatus.WAITING_REVIEW
-        # project_task.project.save()
-         # TODO move this to a separate method that modifies tasks (so effects are passed on to the project as needed)
+        with transaction.atomic():
+            current_task = ProjectTask.objects.get(pk=project_task.id)
+            project_task.save()
+            project = project_task.project
+            if project_task.stage != current_task.stage:
+                if project_task.type == TaskType.SCOPING_TASK:
+                    if project_task.stage == TaskStatus.COMPLETED:
+                        if project.status == ProjectStatus.WAITING_DESIGN_APPROVAL:
+                            # Open to volunteers all the defined tasks of the project
+                            domain_tasks = ProjectTask.objects.filter(project=project, type=TaskType.DOMAIN_WORK_TASK, stage=TaskStatus.NOT_STARTED)
+                            for t in domain_tasks:
+                                t.accepting_volunteers = True
+                                t.save()
+                            # Move the project to status waiting staff
+                            project.status = ProjectStatus.WAITING_STAFF
+                            project.save()
+                    elif project_task.stage == TaskStatus.WAITING_REVIEW:
+                        if project.status == ProjectStatus.DESIGN:
+                            # Move the project to status waiting design review
+                            project.status = ProjectStatus.WAITING_DESIGN_APPROVAL
+                            project.save()
+                elif project_task.type == TaskType.PROJECT_MANAGEMENT_TASK:
+                    pass
+                else:
+                    if project_task.stage == TaskStatus.COMPLETED:
+                        # Check that there are no more open tasks, then move the project to waiting review stage
+                        with_open_tasks = ProjectTask.objects.filter(project=project).exclude(stage=TaskStatus.COMPLETED).exists()
+                        if not with_open_tasks:
+                            project.status = ProjectStatus.WAITING_REVIEW
+                            project.save()
+
 
     @staticmethod
     def save_task(request_user, projid, taskid, project_task):
         validate_consistent_keys(project_task, 'Task not found in that project', ('id', taskid), (['project', 'id'], projid))
         ensure_user_has_permission(request_user, project_task.project, 'project.task_edit')
+        if project_task.stage == TaskStatus.COMPLETED:
+            raise ValueError('Cannot edit a completed task')
         ProjectTaskService.save_task_internal(request_user, projid, taskid, project_task)
         project = project_task.project
         message = "The task {0} from project {1} has been edited.".format(project_task.name, project.name)
@@ -415,7 +465,7 @@ class ProjectTaskService():
                                                         "You marked task {0} of project {1} as finished. The project staff will review it and you will be notified when the QA .".format(project_task.name, project.name),
                                                         NotificationSeverity.INFO,
                                                         NotificationSource.TASK,
-                                                        project_task.id)
+                                                        project_task.id) # TODO change this to notify all the volunteers working on this task
             ProjectService.add_project_change(request_user,
                                             project,
                                             ProjectLogType.COMPLETE,
@@ -432,12 +482,10 @@ class ProjectTaskService():
     def delete_task(request_user, projid, project_task):
         validate_consistent_keys(project_task, 'Task not found in that project', (['project', 'id'], projid))
         ensure_user_has_permission(request_user, project_task.project, 'project.task_delete')
+        if project_task.stage == TaskStatus.COMPLETED:
+            raise ValueError('Cannot delete a completed task')
         project_task.delete()
-        # TODO calculate the project status correctly based on all the tasks
-        # project_task.project.status = ProjectStatus.WAITING_REVIEW
-        # project_task.project.save()
-        # TODO move this to a separate method that modifies tasks (so effects are passed on to the project as needed)
-        # TODO What happens with volunteers working on this task?
+        # TODO What happens with volunteers working on this task? Do not allow deleting tasks with volunteers
         project = project_task.project
         message = "The task {0} has been deleted from project {1}.".format(project_task.name, project.name)
         NotificationService.add_multiuser_notification(ProjectService.get_project_members(request_user, project),
@@ -502,16 +550,20 @@ class ProjectTaskService():
         project_task = ProjectTask.objects.get(pk=taskid)
         project = Project.objects.get(pk=projid)
         ensure_user_has_permission(request_user, project_task.project, 'project.task_review_do')
-        with transaction.atomic(): # TODO check that there are no other active volunteers in this task before marking the task as completed? Some data model improvements are needed
+        with transaction.atomic():
+            # Tasks are allowed to have multiple volunteers. Any of them can
+            # mark the task as finished, and a successful QA review will apply
+            # to all of them.
             task_review.save()
             if task_review.review_result == ReviewStatus.ACCEPTED:
                 project_task.stage = TaskStatus.COMPLETED
+                project_task.accepting_volunteers = False
                 project_task.percentage_complete = 1.0
                 project_task.actual_effort_hours = task_review.volunteer_effort_hours
-                ProjectTaskService.save_task(request_user, projid, taskid, project_task) # TODO change this to save_task_internal
+                ProjectTaskService.save_task_internal(request_user, projid, taskid, project_task) # TODO change this to save_task_internal
             elif task_review.review_result == ReviewStatus.REJECTED:
                 project_task.stage = TaskStatus.STARTED
-                ProjectTaskService.save_task(request_user, projid, taskid, project_task) # TODO change this to save_task_internal
+                ProjectTaskService.save_task_internal(request_user, projid, taskid, project_task) # TODO change this to save_task_internal
 
     @staticmethod
     def accept_task_review(request_user, projid, taskid, task_review): # TODO check that the review request is in status NEW
@@ -532,7 +584,7 @@ class ProjectTaskService():
                                                     "Congratulations! Your task {0} of project {1} has been reviewed by the project staff and accepted as finished, so your work has been completed. The staff comments are: {2}.".format(project_task.name, project.name, task_review.public_reviewer_comments),
                                                     NotificationSeverity.INFO,
                                                     NotificationSource.TASK,
-                                                    project_task.id)
+                                                    project_task.id) # TODO change this to notify all the volunteers working on this task, not just the one that marked it as completed
         ProjectService.add_project_change(request_user,
                                           project,
                                           ProjectLogType.COMPLETE,
@@ -566,6 +618,11 @@ class ProjectTaskService():
                                           ProjectLogSource.TASK_REVIEW,
                                           task_review.id,
                                           message)
+        if project_task.type == TaskType.SCOPING_TASK:
+            if project.status == ProjectStatus.WAITING_DESIGN_APPROVAL:
+                # Move project to status scoping
+                project.status = ProjectStatus.DESIGN
+                project.save()
 
     @staticmethod
     def cancel_volunteering(request_user, projid, taskid, project_task_role):
@@ -656,6 +713,19 @@ class ProjectTaskService():
                 task_role.task = project_task
                 task_role.user = volunteer_application.volunteer
                 task_role.save()
+                if project_task.stage == TaskStatus.NOT_STARTED:
+                    project_task.stage = TaskStatus.STARTED
+                    project_task.save()
+                if project.status == ProjectStatus.NEW:
+                    if project_task.type == TaskType.SCOPING_TASK:
+                        # Move project to status scoping
+                        project.status = ProjectStatus.DESIGN
+                        project.save()
+                elif project.status == ProjectStatus.WAITING_STAFF:
+                    if project_task.type == TaskType.DOMAIN_WORK_TASK:
+                        # Move project to status in progress
+                        project.status = ProjectStatus.IN_PROGRESS
+                        project.save()
 
     # TODO remove all the permission validation in accept/reject methods that delegate on a save method? Document it clearly
     @staticmethod
@@ -721,6 +791,8 @@ class ProjectTaskService():
         project_task = ProjectTask.objects.get(pk=taskid)
         validate_consistent_keys(project_task, (['project', 'id'], projid))
         ensure_user_has_permission(request_user, project_task.project, 'project.task_requirements_edit')
+        if project_task.stage == TaskStatus.COMPLETED:
+            raise ValueError('Cannot edit a completed task')
         requirement.task = project_task
         try:
             requirement.save()
@@ -745,8 +817,10 @@ class ProjectTaskService():
         validate_consistent_keys(requirement, (['task', 'id'], taskid), (['task', 'project', 'id'], projid))
         project = Project.objects.get(pk=projid)
         ensure_user_has_permission(request_user, project, 'project.task_requirements_edit')
-        requirement.save()
         project_task = requirement.task
+        if project_task.stage == TaskStatus.COMPLETED:
+            raise ValueError('Cannot edit a completed task')
+        requirement.save()
         message = "The task requirement {0} of task {1} of project {2} was edited.".format(requirement.standard_display_name(), project_task.name, project.name)
         NotificationService.add_multiuser_notification(ProjectService.get_project_members(request_user, project),
                                                  message,
@@ -765,8 +839,10 @@ class ProjectTaskService():
         validate_consistent_keys(requirement, (['task', 'id'], taskid), (['task', 'project', 'id'], projid))
         project = Project.objects.get(pk=projid)
         ensure_user_has_permission(request_user, project, 'project.task_requirements_delete')
-        requirement.delete()
         project_task = requirement.task
+        if project_task.stage == TaskStatus.COMPLETED:
+            raise ValueError('Cannot edit a completed task')
+        requirement.delete()
         message = "The task requirement {0} of task {1} of project {2} was deleted.".format(requirement.standard_display_name(), project_task.name, project.name)
         NotificationService.add_multiuser_notification(ProjectService.get_project_members(request_user, project),
                                                  message,
@@ -794,8 +870,10 @@ class ProjectTaskService():
         validate_consistent_keys(project_task_role, (['task', 'project', 'id'], projid))
         project = Project.objects.get(pk=projid)
         ensure_user_has_permission(request_user, project, 'project.volunteers_edit')
-        project_task_role.save()
         project_task = project_task_role.task
+        if project_task.stage == TaskStatus.COMPLETED:
+            raise ValueError('Cannot edit the role of a completed task')
+        project_task_role.save()
         message = "The volunteer {0} of project {1} has been assigned to the task {2}.".format(project_task_role.user.standard_display_name(), project.name, project_task.name)
         NotificationService.add_multiuser_notification(ProjectService.get_project_members(request_user, project),
                                                     message,
@@ -815,12 +893,14 @@ class ProjectTaskService():
                                           message)
 
     @staticmethod
-    def delete_project_task_role(request_user, projid, taskid, project_task_role):
+    def delete_project_task_role(request_user, projid, taskid, project_task_role): # TODO check the role is of an active task - we cannot delete roles of completed tasks
         validate_consistent_keys(project_task_role, (['task', 'id'], taskid), (['task', 'project', 'id'], projid))
         project = Project.objects.get(pk=projid)
         ensure_user_has_permission(request_user, project, 'project.volunteers_remove')
-        project_task_role.delete()
         project_task = project_task_role.task
+        if project_task.stage == TaskStatus.COMPLETED:
+            raise ValueError('Cannot delete the role of a completed task')
+        project_task_role.delete()
         message = "The volunteer {0} has been removed from task {1} of project {2}.".format(project_task_role.user.standard_display_name(), project_task.name, project.name)
         NotificationService.add_multiuser_notification(ProjectService.get_project_members(request_user, project),
                                                     message,

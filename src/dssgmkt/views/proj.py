@@ -101,11 +101,13 @@ def add_project_task_common_context(request, project_task, page_tab, context):
     context['project_task'] = project_task
     return context
 
-class ProjectView(generic.ListView): ## This is a listview because it is actually showing the list of open tasks
+class ProjectView(PermissionRequiredMixin, generic.ListView): ## This is a listview because it is actually showing the list of open tasks
     model = ProjectTask
     template_name = 'dssgmkt/proj_info.html'
     context_object_name = 'project_tasks'
     paginate_by = 25
+    permission_required = 'project.view'
+    raise_exception = True
     allow_empty = True
 
     def get_queryset(self):
@@ -118,6 +120,9 @@ class ProjectView(generic.ListView): ## This is a listview because it is actuall
         context['breadcrumb'] = project_breadcrumb(project)
         add_project_common_context(self.request, project, 'info', context)
         return context
+
+    def get_permission_object(self):
+        return get_project(self.request, self.kwargs['proj_pk'])
 
 class ProjectLogView(PermissionRequiredMixin, generic.ListView):
     template_name = 'dssgmkt/proj_log.html'
@@ -635,7 +640,7 @@ def project_staff_view(request, proj_pk):
 def project_volunteers_view(request, proj_pk):
     if request.method == 'GET':
         project = get_project(request, proj_pk)
-
+        # TODO change this so the list of volunteers either only shows the active ones or it shows all but does not allow to remove completed volunteers
         volunteers = ProjectService.get_all_project_volunteers(request.user, proj_pk)
         volunteers_page = paginate(request, volunteers, request_key='volunteers_page', page_size=20)
 
@@ -863,6 +868,32 @@ def follow_project_view(request, proj_pk):
     elif request.method == 'POST':
         try:
             ProjectService.toggle_follower(request.user, proj_pk)
+            return redirect('dssgmkt:proj_info', proj_pk=proj_pk)
+        except KeyError:
+            messages.error(request, 'There was an error while processing your request.')
+            return redirect('dssgmkt:proj_info', proj_pk=proj_pk)
+
+@permission_required('project.publish', raise_exception=True, fn=objectgetter(Project, 'proj_pk'))
+def publish_project_view(request, proj_pk):
+    if request.method == 'GET':
+        raise Http404
+    elif request.method == 'POST':
+        try:
+            project = get_project(request, proj_pk)
+            ProjectService.publish_project(request.user, proj_pk, project)
+            return redirect('dssgmkt:proj_info', proj_pk=proj_pk)
+        except KeyError:
+            messages.error(request, 'There was an error while processing your request.')
+            return redirect('dssgmkt:proj_info', proj_pk=proj_pk)
+
+@permission_required('project.approve_as_completed', raise_exception=True, fn=objectgetter(Project, 'proj_pk'))
+def finish_project_view(request, proj_pk):
+    if request.method == 'GET':
+        raise Http404
+    elif request.method == 'POST':
+        try:
+            project = get_project(request, proj_pk)
+            ProjectService.finish_project(request.user, proj_pk, project)
             return redirect('dssgmkt:proj_info', proj_pk=proj_pk)
         except KeyError:
             messages.error(request, 'There was an error while processing your request.')

@@ -2,6 +2,9 @@
 
 <div class="status-component col-lg-12 border border-round border-light mt-3 mb-3">
   <div class="status-row col-lg-12">
+    {% if project.is_draft_status %}
+      <span class="status rounded-top border-right status-active bg-danger">Draft</span>
+    {% endif %}
     <span class="status rounded-top border-right {% if project.is_new_status %}status-active bg-success{% else %}border-bottom{% endif %}">New</span>
     <span class="status rounded-top border-right {% if project.is_design_status %}status-active bg-success{% else %}border-bottom{% endif %}">Scoping</span>
     <span class="status rounded-top border-right {% if project.is_waiting_design_approval_status %}status-active bg-success{% else %}border-bottom{% endif %}">Scoping QA</span>
@@ -9,10 +12,17 @@
     <span class="status rounded-top border-right {% if project.is_in_progress_status %}status-active bg-success{% else %}border-bottom{% endif %}">In progress</span>
     <span class="status rounded-top border-right {% if project.is_waiting_review_status %}status-active bg-success{% else %}border-bottom{% endif %}">Final QA</span>
     {# TODO fix the 1px-off right border on the last element #}
-    <span class="status rounded-top {% if project.is_completed_status %}status-active bg-success{% else %}border-bottom{% endif %}">Completed</span>
+
+    {% if project.is_expired_status %}
+      <span class="status rounded-top border-right status-active bg-danger">Expired</span>
+    {% else %}
+      <span class="status rounded-top {% if project.is_completed_status %}status-active bg-success{% else %}border-bottom{% endif %}">Completed</span>
+    {% endif %}
   </div>
-  <div class="status-description col-lg-12 bg-success text-white rounded-bottom">
-    {% if project.is_new_status %}
+  <div class="status-description col-lg-12 {% if project.is_draft_status or project.is_expired_status %}bg-danger{% else %}bg-success{% endif %} text-white rounded-bottom">
+    {% if project.is_draft_status %}
+      This project is in draft status and it is only visible to project members
+    {% elif project.is_new_status %}
       This project is waiting to be scoped
     {% elif project.is_design_status %}
       This project is being scoped
@@ -26,6 +36,8 @@
       This project is pending the final review
     {% elif project.is_completed_status %}
       This project is completed
+    {% elif project.is_expired_status %}
+      This project is expired
     {% endif %}
     {# TODO missing non-public states when the user is the project owner, like Draft, Expired, etc. #}
   </div>

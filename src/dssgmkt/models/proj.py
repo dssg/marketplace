@@ -192,6 +192,9 @@ class Project(models.Model):
     def is_completed(self):
         return self.status == ProjectStatus.COMPLETED
 
+    def is_draft_status(self):
+        return self.status == ProjectStatus.DRAFT
+
     def is_new_status(self):
         return self.status == ProjectStatus.NEW
 
@@ -212,6 +215,9 @@ class Project(models.Model):
 
     def is_completed_status(self):
         return self.status == ProjectStatus.COMPLETED
+
+    def is_expired_status(self):
+        return self.status == ProjectStatus.EXPIRED
 
 class ProjectLogSource():
     VOLUNTEER_APPLICATION = 'VA'

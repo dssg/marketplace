@@ -3,7 +3,10 @@ from rules import add_perm, predicate
 from dssgmkt.domain.proj import ProjectService, ProjectTaskService
 
 
+add_perm('project.view', ProjectService.is_project_visible_by_user)
 add_perm('project.information_edit', ProjectService.user_is_project_owner)
+add_perm('project.publish', ProjectService.user_is_project_owner)
+add_perm('project.approve_as_completed', ProjectService.user_is_project_official)
 add_perm('project.log_view', ProjectService.user_is_project_member)
 add_perm('project.comment_add', ProjectService.user_is_project_commenter)
 add_perm('project.volunteer_instructions_view', ProjectService.user_is_project_volunteer)
