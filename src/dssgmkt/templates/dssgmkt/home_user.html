@@ -21,11 +21,19 @@
             <i class="material-icons" style="vertical-align: middle">person_add</i>
             Create a new project
           </a>
-      </a>
+      </div>
       <div class="col-lg-12">
         <h3 class="section-header">My pending TODOs</h3>
+        {% if todos %}
+          {% for todo in todos %}
+            <div class="alert alert-info">
+              {{ todo.text }}
+            </div>
+          {% endfor %}
+        {% else %}
+          Congratulations! You are all caught up.
+        {% endif %}
       </div>
-    </div>
   </div>
     <div class="col-lg-7">
     {% if notification_list %}

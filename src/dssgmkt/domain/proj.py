@@ -284,6 +284,37 @@ class ProjectService():
         else:
             raise KeyError('Project not found')
 
+    @staticmethod
+    def get_user_projects_with_pending_volunteer_requests(request_user):
+        return Project.objects.filter(projectrole__user=request_user,
+                                      projectrole__role=ProjRole.OWNER,
+                                      projecttask__volunteerapplication__status=ReviewStatus.NEW
+                        ).union(Project.objects.filter(
+                            projecttask__projecttaskrole__user=request_user,
+                            projecttask__stage__in=[TaskStatus.STARTED, TaskStatus.WAITING_REVIEW],
+                            projecttask__type__in=[TaskType.SCOPING_TASK, TaskType.PROJECT_MANAGEMENT_TASK],
+                            projecttask__volunteerapplication__status=ReviewStatus.NEW
+                        )).distinct()
+
+    @staticmethod
+    def get_user_projects_with_pending_task_requests(request_user):
+        return Project.objects.filter(projectrole__user=request_user,
+                                      projectrole__role=ProjRole.OWNER,
+                                      projecttask__projecttaskreview__review_result=ReviewStatus.NEW
+                        ).union(Project.objects.filter(
+                            projecttask__projecttaskrole__user=request_user,
+                            projecttask__stage__in=[TaskStatus.STARTED, TaskStatus.WAITING_REVIEW],
+                            projecttask__type__in=[TaskType.SCOPING_TASK, TaskType.PROJECT_MANAGEMENT_TASK],
+                            projecttask__projecttaskreview__review_result=ReviewStatus.NEW
+                        )).distinct()
+
+    @staticmethod
+    def get_user_projects_in_draft_status(request_user):
+        return Project.objects.filter(projectrole__user=request_user,
+                                      projectrole__role=ProjRole.OWNER,
+                                      status=ProjectStatus.DRAFT
+                        ).distinct()
+
 class ProjectTaskService():
     @staticmethod
     def get_project_task(request_user, projid, taskid):

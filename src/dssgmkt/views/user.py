@@ -99,6 +99,7 @@ class UserHomeView(generic.ListView): ## This is a listview because it is actual
         context['breadcrumb'] = build_breadcrumb([home_link(include_link=False)])
         for notification in context['notification_list']:
             notification.url = get_url_for_notification(notification.source, notification.target_id)
+        context['todos'] = UserService.get_user_todos(self.request.user, self.request.user)
         return context
 
     def render_to_response(self, context):

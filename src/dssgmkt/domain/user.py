@@ -4,10 +4,15 @@ from ..models.common import (
     ReviewStatus,
 )
 from ..models.user import (
-    User, VolunteerProfile, VolunteerSkill,
+    User, UserType, VolunteerProfile, VolunteerSkill,
+)
+from ..models.org import (
+    OrganizationRole,
 )
 
 from .common import validate_consistent_keys
+from .org import OrganizationService
+from .proj import ProjectService, ProjectTaskService
 from dssgmkt.authorization.common import ensure_user_has_permission
 
 class UserService():
@@ -68,3 +73,30 @@ class UserService():
         validate_consistent_keys(volunteer_skill, ('id', skill_pk), (['user','id'], user_pk))
         ensure_user_has_permission(request_user, volunteer_skill.user, 'user.is_same_user')
         volunteer_skill.delete()
+
+    @staticmethod
+    def get_user_todos(request_user, user):
+        ensure_user_has_permission(request_user, user, 'user.is_same_user')
+        todos = []
+        if user.initial_type == UserType.VOLUNTEER:
+            if not VolunteerProfile.objects.filter(user=user).exists():
+                todos.append({'text':'You have not created a volunteer profile yet!'})
+        elif user.initial_type == UserType.ORGANIZATION:
+            if not OrganizationRole.objects.filter(user=user).exists():
+                todos.append({'text':'You are not part of any organization - create or join one!'})
+
+        for org in OrganizationService.get_user_organizations_with_pending_requests(request_user):
+            todos.append({'text':'Organization {0} has pending membership request reviews.'.format(org.name)})
+
+        for proj in ProjectService.get_user_projects_with_pending_volunteer_requests(request_user):
+            todos.append({'text':'Project {0} has pending volunteer application reviews'.format(proj.name)})
+
+        for proj in ProjectService.get_user_projects_with_pending_task_requests(request_user):
+            todos.append({'text':'Project {0} has pending task QA reviews'.format(proj.name)})
+
+        for proj in ProjectService.get_user_projects_in_draft_status(request_user):
+            todos.append({'text':'Project {0} is still in draft status and needs to be completed and published.'.format(proj.name)})
+
+        # for task in ProjectTaskService.get_user_in_progress_tasks(request_user):
+        #     todos.append({'text':'task {0} from proj {1} in draft status'.format(task.name, task.project.name)})
+        return todos

@@ -202,3 +202,10 @@ class OrganizationService():
                                                     NotificationSeverity.INFO,
                                                     NotificationSource.ORGANIZATION,
                                                     organization_role.organization.id)
+
+
+    @staticmethod
+    def get_user_organizations_with_pending_requests(request_user):
+        return Organization.objects.filter(organizationrole__user=request_user,
+                                            organizationrole__role=OrgRole.ADMINISTRATOR,
+                                            organizationmembershiprequest__status=ReviewStatus.NEW).distinct()
