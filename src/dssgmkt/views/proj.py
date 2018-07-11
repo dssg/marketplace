@@ -873,28 +873,54 @@ def follow_project_view(request, proj_pk):
             messages.error(request, 'There was an error while processing your request.')
             return redirect('dssgmkt:proj_info', proj_pk=proj_pk)
 
+
 @permission_required('project.publish', raise_exception=True, fn=objectgetter(Project, 'proj_pk'))
 def publish_project_view(request, proj_pk):
-    if request.method == 'GET':
-        raise Http404
-    elif request.method == 'POST':
+    project = get_project(request, proj_pk)
+    if request.method == 'POST':
         try:
-            project = get_project(request, proj_pk)
             ProjectService.publish_project(request.user, proj_pk, project)
             return redirect('dssgmkt:proj_info', proj_pk=proj_pk)
         except KeyError:
             messages.error(request, 'There was an error while processing your request.')
             return redirect('dssgmkt:proj_info', proj_pk=proj_pk)
+    elif request.method == 'GET':
+        pass
+    if project:
+        return render(request, 'dssgmkt/proj_publish.html',
+                        add_project_common_context(
+                            request,
+                            project,
+                            'info',
+                            {
+                                'breadcrumb': project_breadcrumb(project,
+                                                                    ('Publish project', None)),
+                            }))
+    else:
+        raise Http404
+
 
 @permission_required('project.approve_as_completed', raise_exception=True, fn=objectgetter(Project, 'proj_pk'))
 def finish_project_view(request, proj_pk):
-    if request.method == 'GET':
-        raise Http404
-    elif request.method == 'POST':
+    project = get_project(request, proj_pk)
+    if request.method == 'POST':
         try:
-            project = get_project(request, proj_pk)
             ProjectService.finish_project(request.user, proj_pk, project)
             return redirect('dssgmkt:proj_info', proj_pk=proj_pk)
         except KeyError:
             messages.error(request, 'There was an error while processing your request.')
             return redirect('dssgmkt:proj_info', proj_pk=proj_pk)
+    elif request.method == 'GET':
+        pass
+    if project:
+        return render(request, 'dssgmkt/proj_finish.html',
+                        add_project_common_context(
+                            request,
+                            project,
+                            'info',
+                            {
+                                'breadcrumb': project_breadcrumb(project,
+                                                                    ('Finish project', None)),
+                            }))
+    else:
+        raise Http404
