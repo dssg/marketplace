@@ -21,7 +21,7 @@ from .common import build_breadcrumb, home_link, paginate
 
 from dssgmkt.domain.user import UserService
 from dssgmkt.domain.proj import ProjectTaskService
-from dssgmkt.domain.org import OrganizationService 
+from dssgmkt.domain.org import OrganizationService
 from dssgmkt.domain.notifications import NotificationService
 
 
@@ -320,8 +320,8 @@ def create_volunteer_profile_view(request, user_pk):
         raise Http404
     elif request.method == 'POST':
         try:
-            UserService.create_volunteer_profile(request.user, user_pk)
-            return redirect('dssgmkt:user_profile', user_pk=user_pk)
+            volunteer_profile = UserService.create_volunteer_profile(request.user, user_pk)
+            return redirect('dssgmkt:user_volunteer_profile_edit', user_pk=user_pk, volunteer_pk=volunteer_profile.id)
         except KeyError:
             messages.error(request, 'There was an error while processing your request.')
             return redirect('dssgmkt:user_profile', user_pk=user_pk)

@@ -38,6 +38,7 @@ class UserService():
             volunteer_profile.user = request_user
             try:
                 volunteer_profile.save()
+                return volunteer_profile
             except IntegrityError:
                 raise ValueError('User already has a volunteer profile')
 
@@ -86,10 +87,10 @@ class UserService():
         ensure_user_has_permission(request_user, user, 'user.is_same_user')
         todos = []
         if user.initial_type == UserType.VOLUNTEER:
-            if not UserService.user_is_volunteer(user):
+            if not UserService.user_has_volunteer_profile(request_user):
                 todos.append({'text':'You have not created a volunteer profile yet!'})
             else:
-                if not ProjectService.user_has_volunteer_profile(request_user):
+                if not ProjectService.user_is_volunteer(request_user):
                     todos.append({'text':'You are not volunteering for any organization, find a new project.'})
                 if not UserService.user_has_skills(request_user):
                     todos.append({'text':'You have no listed skills, edit your profile and add some.'})

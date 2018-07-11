@@ -6,11 +6,13 @@
     <div class="col-lg-5">
       <div class="col-lg-12">
         {% if user_is_any_organization_member %}
+          {# TODO allow to create new projects here? #}
           <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'dssgmkt:org_list' %}">
             <i class="material-icons" style="vertical-align: middle">business_center</i>
             Create a new project
           </a>
         {% else %}
+          {# TODO allow to create new organizations #}
           <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'dssgmkt:org_list' %}">
             <i class="material-icons" style="vertical-align: middle">business</i>
             Create new organization
@@ -26,10 +28,18 @@
             Search for projects
           </a>
         {% else %}
-          <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'dssgmkt:org_list' %}">
-            <i class="material-icons" style="vertical-align: middle">person_add</i>
-            Create my volunteer profile
-          </a>
+          <form id="addvolunteerprofile">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit"
+                    form="addvolunteerprofile"
+                    formaction="{% url 'dssgmkt:user_volunteer_profile_create' user.id %}"
+                    formmethod="post"
+                    class="btn btn-success col-lg-12 mb-1">
+              <i class="material-icons" style="vertical-align: middle">person_add</i>
+              Create a volunteer profile
+            </button>
+          </form>
         {% endif %}
       </div>
       <div class="col-lg-12">
