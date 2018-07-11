@@ -521,6 +521,9 @@ class ProjectTaskService():
             project_task.estimated_start_date = date.today()
             project_task.estimated_end_date = date.today()
             project_task.save()
+            if project.status == ProjectStatus.WAITING_REVIEW:
+                project.status = ProjectStatus.IN_PROGRESS
+                project.save()
             message = "A new task {0} has been added to project {1}.".format(project_task.name, project.name)
             NotificationService.add_multiuser_notification(ProjectService.get_project_members(request_user, project),
                                                      message,
