@@ -729,5 +729,8 @@ class ProjectTaskRole(models.Model):
         # help_text="Project task this role refers to.",
     )
 
+    def __str__(self):
+        return self.user.standard_display_name() + "-" + self.task.name + "-" + self.get_role_display()
+
     class Meta:
         unique_together = ('user','task')

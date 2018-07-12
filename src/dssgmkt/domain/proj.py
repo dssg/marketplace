@@ -403,10 +403,12 @@ class ProjectTaskService():
 
     @staticmethod
     def get_public_tasks(request_user, proj):
+        print(ProjectTaskRole.objects.filter(task__project=proj))
         return ProjectTask.objects.filter(project=proj) \
                                     .exclude(stage=TaskStatus.DELETED) \
-                                    .annotate(volunteer_count=Count('projecttaskrole', filter=Q(projecttaskrole__role=TaskRole.VOLUNTEER))) \
-                                    .annotate(already_applied=Count('volunteerapplication', filter=Q(volunteerapplication__volunteer=request_user, volunteerapplication__status=ReviewStatus.NEW))) \
+                                    .annotate(volunteer_count=Count('projecttaskrole', filter=Q(projecttaskrole__role=TaskRole.VOLUNTEER), distinct=True)) \
+                                    .annotate(already_applied=Count('volunteerapplication', filter=Q(volunteerapplication__volunteer=request_user, volunteerapplication__status=ReviewStatus.NEW), distinct=True)) \
+                                    .annotate(already_volunteer=Count('projecttaskrole', filter=Q(projecttaskrole__user=request_user), distinct=True)) \
                                     .order_by('-accepting_volunteers', '-stage')
 
     @staticmethod

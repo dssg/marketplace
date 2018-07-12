@@ -233,6 +233,9 @@ class VolunteerProfile(models.Model):
         help_text="User this volunteer profile is attached to.",
     )
 
+    def is_accepted(self):
+        return self.volunteer_status == ReviewStatus.ACCEPTED
+
 
 class VolunteerSkill(models.Model):
     level = models.IntegerField(
