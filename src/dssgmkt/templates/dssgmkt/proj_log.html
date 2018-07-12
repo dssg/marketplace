@@ -30,6 +30,10 @@
               <i class="material-icons" style="vertical-align: middle">how_to_vote</i>
             {% elif log.is_source_volunteer %}
               <i class="material-icons" style="vertical-align: middle">person</i>
+            {% elif log.is_source_status %}
+              <i class="material-icons" style="vertical-align: middle">layers</i>
+            {% elif log.is_source_information %}
+              <i class="material-icons" style="vertical-align: middle">info</i>
             {% endif %}
           </div>
           <div class="col-lg-8">

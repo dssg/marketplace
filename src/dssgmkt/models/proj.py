@@ -225,6 +225,8 @@ class ProjectLogSource():
     TASK = 'TK'
     TASK_REVIEW = 'TK'
     VOLUNTEER = 'VO'
+    STATUS = 'SU'
+    INFORMATION = 'IN'
 
     def get_choices():
         return (
@@ -233,6 +235,8 @@ class ProjectLogSource():
                     (ProjectLogSource.STAFF, 'Staff'),
                     (ProjectLogSource.TASK_REVIEW, 'Task review'),
                     (ProjectLogSource.VOLUNTEER, 'Volunteer'),
+                    (ProjectLogSource.STATUS, 'Status'),
+                    (ProjectLogSource.INFORMATION, 'Information'),
                 )
 
 class ProjectLogType():
@@ -312,6 +316,12 @@ class ProjectLog(models.Model):
 
     def is_source_staff(self):
         return self.change_target == ProjectLogSource.STAFF
+
+    def is_source_status(self):
+        return self.change_target == ProjectLogSource.STATUS
+
+    def is_source_information(self):
+        return self.change_target == ProjectLogSource.INFORMATION
 
     def __str__(self):
         return self.change_date.strftime('%Y-%m-%d %H:%M') + ": " + self.change_description

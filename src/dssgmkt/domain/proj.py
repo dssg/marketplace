@@ -191,7 +191,7 @@ class ProjectService():
         ProjectService.add_project_change(request_user,
                                            project,
                                            ProjectLogType.EDIT,
-                                           ProjectLogSource.PROJECT,
+                                           ProjectLogSource.INFORMATION,
                                            project.id,
                                            message)
 
@@ -215,7 +215,7 @@ class ProjectService():
         ProjectService.add_project_change(request_user,
                                            project,
                                            ProjectLogType.ADD,
-                                           ProjectLogSource.PROJECT,
+                                           ProjectLogSource.STATUS,
                                            project.id,
                                            message)
 
@@ -236,7 +236,7 @@ class ProjectService():
         ProjectService.add_project_change(request_user,
                                            project,
                                            ProjectLogType.COMPLETE,
-                                           ProjectLogSource.PROJECT,
+                                           ProjectLogSource.STATUS,
                                            project.id,
                                            message)
 
@@ -466,7 +466,7 @@ class ProjectTaskService():
                             ProjectService.add_project_change(request_user,
                                                                project,
                                                                ProjectLogType.EDIT,
-                                                               ProjectLogSource.PROJECT,
+                                                               ProjectLogSource.STATUS,
                                                                project.id,
                                                                message)
                     elif project_task.stage == TaskStatus.WAITING_REVIEW:
@@ -483,7 +483,7 @@ class ProjectTaskService():
                             ProjectService.add_project_change(request_user,
                                                                project,
                                                                ProjectLogType.EDIT,
-                                                               ProjectLogSource.PROJECT,
+                                                               ProjectLogSource.STATUS,
                                                                project.id,
                                                                message)
                 elif project_task.type == TaskType.PROJECT_MANAGEMENT_TASK:
@@ -504,7 +504,7 @@ class ProjectTaskService():
                             ProjectService.add_project_change(request_user,
                                                                project,
                                                                ProjectLogType.EDIT,
-                                                               ProjectLogSource.PROJECT,
+                                                               ProjectLogSource.STATUS,
                                                                project.id,
                                                                message)
 
@@ -624,7 +624,7 @@ class ProjectTaskService():
                 ProjectService.add_project_change(request_user,
                                                    project,
                                                    ProjectLogType.EDIT,
-                                                   ProjectLogSource.PROJECT,
+                                                   ProjectLogSource.STATUS,
                                                    project.id,
                                                    message)
             message = "A new task {0} has been added to project {1}.".format(project_task.name, project.name)
@@ -744,7 +744,7 @@ class ProjectTaskService():
                 ProjectService.add_project_change(request_user,
                                                    project,
                                                    ProjectLogType.EDIT,
-                                                   ProjectLogSource.PROJECT,
+                                                   ProjectLogSource.STATUS,
                                                    project.id,
                                                    message)
 
@@ -858,7 +858,7 @@ class ProjectTaskService():
                         ProjectService.add_project_change(request_user,
                                                            project,
                                                            ProjectLogType.EDIT,
-                                                           ProjectLogSource.PROJECT,
+                                                           ProjectLogSource.STATUS,
                                                            project.id,
                                                            message)
                 elif project.status == ProjectStatus.WAITING_STAFF:
@@ -875,7 +875,7 @@ class ProjectTaskService():
                         ProjectService.add_project_change(request_user,
                                                            project,
                                                            ProjectLogType.EDIT,
-                                                           ProjectLogSource.PROJECT,
+                                                           ProjectLogSource.STATUS,
                                                            project.id,
                                                            message)
 
