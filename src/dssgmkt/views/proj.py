@@ -123,7 +123,8 @@ def add_project_common_context(request, project, page_tab, context):
     return context
 
 def add_project_task_common_context(request, project_task, page_tab, context):
-    add_project_common_context(request, project_task.project, page_tab, context)
+    # We get the project from the domain layer so it comes back properly annotated
+    add_project_common_context(request, get_project(request, project_task.project.id), page_tab, context)
     context['project_task'] = project_task
     context['project_tasks'] = ProjectTaskService.get_project_tasks_summary(request.user, project_task.project)
     return context
