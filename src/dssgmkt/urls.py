@@ -31,6 +31,7 @@ urlpatterns = [
     path('proj/<int:proj_pk>/discussion/add', proj.project_comments_view, name='proj_discussion_add'),
     path('proj/<int:proj_pk>/deliverables/', proj.ProjectDeliverablesView.as_view(), name='proj_deliverables'),
     path('proj/<int:proj_pk>/instructions/', proj.ProjectVolunteerInstructionsView.as_view(), name='proj_instructions'),
+    path('proj/<int:proj_pk>/instructions/<int:task_pk>/', proj.ProjectVolunteerTaskDetailView.as_view(), name='proj_instructions_task'),
     path('proj/<int:proj_pk>/task/', proj.ProjectTaskIndex.as_view(), name='proj_task_list'),
     path('proj/<int:proj_pk>/task/add', proj.create_default_project_task, name='proj_task_add'),
     path('proj/<int:proj_pk>/task/<int:task_pk>/', proj.ProjectTaskDetailView.as_view(), name='proj_task'),

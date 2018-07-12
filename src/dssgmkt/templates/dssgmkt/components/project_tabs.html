@@ -76,9 +76,9 @@
   {% if perm_volunteer_instructions_view %}
     <li class="nav-item">
       {% if page_tab == 'instructions' %}
-        <span class="nav-link active">Volunteer instructions</span>
+        <span class="nav-link active">My tasks</span>
       {% else %}
-        <a class="nav-link" href="{% url 'dssgmkt:proj_instructions' project.id %}">Volunteer instructions</a>
+        <a class="nav-link" href="{% url 'dssgmkt:proj_instructions' project.id %}">My tasks</a>
       {% endif %}
     </li>
   {% endif %}

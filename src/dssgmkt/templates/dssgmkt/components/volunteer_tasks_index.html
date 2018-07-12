@@ -1,0 +1,11 @@
+{% if project_tasks %}
+
+<ul class="nav nav-pills flex-column">
+  {% for task in project_tasks %}
+    <li class="nav-item col-lg-12">
+      <a class="nav-link {% if task == project_task %}active{% endif %}" href="{% url 'dssgmkt:proj_instructions_task' project.id task.id %}">{{ task.name }}</a>
+    </li>
+  {% endfor %}
+</ul>
+
+{% endif %}

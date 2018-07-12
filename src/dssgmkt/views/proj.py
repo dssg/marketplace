@@ -37,7 +37,10 @@ def volunteers_link(project, include_link=True):
     return ('Volunteers', reverse('dssgmkt:proj_volunteers', args=[project.id]) if include_link else None)
 
 def volunteer_instructions_link(project, include_link=True):
-    return ('Volunteer instructions', reverse('dssgmkt:proj_instructions', args=[project.id]) if include_link else None)
+    return ('My tasks', reverse('dssgmkt:proj_instructions', args=[project.id]) if include_link else None)
+
+def volunteer_instructions_task_link(project_task, include_link=True):
+    return (project_task.name, reverse('dssgmkt:proj_instructions_task', args=[project_task.project.id, project_task.id]) if include_link else None)
 
 def tasks_link(project, include_link=True):
     return ('Tasks', reverse('dssgmkt:proj_task_list', args=[project.id]) if include_link else None)
@@ -62,6 +65,16 @@ def project_task_breadcrumb(project_task):
                         tasks_link(project_task.project),
                         (project_task.name, None)
                         ]
+    return build_breadcrumb(breadcrumb_items)
+
+def project_volunteer_task_breadcrumb(project_task, *items):
+    breadcrumb_items = [home_link(),
+                        projects_link(),
+                        project_link(project_task.project),
+                        volunteer_instructions_link(project_task.project),
+                        volunteer_instructions_task_link(project_task, items)
+                        ]
+    breadcrumb_items += items
     return build_breadcrumb(breadcrumb_items)
 
 def get_project(request, proj_pk):
@@ -223,11 +236,33 @@ class ProjectVolunteerInstructionsView(PermissionRequiredMixin, generic.ListView
         context = super().get_context_data(**kwargs)
         project = get_project(self.request, self.kwargs['proj_pk'])
         context['breadcrumb'] = project_breadcrumb(project, ('Volunteer instructions', None))
+        context['project_tasks'] = ProjectTaskService.get_volunteer_all_project_tasks(self.request.user, self.request.user, project)
+        # context['task_volunteers'] = ProjectTaskService.get_task_volunteers(self.request.user, self.kwargs['task_pk'])
         add_project_common_context(self.request, project, 'instructions', context)
         return context
 
     def get_permission_object(self):
         return get_project(self.request, self.kwargs['proj_pk'])
+
+
+class ProjectVolunteerTaskDetailView(generic.DetailView):
+    model = ProjectTask
+    template_name = 'dssgmkt/proj_instructions_task.html'
+    pk_url_kwarg = 'task_pk'
+
+    def get_object(self):
+        return get_project_task(self.request, self.kwargs['proj_pk'], self.kwargs['task_pk'])
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        project_task = get_project_task(self.request, self.kwargs['proj_pk'], self.kwargs['task_pk'])
+        context['breadcrumb'] = project_volunteer_task_breadcrumb(project_task)
+        context['task_volunteers'] = ProjectTaskService.get_task_volunteers(self.request.user, self.kwargs['task_pk'])
+        add_project_task_common_context(self.request, project_task, 'instructions', context)
+        context['project_tasks'] = ProjectTaskService.get_volunteer_all_project_tasks(self.request.user, self.request.user, project_task.project) # override the default tasks in the project.
+        return context
+
+
 
 class CreateProjectTaskReviewForm(ModelForm):
     class Meta:
@@ -242,15 +277,15 @@ class ProjectTaskReviewCreate(PermissionRequiredMixin, CreateView):
     raise_exception = True
 
     def get_success_url(self):
-        return reverse('dssgmkt:proj_info', args=[self.kwargs['proj_pk']])
+        return reverse('dssgmkt:proj_instructions_task', args=[self.kwargs['proj_pk'], self.kwargs['task_pk']])
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         project_task = get_project_task(self.request, self.kwargs['proj_pk'], self.kwargs['task_pk'])
-        context['breadcrumb'] = project_breadcrumb(project_task.project,
-                                                    volunteer_instructions_link(project_task.project),
-                                                    ('Mark work as completed', None))
+        context['breadcrumb'] = project_volunteer_task_breadcrumb(project_task,
+                                                                    ('Mark work as completed', None))
         add_project_task_common_context(self.request, project_task, 'instructions', context)
+        context['project_tasks'] = ProjectTaskService.get_volunteer_all_project_tasks(self.request.user, self.request.user, project_task.project) # override the default tasks in the project.
         return context
 
     def form_valid(self, form):
@@ -318,17 +353,17 @@ class ProjectTaskCancel(PermissionRequiredMixin, DeleteView):
         return get_own_project_task_role(self.request, self.kwargs['proj_pk'], self.kwargs['task_pk'])
 
     def get_success_url(self):
-        return reverse('dssgmkt:proj_info', args=[self.object.task.project.id])
+        return reverse('dssgmkt:proj_instructions', args=[self.object.task.project.id])
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         project_task_role = self.object
         project_task = project_task_role.task
         project = project_task.project
-        context['breadcrumb'] = project_breadcrumb(project,
-                                                    volunteer_instructions_link(project),
-                                                    ('Stop volunteering', None))
+        context['breadcrumb'] = project_volunteer_task_breadcrumb(project_task,
+                                                                    ('Stop volunteering', None))
         add_project_task_common_context(self.request, project_task, 'instructions', context)
+        context['project_tasks'] = ProjectTaskService.get_volunteer_all_project_tasks(self.request.user, self.request.user, project) # override the default tasks in the project.
         return context
 
     def delete(self, request,  *args, **kwargs):

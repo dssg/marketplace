@@ -432,6 +432,10 @@ class ProjectTaskService():
         return ProjectTask.objects.filter(projecttaskrole__user=target_user).exclude(project__status=ProjectStatus.DRAFT)
 
     @staticmethod
+    def get_volunteer_all_project_tasks(request_user, target_user, project):
+        return ProjectTask.objects.filter(projecttaskrole__user=target_user, project=project)
+
+    @staticmethod
     def user_is_task_volunteer(user, task):
         return user.is_authenticated and ProjectTaskRole.objects.filter(user=user, role=TaskRole.VOLUNTEER, task=task).exists()
 

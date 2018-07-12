@@ -1,14 +1,7 @@
-{% extends "dssgmkt/proj.html" %}
+{% extends "dssgmkt/proj_task_base.html" %}
 
-{% block tabcontents %}
+{% block taskcontents %}
 
-  <div class="row">
-    <div class="col-lg-3 section-header">
-      <h4>Tasks</h4>
-    {% include 'dssgmkt/components/project_tasks_index.html' %}
-    </div>
-    <div class="col-lg-9">
       <div class="section-header">Select a task on the left menu.</div>
-    </div>
-  </div>
+      
 {% endblock %}
