@@ -8,7 +8,7 @@
     {# TODO fix the 1px-off right border on the last element #}
     <span class="status rounded-top {% if task.is_completed %}status-active bg-success{% else %}border-bottom{% endif %}">Completed</span>
   </div>
-  <div class="status-description col-lg-12 bg-success text-white rounded-bottom">
+  <div class="status-description col-lg-12 bg-success text-white {% if task.is_completed %}rounded-bottom{% endif %}">
     {% if task.is_not_started %}
       This task has not started
     {% elif task.is_in_progress %}
@@ -19,4 +19,13 @@
       This task is completed
     {% endif %}
   </div>
+  {% if not task.is_completed %}
+    <div class="status-description col-lg-12 {% if task.accepting_volunteers %}bg-success{% else %}bg-warning{% endif %} text-white rounded-bottom">
+      {% if task.accepting_volunteers %}
+        This task is accepting volunteers.
+      {% else %}
+        This task is not accepting volunteers.
+      {% endif %}
+    </div>
+  {% endif %}
 </div>
