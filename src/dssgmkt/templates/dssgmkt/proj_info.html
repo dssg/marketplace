@@ -70,33 +70,45 @@
       </div>
 
 
-      {% if not project.is_completed %}
-        <h3 class="section-header text-center">Volunteer openings</h3>
+        <h3 class="section-header text-center">Project tasks</h3>
         {% if project_tasks %}
           {% for project_task in project_tasks %}
-            <div class="card mb-3">
-              <div class="card-header">{{ project_task.name }}</div>
-              <ul class="list-group list-group-flush">
-                <li class="list-group-item">{{ project_task.description }}</li>
-                <li class="list-group-item">Required skills:
-                  {% for task_requirement in project_task.projecttaskrequirement_set.all %}
-                    <div>{{ task_requirement.skill.area }}/{{ task_requirement.skill.name }}:{{ task_requirement.get_level_display }}</div>
-                  {% endfor %}
-                </li>
-                <li class="list-group-item">
-                  {# TODO show a message "You have applied to this task" instead of the link when the user has applied already #}
-                  <a class="btn btn-success col-lg-12" href="{% url 'dssgmkt:proj_task_apply' project.id project_task.id %}">
-                    <i class="material-icons" style="vertical-align: middle">how_to_vote</i>
-                    Apply to volunteer
-                  </a>
-                </li>
-              </ul>
-            </div>
+            {% if not project_task.is_completed %}
+              <div class="card mb-3">
+                <div class="card-header"> {{ project_task.name }}</div>
+
+                  <ul class="list-group list-group-flush">
+                    <li class="list-group-item">{{ project_task.description }}</li>
+                    <li class="list-group-item">Required skills:
+                      {% for task_requirement in project_task.projecttaskrequirement_set.all %}
+                        <div>{{ task_requirement.skill.area }}/{{ task_requirement.skill.name }}:{{ task_requirement.get_level_display }}</div>
+                      {% endfor %}
+                    </li>
+                    <li class="list-group-item">
+                      {# TODO show a message "You have applied to this task" instead of the link when the user has applied already #}
+                      {% if project_task.accepting_volunteers %}
+                        <a class="btn btn-success col-lg-12" href="{% url 'dssgmkt:proj_task_apply' project.id project_task.id %}">
+                          <i class="material-icons" style="vertical-align: middle">how_to_vote</i>
+                          Apply to volunteer
+                        </a>
+                      {% else %}
+                        <a class="btn btn-light disabled col-lg-12 mb-1">
+                          <i class="material-icons" style="vertical-align: middle">hourglass_empty</i>
+                          Task not currently accepting volunteers
+                        </a>
+                      {% endif %}
+                    </li>
+                  </ul>
+              </div>
+            {% else %}
+              <div class="mb-1">
+                <i class="material-icons" style="vertical-align: middle">check</i>{{ project_task.name }}
+              </div>
+            {% endif %}
           {% endfor %}
         {% else %}
-          <p>This project does not have any volunteer openings at this moment.</p>
+          <p>This project does not have any tasks at this moment.</p>
         {% endif %}
-      {% endif %}
     </div>
   </div>
 

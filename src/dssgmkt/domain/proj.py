@@ -402,6 +402,10 @@ class ProjectTaskService():
                                           project=proj).exclude(stage=TaskStatus.COMPLETED).order_by('estimated_start_date')
 
     @staticmethod
+    def get_public_tasks(request_user, proj):
+        return ProjectTask.objects.filter(project=proj).exclude(stage=TaskStatus.DELETED).order_by('-accepting_volunteers', '-stage')
+
+    @staticmethod
     def get_non_finished_tasks(request_user, proj):
         return ProjectTask.objects.filter(project=proj).exclude(stage=TaskStatus.COMPLETED).exclude(stage=TaskStatus.DELETED).order_by('estimated_start_date')
 
@@ -580,7 +584,6 @@ class ProjectTaskService():
         if ProjectTaskService.task_has_volunteers(request_user, project_task.id):
             raise ValueError('Cannot delete a task with active volunteers. Remove them or assign them to a different task before deleting this task.')
         project_task.delete()
-        # TODO What happens with volunteers working on this task? Do not allow deleting tasks with volunteers
         project = project_task.project
         message = "The task {0} has been deleted from project {1}.".format(project_task.name, project.name)
         NotificationService.add_multiuser_notification(ProjectService.get_project_members(request_user, project),
