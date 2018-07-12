@@ -415,6 +415,7 @@ class ProjectTaskDetailView(generic.DetailView):
         context = super().get_context_data(**kwargs)
         project_task = get_project_task(self.request, self.kwargs['proj_pk'], self.kwargs['task_pk'])
         context['breadcrumb'] = project_task_breadcrumb(project_task)
+        context['task_volunteers'] = ProjectTaskService.get_task_volunteers(self.request.user, self.kwargs['task_pk'])
         add_project_task_common_context(self.request, project_task, 'tasklist', context)
         return context
 

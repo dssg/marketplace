@@ -76,6 +76,10 @@
               <p>External deliverables page: <a href="{{ project_task.task_deliverables_url }}">{{ project_task.task_deliverables_url }}</a></p>
             </div>
           </div>
+        </div>
+
+
+        <div class="card-deck section-header">
           <div class="card">
             <div class="card-header">Skill requirements</div>
             <div class="card-body">
@@ -85,7 +89,17 @@
               {% endfor %}
             </div>
           </div>
+          <div class="card">
+            <div class="card-header">Volunteers</div>
+            <div class="card-body">
+              {% for volunteer in task_volunteers %}
+                <div>
+                  <a href="{% url 'dssgmkt:user_profile' volunteer.id %}">{{ volunteer.standard_display_name }}</a>
+                </div>
+              {% endfor %}
+            </div>
           </div>
+        </div>
 
 
 
