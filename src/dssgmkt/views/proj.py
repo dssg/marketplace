@@ -644,7 +644,6 @@ def project_staff_view(request, proj_pk):
 def project_volunteers_view(request, proj_pk):
     if request.method == 'GET':
         project = get_project(request, proj_pk)
-        # TODO change this so the list of volunteers either only shows the active ones or it shows all but does not allow to remove completed volunteers
         volunteers = ProjectService.get_all_project_volunteers(request.user, proj_pk)
         volunteers_page = paginate(request, volunteers, request_key='volunteers_page', page_size=20)
 

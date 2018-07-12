@@ -7,7 +7,7 @@ from django.db.models import Q
 from django.forms import ModelForm
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.views import generic
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from rules.contrib.views import (
@@ -26,13 +26,19 @@ from dssgmkt.domain.notifications import NotificationService
 
 
 def users_link(include_link=True):
-    return ('Users', reverse('dssgmkt:volunteer_list') if include_link else None)
+    return ('Users', reverse_lazy('dssgmkt:volunteer_list') if include_link else None)
 
 def my_profile_link(user_pk, include_link=True):
     return ("My profile" , reverse('dssgmkt:user_profile', args=[user_pk]) if include_link else None)
 
 def edit_my_skills_link(user_pk, include_link=True):
     return ("Edit my skills" , reverse('dssgmkt:user_profile_skills_edit', args=[user_pk]) if include_link else None)
+
+def change_password_breadcrumb():
+    return build_breadcrumb([home_link(),
+                             users_link(),
+                             ('My profile', reverse_lazy('dssgmkt:my_user_profile')),
+                             ('Change password', None)])
 
 def logout_view(request):
     logout(request)
