@@ -415,6 +415,10 @@ class ProjectTaskService():
         return ProjectTaskRole.objects.filter(task=taskid, role=TaskRole.VOLUNTEER).exists()
 
     @staticmethod
+    def get_task_volunteers(request_user, taskid):
+        return User.objects.filter(projecttaskrole__task=taskid, projecttaskrole__role=TaskRole.VOLUNTEER)
+
+    @staticmethod
     def save_task_internal(request_user, projid, taskid, project_task):
         # The notifications are inside the transaction block and that is not ideal,
         # but the logic is not trivial and there is no obvious way to separate
@@ -435,7 +439,7 @@ class ProjectTaskService():
                             # Move the project to status waiting staff
                             project.status = ProjectStatus.WAITING_STAFF
                             project.save()
-                            message = "The status of project {0} has changed to 'Staffing', so user can now apply to volunteer in the project tasks.".format(project.name)
+                            message = "The status of project {0} has changed to 'Staffing', so users can now apply to volunteer in the project tasks.".format(project.name)
                             NotificationService.add_multiuser_notification(ProjectService.get_public_notification_users(request_user, project),
                                                                      message,
                                                                      NotificationSeverity.INFO,
@@ -514,11 +518,11 @@ class ProjectTaskService():
                                                         NotificationSeverity.WARNING,
                                                         NotificationSource.TASK,
                                                         project_task.id)
-            NotificationService.add_user_notification(request_user,
-                                                        "You marked task {0} of project {1} as finished. The project staff will review it and you will be notified when the QA .".format(project_task.name, project.name),
+            NotificationService.add_multiuser_notification(ProjectTaskService.get_task_volunteers(request_user, taskid),
+                                                        "Your task {0} of project {1} is now marked as finished. The project staff will review it and you will be notified when the QA is finished.".format(project_task.name, project.name),
                                                         NotificationSeverity.INFO,
                                                         NotificationSource.TASK,
-                                                        project_task.id) # TODO change this to notify all the volunteers working on this task
+                                                        project_task.id)
             ProjectService.add_project_change(request_user,
                                             project,
                                             ProjectLogType.COMPLETE,
@@ -621,8 +625,6 @@ class ProjectTaskService():
                 project_task.actual_effort_hours = task_review.volunteer_effort_hours
                 project_task.actual_end_date = timezone.now()
                 ProjectTaskService.save_task_internal(request_user, projid, taskid, project_task)
-
-                ### TODO mark all other task reviews for this task as automatically rejected
             elif task_review.review_result == ReviewStatus.REJECTED:
                 project_task.stage = TaskStatus.STARTED
                 ProjectTaskService.save_task_internal(request_user, projid, taskid, project_task)
@@ -638,17 +640,17 @@ class ProjectTaskService():
         ProjectTaskService.save_task_review(request_user, projid, taskid, task_review)
         project_task = task_review.task
         project = project_task.project
-        message = "The task {0} from project {1} has been accepted during QA phase and it's now completed.".format(project_task.name, project.name)
+        message = "The task {0} from project {1} has been accepted during its QA phase and it's now completed.".format(project_task.name, project.name)
         NotificationService.add_multiuser_notification(ProjectService.get_project_members(request_user, project),
                                                     message,
                                                     NotificationSeverity.INFO,
                                                     NotificationSource.TASK,
                                                     project_task.id)
-        NotificationService.add_user_notification(task_review.volunteer,
+        NotificationService.add_multiuser_notification(ProjectTaskService.get_task_volunteers(request_user, project_task.id),
                                                     "Congratulations! Your task {0} of project {1} has been reviewed by the project staff and accepted as finished, so your work has been completed. The staff comments are: {2}.".format(project_task.name, project.name, task_review.public_reviewer_comments),
                                                     NotificationSeverity.INFO,
                                                     NotificationSource.TASK,
-                                                    project_task.id) # TODO change this to notify all the volunteers working on this task, not just the one that marked it as completed
+                                                    project_task.id)
         ProjectService.add_project_change(request_user,
                                           project,
                                           ProjectLogType.COMPLETE,
