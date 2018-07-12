@@ -403,13 +403,18 @@ class ProjectTaskService():
 
     @staticmethod
     def get_public_tasks(request_user, proj):
-        print(ProjectTaskRole.objects.filter(task__project=proj))
         return ProjectTask.objects.filter(project=proj) \
                                     .exclude(stage=TaskStatus.DELETED) \
                                     .annotate(volunteer_count=Count('projecttaskrole', filter=Q(projecttaskrole__role=TaskRole.VOLUNTEER), distinct=True)) \
                                     .annotate(already_applied=Count('volunteerapplication', filter=Q(volunteerapplication__volunteer=request_user, volunteerapplication__status=ReviewStatus.NEW), distinct=True)) \
                                     .annotate(already_volunteer=Count('projecttaskrole', filter=Q(projecttaskrole__user=request_user), distinct=True)) \
-                                    .order_by('-accepting_volunteers', '-stage')
+                                    .order_by( '-stage','-accepting_volunteers',)
+
+    @staticmethod
+    def get_project_tasks_summary(request_user, proj):
+        return ProjectTask.objects.filter(project=proj) \
+                                  .exclude(stage=TaskStatus.DELETED) \
+                                  .order_by('-accepting_volunteers', '-stage')
 
     @staticmethod
     def get_non_finished_tasks(request_user, proj):

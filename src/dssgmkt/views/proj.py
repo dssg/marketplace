@@ -52,6 +52,15 @@ def project_breadcrumb(project, *items):
     breadcrumb_items += items
     return build_breadcrumb(breadcrumb_items)
 
+def project_task_breadcrumb(project_task):
+    breadcrumb_items = [home_link(),
+                        projects_link(),
+                        project_link(project_task.project),
+                        tasks_link(project_task.project),
+                        (project_task.name, None)
+                        ]
+    return build_breadcrumb(breadcrumb_items)
+
 def get_project(request, proj_pk):
     return generic_getter(ProjectService.get_project, request.user, proj_pk)
 
@@ -374,7 +383,8 @@ class ProjectTaskIndex(PermissionRequiredMixin, generic.ListView):
     allow_empty = True
 
     def get_queryset(self):
-        return ProjectTaskService.get_all_tasks(self.request.user, self.kwargs['proj_pk'])
+        project = get_project(self.request, self.kwargs['proj_pk'])
+        return ProjectTaskService.get_project_tasks_summary(self.request.user, project)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -385,6 +395,25 @@ class ProjectTaskIndex(PermissionRequiredMixin, generic.ListView):
 
     def get_permission_object(self):
         return get_project(self.request, self.kwargs['proj_pk'])
+
+
+
+class ProjectTaskDetailView(generic.DetailView):
+    model = ProjectTask
+    template_name = 'dssgmkt/proj_task.html'
+    pk_url_kwarg = 'task_pk'
+
+    def get_object(self):
+        return get_project_task(self.request, self.kwargs['proj_pk'], self.kwargs['task_pk'])
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        project_task = get_project_task(self.request, self.kwargs['proj_pk'], self.kwargs['task_pk'])
+        context['breadcrumb'] = project_task_breadcrumb(project_task)
+        context['project_tasks'] = ProjectTaskService.get_project_tasks_summary(self.request.user, project_task.project)
+        add_project_task_common_context(self.request, project_task, 'tasklist', context)
+        return context
+
 
 
 class ProjectTaskEdit(PermissionRequiredMixin, UpdateView):
