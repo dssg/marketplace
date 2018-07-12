@@ -1,6 +1,16 @@
 
 {% load widget_tweaks %}
 
+{% if form.errors %}
+  <div class="alert alert-danger col-lg-12">
+    <ul>
+      {% for error in form.non_field_errors %}
+        <li>{{ error }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+{% endif %}
+
 {% for field in form %}
   {% if field.errors %}
     <div class="form-group has-error">

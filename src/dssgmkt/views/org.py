@@ -127,7 +127,8 @@ class OrganizationEdit(PermissionRequiredMixin, UpdateView):
         try:
             OrganizationService.save_organization_info(self.request.user, self.kwargs['org_pk'], organization)
             return HttpResponseRedirect(self.get_success_url())
-        except KeyError:
+        except KeyError as k:
+            form.add_error(str(k))
             return super().form_invalid(form)
 
 class CreateOrganizationRoleForm(ModelForm):
@@ -268,7 +269,8 @@ class OrganizationRoleEdit(PermissionRequiredMixin, UpdateView):
             OrganizationService.save_organization_role(self.request.user, self.kwargs['org_pk'], organization_role)
             messages.info(self.request, 'User role edited successfully.')
             return HttpResponseRedirect(self.get_success_url())
-        except ValueError:
+        except ValueError as v:
+            form.add_error(str(v))
             return super().form_invalid(form)
 
 

@@ -361,6 +361,9 @@ class ProjectTaskApply(PermissionRequiredMixin, CreateView):
             return HttpResponseRedirect(self.get_success_url())
         except KeyError:
             raise Http404
+        except ValueError as v:
+            form.add_error(None, str(v))
+            return self.form_invalid(form)
 
 
 class ProjectTaskIndex(PermissionRequiredMixin, generic.ListView):
@@ -444,7 +447,8 @@ class ProjectEdit(PermissionRequiredMixin, UpdateView):
         try:
             ProjectService.save_project(self.request.user, self.kwargs['proj_pk'], project)
             return HttpResponseRedirect(self.get_success_url())
-        except ValueError:
+        except ValueError as v:
+            form.add_error(str(v))
             return super().form_invalid(form)
 
 

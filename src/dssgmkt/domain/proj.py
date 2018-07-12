@@ -188,6 +188,12 @@ class ProjectService():
                                                  NotificationSeverity.INFO,
                                                  NotificationSource.PROJECT,
                                                  project.id)
+        ProjectService.add_project_change(request_user,
+                                           project,
+                                           ProjectLogType.EDIT,
+                                           ProjectLogSource.PROJECT,
+                                           project.id,
+                                           message)
 
     @staticmethod
     def publish_project(request_user, projid, project):
@@ -206,6 +212,12 @@ class ProjectService():
                                                  NotificationSeverity.WARNING,
                                                  NotificationSource.PROJECT,
                                                  project.id)
+        ProjectService.add_project_change(request_user,
+                                           project,
+                                           ProjectLogType.ADD,
+                                           ProjectLogSource.PROJECT,
+                                           project.id,
+                                           message)
 
     @staticmethod
     def finish_project(request_user, projid, project):
@@ -221,6 +233,12 @@ class ProjectService():
                                                  NotificationSeverity.INFO,
                                                  NotificationSource.PROJECT,
                                                  project.id)
+        ProjectService.add_project_change(request_user,
+                                           project,
+                                           ProjectLogType.COMPLETE,
+                                           ProjectLogSource.PROJECT,
+                                           project.id,
+                                           message)
 
     @staticmethod
     def add_staff_member(request_user, projid, project_role):
@@ -445,6 +463,12 @@ class ProjectTaskService():
                                                                      NotificationSeverity.INFO,
                                                                      NotificationSource.PROJECT,
                                                                      project.id)
+                            ProjectService.add_project_change(request_user,
+                                                               project,
+                                                               ProjectLogType.EDIT,
+                                                               ProjectLogSource.PROJECT,
+                                                               project.id,
+                                                               message)
                     elif project_task.stage == TaskStatus.WAITING_REVIEW:
                         if project.status == ProjectStatus.DESIGN:
                             # Move the project to status waiting design review
@@ -456,6 +480,12 @@ class ProjectTaskService():
                                                                      NotificationSeverity.INFO,
                                                                      NotificationSource.PROJECT,
                                                                      project.id)
+                            ProjectService.add_project_change(request_user,
+                                                               project,
+                                                               ProjectLogType.EDIT,
+                                                               ProjectLogSource.PROJECT,
+                                                               project.id,
+                                                               message)
                 elif project_task.type == TaskType.PROJECT_MANAGEMENT_TASK:
                     pass
                 else:
@@ -471,6 +501,12 @@ class ProjectTaskService():
                                                                      NotificationSeverity.INFO,
                                                                      NotificationSource.PROJECT,
                                                                      project.id)
+                            ProjectService.add_project_change(request_user,
+                                                               project,
+                                                               ProjectLogType.EDIT,
+                                                               ProjectLogSource.PROJECT,
+                                                               project.id,
+                                                               message)
 
 
     @staticmethod
@@ -585,6 +621,12 @@ class ProjectTaskService():
                                                          NotificationSeverity.INFO,
                                                          NotificationSource.PROJECT,
                                                          project.id)
+                ProjectService.add_project_change(request_user,
+                                                   project,
+                                                   ProjectLogType.EDIT,
+                                                   ProjectLogSource.PROJECT,
+                                                   project.id,
+                                                   message)
             message = "A new task {0} has been added to project {1}.".format(project_task.name, project.name)
             NotificationService.add_multiuser_notification(ProjectService.get_project_members(request_user, project),
                                                      message,
@@ -699,6 +741,12 @@ class ProjectTaskService():
                                                          NotificationSeverity.INFO,
                                                          NotificationSource.PROJECT,
                                                          project.id)
+                ProjectService.add_project_change(request_user,
+                                                   project,
+                                                   ProjectLogType.EDIT,
+                                                   ProjectLogSource.PROJECT,
+                                                   project.id,
+                                                   message)
 
     @staticmethod
     def cancel_volunteering(request_user, projid, taskid, project_task_role):
@@ -739,9 +787,9 @@ class ProjectTaskService():
         project_task = ProjectTask.objects.get(pk=taskid, project__id=projid)
         validate_consistent_keys(project_task, 'Task not found in that project', (['project', 'id'], projid))
         if ProjectTaskService.user_is_task_volunteer(request_user, project_task):
-            raise ValueException('User is already a volunteer of this task')
+            raise ValueError('User is already a volunteer of this task')
         if not VolunteerProfile.objects.filter(user=request_user).exists(): # We cannot call UserService.user_has_volunteer_profile because a circular dependency
-            raise ValueException('User is not a volunteer')
+            raise ValueError('User is not a volunteer')
         task_application_request.status = ReviewStatus.NEW
         task_application_request.task = project_task
         task_application_request.volunteer = request_user
@@ -807,6 +855,12 @@ class ProjectTaskService():
                                                                  NotificationSeverity.INFO,
                                                                  NotificationSource.PROJECT,
                                                                  project.id)
+                        ProjectService.add_project_change(request_user,
+                                                           project,
+                                                           ProjectLogType.EDIT,
+                                                           ProjectLogSource.PROJECT,
+                                                           project.id,
+                                                           message)
                 elif project.status == ProjectStatus.WAITING_STAFF:
                     if project_task.type == TaskType.DOMAIN_WORK_TASK:
                         # Move project to status in progress
@@ -818,6 +872,12 @@ class ProjectTaskService():
                                                                  NotificationSeverity.INFO,
                                                                  NotificationSource.PROJECT,
                                                                  project.id)
+                        ProjectService.add_project_change(request_user,
+                                                           project,
+                                                           ProjectLogType.EDIT,
+                                                           ProjectLogSource.PROJECT,
+                                                           project.id,
+                                                           message)
 
     # TODO remove all the permission validation in accept/reject methods that delegate on a save method? Document it clearly
     @staticmethod
