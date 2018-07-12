@@ -824,14 +824,13 @@ class ProjectTaskService():
 
     @staticmethod
     def get_volunteer_application(request_user, projid, taskid, volunteer_application_pk):
-        volunteer_application = VolunteerApplication.objects.get(pk=volunteer_application_pk, task__id=taskid, task__project__id=projid)
-        ensure_user_has_permission(request_user, volunteer_application, 'project.volunteers_application_view')
-        ## We can avoid doing this by using all the constraints in the DB query
+        # We can avoid doing this by using all the constraints in the DB query
         # volunteer_application = VolunteerApplication.objects.get(pk=volunteer_application_pk)
         # validate_consistent_keys(volunteer_application, (['task', 'id'], taskid), (['task', 'project', 'id'], projid))
-        # return volunteer_application
-        ## ... like so
-        return volunteer_application # TODO fix comment right above
+        # like so:
+        volunteer_application = VolunteerApplication.objects.get(pk=volunteer_application_pk, task__id=taskid, task__project__id=projid)
+        ensure_user_has_permission(request_user, volunteer_application, 'project.volunteers_application_view')
+        return volunteer_application
 
     @staticmethod
     def save_volunteer_application(request_user, projid, taskid, volunteer_application):
@@ -888,7 +887,6 @@ class ProjectTaskService():
                                                            project.id,
                                                            message)
 
-    # TODO remove all the permission validation in accept/reject methods that delegate on a save method? Document it clearly
     @staticmethod
     def accept_volunteer(request_user, projid, taskid, volunteer_application):
         validate_consistent_keys(volunteer_application, (['task', 'id'], taskid), (['task', 'project', 'id'], projid))

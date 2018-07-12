@@ -64,15 +64,15 @@ def get_url_for_notification(source_type, source_id):
             if project:
                 url = reverse('dssgmkt:proj_info', args=[source_id])
         elif source_type == NotificationSource.TASK:
-            project_task = get_or_none(ProjectTask, pk=source_id) # TODO fix this so it uses the organization view method to get orgrequests? We don't know the org_pk at this point...
+            project_task = get_or_none(ProjectTask, pk=source_id)
             if project_task:
                 url = reverse('dssgmkt:proj_info', args=[project_task.project.id])
         elif source_type == NotificationSource.VOLUNTEER_APPLICATION:
-            volunteer_application = get_or_none(VolunteerApplication, pk=source_id) # TODO fix this so it uses the organization view method to get orgrequests? We don't know the org_pk at this point...
+            volunteer_application = get_or_none(VolunteerApplication, pk=source_id)
             if volunteer_application:
                 url = reverse('dssgmkt:proj_volunteer_application_review', args=[volunteer_application.task.project.id, volunteer_application.task.id, source_id])
         elif source_type == NotificationSource.ORGANIZATION_MEMBERSHIP_REQUEST:
-            membership_request = get_or_none(OrganizationMembershipRequest,pk=source_id) # TODO fix this so it uses the organization view method to get orgrequests? We don't know the org_pk at this point...
+            membership_request = get_or_none(OrganizationMembershipRequest,pk=source_id)
             if membership_request:
                 url = reverse('dssgmkt:org_staff_request_review', args=[membership_request.organization.id, source_id])
     return url
