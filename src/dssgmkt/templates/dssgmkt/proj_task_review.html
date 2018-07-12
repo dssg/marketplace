@@ -1,6 +1,6 @@
-{% extends "dssgmkt/proj.html" %}
+{% extends "dssgmkt/proj_task_base.html" %}
 
-{% block tabcontents %}
+{% block taskcontents %}
 
   <h4 class="section-header">Completed task review</h4>
   <p>Task: {{ project_task.name }}</p>
@@ -48,7 +48,7 @@
                   Reject task and reopen it
                 </button>
                 <a class="btn btn-outline-primary mr-3"
-                   href="{% url 'dssgmkt:proj_task_list' project.id %}">
+                   href="{% url 'dssgmkt:proj_task' project.id project_task.id %}">
                    <i class="material-icons" style="vertical-align: middle">close</i>
                   Cancel
                 </a>

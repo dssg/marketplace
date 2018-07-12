@@ -683,7 +683,7 @@ class ProjectTaskService():
                 project_task.actual_effort_hours = task_review.volunteer_effort_hours
                 project_task.actual_end_date = timezone.now()
                 ProjectTaskService.save_task_internal(request_user, projid, taskid, project_task)
-            elif task_review.review_result == ReviewStatus.REJECTED:
+            elif task_review.review_result == ReviewStatus.REJECTED and project_task.stage != TaskStatus.COMPLETED:
                 project_task.stage = TaskStatus.STARTED
                 ProjectTaskService.save_task_internal(request_user, projid, taskid, project_task)
 

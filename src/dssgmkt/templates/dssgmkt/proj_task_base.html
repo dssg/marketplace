@@ -8,7 +8,9 @@
     {% include 'dssgmkt/components/project_tasks_index.html' %}
     </div>
     <div class="col-lg-9">
-      <div class="section-header">Select a task on the left menu.</div>
+      {% block taskcontents %}
+      {% endblock %}
     </div>
   </div>
+  
 {% endblock %}

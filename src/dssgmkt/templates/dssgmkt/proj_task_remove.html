@@ -1,8 +1,8 @@
-{% extends 'dssgmkt/proj.html' %}
+{% extends 'dssgmkt/proj_task_base.html' %}
 
-{% block tabcontents %}
+{% block taskcontents %}
 
-  <h4 class="section-header">Delete task</h4>
+  <h4 class="section-header">Delete task {{ project_task.name }}</h4>
   <p>Are you sure you want to delete this task? If you delete it
     the task will be permanently removed from the system and
     all its data will be lost.</p>
@@ -20,7 +20,7 @@
           Yes, delete this task
         </button>
         <a class="btn btn-outline-primary"
-           href="{% url 'dssgmkt:proj_task_list' project.id %}">
+           href="{% url 'dssgmkt:proj_task' project.id project_task.id %}">
           <i class="material-icons" style="vertical-align: middle">close</i>
           No, keep this task
         </a>

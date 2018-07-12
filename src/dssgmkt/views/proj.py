@@ -112,6 +112,7 @@ def add_project_common_context(request, project, page_tab, context):
 def add_project_task_common_context(request, project_task, page_tab, context):
     add_project_common_context(request, project_task.project, page_tab, context)
     context['project_task'] = project_task
+    context['project_tasks'] = ProjectTaskService.get_project_tasks_summary(request.user, project_task.project)
     return context
 
 class ProjectView(PermissionRequiredMixin, generic.ListView): ## This is a listview because it is actually showing the list of open tasks
@@ -284,7 +285,7 @@ def process_task_review_request_view(request, proj_pk, task_pk, review_pk, actio
                 else:
                     ProjectTaskService.reject_task_review(request.user, proj_pk, task_pk, project_task_review)
                     messages.warning(request, 'Task rejected as completed and reopened.')
-                return redirect('dssgmkt:proj_task_list', proj_pk=proj_pk)
+                return redirect('dssgmkt:proj_task', proj_pk=proj_pk, task_pk=task_pk)
             except KeyError:
                 raise Http404
     elif request.method == 'GET':
@@ -414,7 +415,6 @@ class ProjectTaskDetailView(generic.DetailView):
         context = super().get_context_data(**kwargs)
         project_task = get_project_task(self.request, self.kwargs['proj_pk'], self.kwargs['task_pk'])
         context['breadcrumb'] = project_task_breadcrumb(project_task)
-        context['project_tasks'] = ProjectTaskService.get_project_tasks_summary(self.request.user, project_task.project)
         add_project_task_common_context(self.request, project_task, 'tasklist', context)
         return context
 
@@ -430,7 +430,7 @@ class ProjectTaskEdit(PermissionRequiredMixin, UpdateView):
     raise_exception = True
 
     def get_success_url(self):
-        return reverse('dssgmkt:proj_task_list', args=[self.kwargs['proj_pk']])
+        return reverse('dssgmkt:proj_task', args=[self.kwargs['proj_pk'], self.kwargs['task_pk']])
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -973,7 +973,7 @@ def toggle_task_accepting_volunteers_view(request, proj_pk, task_pk):
     elif request.method == 'POST':
         try:
             ProjectTaskService.toggle_task_accepting_volunteers(request.user, proj_pk, task_pk)
-            return redirect('dssgmkt:proj_task_list', proj_pk=proj_pk)
+            return redirect('dssgmkt:proj_task', proj_pk=proj_pk, task_pk=task_pk)
         except KeyError:
             messages.error(request, 'There was an error while processing your request.')
-            return redirect('dssgmkt:proj_task_list', proj_pk=proj_pk)
+            return redirect('dssgmkt:proj_task', proj_pk=proj_pk, task_pk=task_pk)

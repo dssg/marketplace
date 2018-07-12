@@ -1,6 +1,6 @@
-{% extends 'dssgmkt/proj.html' %}
+{% extends 'dssgmkt/proj_task_base.html' %}
 
-{% block tabcontents %}
+{% block taskcontents %}
 
   <h4 class="section-header">Task requirements</h4>
   {% if task_requirements %}
@@ -58,6 +58,4 @@
       </div>
     </div>
   </form>
-<!--
-  <a href="{% url 'dssgmkt:proj_task_list' project.id %}">Back</a> -->
 {% endblock %}
