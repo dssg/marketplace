@@ -42,8 +42,11 @@ def volunteer_instructions_link(project, include_link=True):
 def tasks_link(project, include_link=True):
     return ('Tasks', reverse('dssgmkt:proj_task_list', args=[project.id]) if include_link else None)
 
+def task_link(project_task, include_link=True):
+    return (project_task.name, reverse('dssgmkt:proj_task', args=[project_task.project.id, project_task.id]) if include_link else None)
+
 def edit_task_requirements_link(project, task, include_link=True):
-    return ('Edit project task requirements', reverse('dssgmkt:proj_task_requirements_edit', args=[project.id, task.id]) if include_link else None)
+    return ('Edit requirements', reverse('dssgmkt:proj_task_requirements_edit', args=[project.id, task.id]) if include_link else None)
 
 def project_breadcrumb(project, *items):
     breadcrumb_items = [home_link(),
@@ -298,6 +301,7 @@ def process_task_review_request_view(request, proj_pk, task_pk, review_pk, actio
                             'task_review': project_task_review,
                             'breadcrumb': project_breadcrumb(project,
                                                                 tasks_link(project),
+                                                                task_link(project_task),
                                                                 ('Review completed task', None)),
                             'form': form,
                         }))
@@ -434,6 +438,7 @@ class ProjectTaskEdit(PermissionRequiredMixin, UpdateView):
         project_task = self.object
         context['breadcrumb'] = project_breadcrumb(project,
                                                     tasks_link(project),
+                                                    task_link(project_task),
                                                     ('Edit project task', None))
         add_project_task_common_context(self.request, project_task, 'tasklist', context)
         return context
@@ -507,6 +512,7 @@ def project_task_requirements_edit_view(request, proj_pk, task_pk):
                             'task_requirements': task_requirements,
                             'breadcrumb': project_breadcrumb(project,
                                                                 tasks_link(project),
+                                                                task_link(task),
                                                                 edit_task_requirements_link(project, task, include_link=False)),
                             'add_requirement_form': form,
                         }))
@@ -531,6 +537,7 @@ class ProjectTaskRequirementEdit(PermissionRequiredMixin, UpdateView):
             context['task_requirement'] = task_requirement
             context['breadcrumb'] =  project_breadcrumb(project,
                                                             tasks_link(project),
+                                                            task_link(project_task),
                                                             edit_task_requirements_link(project, project_task),
                                                             ('Edit requirement', None))
             add_project_task_common_context(self.request, project_task, 'tasklist', context)
@@ -568,6 +575,7 @@ class ProjectTaskRequirementRemove(PermissionRequiredMixin, DeleteView): # overr
             context['task_requirement'] = task_requirement
             context['breadcrumb'] =  project_breadcrumb(project,
                                                             tasks_link(project),
+                                                            task_link(project_task),
                                                             edit_task_requirements_link(project, project_task),
                                                             ('Remove requirement', None))
             add_project_task_common_context(self.request, project_task, 'tasklist', context)
@@ -606,6 +614,7 @@ class ProjectTaskRemove(PermissionRequiredMixin, DeleteView):
             project = project_task.project
             context['breadcrumb'] =  project_breadcrumb(project,
                                                             tasks_link(project),
+                                                            task_link(project_task),
                                                             ('Delete task', None))
             add_project_task_common_context(self.request, project_task, 'tasklist', context)
             return context
