@@ -541,7 +541,8 @@ class ProjectTaskService():
         ensure_user_has_permission(request_user, project_task.project, 'project.task_delete')
         if project_task.stage == TaskStatus.COMPLETED:
             raise ValueError('Cannot delete a completed task')
-        
+        if ProjectTaskService.task_has_volunteers(request_user, project_task.id):
+            raise ValueError('Cannot delete a task with active volunteers. Remove them or assign them to a different task before deleting this task.')
         project_task.delete()
         # TODO What happens with volunteers working on this task? Do not allow deleting tasks with volunteers
         project = project_task.project
