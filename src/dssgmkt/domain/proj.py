@@ -13,7 +13,7 @@ from ..models.common import (
 from ..models.user import (
     User, NotificationSeverity, NotificationSource, VolunteerProfile,
 )
-from django.db.models import Case, When, Count
+from django.db.models import Case, When, Count, Q
 
 from .common import validate_consistent_keys
 from .notifications import NotificationService
@@ -403,7 +403,7 @@ class ProjectTaskService():
 
     @staticmethod
     def get_public_tasks(request_user, proj):
-        return ProjectTask.objects.filter(project=proj).exclude(stage=TaskStatus.DELETED).order_by('-accepting_volunteers', '-stage')
+        return ProjectTask.objects.filter(project=proj).exclude(stage=TaskStatus.DELETED).annotate(volunteer_count=Count('projecttaskrole', filter=Q(projecttaskrole__role=TaskRole.VOLUNTEER))).order_by('-accepting_volunteers', '-stage')
 
     @staticmethod
     def get_non_finished_tasks(request_user, proj):
