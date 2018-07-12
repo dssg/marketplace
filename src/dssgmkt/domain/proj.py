@@ -135,6 +135,10 @@ class ProjectService():
         ).distinct()
 
     @staticmethod
+    def get_project_followers(request_user, proj):
+        return User.objects.filter(projectfollower__project=proj)
+
+    @staticmethod
     def get_project_changes(request_user, proj):
         ensure_user_has_permission(request_user, proj, 'project.log_view')
         return ProjectLog.objects.filter(project = proj).order_by('-change_date')
@@ -178,6 +182,12 @@ class ProjectService():
         validate_consistent_keys(project, ('id', projid))
         ensure_user_has_permission(request_user, project, 'project.information_edit')
         project.save()
+        message = "The project {0} was edited by {1}.".format(project.name, request_user.standard_display_name())
+        NotificationService.add_multiuser_notification(ProjectService.get_public_notification_users(request_user, project),
+                                                 message,
+                                                 NotificationSeverity.INFO,
+                                                 NotificationSource.PROJECT,
+                                                 project.id)
 
     @staticmethod
     def publish_project(request_user, projid, project):
@@ -185,7 +195,17 @@ class ProjectService():
         ensure_user_has_permission(request_user, project, 'project.publish')
         if project.status == ProjectStatus.DRAFT:
             project.status = ProjectStatus.NEW
+            # When is the start date of a project? When it's published, when
+            # volunteers start scoping the project, or when volunteers start
+            # working on domain tasks?
+            project.actual_start_date = timezone.now()
             project.save()
+        message = "The project {0} was published by {1} and can now be applied to by volunteers.".format(project.name, request_user.standard_display_name())
+        NotificationService.add_multiuser_notification(ProjectService.get_project_members(request_user, project),
+                                                 message,
+                                                 NotificationSeverity.WARNING,
+                                                 NotificationSource.PROJECT,
+                                                 project.id)
 
     @staticmethod
     def finish_project(request_user, projid, project):
@@ -193,7 +213,14 @@ class ProjectService():
         ensure_user_has_permission(request_user, project, 'project.approve_as_completed')
         if project.status == ProjectStatus.WAITING_REVIEW:
             project.status = ProjectStatus.COMPLETED
+            project.actual_end_date = timezone.now()
             project.save()
+        message = "The project {0} has been accepted as finished, so all the volunteer work has been completed.".format(project.name)
+        NotificationService.add_multiuser_notification(ProjectService.get_public_notification_users(request_user, project),
+                                                 message,
+                                                 NotificationSeverity.INFO,
+                                                 NotificationSource.PROJECT,
+                                                 project.id)
 
     @staticmethod
     def add_staff_member(request_user, projid, project_role):
@@ -389,6 +416,9 @@ class ProjectTaskService():
 
     @staticmethod
     def save_task_internal(request_user, projid, taskid, project_task):
+        # The notifications are inside the transaction block and that is not ideal,
+        # but the logic is not trivial and there is no obvious way to separate
+        # them from the project/task db modifications.
         with transaction.atomic():
             current_task = ProjectTask.objects.get(pk=project_task.id)
             project_task.save()
@@ -405,11 +435,23 @@ class ProjectTaskService():
                             # Move the project to status waiting staff
                             project.status = ProjectStatus.WAITING_STAFF
                             project.save()
+                            message = "The status of project {0} has changed to 'Staffing', so user can now apply to volunteer in the project tasks.".format(project.name)
+                            NotificationService.add_multiuser_notification(ProjectService.get_public_notification_users(request_user, project),
+                                                                     message,
+                                                                     NotificationSeverity.INFO,
+                                                                     NotificationSource.PROJECT,
+                                                                     project.id)
                     elif project_task.stage == TaskStatus.WAITING_REVIEW:
                         if project.status == ProjectStatus.DESIGN:
                             # Move the project to status waiting design review
                             project.status = ProjectStatus.WAITING_DESIGN_APPROVAL
                             project.save()
+                            message = "The status of project {0} has changed to 'Scoping QA'; the project's staff will review the current scope and determine if it is final and thus the project work can begin, or if the current scope needs further modifications.".format(project.name)
+                            NotificationService.add_multiuser_notification(ProjectService.get_public_notification_users(request_user, project),
+                                                                     message,
+                                                                     NotificationSeverity.INFO,
+                                                                     NotificationSource.PROJECT,
+                                                                     project.id)
                 elif project_task.type == TaskType.PROJECT_MANAGEMENT_TASK:
                     pass
                 else:
@@ -419,13 +461,22 @@ class ProjectTaskService():
                         if not with_open_tasks:
                             project.status = ProjectStatus.WAITING_REVIEW
                             project.save()
+                            message = "The status of project {0} has changed to 'Final QA'; the project's work has finished and the staff will now verify if the project can be considered finished or if additional work needs to be completed.".format(project.name)
+                            NotificationService.add_multiuser_notification(ProjectService.get_public_notification_users(request_user, project),
+                                                                     message,
+                                                                     NotificationSeverity.INFO,
+                                                                     NotificationSource.PROJECT,
+                                                                     project.id)
 
 
     @staticmethod
     def save_task(request_user, projid, taskid, project_task):
         validate_consistent_keys(project_task, 'Task not found in that project', ('id', taskid), (['project', 'id'], projid))
         ensure_user_has_permission(request_user, project_task.project, 'project.task_edit')
-        if project_task.stage == TaskStatus.COMPLETED:
+        # We have to get the task status saved in the DB, not the status that
+        # comes from the editing form, as the user could be changing the task
+        # status to completed.
+        if ProjectTaskService.get_project_task(request_user, projid, taskid).stage == TaskStatus.COMPLETED:
             raise ValueError('Cannot edit a completed task')
         ProjectTaskService.save_task_internal(request_user, projid, taskid, project_task)
         project = project_task.project
@@ -448,6 +499,8 @@ class ProjectTaskService():
         project = Project.objects.get(pk=projid)
         if project and project_task:
             ensure_user_has_permission(request_user, project_task, 'project.volunteer_task_finish')
+            if not project_task.stage == TaskStatus.STARTED:
+                raise ValueError('Cannot mark a task as completed if it is not in started state')
             with transaction.atomic():
                 project_task_review.task = project_task
                 project_task_review.volunteer = request_user
@@ -520,6 +573,12 @@ class ProjectTaskService():
             if project.status == ProjectStatus.WAITING_REVIEW:
                 project.status = ProjectStatus.IN_PROGRESS
                 project.save()
+                message = "The status of project {0} has changed to 'In progress' as the staff determined that the project was not ready to be marked as finished.".format(project.name)
+                NotificationService.add_multiuser_notification(ProjectService.get_public_notification_users(request_user, project),
+                                                         message,
+                                                         NotificationSeverity.INFO,
+                                                         NotificationSource.PROJECT,
+                                                         project.id)
             message = "A new task {0} has been added to project {1}.".format(project_task.name, project.name)
             NotificationService.add_multiuser_notification(ProjectService.get_project_members(request_user, project),
                                                      message,
@@ -560,7 +619,10 @@ class ProjectTaskService():
                 project_task.accepting_volunteers = False
                 project_task.percentage_complete = 1.0
                 project_task.actual_effort_hours = task_review.volunteer_effort_hours
+                project_task.actual_end_date = timezone.now()
                 ProjectTaskService.save_task_internal(request_user, projid, taskid, project_task)
+
+                ### TODO mark all other task reviews for this task as automatically rejected
             elif task_review.review_result == ReviewStatus.REJECTED:
                 project_task.stage = TaskStatus.STARTED
                 ProjectTaskService.save_task_internal(request_user, projid, taskid, project_task)
@@ -627,6 +689,12 @@ class ProjectTaskService():
                 # Move project to status scoping
                 project.status = ProjectStatus.DESIGN
                 project.save()
+                message = "The status of project {0} has changed to 'Scoping' as the project's staff determined that the scope needs modifications.".format(project.name)
+                NotificationService.add_multiuser_notification(ProjectService.get_public_notification_users(request_user, project),
+                                                         message,
+                                                         NotificationSeverity.INFO,
+                                                         NotificationSource.PROJECT,
+                                                         project.id)
 
     @staticmethod
     def cancel_volunteering(request_user, projid, taskid, project_task_role):
@@ -722,17 +790,30 @@ class ProjectTaskService():
                 task_role.save()
                 if project_task.stage == TaskStatus.NOT_STARTED:
                     project_task.stage = TaskStatus.STARTED
+                    project_task.actual_start_date = timezone.now()
                     project_task.save()
                 if project.status == ProjectStatus.NEW:
                     if project_task.type == TaskType.SCOPING_TASK:
                         # Move project to status scoping
                         project.status = ProjectStatus.DESIGN
                         project.save()
+                        message = "The status of project {0} has changed to 'Scoping', as new volunteers have been accepted to work on the project scope.".format(project.name)
+                        NotificationService.add_multiuser_notification(ProjectService.get_public_notification_users(request_user, project),
+                                                                 message,
+                                                                 NotificationSeverity.INFO,
+                                                                 NotificationSource.PROJECT,
+                                                                 project.id)
                 elif project.status == ProjectStatus.WAITING_STAFF:
                     if project_task.type == TaskType.DOMAIN_WORK_TASK:
                         # Move project to status in progress
                         project.status = ProjectStatus.IN_PROGRESS
                         project.save()
+                        message = "The status of project {0} has changed to 'In progress', as volunteers have been accepted to work on the project tasks.".format(project.name)
+                        NotificationService.add_multiuser_notification(ProjectService.get_public_notification_users(request_user, project),
+                                                                 message,
+                                                                 NotificationSeverity.INFO,
+                                                                 NotificationSource.PROJECT,
+                                                                 project.id)
 
     # TODO remove all the permission validation in accept/reject methods that delegate on a save method? Document it clearly
     @staticmethod
@@ -934,3 +1015,29 @@ class ProjectTaskService():
     def get_user_in_progress_tasks(request_user):
         return ProjectTask.objects.filter(projecttaskrole__user=request_user,
                                     stage__in=[TaskStatus.STARTED, TaskStatus.WAITING_REVIEW])
+
+    @staticmethod
+    def toggle_task_accepting_volunteers(request_user, projid, taskid):
+        project_task = ProjectTaskService.get_project_task(request_user, projid ,taskid)
+        if project_task:
+           validate_consistent_keys(project_task, (['project', 'id'], projid))
+           project = project_task.project
+           ensure_user_has_permission(request_user, project, 'project.task_edit')
+           project_task.accepting_volunteers = not project_task.accepting_volunteers
+           project_task.save()
+           if project_task.accepting_volunteers:
+               message = "The task {0} of project {1} is now accepting volunteers.".format(project_task.name, project.name)
+               NotificationService.add_multiuser_notification(ProjectService.get_public_notification_users(request_user, project),
+                                                        message,
+                                                        NotificationSeverity.INFO,
+                                                        NotificationSource.PROJECT,
+                                                        project.id)
+           else:
+               message = "The task {0} of project {1} has stopped accepting volunteers.".format(project_task.name, project.name)
+               NotificationService.add_multiuser_notification(ProjectService.get_public_notification_users(request_user, project),
+                                                        message,
+                                                        NotificationSeverity.INFO,
+                                                        NotificationSource.PROJECT,
+                                                        project.id)
+        else:
+           raise KeyError('Project task not found')

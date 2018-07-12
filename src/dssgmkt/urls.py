@@ -37,6 +37,7 @@ urlpatterns = [
     path('proj/<int:proj_pk>/task/<int:task_pk>/cancel', proj.ProjectTaskCancel.as_view(), name='proj_task_cancel'),
     path('proj/<int:proj_pk>/task/<int:task_pk>/apply', proj.ProjectTaskApply.as_view(), name='proj_task_apply'),
     path('proj/<int:proj_pk>/task/<int:task_pk>/edit', proj.ProjectTaskEdit.as_view(), name='proj_task_edit'),
+    path('proj/<int:proj_pk>/task/<int:task_pk>/togglevolunteers', proj.toggle_task_accepting_volunteers_view, name='proj_task_toggle_volunteers'),
     path('proj/<int:proj_pk>/task/<int:task_pk>/delete', proj.ProjectTaskRemove.as_view(), name='proj_task_remove'),
     path('proj/<int:proj_pk>/task/<int:task_pk>/volunteer/<int:task_role_pk>', proj.ProjectTaskRoleRemove.as_view(), name='proj_volunteer_remove'),
     path('proj/<int:proj_pk>/task/<int:task_pk>/volunteer/<int:task_role_pk>/edit', proj.ProjectTaskRoleEdit.as_view(), name='proj_volunteer_edit'),

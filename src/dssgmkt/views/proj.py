@@ -1,5 +1,6 @@
 from datetime import date
 
+import traceback
 from django.contrib.auth import logout
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib import messages
@@ -411,7 +412,7 @@ class ProjectTaskEdit(PermissionRequiredMixin, UpdateView):
         try:
             ProjectTaskService.save_task(self.request.user, self.kwargs['proj_pk'], self.kwargs['task_pk'], project_task)
             return HttpResponseRedirect(self.get_success_url())
-        except ValueError:
+        except ValueError as v:
             return super().form_invalid(form)
 
     def get_permission_object(self):
@@ -422,7 +423,7 @@ class ProjectEdit(PermissionRequiredMixin, UpdateView):
     fields = ['name', 'short_summary', 'motivation','solution_description', 'challenges', 'banner_image_url', 'project_cause',
             'project_impact', 'scoping_process', 'available_staff', 'available_data', 'developer_agreement', 'intended_start_date',
             'intended_end_date', 'deliverable_github_url', 'deliverable_management_url', 'deliverable_documentation_url',
-            'deliverable_reports_url']
+            'deliverable_reports_url', 'status']
     template_name = 'dssgmkt/proj_info_edit.html'
     pk_url_kwarg = 'proj_pk'
     permission_required = 'project.information_edit'
@@ -924,3 +925,15 @@ def finish_project_view(request, proj_pk):
                             }))
     else:
         raise Http404
+
+@permission_required('project.task_edit', raise_exception=True, fn=objectgetter(Project, 'proj_pk'))
+def toggle_task_accepting_volunteers_view(request, proj_pk, task_pk):
+    if request.method == 'GET':
+        raise Http404
+    elif request.method == 'POST':
+        try:
+            ProjectTaskService.toggle_task_accepting_volunteers(request.user, proj_pk, task_pk)
+            return redirect('dssgmkt:proj_task_list', proj_pk=proj_pk)
+        except KeyError:
+            messages.error(request, 'There was an error while processing your request.')
+            return redirect('dssgmkt:proj_task_list', proj_pk=proj_pk)

@@ -38,6 +38,22 @@
                   <i class="material-icons" style="vertical-align: middle">donut_small</i>
                   Edit task requirements
                 </a>
+                <form id="togglevolunteers">
+                  {% csrf_token %}
+                  <button type="submit"
+                          form="togglevolunteers"
+                          formaction="{% url 'dssgmkt:proj_task_toggle_volunteers' project.id project_task.id %}"
+                          formmethod="post"
+                          class="btn btn-success col-lg-12 mb-1">
+                    {% if project_task.accepting_volunteers %}
+                      <i class="material-icons" style="vertical-align: middle">pause_circle_filled</i>
+                      Stop accepting volunteer applications
+                    {% else %}
+                      <i class="material-icons" style="vertical-align: middle">play_circle_filled</i>
+                      Allow volunteers to apply
+                    {% endif %}
+                  </button>
+                </form>
                 <a class="btn btn-success col-lg-12 mb-1"
                    href="{% url 'dssgmkt:proj_task_remove' project.id project_task.id %}">
                   <i class="material-icons" style="vertical-align: middle">remove_circle</i>
