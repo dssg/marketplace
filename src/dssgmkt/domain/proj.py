@@ -13,7 +13,7 @@ from ..models.common import (
 from ..models.user import (
     User, NotificationSeverity, NotificationSource, VolunteerProfile,
 )
-from django.db.models import Case, When
+from django.db.models import Case, When, Count
 
 from .common import validate_consistent_keys
 from .notifications import NotificationService
@@ -27,7 +27,7 @@ def filter_public_projects(query_set):
 class ProjectService():
     @staticmethod
     def get_project(request_user, projid):
-        return Project.objects.get(pk=projid)
+        return Project.objects.filter(pk=projid).annotate(follower_count=Count('projectfollower')).first()
 
     @staticmethod
     def get_all_projects(request_user):

@@ -112,7 +112,6 @@ class ProjectView(PermissionRequiredMixin, generic.ListView): ## This is a listv
     allow_empty = True
 
     def get_queryset(self):
-        print(ProjectTaskService.get_public_tasks(self.request.user, self.kwargs['proj_pk']))
         return ProjectTaskService.get_public_tasks(self.request.user, self.kwargs['proj_pk'])
 
     def get_context_data(self, **kwargs):

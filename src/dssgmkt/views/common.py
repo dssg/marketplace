@@ -31,7 +31,7 @@ def paginate(request, query_set, page_size=25, request_key='page'):
 def generic_getter(domain_function, *args):
     try:
         result_object = domain_function(*args)
-    except:
+    except Exception as e:
         result_object = None
     if result_object:
         return result_object
