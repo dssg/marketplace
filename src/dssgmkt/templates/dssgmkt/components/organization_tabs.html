@@ -1,3 +1,4 @@
+{% load rules %}
 
 <ul class="nav nav-tabs">
 
@@ -9,8 +10,8 @@
     {% endif %}
   </li>
 
-  {# TODO use the rules permission system instead of these boolean flags #}
-  {% if user_is_staff or user_is_administrator %}
+  {% has_perm 'organization.staff_view' user organization as perm_staff_view %}
+  {% if perm_staff_view %}
 
     <li class="nav-item">
       {% if page_tab == 'staff' %}
