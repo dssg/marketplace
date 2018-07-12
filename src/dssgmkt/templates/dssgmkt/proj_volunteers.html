@@ -14,6 +14,7 @@
             <th>Full name</th>
             <th>Email address</th>
             <th>Task</th>
+            <th>Status</th>
             {% if perm_volunteers_edit %}
               <th></th>
             {% endif %}
@@ -28,7 +29,8 @@
               <td><a href="{% url 'dssgmkt:user_profile' volunteer.user.id %}">{{ volunteer.user.first_name }} {{ volunteer.user.last_name }}</a></td>
               <td><a href="{% url 'dssgmkt:user_profile' volunteer.user.id %}">{{ volunteer.user.email }}</a></td>
               <td>{{ volunteer.task.name }}</td>
-              {% if perm_volunteers_edit %}
+              <td>{% if volunteer.task.is_completed %}<span class="text-muted">Completed</span>{% else %}Active{% endif %}</td>
+              {% if perm_volunteers_edit and not volunteer.task.is_completed %}
                 <td>
                   <a href="{% url 'dssgmkt:proj_volunteer_edit' volunteer.task.project.id volunteer.task.id volunteer.id %}">
                     <i class="material-icons md-12" style="vertical-align: middle">swap_horiz</i>
@@ -36,7 +38,7 @@
                   </a>
                 </td>
               {% endif %}
-              {% if perm_volunteers_remove %}
+              {% if perm_volunteers_remove and not volunteer.task.is_completed %}
                 <td>
                   <a class="text-danger" href="{% url 'dssgmkt:proj_volunteer_remove' volunteer.task.project.id volunteer.task.id volunteer.id %}">
                     <i class="material-icons" style="vertical-align: middle">remove_circle</i>
