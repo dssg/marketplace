@@ -2,13 +2,21 @@
 {% load rules %}
 <ul class="nav nav-tabs">
 
-  <li class="nav-item">
-    {% if page_tab == 'info' %}
-      <span class="nav-link active">Project information</span>
-    {% else %}
-        <a class="nav-link" href="{% url 'dssgmkt:proj_info' project.id %}">Project information</a>
-    {% endif %}
-  </li>
+    <li class="nav-item">
+      {% if page_tab == 'info' %}
+        <span class="nav-link active">Information</span>
+      {% else %}
+          <a class="nav-link" href="{% url 'dssgmkt:proj_info' project.id %}">Information</a>
+      {% endif %}
+    </li>
+
+    <!-- <li class="nav-item">
+      {% if page_tab == 'scope' %}
+        <span class="nav-link active">Scope</span>
+      {% else %}
+          <a class="nav-link" href="{% url 'dssgmkt:proj_info' project.id %}">Scope</a>
+      {% endif %}
+    </li> -->
 
   <li class="nav-item">
     {% if page_tab == 'discussion' %}
@@ -21,9 +29,9 @@
   {% if project.is_completed %}
     <li class="nav-item">
       {% if page_tab == 'deliverables' %}
-        <span class="nav-link active">Deliverables</span>
+        <span class="nav-link active">Results</span>
       {% else %}
-        <a class="nav-link" href="{% url 'dssgmkt:proj_deliverables' project.id %}">Deliverables</a>
+        <a class="nav-link" href="{% url 'dssgmkt:proj_deliverables' project.id %}">Results</a>
       {% endif %}
     </li>
   {% endif %}
