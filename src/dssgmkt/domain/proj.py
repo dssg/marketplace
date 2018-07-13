@@ -413,12 +413,13 @@ class ProjectTaskService():
 
     @staticmethod
     def get_public_tasks(request_user, proj):
-        return ProjectTask.objects.filter(project=proj) \
+        query_set = ProjectTask.objects.filter(project=proj) \
                                     .exclude(stage=TaskStatus.DELETED) \
-                                    .annotate(volunteer_count=Count('projecttaskrole', filter=Q(projecttaskrole__role=TaskRole.VOLUNTEER), distinct=True)) \
-                                    .annotate(already_applied=Count('volunteerapplication', filter=Q(volunteerapplication__volunteer=request_user, volunteerapplication__status=ReviewStatus.NEW), distinct=True)) \
-                                    .annotate(already_volunteer=Count('projecttaskrole', filter=Q(projecttaskrole__user=request_user), distinct=True)) \
-                                    .order_by( '-stage','-accepting_volunteers',)
+                                    .annotate(volunteer_count=Count('projecttaskrole', filter=Q(projecttaskrole__role=TaskRole.VOLUNTEER), distinct=True))
+        if not request_user.is_anonymous:
+            query_set = query_set.annotate(already_applied=Count('volunteerapplication', filter=Q(volunteerapplication__volunteer=request_user, volunteerapplication__status=ReviewStatus.NEW), distinct=True)) \
+                                 .annotate(already_volunteer=Count('projecttaskrole', filter=Q(projecttaskrole__user=request_user), distinct=True))
+        return query_set.order_by( '-stage','-accepting_volunteers')
 
     @staticmethod
     def get_project_tasks_summary(request_user, proj):
