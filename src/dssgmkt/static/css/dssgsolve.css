@@ -86,6 +86,44 @@ fieldset legend {
   padding: 5px;
   flex: 1;
   text-align:  center;
+  padding: 0px;
+  position: relative;
+}
+
+.status span {
+  display: inline-block;
+  padding: 5px;
+  margin-left: 10px;
+}
+
+.status-active ~ .status span i{
+  display: none;
+}
+.status + .status-active span i{
+  display: none;
+}
+.status-active i.final{
+  display: inherit !important;
+}
+
+.svgdiagnoal {
+  height: 100%;
+  left: 0px;
+  position: absolute;
+}
+
+.svgdiagnoal polygon {
+  fill: #2C3E50;
+}
+
+.status-active ~ .status .svgdiagnoal polygon {
+  fill: white;
+}
+.status-active + .status .svgdiagnoal polygon {
+  fill: #80a415;
+}
+.status-active.bg-danger + .status .svgdiagnoal polygon {
+  fill: #E74C3C;
 }
 
 .status-active ~ .status {

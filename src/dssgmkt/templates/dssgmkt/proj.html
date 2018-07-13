@@ -8,12 +8,12 @@
       <h4>{{ project.get_project_cause_display }}</h4>
       <h4><a href="{% url 'dssgmkt:org_info' project.organization.id %}">{{ project.organization.name }}</a></h4>
       <p>{{ project.follower_count }} followers.</p>
-      {% include 'dssgmkt/components/project_status.html' %}
       <p>{{ project.short_summary }}</p>
     </div>
     <div class="col-lg-3">
       <img class="img-fluid" src="{{ project.banner_image_url }}"></img>
     </div>
+    {% include 'dssgmkt/components/project_status.html' %}
   </div>
 
   {% include 'dssgmkt/components/project_tabs.html' %}
