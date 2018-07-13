@@ -1,13 +1,31 @@
 
+  <div class="status-component col-lg-12 border border-round border-light mt-3 mb-3">
+    <div class="status-row col-lg-12">
+      <span class="status {% if task.is_not_started %}status-active bg-success{% endif %} border-bottom">
+        <span><i class="material-icons" style="vertical-align: middle">check</i>New</span>
+      </span>
+      <span class="status {% if task.is_in_progress %}status-active bg-success{% endif %} border-bottom">
+        <svg class="svgdiagnoal" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 100" preserveAspectRatio="none">
+          <polygon points="0 0 0 100 40 100" />
+          <line x1="0" y1="0" x2="40" y2="100" stroke="#ecf0f1" stroke-width="3"/>
+        </svg>
+        <span><i class="material-icons" style="vertical-align: middle">check</i>In progress</span>
+      </span>
+      <span class="status {% if task.is_pending_review %}status-active bg-success{% endif %} border-bottom">
+        <svg class="svgdiagnoal" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 100" preserveAspectRatio="none">
+          <polygon points="0 0 0 100 40 100" />
+          <line x1="0" y1="0" x2="40" y2="100" stroke="#ecf0f1" stroke-width="3"/>
+        </svg>
+        <span><i class="material-icons" style="vertical-align: middle">check</i>Task QA</span>
+      </span>
+      <span class="status {% if task.is_completed %}status-active bg-success{% endif %} border-bottom">
+        <svg class="svgdiagnoal" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 100" preserveAspectRatio="none">
+          <polygon points="0 0 0 100 40 100" />
+          <line x1="0" y1="0" x2="40" y2="100" stroke="#ecf0f1" stroke-width="3"/>
+        </svg>
+        <span><i class="material-icons final" style="vertical-align: middle">done_all</i>Completed</span></span>
+    </div>
 
-<div class="status-component col-lg-12 border border-round border-light mt-3 mb-3">
-  <div class="status-row col-lg-12">
-    <span class="status rounded-top border-right {% if task.is_not_started %}status-active bg-success{% else %}border-bottom{% endif %}">New</span>
-    <span class="status rounded-top border-right {% if task.is_in_progress %}status-active bg-success{% else %}border-bottom{% endif %}">In progress</span>
-    <span class="status rounded-top border-right {% if task.is_pending_review %}status-active bg-success{% else %}border-bottom{% endif %}">Task QA</span>
-    {# TODO fix the 1px-off right border on the last element #}
-    <span class="status rounded-top {% if task.is_completed %}status-active bg-success{% else %}border-bottom{% endif %}">Completed</span>
-  </div>
   <div class="status-description col-lg-12 bg-success text-white {% if task.is_completed %}rounded-bottom{% endif %}">
     {% if task.is_not_started %}
       This task has not started

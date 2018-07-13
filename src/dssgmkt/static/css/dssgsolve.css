@@ -99,7 +99,7 @@ fieldset legend {
 .status-active ~ .status span i{
   display: none;
 }
-.status + .status-active span i{
+.status-active span i{
   display: none;
 }
 .status-active i.final{
