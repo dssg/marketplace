@@ -1,0 +1,14 @@
+<span>
+  {% if project_task.is_not_started %}
+    <i class="fas fa-asterisk"></i>
+  {% elif project_task.is_in_progress %}
+    <i class="fas fa-spinner"></i>
+  {% elif project_task.is_pending_review %}
+    <i class="fas fa-search"></i>
+  {% elif project_task.is_completed %}
+    <i class="material-icons" style="vertical-align: middle">done_all</i>
+  {% endif %}
+  {% if not compact_display %}
+    {{ project_task.get_stage_display }}
+  {% endif %}
+</span>

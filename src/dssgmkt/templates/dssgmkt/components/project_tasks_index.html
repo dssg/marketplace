@@ -3,11 +3,16 @@
 
 <div class="flex-column list-group">
   {% for task in project_tasks %}
-      <a class="list-group-item list-group-item-action {% if task == project_task %}active{% endif %}"
+      <a class="d-flex list-group-item list-group-item-action {% if task == project_task %}active{% endif %}"
          href="{% url 'dssgmkt:proj_task' project.id task.id %}">
+         <span class="mr-auto">
            {% include 'dssgmkt/components/task_type_display.html' with project_task=task compact_display=True %}
            {{ task.name }}
-         </a>
+         </span>
+         <span>
+           {% include 'dssgmkt/components/task_stage_display.html' with project_task=task compact_display=True %}
+         </span>
+       </a>
   {% endfor %}
 </div>
 
