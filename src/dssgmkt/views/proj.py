@@ -232,7 +232,7 @@ def project_scope_view(request, proj_pk, scope_pk=None):
     if request.method == 'GET':
         project = get_project(request, proj_pk)
         project_scopes = ProjectService.get_all_project_scopes(request.user, proj_pk)
-        scopes_page = paginate(request, project_scopes, page_size=20)
+        scopes_page = paginate(request, project_scopes, page_size=10)
         if scope_pk:
             current_scope = get_project_scope(request, proj_pk, scope_pk)
             showing_current_scope = current_scope == ProjectService.get_current_project_scope(request.user, proj_pk)

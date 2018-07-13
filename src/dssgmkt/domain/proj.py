@@ -572,6 +572,14 @@ class ProjectTaskService():
                                                                ProjectLogSource.STATUS,
                                                                project.id,
                                                                message)
+                        elif not ProjectTask.objects.filter(project=project, type=TaskType.DOMAIN_WORK_TASK).exclude(stage=TaskStatus.COMPLETED).exists():
+                            message = "The last domain work task of project {0} has been finished, but there are still other tasks (non-domain work) open.".format(project.name)
+                            NotificationService.add_multiuser_notification(ProjectService.get_project_officials(request_user, project),
+                                                                     message,
+                                                                     NotificationSeverity.WARNING,
+                                                                     NotificationSource.PROJECT,
+                                                                     project.id)
+
 
 
     @staticmethod

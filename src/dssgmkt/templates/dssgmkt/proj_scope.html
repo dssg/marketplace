@@ -6,7 +6,7 @@
 
   <div class="row section-header">
     <div class="col-lg-8">
-      <h4>Project scope {% if not showing_current_scope %}{{ current_scope.creation_date }}{% endif %}</h4>
+      <h4>Project scope {% if not showing_current_scope %} (as of {{ current_scope.creation_date }}){% endif %}</h4>
     </div>
 
     <div class="col-lg-4">
