@@ -259,6 +259,7 @@ class ProjectLogSource():
     VOLUNTEER = 'VO'
     STATUS = 'SU'
     INFORMATION = 'IN'
+    SCOPE = 'SC'
 
     def get_choices():
         return (
@@ -269,6 +270,7 @@ class ProjectLogSource():
                     (ProjectLogSource.VOLUNTEER, 'Volunteer'),
                     (ProjectLogSource.STATUS, 'Status'),
                     (ProjectLogSource.INFORMATION, 'Information'),
+                    (ProjectLogSource.SCOPE, 'Scope'),
                 )
 
 class ProjectLogType():
@@ -354,6 +356,9 @@ class ProjectLog(models.Model):
 
     def is_source_information(self):
         return self.change_target == ProjectLogSource.INFORMATION
+
+    def is_source_scope(self):
+        return self.change_target == ProjectLogSource.SCOPE
 
     def __str__(self):
         return self.change_date.strftime('%Y-%m-%d %H:%M') + ": " + self.change_description

@@ -34,6 +34,8 @@
               <i class="material-icons" style="vertical-align: middle">layers</i>
             {% elif log.is_source_information %}
               <i class="material-icons" style="vertical-align: middle">info</i>
+            {% elif log.is_source_scope %}
+              <i class="fas fa-ruler"></i>
             {% endif %}
           </div>
           <div class="col-lg-8">

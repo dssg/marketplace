@@ -19,7 +19,7 @@ from ..models.common import ReviewStatus
 from ..models.proj import (
     Project, ProjectFollower, ProjectLog, ProjectComment, ProjectRole,
     ProjectTask, ProjectTaskRequirement, ProjectStatus, TaskStatus,
-    ProjectTaskReview, ProjectTaskRole, VolunteerApplication,
+    ProjectTaskReview, ProjectTaskRole, VolunteerApplication, ProjectScope,
 )
 from .common import build_breadcrumb, home_link, paginate, generic_getter
 from dssgmkt.domain.proj import ProjectService, ProjectTaskService
@@ -79,6 +79,9 @@ def project_volunteer_task_breadcrumb(project_task, *items):
 
 def get_project(request, proj_pk):
     return generic_getter(ProjectService.get_project, request.user, proj_pk)
+
+def get_project_scope(request, proj_pk, scope_pk):
+    return generic_getter(ProjectService.get_project_scope, request.user, proj_pk, scope_pk)
 
 def get_project_task(request, proj_pk, task_pk):
     return generic_getter(ProjectTaskService.get_project_task,request.user, proj_pk, task_pk)
@@ -226,33 +229,52 @@ class ProjectDeliverablesView(generic.DetailView):
 
 @permission_required('project.scope_view', raise_exception=True, fn=objectgetter(Project, 'proj_pk'))
 def project_scope_view(request, proj_pk):
-    if request.method == 'POST':
-        # form = CreateProjectRoleForm(request.POST)
-        # if form.is_valid:
-        #     project_role = form.save(commit = False)
-        #     try:
-        #         ProjectService.add_staff_member(request.user, proj_pk, project_role)
-        #         messages.info(request, 'Staff member added successfully.')
-        #         return redirect('dssgmkt:proj_staff', proj_pk=proj_pk)
-        #     except KeyError:
-        #         raise Http404
-        #     except ValueError:
-        #         form.add_error(None, "This user is already a member of the project.")
-        pass
-    elif request.method == 'GET':
-        pass
+    if request.method == 'GET':
+        project = get_project(request, proj_pk)
+        project_scopes = ProjectService.get_all_project_scopes(request.user, proj_pk)
+        scopes_page = paginate(request, project_scopes, page_size=20)
+
+        return render(request, 'dssgmkt/proj_scope.html',
+                        add_project_common_context(request, project, 'scope',
+                            {
+                                'breadcrumb': project_breadcrumb(project, ('Scope', None)),
+                                'current_scope': ProjectService.get_current_project_scope(request.user, proj_pk),
+                                'project_scopes': scopes_page,
+                            }))
+    else:
+        raise Http404
+
+
+class EditProjectScopeForm(ModelForm):
+    class Meta:
+        model = ProjectScope
+        fields = ['scope', 'version_notes']
+
+@permission_required('project.scope_edit', raise_exception=True, fn=objectgetter(Project, 'proj_pk'))
+def project_edit_scope_view(request, proj_pk, scope_pk):
     project = get_project(request, proj_pk)
-    project_scopes = ProjectService.get_all_project_scopes(request.user, proj_pk)
-    scopes_page = paginate(request, project_scopes, page_size=20)
+    project_scope = get_project_scope(request, proj_pk, scope_pk)
+    project_scope.version_notes = None
+    if request.method == 'POST':
+        form = EditProjectScopeForm(request.POST, instance=project_scope)
+        if form.is_valid():
+            project_scope = form.save(commit = False)
+            try:
+                ProjectService.update_project_scope(request.user, proj_pk, project_scope)
+                messages.info(request, 'Project scope edited successfully.')
+                return redirect('dssgmkt:proj_scope', proj_pk=proj_pk)
+            except KeyError:
+                raise Http404
+    elif request.method == 'GET':
+        form = EditProjectScopeForm(instance=project_scope)
 
-    return render(request, 'dssgmkt/proj_scope.html',
-                    add_project_common_context(request, project, 'scope',
-                        {
-                            'breadcrumb': project_breadcrumb(project, ('Scope', None)),
-                            'current_scope': ProjectService.get_current_project_scope(request.user, proj_pk),
-                            'project_scopes': scopes_page,
-                        }))
-
+        return render(request, 'dssgmkt/proj_scope_edit.html',
+                        add_project_common_context(request, project, 'scope',
+                            {
+                                'breadcrumb': project_breadcrumb(project, ('Scope', reverse('dssgmkt:proj_scope',  args=[proj_pk])), ('Edit', None)),
+                                'project_scope': project_scope,
+                                'form': form
+                            }))
 
 class ProjectVolunteerInstructionsView(PermissionRequiredMixin, generic.ListView):
     template_name = 'dssgmkt/proj_instructions.html'

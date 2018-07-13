@@ -11,6 +11,7 @@ from .models import org, proj, user
 admin.site.register(user.Skill)
 admin.site.register(org.Organization)
 admin.site.register(proj.Project)
+admin.site.register(proj.ProjectScope)
 admin.site.register(proj.ProjectLog)
 admin.site.register(proj.ProjectComment)
 admin.site.register(proj.ProjectFollower)

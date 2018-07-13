@@ -330,6 +330,41 @@ class ProjectService():
         return ProjectService.get_all_project_scopes(request_user, projid).first()
 
     @staticmethod
+    def get_project_scope(request_user, projid, scopeid):
+        project = Project.objects.get(pk=projid)
+        ensure_user_has_permission(request_user, project, 'project.scope_view')
+        return ProjectScope.objects.get(pk=scopeid, project=projid)
+
+    @staticmethod
+    def update_project_scope(request_user, projid, project_scope):
+        validate_consistent_keys(project_scope, (['project', 'id'], projid))
+        project = Project.objects.get(pk=projid)
+        ensure_user_has_permission(request_user, project, 'project.scope_edit')
+        if project:
+            # We set the primary key of the project scope being "edited" so
+            # Django inserts a new instance in the db.
+            project_scope.id = None
+            project_scope.creation_date = None
+            try:
+                project_scope.save()
+                message = "The project scope of project {0} was edited by {1}.".format(project.name, request_user.standard_display_name())
+                NotificationService.add_multiuser_notification(ProjectService.get_project_members(request_user, project),
+                                                            message,
+                                                            NotificationSeverity.INFO,
+                                                            NotificationSource.PROJECT,
+                                                            project.id)
+                ProjectService.add_project_change(request_user,
+                                                  project,
+                                                  ProjectLogType.EDIT,
+                                                  ProjectLogSource.SCOPE,
+                                                  project.id,
+                                                  message)
+            except IntegrityError:
+                raise ValueError('Duplicate user role')
+        else:
+            raise KeyError('Project not found ' + str(projid))
+
+    @staticmethod
     def get_all_project_staff(request_user, projid):
         project = Project.objects.get(pk=projid)
         ensure_user_has_permission(request_user, project, 'project.staff_view')
