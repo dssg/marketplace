@@ -1,12 +1,12 @@
 {% if project_tasks %}
 
-<ul class="nav nav-pills flex-column">
+
+<div class="flex-column list-group">
   {% for task in project_tasks %}
-    <li class="nav-item col-lg-12">
-      <a class="nav-link {% if task == project_task %}active{% endif %}" href="{% url 'dssgmkt:proj_task' project.id task.id %}">{{ task.name }}</a>
-    </li>
+      <a class="list-group-item list-group-item-action {% if task == project_task %}active{% endif %}"
+         href="{% url 'dssgmkt:proj_task' project.id task.id %}">{{ task.name }}</a>
   {% endfor %}
-</ul>
+</div>
 
 {% endif %}
 
