@@ -9,8 +9,6 @@
           <h4>Volunteer instructions</h4>
           <p>{{ project_task.description }}</p>
           <p>{{ project_task.onboarding_instructions }}</p>
-          <p>Start date: {{ project_task.estimated_start_date }}</p>
-          <p>End date: {{ project_task.estimated_end_date }}</p>
 
           {% if project.deliverable_management_url %}
             <a href="{{ project.deliverable_management_url }}">External project home</a>
@@ -47,18 +45,27 @@
               Task QA review pending
             </a>
           {% endif %}
-        </div>
 
-        <div class="card">
-          <div class="card-header">Volunteers</div>
-          <div class="card-body">
-            {% for volunteer in task_volunteers %}
-              <div>
-                <a href="{% url 'dssgmkt:user_profile' volunteer.id %}">{{ volunteer.standard_display_name }}</a>
-              </div>
-            {% endfor %}
+          <div class="card section-header">
+            <div class="card-header">Schedule</div>
+            <div class="card-body">
+              <p>Start: {{ project_task.estimated_start_date }} (estimated), {{ project_task.actual_start_date }} (actual)</p>
+              <p>End: {{ project_task.estimated_end_date }} (estimated), {{ project_task.actual_end_date }} (actual)</p>
+            </div>
+          </div>
+
+          <div class="card section-header">
+            <div class="card-header">Volunteers</div>
+            <div class="card-body">
+              {% for volunteer in task_volunteers %}
+                <div>
+                  <a href="{% url 'dssgmkt:user_profile' volunteer.id %}">{{ volunteer.standard_display_name }}</a>
+                </div>
+              {% endfor %}
+            </div>
           </div>
         </div>
+
       </div>
 
       {# TODO add the completed task reviews of this task (so the volunteer has feedback about the task always available) #}
