@@ -8,67 +8,75 @@
             <span>Draft</span>
           </span>
       {% endif %}
-      <span class="status {% if project.is_new_status %}status-active bg-success{% endif %} border-bottom">
+      <span class="status {% if project.is_new_status %}status-active{% endif %} border-bottom">
         {% if project.is_draft_status %}
           <svg class="svgdiagnoal" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 100" preserveAspectRatio="none">
-            <polygon points="0 0 0 100 40 100" />
-            <line x1="0" y1="0" x2="40" y2="100" stroke="#ecf0f1" stroke-width="3"/>
+            <polygon points="0 100 40 50 0 50" /><polygon points="0 0 40 50 0 50" />
+            <line x1="0" y1="100" x2="40" y2="50" stroke="#ecf0f1" stroke-width="3"/>
+            <line x1="0" y1="0" x2="40" y2="50" stroke="#ecf0f1" stroke-width="3"/>
           </svg>
         {% endif %}
         <span><i class="material-icons" style="vertical-align: middle">check</i>New</span>
       </span>
-      <span class="status {% if project.is_design_status %}status-active bg-success{% endif %} border-bottom">
+      <span class="status {% if project.is_design_status %}status-active{% endif %} border-bottom">
         <svg class="svgdiagnoal" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 100" preserveAspectRatio="none">
-          <polygon points="0 0 0 100 40 100" />
-          <line x1="0" y1="0" x2="40" y2="100" stroke="#ecf0f1" stroke-width="3"/>
+          <polygon points="0 100 40 50 0 50" /><polygon points="0 0 40 50 0 50" />
+          <line x1="0" y1="100" x2="40" y2="50" stroke="#ecf0f1" stroke-width="3"/>
+          <line x1="0" y1="0" x2="40" y2="50" stroke="#ecf0f1" stroke-width="3"/>
         </svg>
         <span><i class="material-icons" style="vertical-align: middle">check</i>Scoping</span>
       </span>
-      <span class="status {% if project.is_waiting_design_approval_status %}status-active bg-success{% endif %} border-bottom">
+      <span class="status {% if project.is_waiting_design_approval_status %}status-active{% endif %} border-bottom">
         <svg class="svgdiagnoal" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 100" preserveAspectRatio="none">
-          <polygon points="0 0 0 100 40 100" />
-          <line x1="0" y1="0" x2="40" y2="100" stroke="#ecf0f1" stroke-width="3"/>
+          <polygon points="0 100 40 50 0 50" /><polygon points="0 0 40 50 0 50" />
+          <line x1="0" y1="100" x2="40" y2="50" stroke="#ecf0f1" stroke-width="3"/>
+          <line x1="0" y1="0" x2="40" y2="50" stroke="#ecf0f1" stroke-width="3"/>
         </svg>
         <span><i class="material-icons" style="vertical-align: middle">check</i>Scoping QA</span>
       </span>
-      <span class="status {% if project.is_waiting_staff_status %}status-active bg-success{% endif %} border-bottom">
+      <span class="status {% if project.is_waiting_staff_status %}status-active{% endif %} border-bottom">
         <svg class="svgdiagnoal" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 100" preserveAspectRatio="none">
-          <polygon points="0 0 0 100 40 100" />
-          <line x1="0" y1="0" x2="40" y2="100" stroke="#ecf0f1" stroke-width="3"/>
+          <polygon points="0 100 40 50 0 50" /><polygon points="0 0 40 50 0 50" />
+          <line x1="0" y1="100" x2="40" y2="50" stroke="#ecf0f1" stroke-width="3"/>
+          <line x1="0" y1="0" x2="40" y2="50" stroke="#ecf0f1" stroke-width="3"/>
         </svg>
         <span><i class="material-icons" style="vertical-align: middle">check</i>Staffing</span>
       </span>
-      <span class="status {% if project.is_in_progress_status %}status-active bg-success{% endif %} border-bottom">
+      <span class="status {% if project.is_in_progress_status %}status-active{% endif %} border-bottom">
         <svg class="svgdiagnoal" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 100" preserveAspectRatio="none">
-          <polygon points="0 0 0 100 40 100" />
-          <line x1="0" y1="0" x2="40" y2="100" stroke="#ecf0f1" stroke-width="3"/>
+          <polygon points="0 100 40 50 0 50" /><polygon points="0 0 40 50 0 50" />
+          <line x1="0" y1="100" x2="40" y2="50" stroke="#ecf0f1" stroke-width="3"/>
+          <line x1="0" y1="0" x2="40" y2="50" stroke="#ecf0f1" stroke-width="3"/>
         </svg>
         <span><i class="material-icons" style="vertical-align: middle">check</i>In progress</span>
       </span>
-      <span class="status {% if project.is_waiting_review_status %}status-active bg-success{% endif %} border-bottom">
+      <span class="status {% if project.is_waiting_review_status %}status-active{% endif %} border-bottom">
         <svg class="svgdiagnoal" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 100" preserveAspectRatio="none">
-          <polygon points="0 0 0 100 40 100" />
-          <line x1="0" y1="0" x2="40" y2="100" stroke="#ecf0f1" stroke-width="3"/>
+          <polygon points="0 100 40 50 0 50" /><polygon points="0 0 40 50 0 50" />
+          <line x1="0" y1="100" x2="40" y2="50" stroke="#ecf0f1" stroke-width="3"/>
+          <line x1="0" y1="0" x2="40" y2="50" stroke="#ecf0f1" stroke-width="3"/>
         </svg>
         <span><i class="material-icons" style="vertical-align: middle">check</i>Final QA</span>
       </span>
       {% if project.is_expired_status %}
         <span class="status status-active bg-danger border-bottom">
           <svg class="svgdiagnoal" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 100" preserveAspectRatio="none">
-            <polygon points="0 0 0 100 40 100" />
-            <line x1="0" y1="0" x2="40" y2="100" stroke="#ecf0f1" stroke-width="3"/>
+            <polygon points="0 100 40 50 0 50" /><polygon points="0 0 40 50 0 50" />
+            <line x1="0" y1="100" x2="40" y2="50" stroke="#ecf0f1" stroke-width="3"/>
+            <line x1="0" y1="0" x2="40" y2="50" stroke="#ecf0f1" stroke-width="3"/>
           </svg>
           <span><i class="material-icons" style="vertical-align: middle">check</i>Expired</span></span>
       {% else %}
         <span class="status {% if project.is_completed_status %}status-active bg-success{% endif %} border-bottom">
           <svg class="svgdiagnoal" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 100" preserveAspectRatio="none">
-            <polygon points="0 0 0 100 40 100" />
-            <line x1="0" y1="0" x2="40" y2="100" stroke="#ecf0f1" stroke-width="3"/>
+            <polygon points="0 100 40 50 0 50" /><polygon points="0 0 40 50 0 50" />
+            <line x1="0" y1="100" x2="40" y2="50" stroke="#ecf0f1" stroke-width="3"/>
+            <line x1="0" y1="0" x2="40" y2="50" stroke="#ecf0f1" stroke-width="3"/>
           </svg>
           <span><i class="material-icons final" style="vertical-align: middle">done_all</i>Completed</span></span>
       {% endif %}
     </div>
-    <div class="status-description col-lg-12 {% if project.is_draft_status or project.is_expired_status %}bg-danger{% else %}bg-success{% endif %} text-white rounded-bottom">
+    <div class="status-description col-lg-12 {% if project.is_draft_status or project.is_expired_status %}bg-danger{% elif project.is_completed_status %}bg-success{% else %}bg-primary{% endif %} text-white">
       {% if project.is_draft_status %}
         This project is in draft status and it is only visible to project members
       {% elif project.is_new_status %}

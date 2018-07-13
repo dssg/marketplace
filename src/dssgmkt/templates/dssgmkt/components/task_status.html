@@ -1,32 +1,45 @@
 
   <div class="status-component col-lg-12 border border-round border-light mt-3 mb-3">
+    {% if not task.is_completed %}
+      <div class="status-description col-lg-12 {% if task.accepting_volunteers %}bg-success{% else %}bg-warning{% endif %} text-white border-bottom">
+        {% if task.accepting_volunteers %}
+          This task is accepting volunteers.
+        {% else %}
+          This task is not accepting volunteers.
+        {% endif %}
+      </div>
+    {% endif %}
+
     <div class="status-row col-lg-12">
-      <span class="status {% if task.is_not_started %}status-active bg-success{% endif %} border-bottom">
+      <span class="status {% if task.is_not_started %}status-active{% endif %} border-bottom">
         <span><i class="material-icons" style="vertical-align: middle">check</i>New</span>
       </span>
-      <span class="status {% if task.is_in_progress %}status-active bg-success{% endif %} border-bottom">
+      <span class="status {% if task.is_in_progress %}status-active{% endif %} border-bottom">
         <svg class="svgdiagnoal" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 100" preserveAspectRatio="none">
-          <polygon points="0 0 0 100 40 100" />
-          <line x1="0" y1="0" x2="40" y2="100" stroke="#ecf0f1" stroke-width="3"/>
+          <polygon points="0 100 40 50 0 50" /><polygon points="0 0 40 50 0 50" />
+          <line x1="0" y1="100" x2="40" y2="50" stroke="#ecf0f1" stroke-width="3"/>
+          <line x1="0" y1="0" x2="40" y2="50" stroke="#ecf0f1" stroke-width="3"/>
         </svg>
         <span><i class="material-icons" style="vertical-align: middle">check</i>In progress</span>
       </span>
-      <span class="status {% if task.is_pending_review %}status-active bg-success{% endif %} border-bottom">
+      <span class="status {% if task.is_pending_review %}status-active{% endif %} border-bottom">
         <svg class="svgdiagnoal" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 100" preserveAspectRatio="none">
-          <polygon points="0 0 0 100 40 100" />
-          <line x1="0" y1="0" x2="40" y2="100" stroke="#ecf0f1" stroke-width="3"/>
+          <polygon points="0 100 40 50 0 50" /><polygon points="0 0 40 50 0 50" />
+          <line x1="0" y1="100" x2="40" y2="50" stroke="#ecf0f1" stroke-width="3"/>
+          <line x1="0" y1="0" x2="40" y2="50" stroke="#ecf0f1" stroke-width="3"/>
         </svg>
         <span><i class="material-icons" style="vertical-align: middle">check</i>Task QA</span>
       </span>
       <span class="status {% if task.is_completed %}status-active bg-success{% endif %} border-bottom">
         <svg class="svgdiagnoal" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 100" preserveAspectRatio="none">
-          <polygon points="0 0 0 100 40 100" />
-          <line x1="0" y1="0" x2="40" y2="100" stroke="#ecf0f1" stroke-width="3"/>
+          <polygon points="0 100 40 50 0 50" /><polygon points="0 0 40 50 0 50" />
+          <line x1="0" y1="100" x2="40" y2="50" stroke="#ecf0f1" stroke-width="3"/>
+          <line x1="0" y1="0" x2="40" y2="50" stroke="#ecf0f1" stroke-width="3"/>
         </svg>
         <span><i class="material-icons final" style="vertical-align: middle">done_all</i>Completed</span></span>
     </div>
 
-  <div class="status-description col-lg-12 bg-success text-white {% if task.is_completed %}rounded-bottom{% endif %}">
+  <div class="status-description col-lg-12 bg-primary text-white {% if task.is_completed %} bg-success{% endif %}">
     {% if task.is_not_started %}
       This task has not started
     {% elif task.is_in_progress %}
@@ -37,13 +50,5 @@
       This task is completed
     {% endif %}
   </div>
-  {% if not task.is_completed %}
-    <div class="status-description col-lg-12 {% if task.accepting_volunteers %}bg-success{% else %}bg-warning{% endif %} text-white rounded-bottom">
-      {% if task.accepting_volunteers %}
-        This task is accepting volunteers.
-      {% else %}
-        This task is not accepting volunteers.
-      {% endif %}
-    </div>
-  {% endif %}
+
 </div>

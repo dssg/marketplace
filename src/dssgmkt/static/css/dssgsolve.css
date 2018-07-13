@@ -81,13 +81,19 @@ fieldset legend {
 }
 
 .status {
-  background-color: #2C3E50;
-  color: white;
+  background-color: #80a415;
+  color: #dddddd;
   padding: 5px;
   flex: 1;
   text-align:  center;
   padding: 0px;
   position: relative;
+}
+
+.status-active {
+  background-color: #2C3E50;
+  font-weight: bold;
+  color: white;
 }
 
 .status span {
@@ -113,14 +119,14 @@ fieldset legend {
 }
 
 .svgdiagnoal polygon {
-  fill: #2C3E50;
+  fill: #80a415;
 }
 
 .status-active ~ .status .svgdiagnoal polygon {
   fill: white;
 }
 .status-active + .status .svgdiagnoal polygon {
-  fill: #80a415;
+  fill: #2C3E50;
 }
 .status-active.bg-danger + .status .svgdiagnoal polygon {
   fill: #E74C3C;
