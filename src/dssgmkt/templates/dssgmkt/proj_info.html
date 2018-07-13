@@ -84,45 +84,43 @@
                         <div>{{ task_requirement.skill.area }}/{{ task_requirement.skill.name }}:{{ task_requirement.get_level_display }}</div>
                       {% endfor %}
                     </li>
-                    <li class="list-group-item">
                       {% if project_task.accepting_volunteers %}
                         {% if project_task.already_applied %}
-                          <a class="btn btn-light disabled col-lg-12 mb-1">
+                          <a class="list-group-item list-group-item-action disabled">
                             <i class="material-icons" style="vertical-align: middle">check</i>
                             You have already applied to this task
                           </a>
                         {% elif project_task.already_volunteer %}
-                          <a class="btn btn-light disabled col-lg-12 mb-1">
+                          <a class="list-group-item list-group-item-action disabled">
                             <i class="material-icons" style="vertical-align: middle">check</i>
                             You are already a volunteer
                           </a>
                         {% else %}
                           {% if user.volunteerprofile %}
                             {% if user.volunteerprofile.is_accepted %}
-                              <a class="btn btn-success col-lg-12" href="{% url 'dssgmkt:proj_task_apply' project.id project_task.id %}">
+                              <a class="list-group-item list-group-item-action bg-success text-white" href="{% url 'dssgmkt:proj_task_apply' project.id project_task.id %}">
                                 <i class="material-icons" style="vertical-align: middle">how_to_vote</i>
                                 Apply to volunteer
                               </a>
                             {% else %}
-                              <a class="btn btn-light disabled col-lg-12 mb-1">
+                              <a class="list-group-item list-group-item-action disabled">
                                 <i class="material-icons" style="vertical-align: middle">not_interested</i>
                                 Wait until approved as volunteer
                               </a>
                             {% endif %}
                           {% else %}
-                            <a class="btn btn-light disabled col-lg-12 mb-1">
+                            <a class="list-group-item list-group-item-action disabled">
                               <i class="material-icons" style="vertical-align: middle">not_interested</i>
                               Create a volunteer profile first
                             </a>
                           {% endif %}
                         {% endif %}
                       {% else %}
-                        <a class="btn btn-light disabled col-lg-12 mb-1">
+                        <a class="list-group-item list-group-item-action disabled">
                           <i class="material-icons" style="vertical-align: middle">hourglass_empty</i>
                           Task not currently accepting volunteers
                         </a>
                       {% endif %}
-                    </li>
                   </ul>
               </div>
             {% else %}
