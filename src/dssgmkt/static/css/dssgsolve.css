@@ -34,6 +34,10 @@
   }
 }
 
+body {
+  background-color: #cfd9db;
+}
+
 .navbar {
   text-transform: uppercase;
 }
@@ -43,8 +47,11 @@
 }
 
 .main-page-container {
+  padding-top: 50px;
   padding-bottom: 50px;
   margin-bottom: 50px;
+  background-color: white;
+  min-height: 100vh;
 }
 
 .btn i {
