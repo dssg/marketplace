@@ -30,6 +30,7 @@ urlpatterns = [
     path('proj/<int:proj_pk>/discussion/', proj.project_comments_view, name='proj_discussion'),
     path('proj/<int:proj_pk>/discussion/add', proj.project_comments_view, name='proj_discussion_add'),
     path('proj/<int:proj_pk>/scope/', proj.project_scope_view, name='proj_scope'),
+    path('proj/<int:proj_pk>/scope/<int:scope_pk>/', proj.project_scope_view, name='proj_scope_previous'),
     path('proj/<int:proj_pk>/scope/<int:scope_pk>/edit', proj.project_edit_scope_view, name='proj_scope_edit'),
     path('proj/<int:proj_pk>/deliverables/', proj.ProjectDeliverablesView.as_view(), name='proj_deliverables'),
     path('proj/<int:proj_pk>/instructions/', proj.ProjectVolunteerInstructionsView.as_view(), name='proj_instructions'),

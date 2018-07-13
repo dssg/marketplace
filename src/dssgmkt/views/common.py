@@ -32,7 +32,6 @@ def generic_getter(domain_function, *args):
     try:
         result_object = domain_function(*args)
     except Exception as e:
-        print(str(e))
         result_object = None
     if result_object:
         return result_object

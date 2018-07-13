@@ -6,12 +6,12 @@
 
   <div class="row section-header">
     <div class="col-lg-8">
-      <h4>Project scope</h4>
+      <h4>Project scope {% if not showing_current_scope %}{{ current_scope.creation_date }}{% endif %}</h4>
     </div>
 
     <div class="col-lg-4">
       {% has_perm 'project.scope_edit' user project as perm_scope_edit %}
-      {% if perm_scope_edit %}
+      {% if current_scope and showing_current_scope and perm_scope_edit %}
         <a class="btn btn-success col-lg-12 mb-1"
            href="{% url 'dssgmkt:proj_scope_edit' project.id current_scope.id %}">
           <i class="material-icons" style="vertical-align: middle">edit</i>
@@ -23,16 +23,35 @@
 
   {{ current_scope.scope }}
 
+  <h5 class="section-header">Project impact</h5>
+  {{ current_scope.project_impact }}
+
+  <h5 class="section-header">Scoping process</h5>
+  {{ current_scope.scoping_process }}
+
+  <h5 class="section-header">Available staff</h5>
+  {{ current_scope.available_staff }}
+
+  <h5 class="section-header">Available data</h5>
+  {{ current_scope.available_data }}
+
   <h4 class="section-header">Scope version notes</h4>
   <ul class="list-group list-group-flush mb-3">
     {% for scope in project_scopes %}
-      <li class="list-group-item">
+      <li class="list-group-item {% if current_scope and scope.creation_date > current_scope.creation_date %}bg-light{% endif %}">
         <div class="row">
           <div class="col-lg-3">
             <div class="text-right"><a href="{% url 'dssgmkt:user_profile' scope.author.id %}">{{ scope.author }}</a></div>
             <div class="text-right text-muted">{{ scope.creation_date }}</div>
           </div>
-          <div class="col-lg-9">
+          <div class="col-lg-1">
+            {% if scope != current_scope %}
+              <a href="{% url 'dssgmkt:proj_scope_previous' project.id scope.id %}">View</a>
+            {% else %}
+              Showing
+            {% endif %}
+          </div>
+          <div class="col-lg-8">
             {{ scope.version_notes }}
           </div>
         </div>

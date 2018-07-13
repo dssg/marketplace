@@ -228,18 +228,24 @@ class ProjectDeliverablesView(generic.DetailView):
 
 
 @permission_required('project.scope_view', raise_exception=True, fn=objectgetter(Project, 'proj_pk'))
-def project_scope_view(request, proj_pk):
+def project_scope_view(request, proj_pk, scope_pk=None):
     if request.method == 'GET':
         project = get_project(request, proj_pk)
         project_scopes = ProjectService.get_all_project_scopes(request.user, proj_pk)
         scopes_page = paginate(request, project_scopes, page_size=20)
-
+        if scope_pk:
+            current_scope = get_project_scope(request, proj_pk, scope_pk)
+            showing_current_scope = current_scope == ProjectService.get_current_project_scope(request.user, proj_pk)
+        else:
+            current_scope = ProjectService.get_current_project_scope(request.user, proj_pk)
+            showing_current_scope = True
         return render(request, 'dssgmkt/proj_scope.html',
                         add_project_common_context(request, project, 'scope',
                             {
                                 'breadcrumb': project_breadcrumb(project, ('Scope', None)),
-                                'current_scope': ProjectService.get_current_project_scope(request.user, proj_pk),
+                                'current_scope': current_scope,
                                 'project_scopes': scopes_page,
+                                'showing_current_scope': showing_current_scope
                             }))
     else:
         raise Http404
@@ -248,7 +254,7 @@ def project_scope_view(request, proj_pk):
 class EditProjectScopeForm(ModelForm):
     class Meta:
         model = ProjectScope
-        fields = ['scope', 'version_notes']
+        fields = ['version_notes', 'scope', 'project_impact', 'scoping_process', 'available_staff', 'available_data']
 
 @permission_required('project.scope_edit', raise_exception=True, fn=objectgetter(Project, 'proj_pk'))
 def project_edit_scope_view(request, proj_pk, scope_pk):
