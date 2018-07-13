@@ -5,7 +5,7 @@ from datetime import date
 from ..models.proj import (
     Project, ProjectStatus, ProjectRole, ProjRole, ProjectFollower, ProjectLog, ProjectLogType, ProjectLogSource, ProjectComment,
     ProjectTask, TaskStatus, TaskRole, ProjectTaskRole, ProjectTaskReview, VolunteerApplication,
-    ProjectTaskRequirement, TaskType,
+    ProjectTaskRequirement, TaskType, ProjectScope,
 )
 from ..models.common import (
     ReviewStatus,
@@ -318,6 +318,16 @@ class ProjectService():
                                           ProjectLogSource.STAFF,
                                           project_role.id,
                                           message)
+
+    @staticmethod
+    def get_all_project_scopes(request_user, projid):
+        project = Project.objects.get(pk=projid)
+        ensure_user_has_permission(request_user, project, 'project.scope_view')
+        return ProjectScope.objects.filter(project=projid).order_by('-creation_date')
+
+    @staticmethod
+    def get_current_project_scope(request_user, projid):
+        return ProjectService.get_all_project_scopes(request_user, projid).first()
 
     @staticmethod
     def get_all_project_staff(request_user, projid):

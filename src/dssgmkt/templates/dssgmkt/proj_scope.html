@@ -6,4 +6,24 @@
 
   Put the scope here
 
+  <h4 class="section-header">Scope version notes</h4>
+  <ul class="list-group list-group-flush mb-3">
+    {% for scope in project_scopes %}
+      <li class="list-group-item">
+        <div class="row">
+          <div class="col-lg-3">
+            <div class="text-right"><a href="{% url 'dssgmkt:user_profile' log.author.id %}">{{ scope.author }}</a></div>
+            <div class="text-right text-muted">{{ scope.creation_date }}</div>
+          </div>
+          <div class="col-lg-9">
+            {{ scope.version_notes }}
+          </div>
+        </div>
+      </li>
+    {% endfor %}
+  </ul>
+
+  {% url 'dssgmkt:proj_scope' as proj_scope_url %}
+  {% include 'dssgmkt/components/pagination.html' with baseurl=proj_scope_url page_obj=project_scopes %}
+
 {% endblock %}

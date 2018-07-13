@@ -223,20 +223,36 @@ class ProjectDeliverablesView(generic.DetailView):
         add_project_common_context(self.request, project, 'deliverables', context)
         return context
 
-class ProjectScopeView(generic.DetailView):
-    model = Project
-    template_name = 'dssgmkt/proj_scope.html'
-    pk_url_kwarg = 'proj_pk'
 
-    def get_object(self):
-        return get_project(self.request, self.kwargs['proj_pk'])
+@permission_required('project.scope_view', raise_exception=True, fn=objectgetter(Project, 'proj_pk'))
+def project_scope_view(request, proj_pk):
+    if request.method == 'POST':
+        # form = CreateProjectRoleForm(request.POST)
+        # if form.is_valid:
+        #     project_role = form.save(commit = False)
+        #     try:
+        #         ProjectService.add_staff_member(request.user, proj_pk, project_role)
+        #         messages.info(request, 'Staff member added successfully.')
+        #         return redirect('dssgmkt:proj_staff', proj_pk=proj_pk)
+        #     except KeyError:
+        #         raise Http404
+        #     except ValueError:
+        #         form.add_error(None, "This user is already a member of the project.")
+        pass
+    elif request.method == 'GET':
+        pass
+    project = get_project(request, proj_pk)
+    project_scopes = ProjectService.get_all_project_scopes(request.user, proj_pk)
+    scopes_page = paginate(request, project_scopes, page_size=20)
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['breadcrumb'] = project_breadcrumb(context['project'], ('Project scope', None))
-        project = get_project(self.request, self.kwargs['proj_pk'])
-        add_project_common_context(self.request, project, 'scope', context)
-        return context
+    return render(request, 'dssgmkt/proj_scope.html',
+                    add_project_common_context(request, project, 'scope',
+                        {
+                            'breadcrumb': project_breadcrumb(project, ('Scope', None)),
+                            'current_scope': ProjectService.get_current_project_scope(request.user, proj_pk),
+                            'project_scopes': scopes_page,
+                        }))
+
 
 class ProjectVolunteerInstructionsView(PermissionRequiredMixin, generic.ListView):
     template_name = 'dssgmkt/proj_instructions.html'
