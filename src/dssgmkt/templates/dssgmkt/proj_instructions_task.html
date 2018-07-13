@@ -49,7 +49,7 @@
           {% endif %}
 
           <div class="card section-header">
-            <div class="card-header">Schedule</div>
+            <div class="card-header"><i class="far fa-calendar-alt"></i> Schedule</div>
             <div class="card-body">
               <p>Start: {{ project_task.estimated_start_date }} (estimated), {{ project_task.actual_start_date }} (actual)</p>
               <p>End: {{ project_task.estimated_end_date }} (estimated), {{ project_task.actual_end_date }} (actual)</p>
@@ -57,7 +57,7 @@
           </div>
 
           <div class="card section-header">
-            <div class="card-header">Volunteers</div>
+            <div class="card-header"><i class="fas fa-user-cog"></i> Volunteers</div>
             <div class="card-body">
               {% for volunteer in task_volunteers %}
                 <div>

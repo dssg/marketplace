@@ -62,7 +62,7 @@
       {% endif %}
 
       <div class="card mb-3 section-header">
-        <div class="card-header">Schedule</div>
+        <div class="card-header"><i class="far fa-calendar-alt"></i> Schedule</div>
         <div class="card-body">
           <p>Start date: {% if project.actual_start_date %}{{ project.actual_start_date }}{% else %}{{ project.intended_start_date }}{% endif %}</p>
           <p>End date: {% if project.actual_end_date %}{{ project.actual_end_date }}{% else %}{{ project.intended_end_date }}{% endif %}</p>
@@ -82,7 +82,7 @@
                   </span>
                   <span class="text-right">
                     {{ project_task.volunteer_count }}
-                    <i class="material-icons" style="vertical-align: middle">group</i>
+                    <i class="fas fa-user-cog"></i>
                   </span>
                 </div>
 
@@ -139,7 +139,7 @@
                   {{ project_task.name }}
                   <i class="material-icons" style="vertical-align: middle">done_all</i>
                 </span>
-                <span>{{ project_task.volunteer_count }} <i class="material-icons" style="vertical-align: middle">group</i></span>
+                <span>{{ project_task.volunteer_count }} <i class="fas fa-user-cog"></i></span>
               </div>
             {% endif %}
           {% endfor %}

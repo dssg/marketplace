@@ -28,7 +28,7 @@
               </a>
               <a class="btn btn-success col-lg-12 mb-1"
                  href="{% url 'dssgmkt:proj_task_requirements_edit' project.id project_task.id %}">
-                <i class="material-icons" style="vertical-align: middle">donut_small</i>
+                <i class="fas fa-magic"></i> 
                 Edit task requirements
               </a>
               <form id="togglevolunteers">
@@ -58,7 +58,7 @@
 
         <div class="card-deck">
           <div class="card">
-            <div class="card-header">Schedule</div>
+            <div class="card-header"><i class="far fa-calendar-alt"></i> Schedule</div>
             <div class="card-body">
               <p>Created on: {{ project_task.creation_date }}</p>
               <p>Last modified: {{ project_task.last_modified_date }}</p>
@@ -67,7 +67,7 @@
             </div>
           </div>
           <div class="card">
-            <div class="card-header">Work details</div>
+            <div class="card-header"><i class="fas fa-list-ul"></i> Work details</div>
             <div class="card-body">
               <p>Estimated effort in hours: {{ project_task.estimated_effort_hours }}</p>
               <p>Actual effort spent in hours: {{ project_task.actual_effort_hours }}</p>
@@ -81,7 +81,7 @@
 
         <div class="card-deck section-header">
           <div class="card">
-            <div class="card-header">Skill requirements</div>
+            <div class="card-header"><i class="fas fa-magic"></i> Skill requirements</div>
             <div class="card-body">
               {% for task_requirement in project_task.projecttaskrequirement_set.all %}
                 <p>{{ task_requirement.skill.area }}/{{ task_requirement.skill.name }}:{{ task_requirement.get_level_display }} ({{ task_requirement.get_importance_display }})
@@ -90,7 +90,7 @@
             </div>
           </div>
           <div class="card">
-            <div class="card-header">Volunteers</div>
+            <div class="card-header"><i class="fas fa-user-cog"></i> Volunteers</div>
             <div class="card-body">
               {% for volunteer in task_volunteers %}
                 <div>
