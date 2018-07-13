@@ -76,7 +76,7 @@
             {% if not project_task.is_completed %}
               <div class="card mb-3">
                 <div class="card-header d-flex">
-                  <span class="mr-auto">
+                  <span class="mr-auto text-muted">
                       {% include 'dssgmkt/components/task_type_display.html' with compact_display=True %}
                       {{ project_task.name }}
                   </span>
@@ -134,7 +134,7 @@
               </div>
             {% else %}
               <div class="mb-1 text-muted d-flex">
-                <span class="mr-auto">
+                <span class="mr-auto text-muted">
                   {% include 'dssgmkt/components/task_type_display.html' with compact_display=True %}
                   {{ project_task.name }}
                 </span>

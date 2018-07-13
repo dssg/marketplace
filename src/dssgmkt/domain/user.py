@@ -110,7 +110,4 @@ class UserService():
         for proj in ProjectService.get_user_projects_in_draft_status(request_user):
             todos.append({'text':'Project {0} is still in draft status and needs to be completed and published.'.format(proj.name)})
 
-        for task in ProjectTaskService.get_user_in_progress_tasks(request_user):
-            todos.append({'text':'Task {0} from proj {1} in progress.'.format(task.name, task.project.name)})
-
         return todos

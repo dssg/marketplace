@@ -43,6 +43,21 @@
         {% endif %}
       </div>
       <div class="col-lg-12">
+        {% if my_tasks %}
+          <h3 class="section-header">My tasks</h3>
+          {% for project_task in my_tasks %}
+            <a href="{% url 'dssgmkt:proj_instructions_task' project_task.project.id project_task.id %}">
+              <div class="alert alert-info">
+                {{ project_task.project.name }}:
+                {% include 'dssgmkt/components/task_type_display.html' with compact_display=True %}
+                {{ project_task.name }}
+                {% include 'dssgmkt/components/task_stage_display.html' with compact_display=True %}
+              </div>
+            </a>
+          {% endfor %}
+        {% endif %}
+      </div>
+      <div class="col-lg-12">
         <h3 class="section-header">My pending TODOs</h3>
         {% if todos %}
           {% for todo in todos %}

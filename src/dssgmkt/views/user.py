@@ -107,6 +107,7 @@ class UserHomeView(generic.ListView): ## This is a listview because it is actual
         for notification in context['notification_list']:
             notification.url = get_url_for_notification(notification.source, notification.target_id)
         context['todos'] = UserService.get_user_todos(self.request.user, self.request.user)
+        context['my_tasks'] = ProjectTaskService.get_user_in_progress_tasks(self.request.user)
         context['user_is_volunteer'] = UserService.user_has_volunteer_profile(self.request.user)
         context['user_is_any_organization_member'] = OrganizationService.user_is_any_organization_member(self.request.user)
         return context
