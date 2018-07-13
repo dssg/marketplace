@@ -1,0 +1,12 @@
+<span class="text-muted">
+  {% if project_task.is_type_scoping %}
+    <i class="fas fa-ruler"></i>
+  {% elif project_task.is_type_project_management %}
+    <i class="fas fa-project-diagram"></i>
+  {% elif project_task.is_type_domain_work %}
+    <i class="fas fa-dolly"></i>
+  {% endif %}
+  {% if not compact_display %}
+    {{ project_task.get_type_display }}
+  {% endif %}
+</span>

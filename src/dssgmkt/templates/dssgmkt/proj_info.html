@@ -75,7 +75,16 @@
           {% for project_task in project_tasks %}
             {% if not project_task.is_completed %}
               <div class="card mb-3">
-                <div class="card-header d-flex"> <span class="mr-auto">{{ project_task.name }}</span> <span class="text-right">{{ project_task.volunteer_count }} <i class="material-icons" style="vertical-align: middle">group</i></span></div>
+                <div class="card-header d-flex">
+                  <span class="mr-auto">
+                      {% include 'dssgmkt/components/task_type_display.html' with compact_display=True %}
+                      {{ project_task.name }}
+                  </span>
+                  <span class="text-right">
+                    {{ project_task.volunteer_count }}
+                    <i class="material-icons" style="vertical-align: middle">group</i>
+                  </span>
+                </div>
 
                   <ul class="list-group list-group-flush">
                     <li class="list-group-item">{{ project_task.description }}</li>
@@ -124,10 +133,13 @@
                   </ul>
               </div>
             {% else %}
-              <div class="mb-1 text-muted">
-                <i class="material-icons" style="vertical-align: middle">check</i>
-                ({{ project_task.volunteer_count }} <i class="material-icons" style="vertical-align: middle">group</i>)
-                {{ project_task.name }}
+              <div class="mb-1 text-muted d-flex">
+                <span class="mr-auto">
+                  {% include 'dssgmkt/components/task_type_display.html' with compact_display=True %}
+                  {{ project_task.name }}
+                  <i class="material-icons" style="vertical-align: middle">done_all</i>
+                </span>
+                <span>{{ project_task.volunteer_count }} <i class="material-icons" style="vertical-align: middle">group</i></span>
               </div>
             {% endif %}
           {% endfor %}

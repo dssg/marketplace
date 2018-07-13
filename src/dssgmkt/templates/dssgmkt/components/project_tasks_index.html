@@ -4,7 +4,10 @@
 <div class="flex-column list-group">
   {% for task in project_tasks %}
       <a class="list-group-item list-group-item-action {% if task == project_task %}active{% endif %}"
-         href="{% url 'dssgmkt:proj_task' project.id task.id %}">{{ task.name }}</a>
+         href="{% url 'dssgmkt:proj_task' project.id task.id %}">
+           {% include 'dssgmkt/components/task_type_display.html' with project_task=task compact_display=True %}
+           {{ task.name }}
+         </a>
   {% endfor %}
 </div>
 

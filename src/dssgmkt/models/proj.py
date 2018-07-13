@@ -495,6 +495,15 @@ class ProjectTask(models.Model):
     def is_completed(self):
         return self.stage == TaskStatus.COMPLETED
 
+    def is_type_scoping(self):
+        return self.type == TaskType.SCOPING_TASK
+
+    def is_type_project_management(self):
+        return self.type == TaskType.PROJECT_MANAGEMENT_TASK
+
+    def is_type_domain_work(self):
+        return self.type == TaskType.DOMAIN_WORK_TASK
+
 
 class ProjectTaskReview(models.Model):
     volunteer_comment = models.TextField(
