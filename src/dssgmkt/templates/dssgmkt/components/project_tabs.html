@@ -10,13 +10,13 @@
       {% endif %}
     </li>
 
-    <!-- <li class="nav-item">
+    <li class="nav-item">
       {% if page_tab == 'scope' %}
         <span class="nav-link active">Scope</span>
       {% else %}
-          <a class="nav-link" href="{% url 'dssgmkt:proj_info' project.id %}">Scope</a>
+          <a class="nav-link" href="{% url 'dssgmkt:proj_scope' project.id %}">Scope</a>
       {% endif %}
-    </li> -->
+    </li>
 
   <li class="nav-item">
     {% if page_tab == 'discussion' %}

@@ -219,6 +219,38 @@ class Project(models.Model):
     def is_expired_status(self):
         return self.status == ProjectStatus.EXPIRED
 
+class ProjectScope(models.Model):
+    scope = models.TextField(
+        verbose_name="Project scope",
+        help_text="The detailed scope of the project.",
+        max_length=5000,
+        blank=True,
+        null=True,
+    )
+    version_notes = models.TextField(
+        verbose_name="Version notes",
+        help_text="Type the reason the scope is being modified and describe the changes made.",
+        max_length=5000,
+        blank=True,
+        null=True,
+    )
+    creation_date = models.DateTimeField(
+        verbose_name="Creation date",
+        auto_now_add=True,
+    )
+    is_current = models.BooleanField(
+        verbose_name="Is current?",
+        help_text="Specifies if this is the latest scope of the project.",
+    )
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.CASCADE,
+    )
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+
 class ProjectLogSource():
     VOLUNTEER_APPLICATION = 'VA'
     STAFF = 'ST'

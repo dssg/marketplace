@@ -223,6 +223,21 @@ class ProjectDeliverablesView(generic.DetailView):
         add_project_common_context(self.request, project, 'deliverables', context)
         return context
 
+class ProjectScopeView(generic.DetailView):
+    model = Project
+    template_name = 'dssgmkt/proj_scope.html'
+    pk_url_kwarg = 'proj_pk'
+
+    def get_object(self):
+        return get_project(self.request, self.kwargs['proj_pk'])
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['breadcrumb'] = project_breadcrumb(context['project'], ('Project scope', None))
+        project = get_project(self.request, self.kwargs['proj_pk'])
+        add_project_common_context(self.request, project, 'scope', context)
+        return context
+
 class ProjectVolunteerInstructionsView(PermissionRequiredMixin, generic.ListView):
     template_name = 'dssgmkt/proj_instructions.html'
     context_object_name = 'project_tasks'
