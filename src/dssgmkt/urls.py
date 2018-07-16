@@ -10,6 +10,7 @@ urlpatterns = [
 
 
     path('org/', org.OrganizationIndexView.as_view(), name='org_list'),
+    path('org/create', org.OrganizationCreateView.as_view(), name='org_create'),
     path('org/<int:org_pk>/', org.OrganizationView.as_view(), name='org_info'),
     path('org/<int:org_pk>/edit', org.OrganizationEdit.as_view(), name='org_info_edit'),
     path('org/<int:org_pk>/staff/', org.organization_staff_view, name='org_staff'),

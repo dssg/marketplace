@@ -1,8 +1,13 @@
 from rules import add_perm, predicate
 
 from dssgmkt.domain.org import OrganizationService
+from dssgmkt.domain.user import UserService
 
+@predicate
+def is_organization_creator(user, org=None):
+    return user.is_authenticated and UserService.user_is_organization_creator(user)
 
+add_perm('organization.create', is_organization_creator)
 add_perm('organization.information_edit', OrganizationService.user_is_organization_admin)
 add_perm('organization.staff_view', OrganizationService.user_is_organization_member)
 add_perm('organization.staff_edit', OrganizationService.user_is_organization_admin)

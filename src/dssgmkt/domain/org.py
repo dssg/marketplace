@@ -34,6 +34,26 @@ class OrganizationService():
             raise ValueError('Request does not match organization')
 
     @staticmethod
+    def create_organization(request_user, organization):
+        ensure_user_has_permission(request_user, organization, 'organization.create')
+        if Organization.objects.filter(name=organization.name).exists():
+            raise ValueError('An organization with this name already exists.')
+        with transaction.atomic():
+            organization.save()
+            admin_role = OrganizationRole()
+            admin_role.user = request_user
+            admin_role.organization = organization
+            admin_role.role = OrgRole.ADMINISTRATOR
+            admin_role.save()
+            message = "You have created the organization {0} and have been made its administrator user.".format(organization.name)
+            NotificationService.add_user_notification(request_user,
+                                                        message,
+                                                        NotificationSeverity.INFO,
+                                                        NotificationSource.ORGANIZATION,
+                                                        organization.id)
+            return organization
+
+    @staticmethod
     def get_organization_membership_request(request_user, org_pk, request_pk):
         return OrganizationMembershipRequest.objects.get(pk=request_pk, organization=org_pk)
 

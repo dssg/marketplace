@@ -345,3 +345,44 @@ class OrganizationRoleRemove(PermissionRequiredMixin, DeleteView):
             messages.error(request, 'There was a problem with your request.')
             logger.error("Error when trying to remove user {0} from organization {1}: {2}".format(request.user.id, organization_role.organization.id, err))
             return HttpResponseRedirect(self.get_success_url())
+
+
+
+class CreateOrganizationForm(ModelForm):
+    class Meta:
+        model = Organization
+        fields = ['name', 'description', 'logo_url', 'website_url', 'phone_number',
+                'email_address', 'street_address', 'address_line_2', 'city', 'state',
+                'zipcode', 'country', 'budget', 'years_operation', 'main_cause',
+                'organization_scope',]
+
+class OrganizationCreateView(PermissionRequiredMixin, CreateView):
+    model = Organization
+    form_class = CreateOrganizationForm
+    template_name = 'dssgmkt/org_create.html'
+    permission_required = 'organization.create'
+    raise_exception = True
+
+    def get_success_url(self):
+        return reverse('dssgmkt:org_info', args=[self.object.pk])
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['breadcrumb'] = [home_link(), organizations_link(), ('Create new organization', None)]
+        return context
+
+    def form_valid(self, form):
+        organization = form.save(commit=False)
+        try:
+            organization = OrganizationService.create_organization(self.request.user, organization)
+            messages.info(self.request, "You have created a new organization and are now its first administrator user.")
+            self.object = organization
+            return HttpResponseRedirect(self.get_success_url())
+        except KeyError:
+            raise Http404
+        except ValueError as v:
+            form.add_error(None, str(v))
+            return self.form_invalid(form)
+
+    def get_permission_object(self):
+        return None

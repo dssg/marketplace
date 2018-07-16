@@ -1,0 +1,34 @@
+{% extends "dssgmkt/base.html" %}
+
+{% block pagecontents %}
+
+
+    <h4 class="section-header">Create new organization</h4>
+
+
+    <p>Create a new organization to post new projects that need help from volunters.</p>
+
+    <form id="createorganization">
+      {% csrf_token %}
+      {% include 'dssgmkt/components/standard_form_fields.html' %}
+
+      <div class="form-row">
+        <div class="col-lg-9 offset-lg-3">
+          <button type="submit"
+                  form="createorganization"
+                  formaction="{% url 'dssgmkt:org_create' %}"
+                  formmethod="post"
+                  class="btn btn-success mr-3">
+            <i class="material-icons" style="vertical-align: middle">check</i>
+            Create organization
+          </button>
+          <a class="btn btn-outline-primary" href="{% url 'dssgmkt:org_list' %}">
+            <i class="material-icons" style="vertical-align: middle">close</i>
+            Cancel
+          </a>
+        </div>
+      </div>
+    </form>
+
+
+{% endblock %}

@@ -83,6 +83,10 @@ class UserService():
         return VolunteerProfile.objects.filter(user=request_user).exists()
 
     @staticmethod
+    def user_is_organization_creator(request_user):
+        return request_user.is_authenticated and request_user.initial_type == UserType.ORGANIZATION
+
+    @staticmethod
     def get_user_todos(request_user, user):
         ensure_user_has_permission(request_user, user, 'user.is_same_user')
         todos = []
