@@ -1,16 +1,27 @@
 {% extends 'dssgmkt/org.html' %}
 
 {% block tabcontents %}
+  {% load rules %}
+
   <div class="row mt-5 mb-5">
     <div class="col-lg-8">
       <p>{{ organization.description }}</p>
     </div>
 
     <div class="col-lg-4">
-      {% if user_is_administrator %}
+      {% has_perm 'organization.information_edit' user organization as perm_org_edit %}
+      {% if perm_org_edit %}
         <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'dssgmkt:org_info_edit' organization.id %}">
           <i class="material-icons" style="vertical-align: middle">edit</i>
           Edit organization information
+        </a>
+      {% endif %}
+
+      {% has_perm 'organization.project_create' user organization as perm_proj_create %}
+      {% if perm_proj_create %}
+        <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'dssgmkt:proj_create' organization.id %}">
+          <i class="material-icons" style="vertical-align: middle">add_circle</i>
+          Create new project
         </a>
       {% endif %}
 

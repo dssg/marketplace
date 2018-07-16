@@ -1,6 +1,8 @@
 {% extends 'dssgmkt/base.html' %}
 
 {% block pagecontents %}
+  {% load rules %}
+
   <div class="row">
     <div class="col-lg-3">
       <form>
@@ -65,6 +67,14 @@
 
       {% else %}
           <p>No organizations found.</p>
+      {% endif %}
+
+      {% has_perm 'organization.create' user None as perm_org_create %}
+      {% if perm_org_create %}
+        <a class="btn btn-success col-lg-6 offset-lg-3 mb-1" role="button" href="{% url 'dssgmkt:org_create' %}">
+          <i class="material-icons" style="vertical-align: middle">add_circle</i>
+          Create new organization
+        </a>
       {% endif %}
     </div>
   </div>
