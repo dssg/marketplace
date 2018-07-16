@@ -104,22 +104,46 @@ def get_project_task_requirements(request, proj_pk, task_pk):
 def get_volunteer_application(request, proj_pk, task_pk, volunteer_application_pk):
     return generic_getter(ProjectTaskService.get_volunteer_application, request.user, proj_pk, task_pk, volunteer_application_pk)
 
-class ProjectIndexView(generic.ListView):
-    template_name = 'dssgmkt/proj_list.html'
-    context_object_name = 'proj_list'
-    paginate_by = 15
-    allow_empty = True
 
-    def get_queryset(self):
-        # This gets paginated by the view so we are not retrieving all the projects in one query
-        return ProjectService.get_all_projects(self.request.user)
+def project_list_view(request):
+    checked_social_cause_fields = {}
+    checked_project_fields = {}
+    filter_projname = ""
+    filter_orgname = ""
+    if request.method == 'POST':
+        search_config = {}
+        if 'projname' in request.POST and request.POST.get('projname'):
+            search_config['projname'] = request.POST.get('projname')
+            filter_projname = request.POST.get('projname')
+        if 'orgname' in request.POST and request.POST.get('orgname'):
+            search_config['orgname'] = request.POST.get('orgname')
+            filter_orgname = request.POST.get('orgname')
+        if 'socialcause' in request.POST:
+            search_config['social_cause'] = request.POST.getlist('socialcause')
+            for f in request.POST.getlist('socialcause'):
+                checked_social_cause_fields[f] = True
+        if 'projectstatus' in request.POST:
+            search_config['project_status'] = request.POST.getlist('projectstatus')
+            for f in request.POST.getlist('projectstatus'):
+                checked_project_fields[f] = True
+        projects =  ProjectService.get_all_projects(request.user, search_config)
+    elif request.method == 'GET':
+        projects =  ProjectService.get_all_projects(request.user)
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['breadcrumb'] = build_breadcrumb([home_link(),
-                                                  projects_link(False)])
-        return context
+    if projects:
+        projects_page = paginate(request, projects, page_size=15)
+    else:
+        projects_page = []
 
+    return render(request, 'dssgmkt/proj_list.html',
+                        {
+                            'breadcrumb': build_breadcrumb([home_link(), projects_link(False)]),
+                            'proj_list': projects_page,
+                            'checked_social_cause_fields': checked_social_cause_fields,
+                            'checked_project_fields': checked_project_fields,
+                            'filter_projname': filter_projname,
+                            'filter_orgname': filter_orgname
+                        })
 
 def add_project_common_context(request, project, page_tab, context):
     context['project'] = project

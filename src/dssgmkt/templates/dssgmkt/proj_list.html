@@ -3,41 +3,48 @@
 {% block pagecontents %}
   <div class="row">
     <div class="col-lg-3">
-      <form>
+      <form id="projlist">
+        {% csrf_token %}
         <h4>Filter</h4>
         <label for="projname">
           Project name
-          <input class="form-control" type="text" id="projname" name="projname" placeholder=""></input></label>
+          <input class="form-control" type="text" id="projname" name="projname" placeholder="" value="{{ filter_projname }}"></input></label>
         <label for="orgname">
           Organization name
-          <input class="form-control" type="text" id="orgname" name="orgname" placeholder=""></input></label>
+          <input class="form-control" type="text" id="orgname" name="orgname" placeholder="" value="{{ filter_orgname }}"></input></label>
 
         <fieldset name="socialcause">
           <legend>Project main cause</legend>
-          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='education' field_text='Education' %}
-          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='health' field_text='Health' %}
-          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='environment' field_text='Environment' %}
-          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='socialservices' field_text='Social Services' %}
-          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='transportation' field_text='Transportation' %}
-          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='energy' field_text='Energy and Environment' %}
-          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='internationaldev' field_text='International Development' %}
-          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='publicsafety' field_text='Public Safety' %}
-          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='economicdev' field_text='Economic Development' %}
-          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='other' field_text='Other' %}
+          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='socialcause' field_value='education' field_text='Education' is_checked=checked_social_cause_fields.education %}
+          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='socialcause' field_value='health' field_text='Health' is_checked=checked_social_cause_fields.health %}
+          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='socialcause' field_value='environment' field_text='Environment' is_checked=checked_social_cause_fields.environment %}
+          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='socialcause' field_value='socialservices' field_text='Social Services' is_checked=checked_social_cause_fields.socialservices %}
+          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='socialcause' field_value='transportation' field_text='Transportation' is_checked=checked_social_cause_fields.transportation %}
+          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='socialcause' field_value='energy' field_text='Energy and Environment' is_checked=checked_social_cause_fields.energy %}
+          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='socialcause' field_value='internationaldev' field_text='International Development' is_checked=checked_social_cause_fields.internationaldev %}
+          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='socialcause' field_value='publicsafety' field_text='Public Safety' is_checked=checked_social_cause_fields.publicsafety %}
+          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='socialcause' field_value='economicdev' field_text='Economic Development' is_checked=checked_social_cause_fields.economicdev %}
+          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='socialcause' field_value='other' field_text='Other' is_checked=checked_social_cause_fields.other %}
         </fieldset>
 
         <fieldset name="status">
           <legend>Project status</legend>
-          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='new' field_text='New' %}
-          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='inprogress' field_text='In progress' %}
-          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='acceptingvolunteers' field_text='Looking for volunteers' %}
-          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='completed' field_text='Completed' %}
+          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='projectstatus' field_value='new' field_text='New' is_checked=checked_project_fields.new %}
+          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='projectstatus' field_value='in_progress' field_text='In progress' is_checked=checked_project_fields.in_progress %}
+          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='projectstatus' field_value='completed' field_text='Completed' is_checked=checked_project_fields.completed %}
         </fieldset>
         <button type="submit"
-                formmethod="get"
-                class="btn btn-success">
+                form="projlist"
+                formmethod="post"
+                formaction="{% url 'dssgmkt:proj_list' %}"
+                class="btn btn-success col-lg-12 mt-3">
           Apply filters
         </button>
+        <a class="btn btn-outline-primary col-lg-12 mt-3"
+           href="{% url 'dssgmkt:proj_list' %}">
+           <i class="material-icons" style="vertical-align: middle">close</i>
+           Clear filters
+        </a>
       </form>
     </div>
     <div class="col-lg-9">

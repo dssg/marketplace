@@ -15,7 +15,7 @@ from ..models.user import (
 )
 from django.db.models import Case, When, Count, Q, Subquery
 
-from .common import validate_consistent_keys
+from .common import validate_consistent_keys, social_cause_view_model_translation, project_status_view_model_translation
 from .notifications import NotificationService
 from dssgmkt.authorization.common import ensure_user_has_permission
 
@@ -30,11 +30,33 @@ class ProjectService():
         return Project.objects.filter(pk=projid).annotate(follower_count=Count('projectfollower')).first()
 
     @staticmethod
-    def get_all_projects(request_user):
+    def get_all_projects(request_user, search_config=None):
         # We could also add the projects that are non-public but that also belong
         # to the organizations that the user is member of. Should that be added
         # or should users access those projects through the page of their org?
-        return filter_public_projects(Project.objects.all())
+        base_query = filter_public_projects(Project.objects.all())
+        if search_config:
+            if 'projname' in search_config:
+                base_query = base_query.filter(name__icontains=search_config['projname'])
+            if 'orgname' in search_config:
+                base_query = base_query.filter(organization__name__icontains=search_config['orgname'])
+            if 'social_cause' in search_config:
+                sc = search_config['social_cause']
+                if isinstance(sc, str):
+                    sc = [sc]
+                social_causes = []
+                for social_cause_from_view in sc:
+                    social_causes.append(social_cause_view_model_translation[social_cause_from_view])
+                base_query = base_query.filter(project_cause__in=social_causes)
+            if 'project_status' in search_config:
+                project_status_list = search_config['project_status']
+                if isinstance(project_status_list, str):
+                    project_status_list = [project_status_list]
+                project_statuses = []
+                for project_status_from_view in project_status_list:
+                    project_statuses.append(project_status_view_model_translation[project_status_from_view])
+                base_query = base_query.filter(status__in=project_statuses).distinct()
+        return base_query.order_by('name')
 
     @staticmethod
     def get_all_organization_projects(request_user, org):

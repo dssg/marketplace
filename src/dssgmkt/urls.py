@@ -23,7 +23,7 @@ urlpatterns = [
     path('org/<int:org_pk>/createproject', proj.ProjectCreateView.as_view(), name='proj_create'),
     path('org/createproject/select', proj.project_create_select_organization_view, name='proj_create_org_select'),
 
-    path('proj/', proj.ProjectIndexView.as_view(), name='proj_list'),
+    path('proj/', proj.project_list_view, name='proj_list'),
     path('proj/<int:proj_pk>/', proj.ProjectView.as_view(), name='proj_info'),
     path('proj/<int:proj_pk>/edit', proj.ProjectEdit.as_view(), name='proj_info_edit'),
     path('proj/<int:proj_pk>/publish', proj.publish_project_view, name='proj_publish'),
