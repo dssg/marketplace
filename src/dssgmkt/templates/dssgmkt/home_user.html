@@ -43,15 +43,34 @@
         {% endif %}
       </div>
       <div class="col-lg-12">
-        {% if my_tasks %}
+        {% if user.volunteerprofile %}
           <h3 class="section-header">My tasks</h3>
+          {% if user.volunteerprofile.is_pending_review %}
+            <div class="alert alert-warning">
+              <i class="fas fa-exclamation-triangle"></i>
+              Your application to volunteer is being reviewed by our staff. You will be notified
+              as soon as you are approved and can start applying to volunteer in projects.
+            </div>
+          {% elif user.volunteerprofile.is_rejected %}
+            <div class="alert alert-danger">
+              <i class="fas fa-exclamation-triangle"></i>
+              Your application to volunteer was reviewed by our staff and it was not accepted, so
+              you cannot apply to volunteer in projects at the moment.
+            </div>
+          {% elif user.volunteerprofile.is_accepted and not my_tasks %}
+            <div class="alert alert-success">
+              <i class="fas fa-check"></i>
+              Congratulations! Your application to volunteer was accepted. You can now help any project in the site.
+            </div>
+          {% endif %}
+        {% endif %}
+        {% if my_tasks %}
           {% for project_task in my_tasks %}
             <a href="{% url 'dssgmkt:proj_instructions_task' project_task.project.id project_task.id %}">
               <div class="alert alert-info">
                 {{ project_task.project.name }}:
                 {% include 'dssgmkt/components/task_type_display.html' with compact_display=True %}
                 {{ project_task.name }}
-                {% include 'dssgmkt/components/task_stage_display.html' with compact_display=True %}
               </div>
             </a>
           {% endfor %}

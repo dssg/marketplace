@@ -233,8 +233,14 @@ class VolunteerProfile(models.Model):
         help_text="User this volunteer profile is attached to.",
     )
 
+    def is_pending_review(self):
+        return self.volunteer_status == ReviewStatus.NEW
+
     def is_accepted(self):
         return self.volunteer_status == ReviewStatus.ACCEPTED
+
+    def is_rejected(self):
+        return self.volunteer_status == ReviewStatus.REJECTED
 
 
 class VolunteerSkill(models.Model):
