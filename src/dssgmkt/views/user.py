@@ -110,6 +110,11 @@ class UserHomeView(generic.ListView): ## This is a listview because it is actual
         context['my_tasks'] = ProjectTaskService.get_user_in_progress_tasks(self.request.user)
         context['user_is_volunteer'] = UserService.user_has_volunteer_profile(self.request.user)
         context['user_is_any_organization_member'] = OrganizationService.user_is_any_organization_member(self.request.user)
+        organizations = OrganizationService.get_organizations_with_user_create_project_permission(self.request.user)
+        if len(organizations) == 1:
+            context['single_org_membership'] = organizations[0]
+        else:
+            context['organization_memberships'] = organizations
         return context
 
     def render_to_response(self, context):

@@ -6,13 +6,18 @@
     <div class="col-lg-5">
       <div class="col-lg-12">
         {% if user_is_any_organization_member %}
-          {# TODO allow to create new projects here? #}
-          <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'dssgmkt:org_list' %}">
-            <i class="material-icons" style="vertical-align: middle">business_center</i>
-            Create a new project
-          </a>
+          {% if single_org_membership %}
+            <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'dssgmkt:proj_create' single_org_membership.id %}">
+              <i class="material-icons" style="vertical-align: middle">business_center</i>
+              Create a new project
+            </a>
+          {% elif organization_memberships %}
+            <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'dssgmkt:proj_create_org_select' %}">
+              <i class="material-icons" style="vertical-align: middle">business_center</i>
+              Create a new project
+            </a>
+          {% endif %}
         {% else %}
-          {# TODO allow to create new organizations #}
           <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'dssgmkt:org_create' %}">
             <i class="material-icons" style="vertical-align: middle">business</i>
             Create new organization

@@ -178,6 +178,90 @@ class ProjectService():
             raise KeyError('Project not found ' + str(projid))
 
     @staticmethod
+    def create_project(request_user, project, organization, organization_members):
+        ensure_user_has_permission(request_user, organization, 'organization.project_create')
+        with transaction.atomic():
+            project.organization = organization
+            project.status = ProjectStatus.DRAFT
+            project.save()
+
+            # Create default administrator
+            project_admin_role = ProjectRole()
+            project_admin_role.user = request_user
+            project_admin_role.project = project
+            project_admin_role.role = ProjRole.OWNER
+            project_admin_role.save()
+
+            # Create project scope
+            project_scope = ProjectScope()
+            project_scope.project = project
+            project_scope.project_impact = project.project_impact
+            project_scope.scoping_process = project.scoping_process
+            project_scope.available_staff = project.available_staff
+            project_scope.available_data = project.available_data
+            project_scope.is_current = False
+            project_scope.author = request_user
+            project_scope.version_notes = "Initial scope at project creation time."
+            project_scope.save()
+
+            # Create default tasks
+            scoping_task = ProjectTask()
+            scoping_task.name = 'Project scoping'
+            scoping_task.description = 'This project is new and needs help being defined. The project scoping includes defining the problem being solved, defining what form the soluntion will take, splitting the work into the necessary tasks, and specifying the expertise needed to complete each task. Project scopers will also review volunteer applications and will QA the work done by volunteers.'
+            scoping_task.onboarding_instructions = 'Describe in detail the volunteer onboarding instructions for project scoping.'
+            scoping_task.stage = TaskStatus.NOT_STARTED
+            scoping_task.type = TaskType.SCOPING_TASK
+            scoping_task.accepting_volunteers = False
+            scoping_task.project = project
+            scoping_task.percentage_complete = 0
+            scoping_task.business_area = 'no'
+            scoping_task.estimated_start_date = date.today()
+            scoping_task.estimated_end_date = date.today()
+            scoping_task.save()
+
+            project_management_task = ProjectTask()
+            project_management_task.name = 'Project management'
+            project_management_task.description = 'This project needs experienced project managers that can ensure the project gets successfully completed on time. Duties include managing the status of all the tasks in the project, ensuring work gets done at the required pace, foreseeing risks to the project and preventing blockers. Project managers will also review volunteer applications and will QA the work done by volunteers.'
+            project_management_task.onboarding_instructions = 'Describe in detail the volunteer onboarding instructions for project management.'
+            project_management_task.stage = TaskStatus.NOT_STARTED
+            project_management_task.type = TaskType.PROJECT_MANAGEMENT_TASK
+            project_management_task.accepting_volunteers = False
+            project_management_task.project = project
+            project_management_task.percentage_complete = 0
+            project_management_task.business_area = 'no'
+            project_management_task.estimated_start_date = date.today()
+            project_management_task.estimated_end_date = date.today()
+            project_management_task.save()
+
+            domain_work_task = ProjectTask()
+            domain_work_task.name = 'Example domain work task'
+            domain_work_task.description = 'Domain work tasks represent the tasks that need to be completed to finish the project. '
+            domain_work_task.onboarding_instructions = 'Describe in detail the volunteer onboarding instructions for this domain work task.'
+            domain_work_task.stage = TaskStatus.NOT_STARTED
+            domain_work_task.type = TaskType.DOMAIN_WORK_TASK
+            domain_work_task.accepting_volunteers = False
+            domain_work_task.project = project
+            domain_work_task.percentage_complete = 0
+            domain_work_task.business_area = 'no'
+            domain_work_task.estimated_start_date = date.today()
+            domain_work_task.estimated_end_date = date.today()
+            domain_work_task.save()
+
+            message = "The project {0} was created by {1} within the organization {2}.".format(project.name, request_user.standard_display_name(), organization.name)
+            NotificationService.add_multiuser_notification(organization_members,
+                                                     message,
+                                                     NotificationSeverity.INFO,
+                                                     NotificationSource.PROJECT,
+                                                     project.id)
+            NotificationService.add_user_notification(request_user,
+                                                     "The project {0} was created successfully and you have been made project administrator. The next step is to define the project scope and to review the three default tasks that were created automatically.".format(project.name),
+                                                     NotificationSeverity.INFO,
+                                                     NotificationSource.PROJECT,
+                                                     project.id)
+
+            return project
+
+    @staticmethod
     def save_project(request_user, projid, project):
         validate_consistent_keys(project, ('id', projid))
         ensure_user_has_permission(request_user, project, 'project.information_edit')

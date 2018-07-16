@@ -86,6 +86,11 @@ class OrganizationService():
         return org.organizationrole_set.order_by('role')
 
     @staticmethod
+    def get_organization_members(request_user, org):
+        return User.objects.filter(organizationrole__organization=org)
+
+
+    @staticmethod
     def get_organization_projects(request_user, org):
         if OrganizationService.user_is_organization_member(request_user, org):
             return ProjectService.get_all_organization_projects(request_user, org)
@@ -93,9 +98,25 @@ class OrganizationService():
             return ProjectService.get_organization_public_projects(request_user, org)
 
     @staticmethod
+    def create_project(request_user, orgid, project):
+        organization = OrganizationService.get_organization(request_user, orgid)
+        organization_members = OrganizationService.get_organization_members(request_user, orgid)
+        return ProjectService.create_project(request_user, project, organization, organization_members)
+
+    @staticmethod
     def get_organization_admins(request_user, org):
-        # return OrganizationService.get_organization_staff(request_user, org).filter(role=OrgRole.ADMINISTRATOR)
         return User.objects.filter(organizationrole__role=OrgRole.ADMINISTRATOR, organizationrole__organization=org)
+
+    @staticmethod
+    def get_organizations_with_user_create_project_permission(request_user):
+        if request_user.is_anonymous:
+            return []
+        all_user_orgs = Organization.objects.filter(organizationrole__user=request_user)
+        orgs = []
+        for org in all_user_orgs:
+            if request_user.has_perm('organization.project_create', org):
+                orgs.append(org)
+        return orgs
 
     @staticmethod
     def get_membership_requests(request_user, org):

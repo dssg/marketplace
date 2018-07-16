@@ -39,3 +39,5 @@ add_perm('organization.role_delete', is_organization_role_admin)
 add_perm('organization.membership_request_view', is_own_membership_request | is_organization_membership_request_staff)
 add_perm('organization.membership_review', is_organization_membership_request_admin)
 add_perm('organization.membership_leave', is_own_membership)
+
+add_perm('organization.project_create', OrganizationService.user_is_organization_admin)

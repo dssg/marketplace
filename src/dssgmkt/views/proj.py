@@ -22,7 +22,10 @@ from ..models.proj import (
     ProjectTaskReview, ProjectTaskRole, VolunteerApplication, ProjectScope,
 )
 from .common import build_breadcrumb, home_link, paginate, generic_getter
+from .org import organizations_link, organization_link, get_organization, add_organization_common_context
 from dssgmkt.domain.proj import ProjectService, ProjectTaskService
+
+from dssgmkt.domain.org import OrganizationService
 
 def projects_link(include_link=True):
     return ('Projects', reverse('dssgmkt:proj_list') if include_link else None)
@@ -1073,3 +1076,59 @@ def toggle_task_accepting_volunteers_view(request, proj_pk, task_pk):
         except KeyError:
             messages.error(request, 'There was an error while processing your request.')
             return redirect('dssgmkt:proj_task', proj_pk=proj_pk, task_pk=task_pk)
+
+
+
+class CreateProjectForm(ModelForm):
+    class Meta:
+        model = Project
+        fields = ['name', 'project_cause', 'short_summary', 'motivation',
+                    'solution_description', 'challenges', 'banner_image_url',
+                    'developer_agreement', 'project_impact', 'scoping_process',
+                    'available_staff', 'available_data', 'intended_start_date',
+                    'intended_end_date', 'deliverable_github_url',
+                    'deliverable_management_url', 'deliverable_documentation_url',
+                    'deliverable_reports_url',]
+
+class ProjectCreateView(PermissionRequiredMixin, CreateView):
+    model = Project
+    form_class = CreateProjectForm
+    template_name = 'dssgmkt/proj_create.html'
+    permission_required = 'organization.project_create'
+    raise_exception = True
+
+    def get_success_url(self):
+        return reverse('dssgmkt:proj_info', args=[self.object.pk])
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        organization = get_organization(self.request, self.kwargs['org_pk'])
+        context['breadcrumb'] = [home_link(), organizations_link(), organization_link(organization), ('Create new project', None)]
+        return add_organization_common_context(
+            self.request,
+            organization,
+            'info',
+            context)
+
+    def form_valid(self, form):
+        project = form.save(commit=False)
+        try:
+            project = OrganizationService.create_project(self.request.user, self.kwargs['org_pk'], project)
+            messages.info(self.request, "The project was created successfully and you were assigned administrator privileges over it.")
+            self.object = project
+            return HttpResponseRedirect(self.get_success_url())
+        except KeyError:
+            raise Http404
+        except ValueError as v:
+            form.add_error(None, str(v))
+            return self.form_invalid(form)
+
+    def get_permission_object(self):
+        return get_organization(self.request, self.kwargs['org_pk'])
+
+def project_create_select_organization_view(request):
+    return render(request, 'dssgmkt/proj_create_org_select.html',
+                        {
+                            'breadcrumb': [home_link(), ('Select organization', None)],
+                            'user_organizations': OrganizationService.get_organizations_with_user_create_project_permission(request.user),
+                        })
