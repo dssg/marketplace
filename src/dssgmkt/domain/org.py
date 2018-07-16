@@ -1,13 +1,14 @@
 from django.db import IntegrityError, transaction
 from django.db.models import Case, Q, When
 
-from ..models.common import OrgRole, ReviewStatus
+from ..models.common import OrgRole, ReviewStatus, SocialCause
 from ..models.org import (
     Organization, OrganizationMembershipRequest, OrganizationRole,
 )
 from ..models.user import (
     User, NotificationSeverity, NotificationSource,
 )
+from ..models.proj import ProjectStatus
 from .notifications import NotificationService
 from .proj import ProjectService
 
@@ -15,10 +16,50 @@ from .common import validate_consistent_keys
 
 from dssgmkt.authorization.common import ensure_user_has_permission
 
+
+
+social_cause_view_model_translation = {
+                                        'education': SocialCause.EDUCATION,
+                                        'health': SocialCause.HEALTH,
+                                        'environment': SocialCause.ENVIRONMENT,
+                                        'socialservices': SocialCause.SOCIAL_SERVICES,
+                                        'transportation': SocialCause.TRANSPORTATION,
+                                        'energy': SocialCause.ENERGY,
+                                        'internationaldev': SocialCause.INTERNATIONAL_DEVELOPMENT,
+                                        'publicsafety': SocialCause.PUBLIC_SAFETY,
+                                        'economicdev': SocialCause.ECONOMIC_DEVELOPMENT,
+                                        'other': SocialCause.OTHER,
+                                       }
+
+project_status_view_model_translation = {
+                                            'new': ProjectStatus.NEW,
+                                            'in_progress': ProjectStatus.IN_PROGRESS,
+                                            'completed': ProjectStatus.COMPLETED,
+                                        }
 class OrganizationService():
     @staticmethod
-    def get_all_organizations(request_user):
-        return Organization.objects.order_by('name')
+    def get_all_organizations(request_user, search_config=None):
+        base_query = Organization.objects.all()
+        if search_config:
+            if 'name' in search_config:
+                base_query = base_query.filter(name__icontains=search_config['name'])
+            if 'social_cause' in search_config:
+                sc = search_config['social_cause']
+                if isinstance(sc, str):
+                    sc = [sc]
+                social_causes = []
+                for social_cause_from_view in sc:
+                    social_causes.append(social_cause_view_model_translation[social_cause_from_view])
+                base_query = base_query.filter(main_cause__in=social_causes)
+            if 'project_status' in search_config:
+                project_status_list = search_config['project_status']
+                if isinstance(project_status_list, str):
+                    project_status_list = [project_status_list]
+                project_statuses = []
+                for project_status_from_view in project_status_list:
+                    project_statuses.append(project_status_view_model_translation[project_status_from_view])
+                base_query = base_query.filter(project__status__in=project_statuses).distinct()
+        return base_query.order_by('name')
 
     @staticmethod
     def get_organization(request_user, org_pk):

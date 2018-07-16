@@ -2,8 +2,14 @@
 
 
 <div class="form-check">
-  <label class="form-check-label" for="{{ field_name }}">
-    <input class="form-check-input"  type="checkbox" id="{{ field_name }}" name="{{ field_name }}" value="{{ field_value }}"></input>
+  <label class="form-check-label" for="{{ field_name }}{{ field_value }}">
+    <input class="form-check-input"
+           type="checkbox"
+           id="{{ field_name }}{{ field_value }}"
+           name="{{ field_name }}"
+           value="{{ field_value }}"
+           {% if is_checked %}checked="checked"{% endif %}
+           ></input>
     {{ field_text }}
   </label>
 </div>

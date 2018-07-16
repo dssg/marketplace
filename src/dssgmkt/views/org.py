@@ -57,20 +57,40 @@ def get_organization_role(request, org_pk, user_pk):
     return generic_getter(OrganizationService.get_organization_role, request.user, org_pk, user_pk)
 
 
-class OrganizationIndexView(generic.ListView):
-    template_name = 'dssgmkt/org_list.html'
-    context_object_name = 'org_list'
-    paginate_by = 15
+def organization_list_view(request):
+    checked_social_cause_fields = {}
+    checked_project_fields = {}
+    filter_orgname = ""
+    if request.method == 'POST':
+        search_config = {}
+        if 'orgname' in request.POST and request.POST.get('orgname'):
+            search_config['name'] = request.POST.get('orgname')
+            filter_orgname = request.POST.get('orgname')
+        if 'socialcause' in request.POST:
+            search_config['social_cause'] = request.POST.getlist('socialcause')
+            for f in request.POST.getlist('socialcause'):
+                checked_social_cause_fields[f] = True
+        if 'projectstatus' in request.POST:
+            search_config['project_status'] = request.POST.getlist('projectstatus')
+            for f in request.POST.getlist('projectstatus'):
+                checked_project_fields[f] = True
+        organizations = OrganizationService.get_all_organizations(request.user, search_config)
+    elif request.method == 'GET':
+        organizations = OrganizationService.get_all_organizations(request.user)
 
-    def get_queryset(self):
-        # This gets paginated by the view so we are not retrieving all the organizations in one query
-        return OrganizationService.get_all_organizations(self.request.user)
+    if organizations:
+        organizations_page = paginate(request, organizations, page_size=15)
+    else:
+        organizations_page = []
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['breadcrumb'] = build_breadcrumb([home_link(),
-                                                  organizations_link(False)])
-        return context
+    return render(request, 'dssgmkt/org_list.html',
+                        {
+                            'breadcrumb': build_breadcrumb([home_link(), organizations_link(False)]),
+                            'org_list': organizations_page,
+                            'checked_social_cause_fields': checked_social_cause_fields,
+                            'checked_project_fields': checked_project_fields,
+                            'filter_orgname': filter_orgname
+                        })
 
 def add_organization_common_context(request, organization, page_tab, context):
     context['organization'] = organization
