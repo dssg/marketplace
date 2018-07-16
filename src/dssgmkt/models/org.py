@@ -152,6 +152,36 @@ class Organization(models.Model):
     creation_date = models.DateTimeField(auto_now_add=True)
     last_modified_date = models.DateTimeField(auto_now= True)
 
+    def is_social_cause_education(self):
+        return self.main_cause == SocialCause.EDUCATION
+
+    def is_social_cause_health(self):
+        return self.main_cause == SocialCause.HEALTH
+
+    def is_social_cause_environment(self):
+        return self.main_cause == SocialCause.ENVIRONMENT
+
+    def is_social_cause_social_services(self):
+        return self.main_cause == SocialCause.SOCIAL_SERVICES
+
+    def is_social_cause_transportation(self):
+        return self.main_cause == SocialCause.TRANSPORTATION
+
+    def is_social_cause_energy(self):
+        return self.main_cause == SocialCause.ENERGY
+
+    def is_social_cause_internantional_dev(self):
+        return self.main_cause == SocialCause.INTERNATIONAL_DEVELOPMENT
+
+    def is_social_cause_public_safety(self):
+        return self.main_cause == SocialCause.PUBLIC_SAFETY
+
+    def is_social_cause_economic_dev(self):
+        return self.main_cause == SocialCause.ECONOMIC_DEVELOPMENT
+
+    def is_social_cause_other(self):
+        return self.main_cause == SocialCause.OTHER
+
     def __str__(self):
         return self.name
 

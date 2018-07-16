@@ -152,7 +152,9 @@
                   <tr>
                       <td><a href="{% url 'dssgmkt:proj_info' project_task.project.id %}">{{ project_task.project.name }}</a></td>
                       <td><a href="{% url 'dssgmkt:org_info' project_task.project.organization.id %}">{{ project_task.project.organization.name }}</a></td>
-                      <td>{{ project_task.project.get_project_cause_display }}</td>
+                      <td>
+                        {% include 'dssgmkt/components/social_cause_display.html' with object=project_task.project social_cause=project_task.project.get_project_cause_display %}
+                      </td>
                       <td>{{ project_task.project.summary }}</td>
                       <td>{{ project_task.name }}</td>
                       <td>{{ project_task.get_type_display }}</td>

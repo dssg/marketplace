@@ -1,0 +1,26 @@
+<span>
+  {% if object.is_social_cause_education %}
+    <i class="fas fa-graduation-cap"></i>
+  {% elif object.is_social_cause_health %}
+    <i class="fas fa-heartbeat"></i>
+  {% elif object.is_social_cause_environment %}
+    <i class="fas fa-leaf"></i>
+  {% elif object.is_social_cause_social_services %}
+    <i class="fas fa-hands-helping"></i>
+  {% elif object.is_social_cause_transportation %}
+    <i class="fas fa-subway"></i>
+  {% elif object.is_social_cause_energy %}
+    <i class="fas fa-plug"></i>
+  {% elif object.is_social_cause_internantional_dev %}
+    <i class="fas fa-globe-africa"></i>
+  {% elif object.is_social_cause_public_safety %}
+    <i class="fas fa-bullhorn"></i>
+  {% elif object.is_social_cause_economic_dev %}
+    <i class="fas fa-hand-holding-usd"></i>
+  {% elif object.is_social_cause_other %}
+    <i class="fas fa-question"></i>
+  {% endif %}
+  {% if not compact_display %}
+    {{ social_cause }}
+  {% endif %}
+</span>

@@ -55,7 +55,9 @@
               <tr>
                   <td><a href="{% url 'dssgmkt:org_info' organization.id %}">{{ organization.name }}</a></td>
                   <td>{{ organization.short_summary }}</img></td>
-                  <td>{{ organization.get_main_cause_display }}</td>
+                  <td>
+                    {% include 'dssgmkt/components/social_cause_display.html' with object=organization social_cause=organization.get_main_cause_display %}
+                  </td>
               </tr>
             {% endfor %}
           </tbody>

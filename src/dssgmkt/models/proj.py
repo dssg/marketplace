@@ -219,6 +219,36 @@ class Project(models.Model):
     def is_expired_status(self):
         return self.status == ProjectStatus.EXPIRED
 
+    def is_social_cause_education(self):
+        return self.project_cause == SocialCause.EDUCATION
+
+    def is_social_cause_health(self):
+        return self.project_cause == SocialCause.HEALTH
+
+    def is_social_cause_environment(self):
+        return self.project_cause == SocialCause.ENVIRONMENT
+
+    def is_social_cause_social_services(self):
+        return self.project_cause == SocialCause.SOCIAL_SERVICES
+
+    def is_social_cause_transportation(self):
+        return self.project_cause == SocialCause.TRANSPORTATION
+
+    def is_social_cause_energy(self):
+        return self.project_cause == SocialCause.ENERGY
+
+    def is_social_cause_internantional_dev(self):
+        return self.project_cause == SocialCause.INTERNATIONAL_DEVELOPMENT
+
+    def is_social_cause_public_safety(self):
+        return self.project_cause == SocialCause.PUBLIC_SAFETY
+
+    def is_social_cause_economic_dev(self):
+        return self.project_cause == SocialCause.ECONOMIC_DEVELOPMENT
+
+    def is_social_cause_other(self):
+        return self.project_cause == SocialCause.OTHER
+
 class ProjectScope(models.Model):
     scope = models.TextField(
         verbose_name="Project scope",

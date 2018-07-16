@@ -5,7 +5,10 @@
     <div class="row">
       <div class="col-lg-9">
         <h1>{{ organization.name }}</h1>
-        <h4>{{ organization.get_main_cause_display }} <a href="{{ organization.website_url }}">External website</a></h4>
+        <h4>
+          {% include 'dssgmkt/components/social_cause_display.html' with object=organization social_cause=organization.get_main_cause_display %}
+          <a href="{{ organization.website_url }}">External website</a>
+        </h4>
       </div>
       <div class="col-lg-3">
         <img class="img-fluid" src="{{ organization.logo_url }}"></img>
