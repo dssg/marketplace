@@ -13,13 +13,13 @@
 
 {% for field in form %}
   {% if field.errors %}
-    <div class="form-group has-error">
-        <label class="control-label mr-1" for="id_{{ field.name }}">{{ field.label }}</label>
+    <div class="form-group">
+        <label class="control-label mr-1 text-danger" for="id_{{ field.name }}">{{ field.label }}</label>
         <div class="mr-5">
-            {{ field|attr:"class:form-control" }}
-            <span class="help-block">
+            {{ field|attr:"class:form-control is-invalid" }}
+            <div class="invalid-feedback">
                 {% for error in  field.errors %}{{ error }}{% endfor %}
-            </span>
+            </div>
         </div>
     </div>
   {% else %}
