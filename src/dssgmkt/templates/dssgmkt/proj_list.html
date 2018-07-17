@@ -80,6 +80,20 @@
       {% else %}
         <p>No projects found.</p>
       {% endif %}
+
+      {% if user_is_any_organization_member %}
+        {% if single_org_membership %}
+          <a class="btn btn-success col-lg-6 offset-lg-3 mt-5 mb-1" role="button" href="{% url 'dssgmkt:proj_create' single_org_membership.id %}">
+            <i class="material-icons" style="vertical-align: middle">business_center</i>
+            Create a new project
+          </a>
+        {% elif organization_memberships %}
+          <a class="btn btn-success col-lg-6 offset-lg-3 mt-5 mb-1" role="button" href="{% url 'dssgmkt:proj_create_org_select' %}">
+            <i class="material-icons" style="vertical-align: middle">business_center</i>
+            Create a new project
+          </a>
+        {% endif %}
+      {% endif %}
     </div>
   </div>
 

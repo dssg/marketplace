@@ -1,6 +1,7 @@
 from datetime import date
 
-from django.contrib.auth import logout
+from django.contrib.auth import logout, login, authenticate
+from django.contrib.auth.forms import UserCreationForm
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib import messages
 from django.db.models import Q
@@ -340,3 +341,47 @@ def create_volunteer_profile_view(request, user_pk):
         except KeyError:
             messages.error(request, 'There was an error while processing your request.')
             return redirect('dssgmkt:user_profile', user_pk=user_pk)
+
+
+
+
+def select_user_type_view(request):
+    return render(request, 'dssgmkt/signup_type_select.html',
+                        {
+                            'breadcrumb': [home_link(), ('Select your account type', None)]
+                        })
+
+class SignUpForm(UserCreationForm):
+    class Meta:
+        model = User
+        fields = ['username', 'password1', 'password2',
+                  'first_name', 'last_name', 'phone_number', 'skype_name',
+                  'special_code']
+
+def signup(request, user_type=None):
+    if not user_type in ['volunteer', 'organization']:
+        raise Http404
+    if request.method == 'POST':
+        form = SignUpForm(request.POST)
+        if form.is_valid():
+            new_user = form.save(commit=False)
+            if user_type == 'volunteer':
+                new_user.initial_type = 1
+            elif user_type == 'organization':
+                new_user.initial_type = 2
+            new_user.save()
+            username = form.cleaned_data.get('username')
+            raw_password = form.cleaned_data.get('password1')
+            user = authenticate(username=username, password=raw_password)
+            login(request, user)
+            messages.info(request, 'Welcome to DSSG Solve! Your account was created successfully.')
+            return redirect('dssgmkt:home')
+    else:
+        form = SignUpForm()
+    return render(request, 'dssgmkt/signup.html',
+                    {
+                        'form': form,
+                        'user_type': user_type,
+                        'breadcrumb': build_breadcrumb([home_link(),
+                                                        ('Sign up', None)]),
+                    })

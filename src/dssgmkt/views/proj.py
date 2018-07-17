@@ -135,6 +135,14 @@ def project_list_view(request):
     else:
         projects_page = []
 
+    any_org_member = OrganizationService.user_is_any_organization_member(request.user)
+    organizations = OrganizationService.get_organizations_with_user_create_project_permission(request.user)
+    if len(organizations) == 1:
+        single_org_membership = organizations[0]
+        organization_memberships = None
+    else:
+        single_org_membership = None
+        organization_memberships = organizations
     return render(request, 'dssgmkt/proj_list.html',
                         {
                             'breadcrumb': build_breadcrumb([home_link(), projects_link(False)]),
@@ -142,7 +150,10 @@ def project_list_view(request):
                             'checked_social_cause_fields': checked_social_cause_fields,
                             'checked_project_fields': checked_project_fields,
                             'filter_projname': filter_projname,
-                            'filter_orgname': filter_orgname
+                            'filter_orgname': filter_orgname,
+                            'user_is_any_organization_member': any_org_member,
+                            'single_org_membership': single_org_membership,
+                            'organization_memberships': organization_memberships,
                         })
 
 def add_project_common_context(request, project, page_tab, context):

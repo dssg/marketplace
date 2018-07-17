@@ -1,0 +1,29 @@
+{% extends 'dssgmkt/base.html' %}
+
+{% block pagecontents %}
+
+  <div class="col-lg-9 offset-lg-3">
+    <h4 class="section-header">What type of account do you want to create?</h4>
+
+    <p>Select the option below that fits best:</p>
+
+    <div class="mb-3">
+      <a href="{% url 'dssgmkt:signup_form' 'volunteer' %}">
+      I am a volunteer and want to help projects with my skills.
+      </a>
+    </div>
+    <div class="mb-3">
+      <a href="{% url 'dssgmkt:signup_form' 'organization' %}">
+      I belong to an organization that wants to post new projects.
+      </a>
+    </div>
+
+    <div>
+      <a class="btn btn-outline-primary" href="{% url 'dssgmkt:home' %}">
+        <i class="material-icons" style="vertical-align: middle">close</i>
+        Cancel
+      </a>
+    </div>
+  </div>
+
+{% endblock %}

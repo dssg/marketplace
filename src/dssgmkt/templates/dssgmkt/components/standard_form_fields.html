@@ -17,8 +17,11 @@
 {% for field in form %}
   {% if field.errors %}
     <div class="form-group row">
-        <label class="col-sm-3 control-label text-danger" for="id_{{ field.name }}">{{ field.label }}</label>
-        <div class="col-sm-9">
+        <label class="{% if wide_field_names %}col-sm-6{% else %}col-sm-3{% endif %} control-label text-danger"
+               for="id_{{ field.name }}">
+          {{ field.label }}
+        </label>
+        <div class="{% if wide_field_names %}col-sm-6{% else %}col-sm-9{% endif %}">
             {{ field|attr:"class:form-control is-invalid" }}
             <div class="invalid-feedback">
                 {% for error in field.errors %}{{ error }}{% endfor %}
@@ -27,11 +30,18 @@
     </div>
   {% else %}
     <div class="form-group row">
-      <div class="col-sm-3">
-        <label class="control-label" for="id_{{ field.name }}">{{ field.label }}</label>
-            <p class="form-text text-muted help-block"><small>{{ field.help_text|safe }}</small></p>
+      <div class="{% if wide_field_names %}col-sm-6{% else %}col-sm-3{% endif %}">
+        <label class="control-label"
+               for="id_{{ field.name }}">
+          {{ field.label }}
+        </label>
+        <div class="form-text text-muted help-block">
+          <small>
+            {{ field.help_text|safe }}
+          </small>
+        </div>
       </div>
-      <div class="col-sm-9">
+      <div class="{% if wide_field_names %}col-sm-6{% else %}col-sm-9{% endif %}">
           {{ field|attr:"class:form-control" }}
       </div>
     </div>

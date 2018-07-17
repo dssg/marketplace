@@ -64,6 +64,8 @@ urlpatterns = [
 
     path('logout/', user.logout_view, name='logout'),
     path('login/', auth_views.LoginView.as_view(template_name='dssgmkt/login.html'), name='login'),
+    path('signup/select', user.select_user_type_view, name='signup_type_select'),
+    path('signup/do/<str:user_type>', user.signup, name='signup_form'),
     path('user/pwdchange', auth_views.PasswordChangeView.as_view(template_name='dssgmkt/user_pwd_change.html',
                                                                  success_url=reverse_lazy('dssgmkt:my_user_profile'),
                                                                  extra_context={'breadcrumb':user.change_password_breadcrumb()}),name='user_pwd_change'),

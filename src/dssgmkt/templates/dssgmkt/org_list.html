@@ -80,7 +80,7 @@
 
       {% has_perm 'organization.create' user None as perm_org_create %}
       {% if perm_org_create %}
-        <a class="btn btn-success col-lg-6 offset-lg-3 mb-1" role="button" href="{% url 'dssgmkt:org_create' %}">
+        <a class="btn btn-success col-lg-6 offset-lg-3 mt-5 mb-1" role="button" href="{% url 'dssgmkt:org_create' %}">
           <i class="material-icons" style="vertical-align: middle">add_circle</i>
           Create new organization
         </a>

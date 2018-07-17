@@ -2,31 +2,11 @@
 
 {% block pagecontents %}
 
+  {% load rules %}
+
   <div class="row section-header">
     <div class="col-lg-5">
       <div class="col-lg-12">
-        {% if user_is_any_organization_member %}
-          {% if single_org_membership %}
-            <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'dssgmkt:proj_create' single_org_membership.id %}">
-              <i class="material-icons" style="vertical-align: middle">business_center</i>
-              Create a new project
-            </a>
-          {% elif organization_memberships %}
-            <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'dssgmkt:proj_create_org_select' %}">
-              <i class="material-icons" style="vertical-align: middle">business_center</i>
-              Create a new project
-            </a>
-          {% endif %}
-        {% else %}
-          <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'dssgmkt:org_create' %}">
-            <i class="material-icons" style="vertical-align: middle">business</i>
-            Create new organization
-          </a>
-        {% endif %}
-        <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'dssgmkt:org_list' %}">
-          <i class="material-icons" style="vertical-align: middle">business</i>
-          Search for organizations to join
-        </a>
         {% if user_is_volunteer %}
           <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'dssgmkt:proj_list' %}">
             <i class="material-icons" style="vertical-align: middle">search</i>
@@ -46,6 +26,29 @@
             </button>
           </form>
         {% endif %}
+        {% has_perm 'organization.create' user None as perm_org_create %}
+        {% if user_is_any_organization_member %}
+          {% if single_org_membership %}
+            <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'dssgmkt:proj_create' single_org_membership.id %}">
+              <i class="material-icons" style="vertical-align: middle">business_center</i>
+              Create a new project
+            </a>
+          {% elif organization_memberships %}
+            <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'dssgmkt:proj_create_org_select' %}">
+              <i class="material-icons" style="vertical-align: middle">business_center</i>
+              Create a new project
+            </a>
+          {% endif %}
+        {% elif perm_org_create %}
+          <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'dssgmkt:org_create' %}">
+            <i class="material-icons" style="vertical-align: middle">business</i>
+            Create new organization
+          </a>
+        {% endif %}
+        <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'dssgmkt:org_list' %}">
+          <i class="material-icons" style="vertical-align: middle">business</i>
+          Search for organizations to join
+        </a>
       </div>
       <div class="col-lg-12">
         {% if user.volunteerprofile %}

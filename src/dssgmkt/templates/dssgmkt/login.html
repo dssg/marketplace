@@ -3,7 +3,7 @@
 {% block pagecontents %}
 
   <div class="col-lg-6 offset-lg-3">
-    <form>
+    <form id="login">
       <h2 class="section-header">Log in</h2>
       <p>Type your email address and password to access your account</p>
       {% if next %}
@@ -25,7 +25,8 @@
       <div class="form-row">
         <div class="col-lg-9 offset-lg-3">
           <button type="submit"
-                  formaction="{%url 'dssgmkt:login' %}"
+                  form="login"
+                  formaction="{% url 'dssgmkt:login' %}"
                   formmethod="post"
                   class="btn btn-success mr-3">
             <i class="material-icons" style="vertical-align: middle">arrow_forward</i>
