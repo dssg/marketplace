@@ -1,0 +1,27 @@
+{% extends 'dssgmkt/base.html' %}
+
+{% block pagecontents %}
+
+  <div class="row">
+        <div class="col-md-12">
+            <div class="error-template">
+                <h1>
+                    Oops!</h1>
+                <h2>
+
+                      Sorry, we could not find the requested page!</h2>
+                <div class="error-details">
+                  404 Not Found :(
+                </div>
+                <div class="error-actions">
+                    <a href="{% url 'dssgmkt:home' %}"
+                       class="btn btn-success btn-lg">
+                        It's ok, take me home
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+{% endblock %}
