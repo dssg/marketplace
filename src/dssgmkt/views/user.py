@@ -365,11 +365,7 @@ def signup(request, user_type=None):
         form = SignUpForm(request.POST)
         if form.is_valid():
             new_user = form.save(commit=False)
-            if user_type == 'volunteer':
-                new_user.initial_type = 1
-            elif user_type == 'organization':
-                new_user.initial_type = 2
-            new_user.save()
+            new_user = UserService.create_user(request.user, new_user, user_type)
             username = form.cleaned_data.get('username')
             raw_password = form.cleaned_data.get('password1')
             user = authenticate(username=username, password=raw_password)

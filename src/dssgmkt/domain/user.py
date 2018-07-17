@@ -24,6 +24,19 @@ class UserService():
     def get_all_volunteer_profiles(request_user):
         return VolunteerProfile.objects.filter(volunteer_status=ReviewStatus.ACCEPTED).order_by('user__first_name', 'user__last_name')
 
+
+    @staticmethod
+    def create_user(request_user, new_user, user_type):
+        if not user_type in ['volunteer', 'organization']:
+            raise ValueError('Unknown user type')
+        if user_type == 'volunteer':
+            new_user.initial_type = UserType.VOLUNTEER
+        elif user_type == 'organization':
+            new_user.initial_type = UserType.ORGANIZATION
+        new_user.save()
+        return new_user
+
+
     @staticmethod
     def save_user(request_user, user_pk, user):
         validate_consistent_keys(user, ('id', user_pk))
