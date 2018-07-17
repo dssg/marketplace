@@ -5,11 +5,11 @@
     <div class="col-lg-3">
       <form id="projlist">
         {% csrf_token %}
-        <h4>Filter</h4>
-        <label for="projname">
+        <h4>Filter results</h4>
+        <label for="projname" class="col-lg-12 pl-0 pr-0">
           Project name
           <input class="form-control" type="text" id="projname" name="projname" placeholder="" value="{{ filter_projname }}"></input></label>
-        <label for="orgname">
+        <label for="orgname" class="col-lg-12 pl-0 pr-0">
           Organization name
           <input class="form-control" type="text" id="orgname" name="orgname" placeholder="" value="{{ filter_orgname }}"></input></label>
 
@@ -38,6 +38,7 @@
                 formmethod="post"
                 formaction="{% url 'dssgmkt:proj_list' %}"
                 class="btn btn-success col-lg-12 mt-3">
+          <i class="material-icons" style="vertical-align: middle">filter_list</i>
           Apply filters
         </button>
         <a class="btn btn-outline-primary col-lg-12 mt-3"
