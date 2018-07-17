@@ -1,7 +1,148 @@
 {% extends 'dssgmkt/base.html' %}
 
+{% block extraheaders %}
+ {% load static %}
+ <link rel="stylesheet" href="{% static 'css/dssgsolve_frontpage.css' %}"/>
+ <link href="https://fonts.googleapis.com/css?family=Nunito+Sans:200,400" rel="stylesheet">
+{% endblock %}
+
 {% block pagecontents %}
 
-<h1>Hello this is the home page...</h1>
+<div class="marketing-header">
+  <div class="row">
+     <div class="col-lg-4 offset-lg-1 pl-5">
+      <img src="{% static 'img/front_page_hero.png' %}" class="img-fluid"></img>
+     </div>
+     <div class="col-lg-7">
+      <h1 class="text-success">Projects that matter</h1>
+      <h1 class="text-white">Work that matters</h1>
+      <h2 class="text-success">Data Science applied to social good.</h2>
+     </div>
+   </div>
+</div>
+
+<div class="container">
+
+ <div class="row mt-5">
+  <div class="col-lg-12 ml-5 mr-5">
+   <h2>What is <span class="text-success">DSSG Solve</span>?</h2>
+  </div>
+  <div class="col-lg-8 ml-5">
+   <p class="main-text">DSSG Solve: an online marketplace where governments and non-profits can post projects,
+    where volunteers with expertise in the field can ask questions and scope those projects
+    into well-defined problems, and where data scientists can team up to solve those problems
+    collaboratively</p>
+   </div>
+   <div class="col-lg-2 mr-3">
+    <img src="{% static 'img/front_page_dssg.png' %}" class="img-fluid"></img>
+   </div>
+  </div>
+
+
+  <div class="row mt-4">
+   <div class="card-deck main-cards col-lg-12">
+    <div class="card text-white bg-success">
+     <div class="card-header"><h3>For organizations</h3></div>
+     <div class="card-body">
+      <div>DSSG Solve enables organizations to manage their social good projects within the platform,
+      including volunteers, deliverables and reviews. Staff your projects with highly qualified
+      volunteers and turn them into a team that works effectively throughout all phases of the
+      project, from project scoping to the final QA validation.</div>
+     <img src="{% static 'img/front_page_project_diagram.png' %}" class="img-fluid mt-2"></img>
+     </div>
+     <div class="card-footer">
+      <div class="footer-title">Do you represent an organization?</div>
+      <div><a href="{% url 'dssgmkt:signup_form' 'organization' %}">Post your projects now</a></div>
+     </div>
+    </div>
+    <div class="card text-white bg-success">
+     <div class="card-header"><h3>For volunteers</h3></div>
+     <div class="card-body">
+      <div>
+       <div class="image-wrapper float-right pl-3 pb-2 col-lg-4">
+        <img src="{% static 'img/front_page_volunteer_diagram.png' %}" class="img-fluid"></img>
+       </div>
+       DSSG Solve is a productive community of volunteers that are passionate about using
+       technology and data for social good. Join us and start using your skills to solve
+       important, high impact projects that help us all. Showcase your skills and put
+       them to good use, while collaborating with other intelligent, driven volunteers.
+       Build a history of successful projects and increase your visibility in the community.
+      </div>
+     </div>
+     <div class="card-footer">
+      <div class="footer-title">Are you ready to start helping projects?</div>
+      <div><a href="{% url 'dssgmkt:signup_form' 'volunteer' %}">Sign up now</a></div>
+     </div>
+    </div>
+   </div>
+  </div>
+
+
+
+  <div class="row mt-5">
+   <div class="card-deck col-lg-12">
+    <div class="card">
+     <div class="card-header"><h4>Projects</h4></div>
+
+     <ul class="list-group list-group-flush">
+      <li class="list-group-item">
+        <p>Take a look at the list of projects that our volunteers are working on.</p>
+        <p><a href="{% url 'dssgmkt:proj_list' %}">Browse projects</a></p>
+      </li>
+      <li class="list-group-item featured d-flex flex-column">
+       <h4>Featured project</h4>
+       <h3>{{ featured_project.name }}</h3>
+       <div class="last">{{ featured_project.short_summary }}</div>
+       <div class="mt-3 align-bottom"><a href="{% url 'dssgmkt:proj_info' featured_project.id %}">Learn more</a></div>
+      </li>
+     </ul>
+    </div>
+    <div class="card">
+     <div class="card-header"><h4>Organizations</h4></div>
+     <ul class="list-group list-group-flush">
+      <li class="list-group-item">
+        <p>Browse organizations that are working towards social good and need your help.</p>
+        <p><a href="{% url 'dssgmkt:org_list' %}">Browse organizations</a></p>
+      </li>
+      <li class="list-group-item featured d-flex flex-column">
+       <h4>Featured organization</h4>
+       <h3>{{ featured_organization.name }}</h3>
+       <div class="last"><img src="{{ featured_organization.logo_url }}" class="img-fluid" alt=""></img></div>
+       <div class="mt-3 align-bottom"><a href="{% url 'dssgmkt:org_info' featured_organization.id %}">Learn more</a></div>
+      </li>
+     </ul>
+    </div>
+    <div class="card">
+     <div class="card-header"><h4>Volunteers</h4></div>
+     <ul class="list-group list-group-flush">
+      <li class="list-group-item">
+        <p>Check out all the passionate people that are making these projects a reality.</p>
+        <p><a href="{% url 'dssgmkt:volunteer_list' %}">Browse volunteers</a></p>
+      </li>
+      <li class="list-group-item featured d-flex flex-column">
+       <h4>Featured volunteer</h4>
+       <h3>{{ featured_volunteer.full_name }}</h3>
+       <div class="last">Member since {{ featured_volunteer.date_joined }} </div>
+       <div class="mt-3 align-bottom"><a href="{% url 'dssgmkt:user_profile' featured_volunteer.id %}">Learn more</a></div>
+      </li>
+     </ul>
+    </div>
+   </div>
+  </div>
+ </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 {% endblock %}

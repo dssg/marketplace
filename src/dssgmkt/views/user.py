@@ -131,7 +131,12 @@ def home_view(request):
     if request.user.is_authenticated:
         return UserHomeView.as_view()(request)
     else:
-        return render(request, 'dssgmkt/home_anonymous.html')
+        return render(request, 'dssgmkt/home_anonymous.html',
+            {
+                'featured_project': ProjectService.get_featured_project(),
+                'featured_organization': OrganizationService.get_featured_organization(),
+                'featured_volunteer': UserService.get_featured_volunteer(),
+            })
 
 
 def my_user_profile_view(request):

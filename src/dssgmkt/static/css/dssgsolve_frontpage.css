@@ -1,0 +1,75 @@
+
+
+.marketing-header {
+  background-color: #2C3E50;
+}
+
+.main-page-container {
+  padding-left: 0px;
+  padding-right: 0px;
+  padding-top: 0px;
+}
+
+.marketing-header {
+  padding-top: 75px;
+  padding-bottom: 50px;
+}
+
+h1, h2, h3 {
+  font-weight: 200;
+}
+
+.marketing-header h1 {
+  text-transform: uppercase;
+}
+
+.marketing-header h2 {
+  font-size: 2em;
+}
+
+.main-text {
+  font-size: 1.4em;
+}
+
+.card-deck {
+  margin: 0px;
+}
+
+.main-cards .card .footer-title {
+  color: #2C3E50;
+  text-transform: uppercase;
+  font-size: 0.9em;
+  font-weight: bold;
+}
+
+.main-cards .card  a {
+  color: white;
+  font-size: 1.3em;
+  font-weight: bold;
+}
+
+.card  a {
+  text-transform: uppercase;
+}
+
+.card  ul {
+  height: 100%;
+}
+
+.featured h4 {
+  text-transform: uppercase;
+  font-size: 0.9em;
+}
+
+.featured h3 {
+  font-size: 1.5em;
+  font-weight: normal;
+}
+
+.featured {
+  height: 100%;
+}
+
+.featured .last {
+  margin-bottom: auto;
+}

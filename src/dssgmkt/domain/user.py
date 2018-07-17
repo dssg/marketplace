@@ -25,6 +25,11 @@ class UserService():
         return VolunteerProfile.objects.filter(volunteer_status=ReviewStatus.ACCEPTED).order_by('user__first_name', 'user__last_name')
 
 
+
+    @staticmethod
+    def get_featured_volunteer():
+        return VolunteerProfile.objects.all()[0]
+
     @staticmethod
     def create_user(request_user, new_user, user_type):
         if not user_type in ['volunteer', 'organization']:

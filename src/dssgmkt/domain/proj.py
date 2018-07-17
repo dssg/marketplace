@@ -58,9 +58,14 @@ class ProjectService():
                 base_query = base_query.filter(status__in=project_statuses).distinct()
         return base_query.order_by('name')
 
+
     @staticmethod
     def get_all_organization_projects(request_user, org):
         return Project.objects.filter(organization=org)
+
+    @staticmethod
+    def get_featured_project():
+        return filter_public_projects(Project.objects.all())[0]
 
     @staticmethod
     def get_organization_public_projects(request_user, org):

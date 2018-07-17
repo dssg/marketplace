@@ -47,6 +47,10 @@ class OrganizationService():
         return Organization.objects.get(pk=org_pk)
 
     @staticmethod
+    def get_featured_organization():
+        return Organization.objects.all()[0]
+
+    @staticmethod
     def save_organization_info(request_user, orgid, organization):
         ensure_user_has_permission(request_user, organization, 'organization.information_edit')
         validate_consistent_keys(organization, ('id', orgid))
