@@ -239,8 +239,10 @@ class OrganizationService():
         validate_consistent_keys(organization_role, (['organization','id'], orgid))
         ensure_user_has_permission(request_user, organization_role, 'organization.role_edit')
         if organization_role.organization.id == orgid:
-            current_role = OrganizationService.get_organization_role_by_pk(request_user, orgid, organization_role.id)
-            if current_role.role == OrgRole.ADMINISTRATOR and len(OrganizationService.get_organization_admins(request_user, orgid)) <= 1:
+            current_role = OrganizationService.get_organization_role_by_pk(organization_role.user, orgid, organization_role.id)
+            if current_role.role == OrgRole.ADMINISTRATOR and \
+                organization_role.role != OrgRole.ADMINISTRATOR and \
+                len(OrganizationService.get_organization_admins(request_user, orgid)) <= 1:
                 raise ValueError('You are trying to remove the last administrator of the organization. Please appoint another administrator before removing the current one.')
             organization_role.save()
             NotificationService.add_user_notification(organization_role.user,
