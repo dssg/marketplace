@@ -107,6 +107,9 @@ def get_project_task_requirements(request, proj_pk, task_pk):
 def get_volunteer_application(request, proj_pk, task_pk, volunteer_application_pk):
     return generic_getter(ProjectTaskService.get_volunteer_application, request.user, proj_pk, task_pk, volunteer_application_pk)
 
+def get_project_role(request, proj_pk, role_pk):
+    return generic_getter(ProjectService.get_project_role, request.user, proj_pk, role_pk)
+
 
 def project_list_view(request):
     checked_social_cause_fields = {}
@@ -885,47 +888,47 @@ class ProjectRoleEdit(PermissionRequiredMixin, SuccessMessageMixin, UpdateView):
             ProjectService.save_project_role(self.request.user, self.kwargs['proj_pk'], project_role)
             return HttpResponseRedirect(self.get_success_url())
         except KeyError as k:
+            form.add_error(None, str(k))
+            return super().form_invalid(form)
+        except ValueError as v:
+            form.add_error(None, str(v))
             return super().form_invalid(form)
 
     def get_permission_object(self):
         return get_project(self.request, self.kwargs['proj_pk'])
 
-class ProjectRoleRemove(PermissionRequiredMixin, DeleteView):
-    model = ProjectRole
-    template_name = 'dssgmkt/proj_staff_remove.html'
-    pk_url_kwarg = 'role_pk'
-    permission_required = 'project.staff_remove'
-    raise_exception = True
+class DeleteProjectRoleForm(ModelForm):
+    class Meta:
+        model = ProjectRole
+        fields = []
 
-    def get_success_url(self):
-        return reverse('dssgmkt:proj_staff', args=[self.object.project.id])
+@permission_required('project.staff_remove', raise_exception=True, fn=objectgetter(Project, 'proj_pk'))
+def project_role_delete_view(request, proj_pk, role_pk):
+    project_role = get_project_role(request, proj_pk, role_pk)
+    if request.method == 'POST':
+        form = DeleteProjectRoleForm(request.POST)
+        if form.is_valid():
+            try:
+                ProjectService.delete_project_role(request.user, proj_pk, project_role)
+                messages.info(request, 'Staff member removed successfully.')
+                return redirect('dssgmkt:proj_staff', proj_pk=proj_pk)
+            except KeyError:
+                raise Http404
+            except ValueError as err:
+                form.add_error(None, str(err))
+    elif request.method == 'GET':
+        form = DeleteProjectRoleForm()
+    project = get_project(request, proj_pk)
+    return render(request, 'dssgmkt/proj_staff_remove.html',
+                    add_project_common_context(request, project, 'staff',
+                        {
+                            'projectrole': project_role,
+                            'breadcrumb': project_breadcrumb(project,
+                                                                staff_link(project),
+                                                                ('Remove staff member', None)),
+                            'form': form,
+                        }))
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        project_role = self.object
-        if project_role and project_role.project.id == self.kwargs['proj_pk']:
-            project = self.object.project
-            context['breadcrumb'] =  project_breadcrumb(project,
-                                                        staff_link(project),
-                                                        ('Remove staff member', None))
-            add_project_common_context(self.request, project, 'staff', context)
-            return context
-        else:
-            raise Http404
-
-    def delete(self, request,  *args, **kwargs):
-        project_role = self.get_object()
-        self.object = project_role
-        try:
-            ProjectService.delete_project_role(request.user, self.kwargs['proj_pk'], project_role)
-            return HttpResponseRedirect(self.get_success_url())
-        except ValueError as err:
-            messages.error(request, 'There was a problem with your request.')
-            # logger.error("Error when user {0} tried to leave organization {1}: {2}".format(request.user.id, organization_role.organization.id, err))
-            return HttpResponseRedirect(self.get_success_url())
-
-    def get_permission_object(self):
-        return get_project(self.request, self.kwargs['proj_pk'])
 
 class EditProjectTaskRoleForm(ModelForm):
     def __init__(self, user, *args, **kwargs):

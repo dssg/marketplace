@@ -416,6 +416,11 @@ class ProjectService():
     def save_project_role(request_user, projid, project_role):
         validate_consistent_keys(project_role, 'Role does not match project', (['project', 'id'], projid))
         ensure_user_has_permission(request_user, project_role.project, 'project.staff_edit')
+        current_role = ProjectService.get_project_role(project_role.user, projid,  project_role.id)
+        if current_role.role == ProjRole.OWNER and \
+            project_role.role != ProjRole.OWNER and \
+            len(ProjectService.get_project_owners(request_user, projid)) <= 1:
+            raise ValueError('You are trying to remove the last administrator of the project. Please appoint another administrator before removing the current one.')
         project_role.save()
         project = project_role.project
         message = "The role of {0} in project {1} has been changed to {2}.".format(project_role.user.standard_display_name(), project.name, project_role.get_role_display())
@@ -440,6 +445,8 @@ class ProjectService():
     def delete_project_role(request_user, projid, project_role):
         validate_consistent_keys(project_role, 'Role does not match project', (['project', 'id'], projid))
         ensure_user_has_permission(request_user, project_role.project, 'project.staff_remove')
+        if project_role.role == ProjRole.OWNER and len(ProjectService.get_project_owners(request_user, projid)) <= 1:
+            raise ValueError('You are trying to remove the last administrator of the project. Please appoint another administrator before removing the current one.')
         project_role.delete()
         project = project_role.project
         message = "The user {0} has been removed from the staff of project {1}.".format(project_role.user.standard_display_name(), project.name)
@@ -510,6 +517,16 @@ class ProjectService():
         project = Project.objects.get(pk=projid)
         ensure_user_has_permission(request_user, project, 'project.staff_view')
         return ProjectRole.objects.filter(project=projid).order_by('role')
+
+    @staticmethod
+    def get_project_owners(request_user, projid):
+        project = Project.objects.get(pk=projid)
+        ensure_user_has_permission(request_user, project, 'project.staff_view')
+        return ProjectRole.objects.filter(project=projid, role=ProjRole.OWNER)
+
+    @staticmethod
+    def get_project_role(request_user, projid, roleid):
+        return ProjectRole.objects.get(pk=roleid, project__id=projid)
 
     @staticmethod
     def get_all_project_volunteers(request_user, projid):

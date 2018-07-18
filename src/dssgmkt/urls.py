@@ -59,7 +59,7 @@ urlpatterns = [
     path('proj/<int:proj_pk>/task/<int:task_pk>/requirements/<int:requirement_pk>/remove', proj.ProjectTaskRequirementRemove.as_view(), name='proj_task_requirements_requirement_remove'),
     path('proj/<int:proj_pk>/staff', proj.project_staff_view, name='proj_staff'),
     path('proj/<int:proj_pk>/staff/<int:role_pk>/edit', proj.ProjectRoleEdit.as_view(), name='proj_staff_edit'),
-    path('proj/<int:proj_pk>/staff/<int:role_pk>/remove', proj.ProjectRoleRemove.as_view(), name='proj_staff_remove'),
+    path('proj/<int:proj_pk>/staff/<int:role_pk>/remove', proj.project_role_delete_view, name='proj_staff_remove'),
     path('proj/<int:proj_pk>/volunteers', proj.project_volunteers_view, name='proj_volunteers'),
 
 
