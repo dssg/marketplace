@@ -88,6 +88,10 @@ class OrganizationService():
         return OrganizationRole.objects.get(organization=org_pk, user=user_pk)
 
     @staticmethod
+    def get_organization_role_by_pk(request_user, org_pk, role_pk):
+        return OrganizationRole.objects.get(organization=org_pk, pk=role_pk)
+
+    @staticmethod
     def user_is_any_organization_member(user):
         return user.is_authenticated and OrganizationRole.objects.filter(user=user).exists()
 
@@ -235,6 +239,9 @@ class OrganizationService():
         validate_consistent_keys(organization_role, (['organization','id'], orgid))
         ensure_user_has_permission(request_user, organization_role, 'organization.role_edit')
         if organization_role.organization.id == orgid:
+            current_role = OrganizationService.get_organization_role_by_pk(request_user, orgid, organization_role.id)
+            if current_role.role == OrgRole.ADMINISTRATOR and len(OrganizationService.get_organization_admins(request_user, orgid)) <= 1:
+                raise ValueError('You are trying to remove the last administrator of the organization. Please appoint another administrator before removing the current one.')
             organization_role.save()
             NotificationService.add_user_notification(organization_role.user,
                                                         "Your role within " + organization_role.organization.name + " has been changed to " + organization_role.get_role_display() + ".",
@@ -269,6 +276,8 @@ class OrganizationService():
     def delete_organization_role(request_user, orgid, organization_role):
         validate_consistent_keys(organization_role, (['organization','id'], orgid))
         ensure_user_has_permission(request_user, organization_role, 'organization.role_delete')
+        if organization_role.role == OrgRole.ADMINISTRATOR and len(OrganizationService.get_organization_admins(request_user, orgid)) <= 1:
+            raise ValueError('You are trying to remove the last administrator of the organization. Please appoint another administrator before removing the current one.')
         organization_role.delete()
         NotificationService.add_user_notification(organization_role.user,
                                                     "You were removed as a staff member of " + organization_role.organization.name,

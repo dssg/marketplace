@@ -56,6 +56,9 @@ def get_organization_membership_request(request, org_pk, request_pk):
 def get_organization_role(request, org_pk, user_pk):
     return generic_getter(OrganizationService.get_organization_role, request.user, org_pk, user_pk)
 
+def get_organization_role_by_pk(request, org_pk, role_pk):
+    return generic_getter(OrganizationService.get_organization_role_by_pk, request.user, org_pk, role_pk)
+
 
 def organization_list_view(request):
     checked_social_cause_fields = {}
@@ -290,7 +293,7 @@ class OrganizationRoleEdit(PermissionRequiredMixin, UpdateView):
             messages.info(self.request, 'User role edited successfully.')
             return HttpResponseRedirect(self.get_success_url())
         except ValueError as v:
-            form.add_error(str(v))
+            form.add_error(None, str(v))
             return super().form_invalid(form)
 
 
@@ -331,47 +334,44 @@ class OrganizationLeave(PermissionRequiredMixin, DeleteView):
             logger.error("Error when user {0} tried to leave organization {1}: {2}".format(request.user.id, organization_role.organization.id, err))
             return HttpResponseRedirect(self.get_success_url())
 
-class OrganizationRoleRemove(PermissionRequiredMixin, DeleteView):
-    model = OrganizationRole
-    template_name = 'dssgmkt/org_staff_remove.html'
-    pk_url_kwarg = 'role_pk'
-    permission_required = 'organization.role_delete'
-    raise_exception = True
+class DeleteOrganizationRoleForm(ModelForm):
+    class Meta:
+        model = OrganizationRole
+        fields = []
 
-    def get_success_url(self):
-        return reverse('dssgmkt:org_staff', args=[self.object.organization.id])
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        organization_role = self.object
-        if organization_role and organization_role.organization.id == self.kwargs['org_pk']:
-            organization = self.object.organization
-            context['breadcrumb'] = organization_breadcrumb(organization,
-                                                            organization_staff_link(organization),
-                                                            ('Remove staff member', None))
-            add_organization_common_context(self.request, organization, 'staff', context)
-            return context
-        else:
-            raise Http404
-
-    def delete(self, request,  *args, **kwargs):
-        organization_role = self.get_object()
-        self.object = organization_role
-        try:
-            OrganizationService.delete_organization_role(request.user, self.kwargs['org_pk'], organization_role)
-            messages.info(request, 'Staff member removed successfully.')
-            return HttpResponseRedirect(self.get_success_url())
-        except ValueError as err:
-            messages.error(request, 'There was a problem with your request.')
-            logger.error("Error when trying to remove user {0} from organization {1}: {2}".format(request.user.id, organization_role.organization.id, err))
-            return HttpResponseRedirect(self.get_success_url())
-
+@permission_required('organization.role_delete', raise_exception=True, fn=objectgetter(OrganizationRole, 'role_pk'))
+def organization_role_delete_view(request, org_pk, role_pk):
+    organization_role = get_organization_role_by_pk(request, org_pk, role_pk)
+    if request.method == 'POST':
+        form = DeleteOrganizationRoleForm(request.POST)
+        if form.is_valid():
+            try:
+                OrganizationService.delete_organization_role(request.user, org_pk, organization_role)
+                messages.info(request, 'Staff member removed successfully.')
+                return redirect('dssgmkt:org_staff', org_pk=org_pk)
+            except KeyError:
+                raise Http404
+            except ValueError as err:
+                logger.error("Error when trying to remove user {0} from organization {1}: {2}".format(request.user.id, organization_role.organization.id, err))
+                form.add_error(None, str(err))
+    elif request.method == 'GET':
+        form = DeleteOrganizationRoleForm()
+    organization = get_organization(request, org_pk)
+    return render(request, 'dssgmkt/org_staff_remove.html',
+                    add_organization_common_context(request, organization, 'staff',
+                        {
+                            'organizationrole': organization_role,
+                            'breadcrumb': organization_breadcrumb(organization,
+                                                                    organization_staff_link(organization),
+                                                                    ('Remove staff member', None)),
+                            'form': form,
+                        }))
 
 
 class CreateOrganizationForm(ModelForm):
     class Meta:
         model = Organization
-        fields = ['name', 'description', 'logo_url', 'website_url', 'phone_number',
+        fields = ['name', 'short_summary', 'description', 'logo_url', 'website_url', 'phone_number',
                 'email_address', 'street_address', 'address_line_2', 'city', 'state',
                 'zipcode', 'country', 'budget', 'years_operation', 'main_cause',
                 'organization_scope',]
