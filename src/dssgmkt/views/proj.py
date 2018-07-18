@@ -638,7 +638,7 @@ class ProjectEdit(PermissionRequiredMixin, UpdateView):
             ProjectService.save_project(self.request.user, self.kwargs['proj_pk'], project)
             return HttpResponseRedirect(self.get_success_url())
         except ValueError as v:
-            form.add_error(str(v))
+            form.add_error(None, str(v))
             return super().form_invalid(form)
 
 

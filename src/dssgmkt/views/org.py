@@ -151,7 +151,7 @@ class OrganizationEdit(PermissionRequiredMixin, UpdateView):
             OrganizationService.save_organization_info(self.request.user, self.kwargs['org_pk'], organization)
             return HttpResponseRedirect(self.get_success_url())
         except KeyError as k:
-            form.add_error(str(k))
+            form.add_error(None, str(k))
             return super().form_invalid(form)
 
 class CreateOrganizationRoleForm(ModelForm):

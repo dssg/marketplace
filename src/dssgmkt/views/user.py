@@ -188,7 +188,7 @@ class UserProfileEdit(PermissionRequiredMixin, UpdateView):
             UserService.save_user(self.request.user, self.kwargs['user_pk'], user)
             return HttpResponseRedirect(self.get_success_url())
         except ValueError as v:
-            form.add_error(str(v))
+            form.add_error(None, str(v))
             return super().form_invalid(form)
 
 class VolunteerProfileEdit(PermissionRequiredMixin, UpdateView):
@@ -222,7 +222,7 @@ class VolunteerProfileEdit(PermissionRequiredMixin, UpdateView):
             UserService.save_volunteer_profile(self.request.user, self.kwargs['volunteer_pk'], volunteer_profile)
             return HttpResponseRedirect(self.get_success_url())
         except ValueError as v:
-            form.add_error(str(v))
+            form.add_error(None, str(v))
             return super().form_invalid(form)
 
     def get_permission_object(self):
@@ -292,7 +292,7 @@ class VolunteerSkillEdit(PermissionRequiredMixin, UpdateView):
             UserService.save_volunteer_skill(self.request.user, self.kwargs['user_pk'], self.kwargs['skill_pk'], volunteer_skill)
             return HttpResponseRedirect(self.get_success_url())
         except KeyError as k:
-            form.add_error(str(k))
+            form.add_error(None, str(k))
             return super().form_invalid(form)
 
     def get_permission_object(self):
