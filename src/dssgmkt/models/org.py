@@ -68,6 +68,11 @@ class Organization(models.Model):
         verbose_name="Organization name",
         help_text="Type the name of your organization.",
     )
+    short_summary = models.TextField(
+        verbose_name="Short summary",
+        help_text="Write a short description of the organization that will be used throughout the site when needing a compact description.",
+        max_length=1000,
+    )
     description = models.TextField(
         max_length=5000,
         verbose_name="Organization description",

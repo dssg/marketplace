@@ -44,7 +44,7 @@ class Project(models.Model):
     )
     short_summary = models.TextField(
         verbose_name="Short summary",
-        help_text="Write a short description of the project that will be used as a summary of the project throughout the site.",
+        help_text="Write a short description of the project that will be used throughout the site when needing a compact description.",
         max_length=1000,
     )
     motivation = models.TextField(
@@ -492,6 +492,11 @@ class ProjectTask(models.Model):
         verbose_name="Name",
         help_text="Descriptive name that identifies the task within the project.",
         max_length=50,
+    )
+    short_summary = models.TextField(
+        verbose_name="Short summary",
+        help_text="Write a short description of the task that will be used throughout the site when needing a compact description.",
+        max_length=1000,
     )
     description = models.TextField(
         verbose_name="Description",

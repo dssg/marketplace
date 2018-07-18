@@ -245,6 +245,7 @@ class ProjectService():
             # Create default tasks
             scoping_task = ProjectTask()
             scoping_task.name = 'Project scoping'
+            scoping_task.short_summary = 'Project scoping task to define the project work.'
             scoping_task.description = 'This project is new and needs help being defined. The project scoping includes defining the problem being solved, defining what form the soluntion will take, splitting the work into the necessary tasks, and specifying the expertise needed to complete each task. Project scopers will also review volunteer applications and will QA the work done by volunteers.'
             scoping_task.onboarding_instructions = 'Describe in detail the volunteer onboarding instructions for project scoping.'
             scoping_task.stage = TaskStatus.NOT_STARTED
@@ -259,6 +260,7 @@ class ProjectService():
 
             project_management_task = ProjectTask()
             project_management_task.name = 'Project management'
+            project_management_task.short_summary = 'Project management task to ensure the project is successful.'
             project_management_task.description = 'This project needs experienced project managers that can ensure the project gets successfully completed on time. Duties include managing the status of all the tasks in the project, ensuring work gets done at the required pace, foreseeing risks to the project and preventing blockers. Project managers will also review volunteer applications and will QA the work done by volunteers.'
             project_management_task.onboarding_instructions = 'Describe in detail the volunteer onboarding instructions for project management.'
             project_management_task.stage = TaskStatus.NOT_STARTED
@@ -273,6 +275,7 @@ class ProjectService():
 
             domain_work_task = ProjectTask()
             domain_work_task.name = 'Example domain work task'
+            domain_work_task.short_summary = 'Project work description.'
             domain_work_task.description = 'Domain work tasks represent the tasks that need to be completed to finish the project. '
             domain_work_task.onboarding_instructions = 'Describe in detail the volunteer onboarding instructions for this domain work task.'
             domain_work_task.stage = TaskStatus.NOT_STARTED
@@ -812,6 +815,7 @@ class ProjectTaskService():
         if project:
             project_task = ProjectTask()
             project_task.name = 'New project task'
+            project_task.short_summary = 'This is the task short summary'
             project_task.description = 'This is the task description'
             project_task.onboarding_instructions = 'These are the volunteer onboarding instructions'
             project_task.stage = TaskStatus.NOT_STARTED

@@ -87,7 +87,7 @@
                 </div>
 
                   <ul class="list-group list-group-flush">
-                    <li class="list-group-item">{{ project_task.description }}</li>
+                    <li class="list-group-item">{{ project_task.short_summary }}</li>
                     <li class="list-group-item">Required skills:
                       {% for task_requirement in project_task.projecttaskrequirement_set.all %}
                         <div>{{ task_requirement.skill.area }}/{{ task_requirement.skill.name }}:{{ task_requirement.get_level_display }}</div>
