@@ -241,6 +241,8 @@ class OrganizationMembershipRequest(models.Model):
         verbose_name="Review author",
         help_text="User that reviewed the membership application",
         related_name="reviewed_organization_membership_request",
+        blank=True,
+        null=True,
     )
     organization = models.ForeignKey(
         Organization,

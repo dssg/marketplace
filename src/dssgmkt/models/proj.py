@@ -681,6 +681,8 @@ class ProjectTaskReview(models.Model):
         verbose_name="Review author",
         help_text="The user that did the QA review of this task.",
         related_name="reviewed_project_task",
+        blank=True,
+        null=True,
     )
 
     def is_pending(self):
@@ -794,6 +796,8 @@ class VolunteerApplication(models.Model):
         verbose_name="Review author",
         help_text="The user that did the review of this volunteer application.",
         related_name="reviewed_volunteer_application",
+        blank=True,
+        null=True,
     )
 
     def is_new(self):
