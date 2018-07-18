@@ -81,6 +81,10 @@
                             </span>
     </p>
       <p>Resolution date: {{ organizationmembershiprequest.resolution_date }}</p>
+      <p>Reviewer: <a href="{% url 'dssgmkt:user_profile' organizationmembershiprequest.reviewer.id %}">
+                      {{ organizationmembershiprequest.reviewer.standard_display_name }}
+                    </a>
+      </p>
     {% if organizationmembershiprequest.public_reviewer_comments %}
       <p>Reviewer's comments: {{ organizationmembershiprequest.public_reviewer_comments }}</p>
     {% endif %}

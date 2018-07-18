@@ -894,6 +894,7 @@ class ProjectTaskService():
         if task_review.review_result != ReviewStatus.NEW:
             raise ValueError('Task review was already completed')
         task_review.review_result = ReviewStatus.ACCEPTED
+        task_review.reviewer = request_user
         task_review.review_date = timezone.now()
         ProjectTaskService.save_task_review(request_user, projid, taskid, task_review)
         project_task = task_review.task
@@ -923,6 +924,7 @@ class ProjectTaskService():
         if task_review.review_result != ReviewStatus.NEW:
             raise ValueError('Task review was already completed')
         task_review.review_result = ReviewStatus.REJECTED
+        task_review.reviewer = request_user
         task_review.review_date = timezone.now()
         ProjectTaskService.save_task_review(request_user, projid, taskid, task_review)
         project_task = task_review.task
@@ -1098,6 +1100,7 @@ class ProjectTaskService():
         if volunteer_application.status != ReviewStatus.NEW:
             raise ValueError('Volunteer application review was already completed')
         volunteer_application.status = ReviewStatus.ACCEPTED
+        volunteer_application.reviewer = request_user
         volunteer_application.review_date = timezone.now()
         ProjectTaskService.save_volunteer_application(request_user, projid, taskid, volunteer_application)
         project_task = volunteer_application.task
@@ -1126,6 +1129,7 @@ class ProjectTaskService():
         if volunteer_application.status != ReviewStatus.NEW:
             raise ValueError('Volunteer application review was already completed')
         volunteer_application.status = ReviewStatus.REJECTED
+        volunteer_application.reviewer = request_user
         volunteer_application.review_date = timezone.now()
         ProjectTaskService.save_volunteer_application(request_user, projid, taskid, volunteer_application)
         project_task = volunteer_application.task

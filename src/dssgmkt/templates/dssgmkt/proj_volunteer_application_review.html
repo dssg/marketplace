@@ -76,6 +76,9 @@
               </span>
     </p>
     <p>Resolution date: {{ volunteerapplication.resolution_date }}</p>
+    <p>Reviewer:<a href="{% url 'dssgmkt:user_profile' volunteerapplication.reviewer.id %}">
+                    {{ volunteerapplication.reviewer.standard_display_name }}
+                  </a></p>
     <p>Reviewer's comments: {{ volunteerapplication.public_reviewer_comments }}</p>
     {% if not user_is_applicant %}
       <p>Private reviewer's notes: {{ volunteerapplication.private_reviewer_notes }}</p>

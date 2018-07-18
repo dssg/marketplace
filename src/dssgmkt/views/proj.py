@@ -424,7 +424,7 @@ class ProjectTaskReviewCreate(PermissionRequiredMixin, CreateView):
 class ProjectTaskReviewForm(ModelForm):
     class Meta:
         model = ProjectTaskReview
-        fields = ['public_reviewer_comments', 'private_reviewer_notes']
+        fields = ['review_score', 'public_reviewer_comments', 'private_reviewer_notes']
 
 
 @permission_required('project.task_review_view', raise_exception=True, fn=objectgetter(Project, 'proj_pk'))

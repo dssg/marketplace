@@ -235,6 +235,13 @@ class OrganizationMembershipRequest(models.Model):
         verbose_name="Membership applicant",
         help_text="User that requested membership in this organization",
     )
+    reviewer = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        verbose_name="Review author",
+        help_text="User that reviewed the membership application",
+        related_name="reviewed_organization_membership_request",
+    )
     organization = models.ForeignKey(
         Organization,
         on_delete=models.CASCADE,

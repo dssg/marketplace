@@ -4,7 +4,7 @@ from django_countries.fields import CountryField
 from dssgsolve import settings
 
 from .common import (
-    SocialCause, ReviewStatus, PHONE_REGEX,
+    SocialCause, ReviewStatus, Score, PHONE_REGEX,
     SkillLevel
 )
 from .org import Organization
@@ -657,6 +657,12 @@ class ProjectTaskReview(models.Model):
         choices=ReviewStatus.get_choices(),
         default=ReviewStatus.NEW,
     )
+    review_score = models.PositiveSmallIntegerField(
+        verbose_name="Score",
+        help_text="What do you think about the quality of work in this task?",
+        choices=Score.get_choices(),
+        default=Score.ONE_STAR,
+    )
     task = models.ForeignKey(
         ProjectTask,
         on_delete=models.CASCADE,
@@ -668,6 +674,13 @@ class ProjectTaskReview(models.Model):
         on_delete=models.CASCADE,
         verbose_name="Volunteer",
         help_text="The user requesting a review of this task.",
+    )
+    reviewer = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        verbose_name="Review author",
+        help_text="The user that did the QA review of this task.",
+        related_name="reviewed_project_task",
     )
 
     def is_pending(self):
@@ -774,6 +787,13 @@ class VolunteerApplication(models.Model):
         on_delete=models.CASCADE,
         verbose_name="Applicant",
         help_text="The user applying to work on this task.",
+    )
+    reviewer = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        verbose_name="Review author",
+        help_text="The user that did the review of this volunteer application.",
+        related_name="reviewed_volunteer_application",
     )
 
     def is_new(self):

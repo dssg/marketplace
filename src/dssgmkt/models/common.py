@@ -39,6 +39,22 @@ class ReviewStatus():
                 (ReviewStatus.REJECTED, 'Rejected'),
                 )
 
+class Score():
+    ONE_STAR = 1
+    TWO_STARS = 2
+    THREE_STARS = 3
+    FOUR_STARS = 4
+    FIVE_STARS = 5
+
+    def get_choices():
+        return (
+                    (Score.ONE_STAR, 'Needs improvement'),
+                    (Score.TWO_STARS, 'Fair'),
+                    (Score.THREE_STARS, 'Good'),
+                    (Score.FOUR_STARS, 'Excellent'),
+                    (Score.FIVE_STARS, 'Outstanding'),
+                )
+
 class SkillLevel():
     BEGINNER = 0
     INTERMEDIATE = 1

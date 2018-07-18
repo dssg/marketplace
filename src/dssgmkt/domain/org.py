@@ -209,6 +209,7 @@ class OrganizationService():
         validate_consistent_keys(membership_request, (['organization','id'], orgid))
         ensure_user_has_permission(request_user, membership_request, 'organization.membership_review')
         membership_request.status = ReviewStatus.ACCEPTED
+        membership_request.reviewer = request_user
         OrganizationService.save_membership_request(request_user, orgid, membership_request)
         NotificationService.add_user_notification(membership_request.user,
                                                     "Congratulations! Your membership request for " + membership_request.organization.name + " was accepted.",
@@ -221,6 +222,7 @@ class OrganizationService():
         validate_consistent_keys(membership_request, (['organization','id'], orgid))
         ensure_user_has_permission(request_user, membership_request, 'organization.membership_review')
         membership_request.status = ReviewStatus.REJECTED
+        membership_request.reviewer = request_user
         OrganizationService.save_membership_request(request_user, orgid, membership_request)
         NotificationService.add_user_notification(membership_request.user,
                                                     "Your membership request for " + membership_request.organization.name + " was rejected.",
