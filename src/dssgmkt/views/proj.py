@@ -54,6 +54,9 @@ def task_link(project_task, include_link=True):
 def edit_task_requirements_link(project, task, include_link=True):
     return ('Edit requirements', reverse('dssgmkt:proj_task_requirements_edit', args=[project.id, task.id]) if include_link else None)
 
+def discussion_index_link(project, include_link=True):
+    return ('Discussion', reverse('dssgmkt:proj_discussion', args=[project.id]) if include_link else None)
+
 def project_breadcrumb(project, *items):
     breadcrumb_items = [home_link(),
                         projects_link(),
@@ -220,15 +223,31 @@ class CreateProjectCommentForm(ModelForm):
         fields = ['comment']
 
 
-def project_comments_view(request, proj_pk):
+def project_comment_channel_index_view(request, proj_pk):
+    if request.method == 'POST':
+        raise Http404
+    elif request.method == 'GET':
+        project = get_project(request, proj_pk)
+        discussion_channels = ProjectService.get_project_channels(request.user, project)
+        return render(request, 'dssgmkt/proj_discussion_channels.html',
+                        add_project_common_context(
+                            request,
+                            project,
+                            'discussion',
+                            {
+                                'breadcrumb': project_breadcrumb(project, discussion_index_link(project, include_link=False)),
+                                'discussion_channels': discussion_channels
+                            }))
+
+def project_channel_comments_view(request, proj_pk, channel_pk):
     if request.method == 'POST':
         form = CreateProjectCommentForm(request.POST)
         if form.is_valid():
             project_comment = form.save(commit = False)
             try:
-                ProjectService.add_project_comment(request.user, proj_pk, project_comment)
+                ProjectService.add_project_comment(request.user, proj_pk, channel_pk, project_comment)
                 messages.info(request, 'Comment added successfuly')
-                return redirect('dssgmkt:proj_discussion', proj_pk = proj_pk)
+                return redirect('dssgmkt:proj_discussion', proj_pk=proj_pk, channel_pk=channel_pk)
             except KeyError:
                 raise Http404
             except ValueError:
@@ -236,17 +255,21 @@ def project_comments_view(request, proj_pk):
     elif request.method == 'GET':
         form = CreateProjectCommentForm()
     project = get_project(request, proj_pk)
-    project_comments = ProjectService.get_project_comments(request.user, project)
+    project_comments = ProjectService.get_project_comments(request.user, channel_pk, project)
     project_comments_page = paginate(request, project_comments, page_size=20)
+    channel = ProjectService.get_project_channel(request.user, project, channel_pk)
+    discussion_channels = ProjectService.get_project_channels(request.user, project)
     return render(request, 'dssgmkt/proj_discussion.html',
                     add_project_common_context(
                         request,
                         project,
                         'discussion',
                         {
-                            'breadcrumb': project_breadcrumb(project, ('Discussion', None)),
+                            'breadcrumb': project_breadcrumb(project, discussion_index_link(project), (channel.name, None)),
                             'project_comments': project_comments_page,
                             'form': form,
+                            'channel': channel_pk,
+                            'discussion_channels': discussion_channels
                         }))
 
 class ProjectDeliverablesView(generic.DetailView):

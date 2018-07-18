@@ -419,11 +419,21 @@ class ProjectLog(models.Model):
     def __str__(self):
         return self.change_date.strftime('%Y-%m-%d %H:%M') + ": " + self.change_description
 
+class ProjectDiscussionChannel(models.Model):
+    name = models.TextField(max_length=100,
+        verbose_name="Name",
+        help_text="Descriptive name that identifies the discussion channel within the project.",
+    )
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.CASCADE,
+    )
+
 class ProjectComment(models.Model):
     comment = models.TextField(max_length=5000)
     comment_date = models.DateTimeField(auto_now_add=True)
-    project = models.ForeignKey(
-        Project,
+    channel = models.ForeignKey(
+        ProjectDiscussionChannel,
         on_delete=models.CASCADE,
     )
     author = models.ForeignKey(

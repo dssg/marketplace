@@ -1,6 +1,6 @@
-{% extends "dssgmkt/proj.html" %}
+{% extends "dssgmkt/proj_discussion_base.html" %}
 
-{% block tabcontents %}
+{% block discussioncontents %}
   <p></p>
 
   {% load rules %}
@@ -21,7 +21,7 @@
         <div class="col-lg-9 offset-lg-3">
           <button type="submit"
                   form="addcomment"
-                  formaction="{% url 'dssgmkt:proj_discussion_add' project.id %}"
+                  formaction="{% url 'dssgmkt:proj_discussion_add' project.id channel %}"
                   formmethod="post"
                   class="btn btn-success mr-3">
             <i class="material-icons" style="vertical-align: middle">add_comment</i>

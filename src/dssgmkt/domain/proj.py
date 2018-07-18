@@ -3,7 +3,7 @@ from django.utils import timezone
 from datetime import date
 
 from ..models.proj import (
-    Project, ProjectStatus, ProjectRole, ProjRole, ProjectFollower, ProjectLog, ProjectLogType, ProjectLogSource, ProjectComment,
+    Project, ProjectStatus, ProjectRole, ProjRole, ProjectFollower, ProjectLog, ProjectLogType, ProjectLogSource, ProjectDiscussionChannel, ProjectComment,
     ProjectTask, TaskStatus, TaskRole, ProjectTaskRole, ProjectTaskReview, VolunteerApplication,
     ProjectTaskRequirement, TaskType, ProjectScope,
 )
@@ -171,8 +171,16 @@ class ProjectService():
         return ProjectLog.objects.filter(project = proj).order_by('-change_date')
 
     @staticmethod
-    def get_project_comments(request_user, proj):
-        return ProjectComment.objects.filter(project = proj).order_by('-comment_date')
+    def get_project_channels(request_user, proj):
+        return ProjectDiscussionChannel.objects.filter(project=proj)
+
+    @staticmethod
+    def get_project_channel(request_user, proj, channelid):
+        return ProjectDiscussionChannel.objects.get(pk=channelid, project=proj)
+
+    @staticmethod
+    def get_project_comments(request_user, channelid, proj):
+        return ProjectComment.objects.filter(channel__id=channelid, channel__project=proj.id).order_by('-comment_date')
 
     @staticmethod
     def add_project_change(request_user, proj, type, target_type, target_id, description):
@@ -186,16 +194,19 @@ class ProjectService():
         change.save()
 
     @staticmethod
-    def add_project_comment(request_user, projid, project_comment):
+    def add_project_comment(request_user, projid, channelid, project_comment):
         project = Project.objects.get(pk=projid)
         if project:
             ensure_user_has_permission(request_user, project, 'project.comment_add')
-            project_comment.project = project
+            channel = ProjectService.get_project_channel(request_user, project, channelid)
+            if not channel:
+                raise KeyError('Discussion channel {0} not found'.format(channelid))
             project_comment.author = request_user
+            project_comment.channel = channel
             try:
                 project_comment.save()
                 NotificationService.add_multiuser_notification(ProjectService.get_public_notification_users(request_user, project),
-                                                            "New comment added to the discussion of project {0}.".format(project.name),
+                                                            "New comment added to the discussion channel {0} of project {1}.".format(channel.name, project.name),
                                                             NotificationSeverity.INFO,
                                                             NotificationSource.PROJECT,
                                                             project.id)
@@ -273,6 +284,22 @@ class ProjectService():
             domain_work_task.estimated_start_date = date.today()
             domain_work_task.estimated_end_date = date.today()
             domain_work_task.save()
+
+            # Create default discussion channels
+            general_channel = ProjectDiscussionChannel()
+            general_channel.project = project
+            general_channel.name = "General discussion"
+            general_channel.save()
+
+            project_management_channel = ProjectDiscussionChannel()
+            project_management_channel.project = project
+            project_management_channel.name = "Project management"
+            project_management_channel.save()
+
+            technical_channel = ProjectDiscussionChannel()
+            technical_channel.project = project
+            technical_channel.name = "Technical talk"
+            technical_channel.save()
 
             message = "The project {0} was created by {1} within the organization {2}.".format(project.name, request_user.standard_display_name(), organization.name)
             NotificationService.add_multiuser_notification(organization_members,
