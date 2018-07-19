@@ -26,7 +26,7 @@
       <tbody>
         {% for volunteer in volunteers %}
           <tr>
-              <td><a href="{% url 'dssgmkt:user_profile' volunteer.user.id %}">{{ volunteer.user.first_name }} {{ volunteer.user.last_name }}</a></td>
+              <td>{% include 'dssgmkt/components/user_display.html' with user=volunteer.user %}</td>
               <td><a href="{% url 'dssgmkt:user_profile' volunteer.user.id %}">{{ volunteer.user.email }}</a></td>
               <td>{{ volunteer.task.name }}</td>
               <td>{% if volunteer.task.is_completed %}<span class="text-muted">Completed</span>{% else %}Active{% endif %}</td>
@@ -73,7 +73,7 @@
       <tbody>
         {% for application in volunteer_applications %}
           <tr>
-              <td><a href="{% url 'dssgmkt:user_profile' application.volunteer.id %}">{{ application.volunteer.first_name }} {{ application.volunteer.last_name }}</a></td>
+              <td>{% include 'dssgmkt/components/user_display.html' with user=application.volunteer %}</td>
               <td><a href="{% url 'dssgmkt:user_profile' application.volunteer.id %}">{{ application.volunteer.email }}</a></td>
               <td>{{ application.task.name }}</td>
               <td>{{ application.application_date }}</td>

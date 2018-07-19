@@ -1,0 +1,12 @@
+
+    <span class="{% if badge.is_tier_basic %}badge-basic{% elif badge.is_tier_advanced %}badge-advanced{% elif badge.is_tier_master %}badge-master{% endif %}">
+      {% if badge.is_type_work_speed %}
+        <i class="fas fa-circle"></i> {% if not compact_display %}Fast worker{% endif %}
+      {% elif badge.is_type_early_user %}
+        <i class="fas fa-play"></i> {% if not compact_display %}Early user{% endif %}
+      {% elif badge.is_type_review_score %}
+        <i class="fas fa-star"></i> {% if not compact_display %}Great reviews{% endif %}
+      {% elif badge.is_type_project_count %}
+        <i class="fas fa-square"></i> {% if not compact_display %}Completed project count{% endif %}
+      {% endif %}
+    </span>

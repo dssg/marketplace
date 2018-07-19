@@ -79,9 +79,7 @@
                                 {{ task_review.get_review_result_display }}
                             </span></p>
     <p>Resolution date: {{ task_review.review_date }}</p>
-    <p>Reviewer: <a href="{% url 'dssgmkt:user_profile' task_review.reviewer.id %}">
-                    {{ task_review.reviewer.standard_display_name }}
-                  </a></p>
+    <p>Reviewer: {% include 'dssgmkt/components/user_display.html' with user=task_review.reviewer %}</p>
     {% if task_review.public_reviewer_comments %}
       <p>Reviewer's comments: {{ task_review.public_reviewer_comments }}</p>
     {% endif %}

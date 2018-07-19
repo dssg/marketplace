@@ -64,7 +64,7 @@
             <div class="card-body">
               {% for volunteer in task_volunteers %}
                 <div>
-                  <a href="{% url 'dssgmkt:user_profile' volunteer.id %}">{{ volunteer.standard_display_name }}</a>
+                  {% include 'dssgmkt/components/user_display.html' with user=volunteer %}
                 </div>
               {% endfor %}
             </div>

@@ -5,7 +5,7 @@
   <h4 class="section-header">Volunteer application</h4>
   <p>This person has applied to volunteer in your project.</p>
 
-  <p>Full name:<a href="">{{ volunteerapplication.volunteer.first_name }} {{ volunteerapplication.volunteer.last_name }}</a></p>
+  <p>User:{% include 'dssgmkt/components/user_display.html' with user=volunteerapplication.volunteer %}</p>
   <p>Email addres:<a href="">{{ volunteerapplication.volunteer.email }}</a></p>
   <p>Application date: {{ volunteerapplication.application_date }} </p>
   <p>Task: {{ volunteerapplication.task.name }}</p>
@@ -76,9 +76,7 @@
               </span>
     </p>
     <p>Resolution date: {{ volunteerapplication.resolution_date }}</p>
-    <p>Reviewer:<a href="{% url 'dssgmkt:user_profile' volunteerapplication.reviewer.id %}">
-                    {{ volunteerapplication.reviewer.standard_display_name }}
-                  </a></p>
+    <p>Reviewer: {% include 'dssgmkt/components/user_display.html' with user=volunteerapplication.reviewer %}</p>
     <p>Reviewer's comments: {{ volunteerapplication.public_reviewer_comments }}</p>
     {% if not user_is_applicant %}
       <p>Private reviewer's notes: {{ volunteerapplication.private_reviewer_notes }}</p>

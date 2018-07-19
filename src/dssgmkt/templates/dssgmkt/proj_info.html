@@ -75,7 +75,7 @@
           <li class="list-group-item">
             {% if volunteers %}
               {% for volunteer in volunteers %}
-                <div><a href="{% url 'dssgmkt:user_profile' volunteer.id %}">{{ volunteer.standard_display_name }}</a></div>
+                <div>{% include 'dssgmkt/components/user_display.html' with user=volunteer %}</div>
               {% endfor %}
             {% else %}
               No volunteers in this project yet.

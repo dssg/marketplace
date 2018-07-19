@@ -263,3 +263,72 @@ class VolunteerSkill(models.Model):
 
     class Meta:
         unique_together = ('user','skill')
+
+
+class BadgeType():
+    WORK_SPEED = 'SP'
+    REVIEW_SCORE = 'RS'
+    NUMBER_OF_PROJECTS = 'PC'
+    EARLY_USER = 'EU'
+
+    def get_choices():
+        return (
+                    (BadgeType.WORK_SPEED, 'Fast work'),
+                    (BadgeType.REVIEW_SCORE, 'Great reviews'),
+                    (BadgeType.NUMBER_OF_PROJECTS, 'Completed projects'),
+                    (BadgeType.EARLY_USER, 'Early user'),
+                )
+
+class BadgeTier():
+    BASIC = 0
+    ADVANCED = 1
+    MASTER = 2
+
+    def get_choices():
+        return (
+                    (BadgeTier.BASIC, 'Tier 1: basic'),
+                    (BadgeTier.ADVANCED, 'Tier 2: advanced'),
+                    (BadgeTier.MASTER, 'Tier 3: master'),
+                )
+
+class UserBadge(models.Model):
+    type = models.CharField(
+        max_length=2,
+        choices=BadgeType.get_choices(),
+        default=BadgeType.WORK_SPEED,
+    )
+    tier = models.IntegerField(
+        verbose_name="Badge tier",
+        help_text="How advanced this reward is.",
+        choices = BadgeTier.get_choices(),
+        default=BadgeTier.BASIC,
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        verbose_name="User",
+    )
+
+    def is_tier_basic(self):
+        return self.tier == BadgeTier.BASIC
+
+    def is_tier_advanced(self):
+        return self.tier == BadgeTier.ADVANCED
+
+    def is_tier_master(self):
+        return self.tier == BadgeTier.MASTER
+
+    def is_type_work_speed(self):
+        return self.type == BadgeType.WORK_SPEED
+
+    def is_type_review_score(self):
+        return self.type == BadgeType.REVIEW_SCORE 
+
+    def is_type_project_count(self):
+        return self.type == BadgeType.NUMBER_OF_PROJECTS
+
+    def is_type_early_user(self):
+        return self.type == BadgeType.EARLY_USER
+
+    class Meta:
+        unique_together = ('user','type')

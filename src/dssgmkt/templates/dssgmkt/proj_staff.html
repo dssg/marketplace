@@ -25,7 +25,7 @@
       <tbody>
         {% for staff in project_staff %}
           <tr>
-              <td><a href="{% url 'dssgmkt:user_profile' staff.user.id %}">{{ staff.user.first_name }} {{ staff.user.last_name }}</a></td>
+              <td>{% include 'dssgmkt/components/user_display.html' with user=staff.user %}</td>
               <td><a href="{% url 'dssgmkt:user_profile' staff.user.id %}">{{ staff.user.email }}</a></td>
               <td>{{ staff.get_role_display }}</td>
               {% if perm_staff_edit %}

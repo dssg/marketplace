@@ -9,8 +9,7 @@
       <p>This person has requested to join your organization. Please review the
       application and accept or reject it.</p>
 
-      <p>Full name:<a href="{% url 'dssgmkt:user_profile' organizationmembershiprequest.user.id %}">
-        {{ organizationmembershiprequest.user.first_name }} {{ organizationmembershiprequest.user.last_name }}</a></p>
+      <p>User: {% include 'dssgmkt/components/user_display.html' with user=organizationmembershiprequest.user %}</p>
       <p>Email addres:<a href="{% url 'dssgmkt:user_profile' organizationmembershiprequest.user.id %}">
         {{ organizationmembershiprequest.user.email }}</a></p>
       <p>Request date: {{ organizationmembershiprequest.request_date }} </p>
@@ -81,9 +80,7 @@
                             </span>
     </p>
       <p>Resolution date: {{ organizationmembershiprequest.resolution_date }}</p>
-      <p>Reviewer: <a href="{% url 'dssgmkt:user_profile' organizationmembershiprequest.reviewer.id %}">
-                      {{ organizationmembershiprequest.reviewer.standard_display_name }}
-                    </a>
+      <p>Reviewer: {% include 'dssgmkt/components/user_display.html' with user=organizationmembershiprequest.reviewer %}
       </p>
     {% if organizationmembershiprequest.public_reviewer_comments %}
       <p>Reviewer's comments: {{ organizationmembershiprequest.public_reviewer_comments }}</p>

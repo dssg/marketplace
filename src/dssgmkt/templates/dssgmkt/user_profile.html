@@ -8,7 +8,7 @@
         {% if user == userprofile %}
           <h4>My profile</h4>
         {% else %}
-          <h4>{{ userprofile.full_name }} ({{ userprofile.username }})</h4>
+          <h4>{% include 'dssgmkt/components/user_display.html' with user=userprofile %}</h4>
         {% endif %}
       </div>
     </div>
@@ -85,6 +85,22 @@
           {% endif %}
         </div>
       </div>
+      {% if userprofile.volunteerprofile.is_accepted %}
+        <div class="card">
+          <div class="card-header">Awards</div>
+          <div class="card-body">
+            {% if userprofile.userbadge_set.exists %}
+              {% for badge in userprofile.userbadge_set.all %}
+                  <p>
+                    {% include 'dssgmkt/components/user_badge.html' with badge=badge compact_display=False %}
+                  </p>
+              {% endfor %}
+            {% else %}
+                <p>No awards received yet.</p>
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
     </div>
 
     {% if userprofile.volunteerprofile %}

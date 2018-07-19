@@ -148,3 +148,16 @@ fieldset legend {
   padding: 5px;
   text-align:  center;
 }
+
+
+.badge-basic {
+  color: #cec654
+}
+
+.badge-advanced {
+  color: #59b5d6
+}
+
+.badge-master {
+  color: #6e1ca0
+}
