@@ -535,6 +535,10 @@ class ProjectService():
         return ProjectTaskRole.objects.filter(task__project__id=projid)
 
     @staticmethod
+    def get_project_public_volunteer_list(request_user, projid):
+        return User.objects.filter(projecttaskrole__task__project__id=projid).distinct()
+
+    @staticmethod
     def get_all_volunteer_applications(request_user, projid):
         project = Project.objects.get(pk=projid)
         ensure_user_has_permission(request_user, project, 'project.volunteers_view')

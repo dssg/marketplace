@@ -192,6 +192,7 @@ class ProjectView(PermissionRequiredMixin, generic.ListView): ## This is a listv
         context = super().get_context_data(**kwargs)
         project = get_project(self.request, self.kwargs['proj_pk'])
         context['breadcrumb'] = project_breadcrumb(project)
+        context['volunteers'] = ProjectService.get_project_public_volunteer_list(self.request.user, self.kwargs['proj_pk'])
         add_project_common_context(self.request, project, 'info', context)
         return context
 

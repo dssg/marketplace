@@ -69,6 +69,20 @@
         </div>
       </div>
 
+      <div class="card mb-3 section-header">
+        <div class="card-header"><i class="far fa-help"></i> Volunteers</div>
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item">
+            {% if volunteers %}
+              {% for volunteer in volunteers %}
+                <div><a href="{% url 'dssgmkt:user_profile' volunteer.id %}">{{ volunteer.standard_display_name }}</a></div>
+              {% endfor %}
+            {% else %}
+              No volunteers in this project yet.
+            {% endif %}
+          </li>
+      </div>
+
 
         <h3 class="section-header">Project tasks</h3>
         {% if project_tasks %}
