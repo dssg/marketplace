@@ -4,7 +4,7 @@
 
   <form id="editstaff">
     <h4 class="section-header">Edit staff member</h4>
-    <p>Name: {{ projectrole.user.first_name }} {{ projectrole.user.last_name }}</p>
+    <p>User: {% include 'dssgmkt/components/user_display.html' with user=projectrole.user %}</p>
     <p>Email: {{ projectrole.user.email }}</p>
     {% csrf_token %}
     {% include 'dssgmkt/components/standard_form_fields.html' %}

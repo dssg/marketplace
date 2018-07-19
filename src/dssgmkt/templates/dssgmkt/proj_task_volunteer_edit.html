@@ -4,6 +4,7 @@
 
   <form id="edittaskvolunteer">
     <h4 class="section-header">Edit task volunteer</h2>
+    <p>User: {% include 'dssgmkt/components/user_display.html' with user=projecttaskrole.user %}</p>
     {% csrf_token %}
     {% include 'dssgmkt/components/standard_form_fields.html' %}
 

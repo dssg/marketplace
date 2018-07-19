@@ -3,7 +3,7 @@
 {% block tabcontents %}
 
   <h4 class="section-header">Remove volunteer</h4>
-  <p>Name: {{ projecttaskrole.user.first_name }} {{ projecttaskrole.user.last_name }}</p>
+  <p>User: {% include 'dssgmkt/components/user_display.html' with user=projecttaskrole.user %}</p>
   <p>Email: {{ projecttaskrole.user.email }}</p>
   <form id="removestaff">
     {% csrf_token %}
