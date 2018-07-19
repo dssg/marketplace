@@ -2,11 +2,13 @@
 
 {% block taskcontents %}
 
+  {% load markdown_deux_tags %}
+
   <h4 class="section-header">Completed task review</h4>
   <p>Task: {{ project_task.name }}</p>
   <p>Estimated effort in hours: {{ project_task.estimated_effort_hours }}</p>
   <p>Total effort spent (in hours): {{ task_review.volunteer_effort_hours }}</p>
-  <p>Volunteer's comments: {{ task_review.volunteer_comment }}</p>
+  <p>Volunteer's comments: {{ task_review.volunteer_comment|markdown }}</p>
 
   {% if project_task.task_home_url %}
     <p>External task home: <a href="{{ project_task.task_home_url }}">{{ project_task.task_home_url }}</a></p>
@@ -81,11 +83,11 @@
     <p>Resolution date: {{ task_review.review_date }}</p>
     <p>Reviewer: {% include 'dssgmkt/components/user_display.html' with user=task_review.reviewer %}</p>
     {% if task_review.public_reviewer_comments %}
-      <p>Reviewer's comments: {{ task_review.public_reviewer_comments }}</p>
+      <p>Reviewer's comments: {{ task_review.public_reviewer_comments|markdown }}</p>
     {% endif %}
     {% if task_review.private_reviewer_notes %}
       {% if perm_task_reviewer %}
-        <p>Private reviewer's notes: {{ task_review.private_reviewer_notes }}</p>
+        <p>Private reviewer's notes: {{ task_review.private_reviewer_notes|markdown }}</p>
       {% endif %}
     {% endif %}
 

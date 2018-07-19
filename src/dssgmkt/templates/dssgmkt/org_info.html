@@ -2,10 +2,11 @@
 
 {% block tabcontents %}
   {% load rules %}
+  {% load markdown_deux_tags %}
 
   <div class="row mt-5 mb-5">
     <div class="col-lg-8">
-      <p>{{ organization.description }}</p>
+      <p>{{ organization.description|markdown }}</p>
     </div>
 
     <div class="col-lg-4">

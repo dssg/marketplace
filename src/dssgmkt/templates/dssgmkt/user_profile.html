@@ -1,6 +1,7 @@
 {% extends 'dssgmkt/base.html' %}
 
 {% block pagecontents %}
+  {% load markdown_deux_tags %}
 
 
     <div class="row section-header">
@@ -15,7 +16,7 @@
     <div class="row mb-5">
       <div class="{% if user == userprofile %}col-lg-8{% else %}col-lg-12{% endif %}">
         {% if userprofile.volunteerprofile %}
-          <p>{{ userprofile.volunteerprofile.cover_letter }}</p>
+          <p>{{ userprofile.volunteerprofile.cover_letter|markdown }}</p>
         {% endif %}
       </div>
 

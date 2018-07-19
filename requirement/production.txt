@@ -7,4 +7,5 @@ Pillow==5.1.0
 dj-database-url==0.4.2
 gunicorn==19.7.1
 whitenoise==3.3.1
+django-markdown-deux==1.0.5
 git+https://github.com/wufoo/pyfoo.git@f84df2b6ba84ac2aa2a21f694938944be204464a

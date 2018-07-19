@@ -3,6 +3,8 @@
 {% block discussioncontents %}
   <p></p>
 
+  {% load markdown_deux_tags %}
+
   {% load rules %}
   {% has_perm 'project.comment_add' user project as user_is_project_commenter %}
 
@@ -44,7 +46,7 @@
                 <div class="text-right text-muted">{{ log.comment_date }}</div>
               </div>
               <div class="col-lg-9">
-                {{ log.comment }}
+                {{ log.comment|markdown }}
               </div>
             </div>
           </li>

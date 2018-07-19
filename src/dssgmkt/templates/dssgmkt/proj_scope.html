@@ -3,6 +3,7 @@
 {% block tabcontents %}
 
   {% load rules %}
+  {% load markdown_deux_tags %}
 
   <div class="row section-header">
     <div class="col-lg-8">
@@ -21,19 +22,19 @@
     </div>
   </div>
 
-  {{ current_scope.scope }}
+  {{ current_scope.scope|markdown }}
 
   <h5 class="section-header">Project impact</h5>
-  {{ current_scope.project_impact }}
+  {{ current_scope.project_impact|markdown }}
 
   <h5 class="section-header">Scoping process</h5>
-  {{ current_scope.scoping_process }}
+  {{ current_scope.scoping_process|markdown }}
 
   <h5 class="section-header">Available staff</h5>
-  {{ current_scope.available_staff }}
+  {{ current_scope.available_staff|markdown }}
 
   <h5 class="section-header">Available data</h5>
-  {{ current_scope.available_data }}
+  {{ current_scope.available_data|markdown }}
 
   <h4 class="section-header">Scope version notes</h4>
   <ul class="list-group list-group-flush mb-3">
@@ -52,7 +53,7 @@
             {% endif %}
           </div>
           <div class="col-lg-8">
-            {{ scope.version_notes }}
+            {{ scope.version_notes|markdown }}
           </div>
         </div>
       </li>

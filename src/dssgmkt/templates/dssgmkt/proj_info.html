@@ -2,16 +2,17 @@
 
 {% block tabcontents %}
 
+  {% load markdown_deux_tags %}
 
   <div class="row mt-5 mb-5">
     <div class="col-lg-8">
       <h3>Project description</h3>
       <h4 class="section-header">Context and motivation</h4>
-      <p>{{ project.motivation }}</p>
+      <p>{{ project.motivation|markdown }}</p>
       <h4 class="section-header">Proposed solution</h4>
-      <p>{{ project.solution_description }}</p>
+      <p>{{ project.solution_description|markdown }}</p>
       <h4 class="section-header">Main challenges</h4>
-      <p>{{ project.challenges }}</p>
+      <p>{{ project.challenges|markdown }}</p>
     </div>
 
     <div class="col-lg-4">

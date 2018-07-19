@@ -2,12 +2,14 @@
 
 {% block tabcontents %}
 
+  {% load markdown_deux_tags %}
+
   <form id="projtaskapply">
     <h4 class="section-header">Apply to volunteer</h4>
     <p>Thank you for your interest in this project! Please fill out this form so the
       project owners can review your application and your volunteering background.</p>
 
-    {{ project_task.description }}
+    {{ project_task.description|markdown }}
 
     {% csrf_token %}
     {% include 'dssgmkt/components/standard_form_fields.html' %}
@@ -15,7 +17,7 @@
     {% if project.developer_agreement %}
       <h5 class="section-header">Volunteer agreement</h4>
       <p>By applying to this volunteer posiiton you agree to the below terms of this project:</p>
-      <p>{{ project.developer_agreement }}<p>
+      <p>{{ project.developer_agreement|markdown }}<p>
     {% endif %}
 
     <div class="form-row">

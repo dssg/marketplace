@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rules',
     'widget_tweaks',
+    'markdown_deux',
 ]
 
 MIDDLEWARE = [

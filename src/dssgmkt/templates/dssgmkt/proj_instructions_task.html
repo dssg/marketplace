@@ -4,75 +4,77 @@
 
 
 
-      <div class="row mt-5 mb-5 section-header">
-        <div class="col-lg-8">
-            <span class="text-muted">
-              {% include 'dssgmkt/components/task_type_display.html' %}
-            </span>
-            <h4>{{ project_task.name }}</h4>
-              {% include 'dssgmkt/components/task_status.html' with task=project_task %}
+  {% load markdown_deux_tags %}
 
-          <p>{{ project_task.description }}</p>
-          <p>{{ project_task.onboarding_instructions }}</p>
+  <div class="row mt-5 mb-5 section-header">
+    <div class="col-lg-8">
+        <span class="text-muted">
+          {% include 'dssgmkt/components/task_type_display.html' %}
+        </span>
+        <h4>{{ project_task.name }}</h4>
+          {% include 'dssgmkt/components/task_status.html' with task=project_task %}
 
-          {% if project.deliverable_management_url %}
-            <a href="{{ project.deliverable_management_url }}">External project home</a>
-          {% endif %}
-          {% if project.deliverable_github_url %}
-            <a href="{{ project.deliverable_github_url }}">Project github page</a>
-          {% endif %}
-          {% if project.deliverable_reports_url %}
-            <a href="{{ project.deliverable_reports_url }}">Project reports</a>
-          {% endif %}
-          {% if project.deliverable_documentation_url %}
-            <a href="{{ project.deliverable_documentation_url }}">Project documentation</a>
-          {% endif %}
+      <p>{{ project_task.description|markdown }}</p>
+      <p>{{ project_task.onboarding_instructions|markdown }}</p>
 
+      {% if project.deliverable_management_url %}
+        <a href="{{ project.deliverable_management_url }}">External project home</a>
+      {% endif %}
+      {% if project.deliverable_github_url %}
+        <a href="{{ project.deliverable_github_url }}">Project github page</a>
+      {% endif %}
+      {% if project.deliverable_reports_url %}
+        <a href="{{ project.deliverable_reports_url }}">Project reports</a>
+      {% endif %}
+      {% if project.deliverable_documentation_url %}
+        <a href="{{ project.deliverable_documentation_url }}">Project documentation</a>
+      {% endif %}
+
+    </div>
+
+    <div class="col-lg-4">
+      {% if not project_task.is_completed %}
+        <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'dssgmkt:proj_task_cancel' project.id project_task.id %}">
+          <i class="material-icons" style="vertical-align: middle">clear</i>
+          Cancel this volunteer work
+        </a>
+      {% endif %}
+
+      {% if project_task.is_in_progress %}
+        <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'dssgmkt:proj_task_finish' project.id project_task.id %}">
+          <i class="material-icons" style="vertical-align: middle">check_circle</i>
+          Mark this task as completed
+        </a>
+        <a href=></a>
+      {% elif project_task.is_pending_review %}
+        <a class="btn btn-light disabled col-lg-12 mb-1">
+          <i class="material-icons" style="vertical-align: middle">reply</i>
+          Task QA review pending
+        </a>
+      {% endif %}
+
+      <div class="card section-header">
+        <div class="card-header"><i class="far fa-calendar-alt"></i> Schedule</div>
+        <div class="card-body">
+          <p>Start: {{ project_task.estimated_start_date }} (estimated), {{ project_task.actual_start_date }} (actual)</p>
+          <p>End: {{ project_task.estimated_end_date }} (estimated), {{ project_task.actual_end_date }} (actual)</p>
         </div>
-
-        <div class="col-lg-4">
-          {% if not project_task.is_completed %}
-            <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'dssgmkt:proj_task_cancel' project.id project_task.id %}">
-              <i class="material-icons" style="vertical-align: middle">clear</i>
-              Cancel this volunteer work
-            </a>
-          {% endif %}
-
-          {% if project_task.is_in_progress %}
-            <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'dssgmkt:proj_task_finish' project.id project_task.id %}">
-              <i class="material-icons" style="vertical-align: middle">check_circle</i>
-              Mark this task as completed
-            </a>
-            <a href=></a>
-          {% elif project_task.is_pending_review %}
-            <a class="btn btn-light disabled col-lg-12 mb-1">
-              <i class="material-icons" style="vertical-align: middle">reply</i>
-              Task QA review pending
-            </a>
-          {% endif %}
-
-          <div class="card section-header">
-            <div class="card-header"><i class="far fa-calendar-alt"></i> Schedule</div>
-            <div class="card-body">
-              <p>Start: {{ project_task.estimated_start_date }} (estimated), {{ project_task.actual_start_date }} (actual)</p>
-              <p>End: {{ project_task.estimated_end_date }} (estimated), {{ project_task.actual_end_date }} (actual)</p>
-            </div>
-          </div>
-
-          <div class="card section-header">
-            <div class="card-header"><i class="fas fa-user-cog"></i> Volunteers</div>
-            <div class="card-body">
-              {% for volunteer in task_volunteers %}
-                <div>
-                  {% include 'dssgmkt/components/user_display.html' with user=volunteer %}
-                </div>
-              {% endfor %}
-            </div>
-          </div>
-        </div>
-
       </div>
 
-      {# TODO add the completed task reviews of this task (so the volunteer has feedback about the task always available) #}
+      <div class="card section-header">
+        <div class="card-header"><i class="fas fa-user-cog"></i> Volunteers</div>
+        <div class="card-body">
+          {% for volunteer in task_volunteers %}
+            <div>
+              {% include 'dssgmkt/components/user_display.html' with user=volunteer %}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  {# TODO add the completed task reviews of this task (so the volunteer has feedback about the task always available) #}
 
 {% endblock %}

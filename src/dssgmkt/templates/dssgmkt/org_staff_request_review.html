@@ -2,6 +2,8 @@
 
 {% block tabcontents %}
 
+  {% load markdown_deux_tags %}
+
   <div class="row">
     <div class="col-lg-12">
       <h4 class="section-header">Membership request review</h4>
@@ -83,10 +85,10 @@
       <p>Reviewer: {% include 'dssgmkt/components/user_display.html' with user=organizationmembershiprequest.reviewer %}
       </p>
     {% if organizationmembershiprequest.public_reviewer_comments %}
-      <p>Reviewer's comments: {{ organizationmembershiprequest.public_reviewer_comments }}</p>
+      <p>Reviewer's comments: {{ organizationmembershiprequest.public_reviewer_comments|markdown }}</p>
     {% endif %}
     {% if user_is_member and organizationmembershiprequest.private_reviewer_notes %}
-      <p>Private reviewer's notes: {{ organizationmembershiprequest.private_reviewer_notes }}</p>
+      <p>Private reviewer's notes: {{ organizationmembershiprequest.private_reviewer_notes|markdown }}</p>
     {% endif %}
     <a href="{% url 'dssgmkt:org_staff' organization.id %}">Back</a>
 

@@ -3,6 +3,7 @@
 {% block taskcontents %}
 
 {% if project_task %}
+  {% load markdown_deux_tags %}
   {% load rules %}
   {% has_perm 'project.task_edit' user project as user_is_task_editor %}
 
@@ -17,8 +18,8 @@
         <div class="row mb-5">
           <div class="col-lg-8">
             {% include 'dssgmkt/components/task_status.html' with task=project_task %}
-            <p>{{ project_task.description }}</p>
-            <p>{{ project_task.onboarding_instructions }}</p>
+            <p>{{ project_task.description|markdown }}</p>
+            <p>{{ project_task.onboarding_instructions|markdown }}</p>
           </div>
 
           <div class="col-lg-4">

@@ -1,6 +1,7 @@
 {% extends 'dssgmkt/proj.html' %}
 
 {% block tabcontents %}
+  {% load markdown_deux_tags %}
 
   <h4 class="section-header">Volunteer application</h4>
   <p>This person has applied to volunteer in your project.</p>
@@ -10,7 +11,7 @@
   <p>Application date: {{ volunteerapplication.application_date }} </p>
   <p>Task: {{ volunteerapplication.task.name }}</p>
   <h4>Volunteer application letter</h4>
-  <p>{{ volunteerapplication.volunteer_application_letter }}</p>
+  <p>{{ volunteerapplication.volunteer_application_letter|markdown }}</p>
 
   {% if volunteerapplication.is_new %}
 
@@ -77,9 +78,9 @@
     </p>
     <p>Resolution date: {{ volunteerapplication.resolution_date }}</p>
     <p>Reviewer: {% include 'dssgmkt/components/user_display.html' with user=volunteerapplication.reviewer %}</p>
-    <p>Reviewer's comments: {{ volunteerapplication.public_reviewer_comments }}</p>
+    <p>Reviewer's comments: {{ volunteerapplication.public_reviewer_comments|markdown }}</p>
     {% if not user_is_applicant %}
-      <p>Private reviewer's notes: {{ volunteerapplication.private_reviewer_notes }}</p>
+      <p>Private reviewer's notes: {{ volunteerapplication.private_reviewer_notes|markdown }}</p>
     {% endif %}
   {% endif %}
 
