@@ -618,7 +618,7 @@ class ProjectTaskEdit(PermissionRequiredMixin, UpdateView):
 class ProjectEdit(PermissionRequiredMixin, UpdateView):
     model = Project
     fields = ['name', 'short_summary', 'motivation','solution_description', 'challenges', 'banner_image_url', 'project_cause',
-            'project_impact', 'scoping_process', 'available_staff', 'available_data', 'developer_agreement', 'intended_start_date',
+            'developer_agreement', 'intended_start_date',
             'intended_end_date', 'deliverable_github_url', 'deliverable_management_url', 'deliverable_documentation_url',
             'deliverable_reports_url', 'status']
     template_name = 'dssgmkt/proj_info_edit.html'
