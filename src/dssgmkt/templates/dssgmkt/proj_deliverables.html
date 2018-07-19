@@ -2,10 +2,16 @@
 
 {% block tabcontents %}
 
-  <h4 class="section-header">Project deliverables</h4>
+  {% load markdown_deux_tags %}
+
+  <h4 class="section-header">Project results</h4>
 
   {% if project.is_completed %}
-    <p>This project has been completed. Below you can find links to all the public results, documentation, data, code, etc. that has been generated as part of the project.</p>
+    {% if project.deliverables_description %}
+      {{ project.deliverables_description|markdown }}
+    {% else %}
+      <p>This project has been completed. Below you can find links to all the public results, documentation, data, code, etc. that has been generated as part of the project.</p>
+    {% endif %}
     {% if project.deliverable_management_url %}
       <a href="{{ project.deliverable_management_url }}">Project home</a>
     {% endif %}

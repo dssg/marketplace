@@ -143,6 +143,13 @@ class Project(models.Model):
         choices=ProjectStatus.get_choices(),
         default=ProjectStatus.DRAFT,
     )
+    deliverables_description = models.TextField(
+        verbose_name="Deliverables page description",
+        help_text="Once the project is completed, the resulting deliverables will be presented in a separate page. This description will be placed at the top of the deliverables page, so you can describe if the goals of the project were met, how to interpret the results, where the different artifacts of the project are stored, etc.",
+        max_length=5000,
+        blank=True,
+        null=True,
+    )
     deliverable_github_url = models.URLField(
         verbose_name="Project github home",
         help_text="Link to the home page of the project in Github - it will be listed in the final deliverables of the project when the project ends.",
