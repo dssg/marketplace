@@ -1,0 +1,27 @@
+{% extends 'dssgmkt/base.html' %}
+
+{% block pagecontents %}
+
+  <div class="row">
+        <div class="col-lg-8 offset-lg-2">
+            <div class="section-header">
+                <h1>
+                    Oops!</h1>
+                <h2>
+
+                     There is some problem with your request...</h2>
+                <div class="section-header">
+                  400 Bad request
+                </div>
+                <div class="section-header">
+                    <a href="{% url 'dssgmkt:home' %}"
+                       class="btn btn-success btn-lg">
+                        It's ok, take me home
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+{% endblock %}
