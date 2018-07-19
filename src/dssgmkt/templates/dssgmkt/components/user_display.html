@@ -1,7 +1,9 @@
 <a href="{% url 'dssgmkt:user_profile' user.id %}">
   {{ user.first_name }}
   {{ user.last_name }}
-  ({{ user.username }})
+  {% if not hide_username %}
+    ({{ user.username }})
+  {% endif %}
 
   {% for badge in user.userbadge_set.all %}
     {% include 'dssgmkt/components/user_badge.html' with badge=badge compact_display=True %}
