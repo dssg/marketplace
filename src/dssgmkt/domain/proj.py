@@ -64,7 +64,7 @@ class ProjectService():
 
     @staticmethod
     def get_all_organization_projects(request_user, org):
-        return Project.objects.filter(organization=org)
+        return Project.objects.filter(organization=org).order_by('name')
 
     @staticmethod
     def get_featured_project():
@@ -537,7 +537,7 @@ class ProjectService():
     def get_all_project_volunteers(request_user, projid):
         project = Project.objects.get(pk=projid)
         ensure_user_has_permission(request_user, project, 'project.volunteers_view')
-        return ProjectTaskRole.objects.filter(task__project__id=projid)
+        return ProjectTaskRole.objects.filter(task__project__id=projid).order_by('-task__stage', 'user__first_name')
 
     @staticmethod
     def get_project_public_volunteer_list(request_user, projid):
@@ -642,7 +642,7 @@ class ProjectTaskService():
 
     @staticmethod
     def get_volunteer_all_tasks(request_user, target_user):
-        return ProjectTask.objects.filter(projecttaskrole__user=target_user).exclude(project__status=ProjectStatus.DRAFT)
+        return ProjectTask.objects.filter(projecttaskrole__user=target_user).exclude(project__status=ProjectStatus.DRAFT).order_by('-stage')
 
     @staticmethod
     def get_volunteer_all_project_tasks(request_user, target_user, project):
