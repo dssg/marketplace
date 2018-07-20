@@ -223,7 +223,7 @@ class UserService():
                  'type': 'review',
                  'badge':  UserBadge(type=BadgeType.NUMBER_OF_PROJECTS, tier=BadgeTier.MASTER),
                 },
-                {'title': 'Fastest work',
+                {'title': 'Meets deadlines',
                  'data': User.objects.order_by('-volunteerprofile__ahead_of_time_task_ratio')[0:10],
                  'type': 'review',
                  'badge': UserBadge(type=BadgeType.WORK_SPEED, tier=BadgeTier.MASTER),
