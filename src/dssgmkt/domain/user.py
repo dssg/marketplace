@@ -1,4 +1,5 @@
 from django.db import IntegrityError, transaction
+from django.db.models import Q
 
 from ..models.common import (
     ReviewStatus, SkillLevel,
@@ -21,8 +22,34 @@ class UserService():
         return User.objects.get(pk=userid)
 
     @staticmethod
-    def get_all_volunteer_profiles(request_user):
-        return VolunteerProfile.objects.filter(volunteer_status=ReviewStatus.ACCEPTED).order_by('user__first_name', 'user__last_name')
+    def get_all_volunteer_profiles(request_user, search_config=None):
+        base_query = VolunteerProfile.objects.filter(volunteer_status=ReviewStatus.ACCEPTED)
+        if search_config:
+            if 'username' in search_config:
+                for name_fragment in search_config['username'].split():
+                    base_query = base_query.filter(Q(user__first_name__icontains=name_fragment) | \
+                                                   Q(user__last_name__icontains=name_fragment) | \
+                                                   Q(user__username__icontains=name_fragment))
+            if 'skills' in search_config:
+                for skill_fragment in search_config['skills'].split():
+                    base_query = base_query.filter(user__volunteerskill__skill__name__icontains=skill_fragment.strip())
+            # if 'social_cause' in search_config:
+            #     sc = search_config['social_cause']
+            #     if isinstance(sc, str):
+            #         sc = [sc]
+            #     social_causes = []
+            #     for social_cause_from_view in sc:
+            #         social_causes.append(social_cause_view_model_translation[social_cause_from_view])
+            #     base_query = base_query.filter(project_cause__in=social_causes)
+            # if 'project_status' in search_config:
+            #     project_status_list = search_config['project_status']
+            #     if isinstance(project_status_list, str):
+            #         project_status_list = [project_status_list]
+            #     project_statuses = []
+            #     for project_status_from_view in project_status_list:
+            #         project_statuses.append(project_status_view_model_translation[project_status_from_view])
+            #     base_query = base_query.filter(status__in=project_statuses).distinct()
+        return base_query.distinct().order_by('user__first_name', 'user__last_name')
 
 
 

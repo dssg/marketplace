@@ -78,7 +78,7 @@ urlpatterns = [
     path('pwd/reset/done', auth_views.PasswordResetCompleteView.as_view(template_name='dssgmkt/pwd_reset_complete.html'), name='pwd_reset_complete'),
 
 
-    path('volunteers/', user.VolunteerIndexView.as_view(), name='volunteer_list'),
+    path('volunteers/', user.volunteer_list_view, name='volunteer_list'),
     path('user/', user.my_user_profile_view, name='my_user_profile'),
     path('user/<int:user_pk>', user.UserProfileView.as_view(), name='user_profile'),
     path('user/<int:user_pk>/edit', user.UserProfileEdit.as_view(), name='user_profile_edit'),

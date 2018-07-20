@@ -97,6 +97,49 @@ class VolunteerIndexView(generic.ListView):
         return context
 
 
+def volunteer_list_view(request):
+    # checked_social_cause_fields = {}
+    # checked_project_fields = {}
+    filter_username = ""
+    filter_skills = ""
+    if request.method == 'POST':
+        search_config = {}
+        if 'username' in request.POST and request.POST.get('username'):
+            search_config['username'] = request.POST.get('username')
+            filter_username = request.POST.get('username')
+        if 'skills' in request.POST and request.POST.get('skills'):
+            search_config['skills'] = request.POST.get('skills')
+            filter_skills = request.POST.get('skills')
+        # if 'socialcause' in request.POST:
+        #     search_config['social_cause'] = request.POST.getlist('socialcause')
+        #     for f in request.POST.getlist('socialcause'):
+        #         checked_social_cause_fields[f] = True
+        # if 'projectstatus' in request.POST:
+        #     search_config['project_status'] = request.POST.getlist('projectstatus')
+        #     for f in request.POST.getlist('projectstatus'):
+        #         checked_project_fields[f] = True
+        volunteers =  UserService.get_all_volunteer_profiles(request.user, search_config)
+    elif request.method == 'GET':
+        volunteers =  UserService.get_all_volunteer_profiles(request.user)
+
+    if volunteers:
+        volunteers_page = paginate(request, volunteers, page_size=15)
+    else:
+        volunteers_page = []
+
+    return render(request, 'dssgmkt/volunteer_list.html',
+                        {
+                            'breadcrumb': build_breadcrumb([home_link(),
+                                                          volunteers_link(include_link=False)]),
+                            'leaderboards': UserService.get_volunteer_leaderboards(request.user),
+                            'volunteer_list': volunteers_page,
+                            # 'checked_social_cause_fields': checked_social_cause_fields,
+                            # 'checked_project_fields': checked_project_fields,
+                            'filter_username': filter_username,
+                            'filter_skills': filter_skills,
+                        })
+
+
 class UserHomeView(generic.ListView): ## This is a listview because it is actually showing the list of user notifications
     model = UserNotification
     template_name = 'dssgmkt/home_user.html'
