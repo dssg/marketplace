@@ -1,10 +1,10 @@
 from django.db import IntegrityError, transaction
 
 from ..models.common import (
-    ReviewStatus,
+    ReviewStatus, SkillLevel,
 )
 from ..models.user import (
-    User, UserType, VolunteerProfile, VolunteerSkill, UserBadge, BadgeType, BadgeTier,
+    User, UserType, VolunteerProfile, VolunteerSkill, UserBadge, BadgeType, BadgeTier, Skill,
 )
 from ..models.org import (
     OrganizationRole,
@@ -77,8 +77,50 @@ class UserService():
             raise ValueError('User already has skill')
 
     @staticmethod
+    def get_skill_levels():
+        return SkillLevel.get_choices()
+
+    @staticmethod
     def get_volunteer_skills(request_user, user_pk):
-        return VolunteerSkill.objects.filter(user__id = user_pk)
+        volunteer_skill_list = VolunteerSkill.objects.filter(user__id=user_pk)
+        volunteer_skill_dict = {}
+        for skill in volunteer_skill_list:
+            volunteer_skill_dict[skill.skill.id] = skill
+
+        all_skills = Skill.objects.all()
+        all_areas = Skill.objects.values('area').distinct()
+        result_skills = {}
+        for row in all_areas:
+            result_skills[row['area']] = []
+        for skill in all_skills:
+            result_skills[skill.area].append({'system_skill': skill, 'volunteer_skill': volunteer_skill_dict.get(skill.id)})
+        return result_skills
+
+    @staticmethod
+    def set_volunteer_skills(request_user, user_pk, post_object):
+        target_user = UserService.get_user(request_user, user_pk)
+        ensure_user_has_permission(request_user, target_user, 'user.is_same_user')
+        volunteer_skill_list = VolunteerSkill.objects.filter(user__id=user_pk)
+        volunteer_skill_dict = {}
+        for skill in volunteer_skill_list:
+            volunteer_skill_dict[skill.skill.id] = skill
+
+        all_skills = Skill.objects.all()
+        for skill in all_skills:
+            form_value = int(post_object.get(str(skill.id)))
+            volunteer_value = volunteer_skill_dict.get(skill.id)
+            if form_value == -1:
+                if volunteer_value:
+                    volunteer_value.delete()
+            else:
+                if volunteer_value:
+                    volunteer_value.level = form_value
+                else:
+                    volunteer_value = VolunteerSkill()
+                    volunteer_value.skill = skill
+                    volunteer_value.level = form_value
+                    volunteer_value.user = target_user
+                volunteer_value.save()
 
     @staticmethod
     def save_volunteer_skill(request_user, user_pk, skill_pk, volunteer_skill):

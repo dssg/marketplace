@@ -229,112 +229,29 @@ class VolunteerProfileEdit(PermissionRequiredMixin, UpdateView):
     def get_permission_object(self):
         return UserService.get_user(self.request.user, self.kwargs['user_pk'])
 
-class CreateSkillForm(ModelForm):
-    class Meta:
-        model = VolunteerSkill
-        fields = ['skill', 'level']
 
 @permission_required('user.is_same_user', raise_exception=True, fn=objectgetter(User, 'user_pk'))
 def user_profile_skills_edit_view(request, user_pk):
     if request.method == 'POST':
-        form = CreateSkillForm(request.POST)
-        if form.is_valid:
-            skill = form.save(commit = False)
-            try:
-                UserService.add_volunteer_skill(request.user, user_pk, skill)
-                messages.info(request, 'Skill added successfully.')
-                return redirect('dssgmkt:user_profile_skills_edit', user_pk=user_pk)
-            except KeyError:
-                raise Http404
-            except ValueError:
-                form.add_error(None, "Skill already present.")
+        try:
+            UserService.set_volunteer_skills(request.user, user_pk, request.POST)
+            return redirect('dssgmkt:user_profile', user_pk=user_pk)
+        except KeyError:
+            raise Http404
+        except ValueError:
+            pass
     elif request.method == 'GET':
-        form = CreateSkillForm()
-    volunteerskills = UserService.get_volunteer_skills(request.user, user_pk)
+        pass
 
     return render(request, 'dssgmkt/user_profile_skills_edit.html',
                         {
-                            'volunteerskills': volunteerskills,
                             'breadcrumb': build_breadcrumb([home_link(),
                                                             my_profile_link(user_pk),
                                                             edit_my_skills_link(user_pk, include_link=False)]),
-                            'add_skill_form': form,
+                            'system_skills': UserService.get_volunteer_skills(request.user, user_pk),
+                            'skill_levels': UserService.get_skill_levels()
                         })
 
-
-
-class VolunteerSkillEdit(PermissionRequiredMixin, UpdateView):
-    model = VolunteerSkill
-    fields = ['level']
-    template_name = 'dssgmkt/user_profile_skills_skill_edit.html'
-    pk_url_kwarg = 'skill_pk'
-    permission_required = 'user.is_same_user'
-    raise_exception = True
-
-    def get_success_url(self):
-        return reverse('dssgmkt:user_profile_skills_edit', args=[self.object.user.id])
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        volunteer_skill = self.object
-        if volunteer_skill and volunteer_skill.user.id == self.request.user.id and self.request.user.id == self.kwargs['user_pk']:
-            context['volunteerskill'] = volunteer_skill
-            context['breadcrumb'] =  build_breadcrumb([home_link(),
-                                                      my_profile_link(self.kwargs['user_pk']),
-                                                      edit_my_skills_link(self.kwargs['user_pk']),
-                                                      ("Edit skill", None)])
-            return context
-        else:
-            raise Http404
-
-    def form_valid(self, form):
-        volunteer_skill = form.save(commit = False)
-        try:
-            UserService.save_volunteer_skill(self.request.user, self.kwargs['user_pk'], self.kwargs['skill_pk'], volunteer_skill)
-            return HttpResponseRedirect(self.get_success_url())
-        except KeyError as k:
-            form.add_error(None, str(k))
-            return super().form_invalid(form)
-
-    def get_permission_object(self):
-        return UserService.get_user(self.request.user, self.kwargs['user_pk'])
-
-class VolunteerSkillRemove(PermissionRequiredMixin, DeleteView):
-    model = VolunteerSkill
-    template_name = 'dssgmkt/user_profile_skills_skill_remove.html'
-    pk_url_kwarg = 'skill_pk'
-    permission_required = 'user.is_same_user'
-    raise_exception = True
-
-    def get_success_url(self):
-        return reverse('dssgmkt:user_profile_skills_edit', args=[self.kwargs['user_pk']])
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        volunteer_skill = self.object
-        if volunteer_skill and volunteer_skill.user.id == self.request.user.id and self.request.user.id == self.kwargs['user_pk']:
-            context['volunteerskill'] = volunteer_skill
-            context['breadcrumb'] =  build_breadcrumb([home_link(),
-                                                      my_profile_link(self.kwargs['user_pk']),
-                                                      edit_my_skills_link(self.kwargs['user_pk']),
-                                                      ("Remove skill", None)])
-            return context
-        else:
-            raise Http404
-
-    def delete(self, request,  *args, **kwargs):
-        volunteer_skill = self.get_object()
-        self.object = volunteer_skill
-        try:
-            UserService.delete_volunteer_skill(request.user, self.kwargs['user_pk'], self.kwargs['skill_pk'], volunteer_skill)
-            return HttpResponseRedirect(self.get_success_url())
-        except ValueError as err:
-            messages.error(request, 'There was a problem with your request.')
-            # logger.error("Error when user {0} tried to leave organization {1}: {2}".format(request.user.id, organization_role.organization.id, err))
-            return HttpResponseRedirect(self.get_success_url())
-
-    def get_permission_object(self):
-        return UserService.get_user(self.request.user, self.kwargs['user_pk'])
 
 @permission_required('user.is_same_user', raise_exception=True, fn=objectgetter(User, 'user_pk'))
 def create_volunteer_profile_view(request, user_pk):
@@ -347,8 +264,6 @@ def create_volunteer_profile_view(request, user_pk):
         except KeyError:
             messages.error(request, 'There was an error while processing your request.')
             return redirect('dssgmkt:user_profile', user_pk=user_pk)
-
-
 
 
 def select_user_type_view(request):

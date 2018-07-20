@@ -87,7 +87,5 @@ urlpatterns = [
     path('user/<int:user_pk>/volunteercreate', user.create_volunteer_profile_view, name='user_volunteer_profile_create'),
     path('user/<int:user_pk>/<int:volunteer_pk>/edit', user.VolunteerProfileEdit.as_view(), name='user_volunteer_profile_edit'),
     path('user/<int:user_pk>/skills', user.user_profile_skills_edit_view, name='user_profile_skills_edit'),
-    path('user/<int:user_pk>/skills/<int:skill_pk>/edit', user.VolunteerSkillEdit.as_view(), name='user_profile_skills_skill_edit'),
-    path('user/<int:user_pk>/skills/<int:skill_pk>/remove', user.VolunteerSkillRemove.as_view(), name='user_profile_skills_skill_remove'),
 
 ]

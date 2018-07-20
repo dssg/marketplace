@@ -3,59 +3,48 @@
 {% block pagecontents %}
 
   <h4 class="section-header">My skills</h4>
-  {% if volunteerskills %}
-    <table class="table table-hover">
-      <thead>
-        <tr>
-            <th>Area</th>
-            <th>Skill</th>
-            <th>Level</th>
-            <th></th>
-            <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for volunteerskill in volunteerskills %}
-          <tr>
-              <td>{{ volunteerskill.skill.area }}</td>
-              <td>{{ volunteerskill.skill.name }}</td>
-              <td>{{ volunteerskill.get_level_display }}</td>
-              <td>
-                <a href="{% url 'dssgmkt:user_profile_skills_skill_edit' user.id volunteerskill.id %}">
-                  <i class="material-icons md-12" style="vertical-align: middle">edit</i>
-                  Edit
-                </a>
-              </td>
-              <td>
-                <a class="text-danger" href="{% url 'dssgmkt:user_profile_skills_skill_remove' user.id volunteerskill.id %}">
-                  <i class="material-icons md-12" style="vertical-align: middle">remove_circle</i>
-                  Remove
-                </a>
-              </td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  {% else %}
-    <p>No skills listed.</p>
-  {% endif %}
+  <p>Select below your expertise level for any skill you have.</p>
 
-  <h4 class="section-header">Add new skill</h4>
-  <form id="addskill" class="form-inline">
-    {% csrf_token %}
-    {% include 'dssgmkt/components/inline_form_fields.html' with form=add_skill_form %}
-    <div class="form-group col-lg-3">
-      <div>
+  {% for area_name, area_skills in system_skills.items %}
+    <h5 class="section-header">{{ area_name }}</h5>
+    <form id="skillsform">
+      <div class="row">
+        {% csrf_token %}
+        {% for sk in area_skills %}
+
+          <div class="form-group col-lg-3 mt-3">
+            <label class="control-label"
+                   for="{{ sk.system_skill.id }}">
+              {{ sk.system_skill.name }}
+            </label>
+            <select class="form-control" id="{{ sk.system_skill.id }}" name="{{ sk.system_skill.id }}">
+              <option value="-1" {% if not sk.volunteer_skill %}selected="selected"{% endif %}>None</option>
+              {% for level_value, level_name in skill_levels %}
+                <option value="{{ level_value }}" {% if sk.volunteer_skill.level == level_value %}selected="selected"{% endif %}>{{ level_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        {% endfor %}
+      </div>
+    {% endfor %}
+    <div class="form-row">
+      <div class="col-lg-9 offset-lg-3">
         <button type="submit"
-                form="addskill"
+                form="skillsform"
                 formaction="{% url 'dssgmkt:user_profile_skills_edit' user.id %}"
                 formmethod="post"
-                class="btn btn-success">
-          <i class="material-icons" style="vertical-align: middle">add_circle</i>
-          Add skill
+                class="btn btn-success mr-3">
+          <i class="material-icons" style="vertical-align: middle">save</i>
+          Save my skills
         </button>
+        <a class="btn btn-outline-primary"
+           href="{% url 'dssgmkt:user_profile' user.id %}">
+           <i class="material-icons" style="vertical-align: middle">close</i>
+           Cancel
+        </a>
       </div>
     </div>
   </form>
+
 
 {% endblock %}
