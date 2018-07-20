@@ -1,0 +1,33 @@
+{% if badge.is_type_work_speed %}
+  {% if badge.is_tier_basic %}
+    Many tasks ahead of schedule
+  {% elif badge.is_tier_advanced %}
+    Most tasks ahead of schedule
+  {% elif badge.is_tier_master %}
+    Almost all tasks ahead of schedule
+  {% endif %}
+{% elif badge.is_type_early_user %}
+  {% if badge.is_tier_basic %}
+    First 1000 volunteers
+  {% elif badge.is_tier_advanced %}
+    First 500 volunteers
+  {% elif badge.is_tier_master %}
+    First 100 volunteers
+  {% endif %}
+{% elif badge.is_type_review_score %}
+  {% if badge.is_tier_basic %}
+    Many outstanding reviews
+  {% elif badge.is_tier_advanced %}
+    Mostly outstanding reviews
+  {% elif badge.is_tier_master %}
+    Almost all outstanding reviews
+  {% endif %}
+{% elif badge.is_type_project_count %}
+  {% if badge.is_tier_basic %}
+    1+ task completed
+  {% elif badge.is_tier_advanced %}
+    5+ tasks completed
+  {% elif badge.is_tier_master %}
+    10+ tasks completed
+  {% endif %}
+{% endif %}
