@@ -66,15 +66,15 @@ class UserService():
         ensure_user_has_permission(request_user, volunteer_profile.user, 'user.is_same_user')
         volunteer_profile.save()
 
-    @staticmethod
-    def add_volunteer_skill(request_user, user_pk, volunteer_skill):
-        target_user = UserService.get_user(request_user, user_pk)
-        ensure_user_has_permission(request_user, target_user, 'user.is_same_user')
-        volunteer_skill.user = target_user
-        try:
-            volunteer_skill.save()
-        except IntegrityError:
-            raise ValueError('User already has skill')
+    # @staticmethod
+    # def add_volunteer_skill(request_user, user_pk, volunteer_skill):
+    #     target_user = UserService.get_user(request_user, user_pk)
+    #     ensure_user_has_permission(request_user, target_user, 'user.is_same_user')
+    #     volunteer_skill.user = target_user
+    #     try:
+    #         volunteer_skill.save()
+    #     except IntegrityError:
+    #         raise ValueError('User already has skill')
 
     @staticmethod
     def get_skill_levels():
@@ -122,17 +122,17 @@ class UserService():
                     volunteer_value.user = target_user
                 volunteer_value.save()
 
-    @staticmethod
-    def save_volunteer_skill(request_user, user_pk, skill_pk, volunteer_skill):
-        validate_consistent_keys(volunteer_skill, ('id', skill_pk), (['user','id'], user_pk))
-        ensure_user_has_permission(request_user, volunteer_skill.user, 'user.is_same_user')
-        volunteer_skill.save()
-
-    @staticmethod
-    def delete_volunteer_skill(request_user, user_pk, skill_pk, volunteer_skill):
-        validate_consistent_keys(volunteer_skill, ('id', skill_pk), (['user','id'], user_pk))
-        ensure_user_has_permission(request_user, volunteer_skill.user, 'user.is_same_user')
-        volunteer_skill.delete()
+    # @staticmethod
+    # def save_volunteer_skill(request_user, user_pk, skill_pk, volunteer_skill):
+    #     validate_consistent_keys(volunteer_skill, ('id', skill_pk), (['user','id'], user_pk))
+    #     ensure_user_has_permission(request_user, volunteer_skill.user, 'user.is_same_user')
+    #     volunteer_skill.save()
+    #
+    # @staticmethod
+    # def delete_volunteer_skill(request_user, user_pk, skill_pk, volunteer_skill):
+    #     validate_consistent_keys(volunteer_skill, ('id', skill_pk), (['user','id'], user_pk))
+    #     ensure_user_has_permission(request_user, volunteer_skill.user, 'user.is_same_user')
+    #     volunteer_skill.delete()
 
     @staticmethod
     def user_has_skills(request_user):

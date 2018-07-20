@@ -5,13 +5,13 @@ from datetime import date
 from ..models.proj import (
     Project, ProjectStatus, ProjectRole, ProjRole, ProjectFollower, ProjectLog, ProjectLogType, ProjectLogSource, ProjectDiscussionChannel, ProjectComment,
     ProjectTask, TaskStatus, TaskRole, ProjectTaskRole, ProjectTaskReview, VolunteerApplication,
-    ProjectTaskRequirement, TaskType, ProjectScope,
+    ProjectTaskRequirement, TaskRequirementImportance, TaskType, ProjectScope,
 )
 from ..models.common import (
     ReviewStatus,
 )
 from ..models.user import (
-    User, NotificationSeverity, NotificationSource, VolunteerProfile,
+    User, NotificationSeverity, NotificationSource, VolunteerProfile, Skill,
 )
 from django.db.models import Case, When, Count, Q, Subquery
 
@@ -1177,69 +1177,58 @@ class ProjectTaskService():
                                           message)
 
     @staticmethod
+    def get_project_taks_requirement_importance_levels():
+        return TaskRequirementImportance.get_choices()
+
+    @staticmethod
     def get_project_task_requirements(request_user, projid, taskid):
         project = Project.objects.get(pk=projid)
         ensure_user_has_permission(request_user, project, 'project.task_requirements_view')
-        return ProjectTaskRequirement.objects.filter(task=taskid, task__project__id=projid)
+        task_requirement_list = ProjectTaskRequirement.objects.filter(task__id=taskid)
+        task_requirement_dict = {}
+        for requirement in task_requirement_list:
+            task_requirement_dict[requirement.skill.id] = requirement
+
+        all_skills = Skill.objects.all()
+        all_areas = Skill.objects.values('area').distinct()
+        result_requirements = {}
+        for row in all_areas:
+            result_requirements[row['area']] = []
+        for skill in all_skills:
+            result_requirements[skill.area].append({'system_skill': skill, 'task_requirement': task_requirement_dict.get(skill.id)})
+        return result_requirements
 
     @staticmethod
-    def add_task_requirement(request_user, projid, taskid, requirement):
+    def set_task_requirements(request_user, projid, taskid, post_object):
         project_task = ProjectTask.objects.get(pk=taskid)
         validate_consistent_keys(project_task, (['project', 'id'], projid))
         ensure_user_has_permission(request_user, project_task.project, 'project.task_requirements_edit')
-        if project_task.stage == TaskStatus.COMPLETED:
-            raise ValueError('Cannot edit a completed task')
-        requirement.task = project_task
-        try:
-            requirement.save()
-        except IntegrityError:
-            raise KeyError('Duplicate task requirement')
+        task_requirement_list = ProjectTaskRequirement.objects.filter(task__id=taskid)
+        task_requirement_dict = {}
+        for requirement in task_requirement_list:
+            task_requirement_dict[requirement.skill.id] = requirement
+
+        all_skills = Skill.objects.all()
+        for skill in all_skills:
+            level_form_value = int(post_object.get(str(skill.id)))
+            importance_form_value = int(post_object.get("i" + str(skill.id)))
+            task_requirement = task_requirement_dict.get(skill.id)
+            if level_form_value == -1:
+                if task_requirement:
+                    task_requirement.delete()
+            else:
+                if task_requirement:
+                    task_requirement.level = level_form_value
+                    task_requirement.importance = importance_form_value
+                else:
+                    task_requirement = ProjectTaskRequirement()
+                    task_requirement.skill = skill
+                    task_requirement.level = level_form_value
+                    task_requirement.importance = importance_form_value
+                    task_requirement.task = project_task
+                task_requirement.save()
         project = project_task.project
-        message = "A new requirement ({0}) was added to task {1} of project {2}.".format(requirement.standard_display_name(), project_task.name, project.name)
-        NotificationService.add_multiuser_notification(ProjectService.get_project_members(request_user, project),
-                                                 message,
-                                                 NotificationSeverity.INFO,
-                                                 NotificationSource.TASK,
-                                                 project_task.id)
-        ProjectService.add_project_change(request_user,
-                                           project,
-                                           ProjectLogType.EDIT,
-                                           ProjectLogSource.TASK,
-                                           project_task.id,
-                                           message)
-
-    @staticmethod
-    def save_task_requirement(request_user, projid, taskid, requirement):
-        validate_consistent_keys(requirement, (['task', 'id'], taskid), (['task', 'project', 'id'], projid))
-        project = Project.objects.get(pk=projid)
-        ensure_user_has_permission(request_user, project, 'project.task_requirements_edit')
-        project_task = requirement.task
-        if project_task.stage == TaskStatus.COMPLETED:
-            raise ValueError('Cannot edit a completed task')
-        requirement.save()
-        message = "The task requirement {0} of task {1} of project {2} was edited.".format(requirement.standard_display_name(), project_task.name, project.name)
-        NotificationService.add_multiuser_notification(ProjectService.get_project_members(request_user, project),
-                                                 message,
-                                                 NotificationSeverity.INFO,
-                                                 NotificationSource.TASK,
-                                                 project_task.id)
-        ProjectService.add_project_change(request_user,
-                                           project,
-                                           ProjectLogType.EDIT,
-                                           ProjectLogSource.TASK,
-                                           project_task.id,
-                                           message)
-
-    @staticmethod
-    def delete_task_requirement(request_user, projid, taskid, requirement):
-        validate_consistent_keys(requirement, (['task', 'id'], taskid), (['task', 'project', 'id'], projid))
-        project = Project.objects.get(pk=projid)
-        ensure_user_has_permission(request_user, project, 'project.task_requirements_delete')
-        project_task = requirement.task
-        if project_task.stage == TaskStatus.COMPLETED:
-            raise ValueError('Cannot edit a completed task')
-        requirement.delete()
-        message = "The task requirement {0} of task {1} of project {2} was deleted.".format(requirement.standard_display_name(), project_task.name, project.name)
+        message = "The requirements for task {0} of project {1} have changed.".format(project_task.name, project.name)
         NotificationService.add_multiuser_notification(ProjectService.get_project_members(request_user, project),
                                                  message,
                                                  NotificationSeverity.INFO,

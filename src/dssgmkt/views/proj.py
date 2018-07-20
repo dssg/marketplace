@@ -26,6 +26,7 @@ from .org import organizations_link, organization_link, get_organization, add_or
 from dssgmkt.domain.proj import ProjectService, ProjectTaskService
 
 from dssgmkt.domain.org import OrganizationService
+from dssgmkt.domain.user import UserService
 
 def projects_link(include_link=True):
     return ('Projects', reverse('dssgmkt:proj_list') if include_link else None)
@@ -647,117 +648,32 @@ class ProjectEdit(PermissionRequiredMixin, UpdateView):
             return super().form_invalid(form)
 
 
-class CreateTaskRequirementForm(ModelForm):
-    class Meta:
-        model = ProjectTaskRequirement
-        fields = ['skill', 'level', 'importance']
 
 @permission_required('project.task_requirements_view', raise_exception=True, fn=objectgetter(Project, 'proj_pk'))
 def project_task_requirements_edit_view(request, proj_pk, task_pk):
-    if request.method == 'POST':
-        form = CreateTaskRequirementForm(request.POST)
-        if form.is_valid():
-            requirement = form.save(commit = False)
-            try:
-                ProjectTaskService.add_task_requirement(request.user, proj_pk, task_pk, requirement)
-                return redirect('dssgmkt:proj_task_requirements_edit', proj_pk=proj_pk, task_pk=task_pk)
-            except KeyError:
-                form.add_error(None, "Duplicate task requirement.")
-    if request.method == 'GET':
-        form = CreateTaskRequirementForm()
-    task_requirements = get_project_task_requirements(request, proj_pk, task_pk)
     task = get_project_task(request, proj_pk, task_pk)
     project = get_project(request, proj_pk)
+    if request.method == 'POST':
+        try:
+            ProjectTaskService.set_task_requirements(request.user, proj_pk, task_pk, request.POST)
+            return redirect('dssgmkt:proj_task', proj_pk=proj_pk, task_pk=task_pk)
+        except KeyError:
+            raise Http404
+        except ValueError:
+            pass
+    elif request.method == 'GET':
+        pass
     return render(request, 'dssgmkt/proj_task_requirements_edit.html',
                     add_project_task_common_context(request, task, 'tasklist',
                         {
-                            'task_requirements': task_requirements,
                             'breadcrumb': project_breadcrumb(project,
-                                                                tasks_link(project),
-                                                                task_link(task),
-                                                                edit_task_requirements_link(project, task, include_link=False)),
-                            'add_requirement_form': form,
+                                                            tasks_link(project),
+                                                            task_link(task),
+                                                            edit_task_requirements_link(project, task, include_link=False)),
+                            'system_skills': get_project_task_requirements(request, proj_pk, task_pk),
+                            'skill_levels': UserService.get_skill_levels(),
+                            'importance_levels': ProjectTaskService.get_project_taks_requirement_importance_levels(),
                         }))
-
-class ProjectTaskRequirementEdit(PermissionRequiredMixin, UpdateView):
-    model = ProjectTaskRequirement
-    fields = ['level', 'importance']
-    template_name = 'dssgmkt/proj_task_requirements_requirement_edit.html'
-    pk_url_kwarg = 'requirement_pk'
-    permission_required = 'project.task_requirements_edit'
-    raise_exception = True
-
-    def get_success_url(self):
-        return reverse('dssgmkt:proj_task_requirements_edit', args=[self.kwargs['proj_pk'], self.kwargs['task_pk']])
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        task_requirement = self.object
-        if task_requirement:
-            project_task = task_requirement.task
-            project = project_task.project
-            context['task_requirement'] = task_requirement
-            context['breadcrumb'] =  project_breadcrumb(project,
-                                                            tasks_link(project),
-                                                            task_link(project_task),
-                                                            edit_task_requirements_link(project, project_task),
-                                                            ('Edit requirement', None))
-            add_project_task_common_context(self.request, project_task, 'tasklist', context)
-            return context
-        else:
-            raise Http404
-
-    def form_valid(self, form):
-        requirement = form.save(commit = False)
-        try:
-            ProjectTaskService.save_task_requirement(self.request.user, self.kwargs['proj_pk'], self.kwargs['task_pk'], requirement)
-            return HttpResponseRedirect(self.get_success_url())
-        except KeyError:
-            return super().form_invalid(form)
-
-    def get_permission_object(self):
-        return get_project(self.request, self.kwargs['proj_pk'])
-
-class ProjectTaskRequirementRemove(PermissionRequiredMixin, DeleteView): # override the get_object / get_queryset method to use the domain logic
-    model = ProjectTaskRequirement
-    template_name = 'dssgmkt/proj_task_requirements_requirement_remove.html'
-    pk_url_kwarg = 'requirement_pk'
-    permission_required = 'project.task_requirements_delete'
-    raise_exception = True
-
-    def get_success_url(self):
-        return reverse('dssgmkt:proj_task_requirements_edit', args=[self.kwargs['proj_pk'],self.kwargs['task_pk']])
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        task_requirement = self.object
-        if task_requirement:
-            project_task = task_requirement.task
-            project = project_task.project
-            context['task_requirement'] = task_requirement
-            context['breadcrumb'] =  project_breadcrumb(project,
-                                                            tasks_link(project),
-                                                            task_link(project_task),
-                                                            edit_task_requirements_link(project, project_task),
-                                                            ('Remove requirement', None))
-            add_project_task_common_context(self.request, project_task, 'tasklist', context)
-            return context
-        else:
-            raise Http404
-
-    def delete(self, request,  *args, **kwargs):
-        task_requirement = self.get_object()
-        self.object = task_requirement
-        try:
-            ProjectTaskService.delete_task_requirement(request.user, self.kwargs['proj_pk'], self.kwargs['task_pk'], task_requirement)
-            return HttpResponseRedirect(self.get_success_url())
-        except ValueError as err:
-            messages.error(request, 'There was a problem with your request.')
-            # logger.error("Error when user {0} tried to leave organization {1}: {2}".format(request.user.id, organization_role.organization.id, err))
-            return HttpResponseRedirect(self.get_success_url())
-
-    def get_permission_object(self):
-        return get_project(self.request, self.kwargs['proj_pk'])
 
 class ProjectTaskRemove(PermissionRequiredMixin, DeleteView):
     model = ProjectTask
