@@ -137,6 +137,8 @@
                         <i class="material-icons" style="vertical-align: middle">how_to_vote</i>
                       {% elif notification.is_source_organization_membership_request %}
                         <i class="material-icons" style="vertical-align: middle">person_add</i>
+                      {% elif notification.is_source_badge %}
+                        <i class="fas fa-trophy"></i>
                       {% endif %}
                       {{ notification.notification_description }}
                     </div>

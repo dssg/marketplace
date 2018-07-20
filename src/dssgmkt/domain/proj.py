@@ -11,9 +11,9 @@ from ..models.common import (
     ReviewStatus,
 )
 from ..models.user import (
-    User, NotificationSeverity, NotificationSource, VolunteerProfile, Skill,
+    User, NotificationSeverity, NotificationSource, VolunteerProfile, Skill, BadgeTier, UserBadge, BadgeType,
 )
-from django.db.models import Case, When, Count, Q, Subquery
+from django.db.models import Case, When, Count, Q, Subquery, Avg
 
 from .common import validate_consistent_keys, social_cause_view_model_translation, project_status_view_model_translation
 from .notifications import NotificationService
@@ -909,9 +909,72 @@ class ProjectTaskService():
                 project_task.actual_effort_hours = task_review.volunteer_effort_hours
                 project_task.actual_end_date = timezone.now()
                 ProjectTaskService.save_task_internal(request_user, projid, taskid, project_task)
+                for role in project_task.projecttaskrole_set.all():
+                    ProjectTaskService.update_user_task_count(role.user)
+                    ProjectTaskService.update_user_review_score(role.user)
             elif task_review.review_result == ReviewStatus.REJECTED and project_task.stage != TaskStatus.COMPLETED:
                 project_task.stage = TaskStatus.STARTED
                 ProjectTaskService.save_task_internal(request_user, projid, taskid, project_task)
+                for role in project_task.projecttaskrole_set.all():
+                    ProjectTaskService.update_user_review_score(role.user)
+
+
+    @staticmethod
+    def update_user_badge(request_user, badge_type, badge_tier, badge_name):
+        if badge_tier is not None:
+            try:
+                current_badge = UserBadge.objects.get(user=request_user, type=badge_type)
+                if current_badge.tier != badge_tier:
+                    is_better_badge = current_badge.tier < badge_tier
+                    current_badge.tier = badge_tier
+                    current_badge.save()
+                    if is_better_badge:
+                        message = "Congratulations! Your award for {0} has increased to {1}. Keep up with the good work!".format(badge_name, current_badge.get_tier_display())
+                    else:
+                        message = "Unfortunately your award for {0} has decreased to {1}.".format(badge_name, current_badge.get_tier_display())
+                    NotificationService.add_user_notification(request_user,
+                                                             message,
+                                                             NotificationSeverity.INFO,
+                                                             NotificationSource.BADGE,
+                                                             current_badge.id)
+            except:
+                new_badge = UserBadge()
+                new_badge.type = badge_type
+                new_badge.tier = badge_tier
+                new_badge.user = request_user
+                new_badge.save()
+                message = "Congratulations! You have been awarded a new badge ({0}) for {1}. Keep up with the good work!".format(new_badge.get_tier_display(), badge_name)
+                NotificationService.add_user_notification(request_user,
+                                                         message,
+                                                         NotificationSeverity.INFO,
+                                                         NotificationSource.BADGE,
+                                                         new_badge.id)
+
+    @staticmethod
+    def update_user_task_count(request_user):
+        completed_task_count = ProjectTaskRole.objects.filter(task__stage=TaskStatus.COMPLETED, user=request_user).count()
+        badge_tier = None
+        if completed_task_count > 10:
+            badge_tier = BadgeTier.MASTER
+        elif completed_task_count > 5:
+            badge_tier = BadgeTier.ADVANCED
+        elif completed_task_count > 0:
+            badge_tier = BadgeTier.BASIC
+        ProjectTaskService.update_user_badge(request_user, BadgeType.NUMBER_OF_PROJECTS, badge_tier, "completing tasks")
+
+
+    @staticmethod
+    def update_user_review_score(request_user):
+        average_review_score = ProjectTaskReview.objects.filter(volunteer=request_user, review_result=ReviewStatus.ACCEPTED).aggregate(Avg('review_score'))['review_score__avg']
+        badge_tier = None
+        if average_review_score >= 4:
+            badge_tier = BadgeTier.MASTER
+        elif average_review_score >= 3:
+            badge_tier = BadgeTier.ADVANCED
+        elif average_review_score >= 2:
+            badge_tier = BadgeTier.BASIC
+        ProjectTaskService.update_user_badge(request_user, BadgeType.REVIEW_SCORE, badge_tier, "getting great reviews")
+
 
     @staticmethod
     def accept_task_review(request_user, projid, taskid, task_review):

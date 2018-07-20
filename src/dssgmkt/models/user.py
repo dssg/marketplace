@@ -73,6 +73,7 @@ class NotificationSource():
     TASK = 'TK'
     VOLUNTEER_APPLICATION = 'VA'
     ORGANIZATION_MEMBERSHIP_REQUEST = 'OM'
+    BADGE = 'BA'
 
     def get_choices():
         return (
@@ -81,7 +82,8 @@ class NotificationSource():
                     (NotificationSource.PROJECT, 'Project'),
                     (NotificationSource.TASK, 'Task'),
                     (NotificationSource.VOLUNTEER_APPLICATION, 'Volunteer application'),
-                    (NotificationSource.ORGANIZATION_MEMBERSHIP_REQUEST, 'Organization membership request')
+                    (NotificationSource.ORGANIZATION_MEMBERSHIP_REQUEST, 'Organization membership request'),
+                    (NotificationSource.BADGE, 'Award'),
                 )
 
 class UserNotification(models.Model):
@@ -123,6 +125,9 @@ class UserNotification(models.Model):
 
     def is_source_organization_membership_request(self):
         return self.source == NotificationSource.ORGANIZATION_MEMBERSHIP_REQUEST
+
+    def is_source_badge(self):
+        return self.source == NotificationSource.BADGE
 
 class Skill(models.Model):
     area = models.CharField(max_length=50)
@@ -322,7 +327,7 @@ class UserBadge(models.Model):
         return self.type == BadgeType.WORK_SPEED
 
     def is_type_review_score(self):
-        return self.type == BadgeType.REVIEW_SCORE 
+        return self.type == BadgeType.REVIEW_SCORE
 
     def is_type_project_count(self):
         return self.type == BadgeType.NUMBER_OF_PROJECTS
