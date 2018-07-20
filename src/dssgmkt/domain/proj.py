@@ -40,6 +40,9 @@ class ProjectService():
                 base_query = base_query.filter(name__icontains=search_config['projname'])
             if 'orgname' in search_config:
                 base_query = base_query.filter(organization__name__icontains=search_config['orgname'])
+            if 'skills' in search_config:
+                for skill_fragment in search_config['skills'].split():
+                    base_query = base_query.filter(projecttask__projecttaskrequirement__skill__name__icontains=skill_fragment.strip())
             if 'social_cause' in search_config:
                 sc = search_config['social_cause']
                 if isinstance(sc, str):
@@ -56,7 +59,7 @@ class ProjectService():
                 for project_status_from_view in project_status_list:
                     project_statuses.append(project_status_view_model_translation[project_status_from_view])
                 base_query = base_query.filter(status__in=project_statuses).distinct()
-        return base_query.order_by('name')
+        return base_query.distinct().order_by('name')
 
 
     @staticmethod

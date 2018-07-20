@@ -117,6 +117,7 @@ def project_list_view(request):
     checked_project_fields = {}
     filter_projname = ""
     filter_orgname = ""
+    filter_skills = ""
     if request.method == 'POST':
         search_config = {}
         if 'projname' in request.POST and request.POST.get('projname'):
@@ -125,6 +126,9 @@ def project_list_view(request):
         if 'orgname' in request.POST and request.POST.get('orgname'):
             search_config['orgname'] = request.POST.get('orgname')
             filter_orgname = request.POST.get('orgname')
+        if 'skills' in request.POST and request.POST.get('skills'):
+            search_config['skills'] = request.POST.get('skills')
+            filter_skills = request.POST.get('skills')
         if 'socialcause' in request.POST:
             search_config['social_cause'] = request.POST.getlist('socialcause')
             for f in request.POST.getlist('socialcause'):
@@ -158,6 +162,7 @@ def project_list_view(request):
                             'checked_project_fields': checked_project_fields,
                             'filter_projname': filter_projname,
                             'filter_orgname': filter_orgname,
+                            'filter_skills': filter_skills,
                             'user_is_any_organization_member': any_org_member,
                             'single_org_membership': single_org_membership,
                             'organization_memberships': organization_memberships,
