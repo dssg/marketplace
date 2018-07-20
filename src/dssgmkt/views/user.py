@@ -29,6 +29,9 @@ from dssgmkt.domain.notifications import NotificationService
 def users_link(include_link=True):
     return ('Users', reverse_lazy('dssgmkt:volunteer_list') if include_link else None)
 
+def volunteers_link(include_link=True):
+    return ('Volunteers', reverse_lazy('dssgmkt:volunteer_list') if include_link else None)
+
 def my_profile_link(user_pk, include_link=True):
     return ("My profile" , reverse('dssgmkt:user_profile', args=[user_pk]) if include_link else None)
 
@@ -89,7 +92,7 @@ class VolunteerIndexView(generic.ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['breadcrumb'] = build_breadcrumb([home_link(),
-                                                  users_link(include_link=False)])
+                                                  volunteers_link(include_link=False)])
         context['leaderboards'] = UserService.get_volunteer_leaderboards(self.request.user)
         return context
 
@@ -156,7 +159,7 @@ class UserProfileView(generic.DetailView):
         context = super().get_context_data(**kwargs)
         context['breadcrumb'] = build_breadcrumb([home_link(),
                                                     users_link(),
-                                                    my_profile_link(self.object.id, include_link=False) if self.object.id == self.request.user.id else (self.object.full_name(), None)])
+                                                    my_profile_link(self.object.id, include_link=False) if self.object.id == self.request.user.id else (self.object.standard_display_name(), None)])
 
         project_tasks = ProjectTaskService.get_volunteer_all_tasks(self.request.user, self.object)
         context['project_tasks'] = paginate(self.request, project_tasks, request_key='project_tasks_page', page_size=15)

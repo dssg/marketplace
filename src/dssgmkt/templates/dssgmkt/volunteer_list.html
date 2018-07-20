@@ -1,7 +1,29 @@
 {% extends 'dssgmkt/base.html' %}
 
 {% block pagecontents %}
-  <div class="row">
+
+      {% if leaderboards %}
+      <div class="row">
+        <div class="card-deck section-header col-lg-12">
+          {% for board in leaderboards %}
+            <div class="card">
+              <div class="card-header">
+                {% if board.badge %}
+                  {% include 'dssgmkt/components/user_badge.html' with badge=board.badge compact_display=True %}
+                {% endif %}
+                {{ board.title }}</div>
+              <div class="card-body">
+                {% for user in board.data %}
+                  <div>{% include 'dssgmkt/components/user_display.html' with user=user %}</div>
+                {% endfor %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+  <div class="row section-header">
     <div class="col-lg-3">
       <form>
         <h4>Filter</h4>
@@ -21,25 +43,6 @@
     </div>
     <div class="col-lg-9">
 
-      {% if leaderboards %}
-      <div class="row">
-        <div class="card-deck section-header col-lg-12">
-          {% for board in leaderboards %}
-            <div class="card">
-              <div class="card-header">
-                {% if board.badge %}
-                  {% include 'dssgmkt/components/user_badge.html' with badge=board.badge compact_display=True %}
-                {% endif %}
-                {{ board.title }}</div>
-              <ul class="list-group list-group-flush">
-                {% for user in board.data %}
-                  <li class="list-group-item">{% include 'dssgmkt/components/user_display.html' with user=user %}</li>
-                {% endfor %}
-            </div>
-          {% endfor %}
-        </div>
-      </div>
-      {% endif %}
 
       {% if volunteer_list %}
         <table class="table table-hover section-header">
