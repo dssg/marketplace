@@ -88,12 +88,22 @@ class UserService():
         user.save()
 
     @staticmethod
+    def verify_if_automatically_approved(volunteer_profile):
+        signup_code = volunteer_profile.user.special_code
+        if signup_code in ["AUTOAPPR"]: # TODO put this as a separate entity in the database
+            volunteer_profile.volunteer_status = ReviewStatus.ACCEPTED
+        else:
+            volunteer_profile.volunteer_status = ReviewStatus.NEW
+
+
+    @staticmethod
     def create_volunteer_profile(request_user, user_pk):
         target_user = UserService.get_user(request_user, user_pk)
         ensure_user_has_permission(request_user, target_user, 'user.is_same_user')
         if not VolunteerProfile.objects.filter(user=request_user).exists():
             volunteer_profile = VolunteerProfile()
             volunteer_profile.user = request_user
+            UserService.verify_if_automatically_approved(volunteer_profile)
             try:
                 volunteer_profile.save()
                 return volunteer_profile
