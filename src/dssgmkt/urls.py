@@ -86,4 +86,7 @@ urlpatterns = [
     path('user/<int:user_pk>/<int:volunteer_pk>/edit', user.VolunteerProfileEdit.as_view(), name='user_volunteer_profile_edit'),
     path('user/<int:user_pk>/skills', user.user_profile_skills_edit_view, name='user_profile_skills_edit'),
 
+    path('ajax/org/<int:org_pk>/candidates/', org.get_all_users_not_organization_members_json, name='validate_username'),
+    path('ajax/org/<int:org_pk>/candidates/<str:query>', org.get_all_users_not_organization_members_json, name='validate_username_do'),
+
 ]

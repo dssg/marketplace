@@ -119,6 +119,15 @@ class OrganizationService():
     def get_organization_members(request_user, org):
         return User.objects.filter(organizationrole__organization=org)
 
+    @staticmethod
+    def get_all_users_not_organization_members(orgid, query=None):
+        base_query = User.objects.exclude(organizationrole__organization__id=orgid)
+        if query:
+            base_query = base_query.filter(Q(first_name__icontains=query) | \
+                                              Q(last_name__icontains=query) | \
+                                              Q(email__icontains=query) | \
+                                              Q(username__icontains=query))
+        return base_query.values('first_name', 'last_name', 'email', 'id').order_by('first_name', 'last_name')[:25]
 
     @staticmethod
     def get_organization_projects(request_user, org):

@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.db.models import Case, Q, When
 from django.forms import ModelForm
-from django.http import Http404, HttpResponseRedirect
+from django.http import Http404, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views import generic
@@ -21,7 +21,6 @@ from ..models.org import (
 )
 from dssgmkt.domain.org import OrganizationService
 from .common import build_breadcrumb, home_link, paginate, generic_getter
-
 
 
 logger = logging.getLogger(__name__)
@@ -406,3 +405,12 @@ class OrganizationCreateView(PermissionRequiredMixin, CreateView):
 
     def get_permission_object(self):
         return None
+
+
+
+def get_all_users_not_organization_members_json(request, org_pk, query=None):
+    users = OrganizationService.get_all_users_not_organization_members(org_pk, query)
+    data = {
+        'users': list(users)
+    }
+    return JsonResponse(data)
