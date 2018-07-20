@@ -148,6 +148,10 @@ class UserService():
         return VolunteerProfile.objects.filter(user=request_user).exists()
 
     @staticmethod
+    def user_has_approved_volunteer_profile(request_user):
+        return VolunteerProfile.objects.filter(user=request_user, volunteer_status=ReviewStatus.ACCEPTED).exists()
+
+    @staticmethod
     def user_is_organization_creator(request_user):
         return request_user.is_authenticated and request_user.initial_type == UserType.ORGANIZATION
 

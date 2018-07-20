@@ -1,6 +1,7 @@
 from rules import add_perm, predicate
 
 from dssgmkt.domain.proj import ProjectService, ProjectTaskService
+from dssgmkt.domain.user import UserService
 
 
 add_perm('project.view', ProjectService.is_project_visible_by_user)
@@ -18,6 +19,7 @@ add_perm('project.task_review_view', ProjectService.user_is_project_member)
 add_perm('project.task_review_do', ProjectService.user_is_project_official) # or user is task editor? do we let project managers to review task completion?
 add_perm('project.tasks_view', ProjectService.user_is_project_member)
 add_perm('project.task_edit', ProjectService.user_is_task_editor)
+add_perm('project.task_apply', UserService.user_has_approved_volunteer_profile)
 add_perm('project.task_requirements_view', ProjectService.user_is_task_editor)
 add_perm('project.task_requirements_edit', ProjectService.user_is_task_editor)
 add_perm('project.task_requirements_delete', ProjectService.user_is_task_editor)

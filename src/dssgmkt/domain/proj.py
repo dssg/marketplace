@@ -1028,6 +1028,7 @@ class ProjectTaskService():
     def apply_to_volunteer(request_user, projid, taskid, task_application_request):
         project_task = ProjectTask.objects.get(pk=taskid, project__id=projid)
         validate_consistent_keys(project_task, 'Task not found in that project', (['project', 'id'], projid))
+        ensure_user_has_permission(request_user, None, 'project.task_apply')
         if ProjectTaskService.user_is_task_volunteer(request_user, project_task):
             raise ValueError('User is already a volunteer of this task')
         if not VolunteerProfile.objects.filter(user=request_user).exists(): # We cannot call UserService.user_has_volunteer_profile because a circular dependency
