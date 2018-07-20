@@ -66,6 +66,19 @@ class UserService():
         elif user_type == 'organization':
             new_user.initial_type = UserType.ORGANIZATION
         new_user.save()
+        new_badge_tier = None
+        if new_user.id < 50:
+            new_badge_tier = BadgeTier.MASTER
+        elif new_user.id < 100:
+            new_badge_tier = BadgeTier.ADVANCED
+        elif new_user.id < 200:
+            new_badge_tier = BadgeTier.BASIC
+        if new_badge_tier is not None:
+            new_user_badge = UserBadge()
+            new_user_badge.tier = new_badge_tier
+            new_user_badge.type = BadgeType.EARLY_USER
+            new_user_badge.user = new_user
+            new_user_badge.save()
         return new_user
 
 
