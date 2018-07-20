@@ -99,7 +99,7 @@ class VolunteerIndexView(generic.ListView):
 
 def volunteer_list_view(request):
     # checked_social_cause_fields = {}
-    # checked_project_fields = {}
+    checked_awards_fields = {}
     filter_username = ""
     filter_skills = ""
     if request.method == 'POST':
@@ -110,10 +110,10 @@ def volunteer_list_view(request):
         if 'skills' in request.POST and request.POST.get('skills'):
             search_config['skills'] = request.POST.get('skills')
             filter_skills = request.POST.get('skills')
-        # if 'socialcause' in request.POST:
-        #     search_config['social_cause'] = request.POST.getlist('socialcause')
-        #     for f in request.POST.getlist('socialcause'):
-        #         checked_social_cause_fields[f] = True
+        if 'awards' in request.POST:
+            search_config['awards'] = request.POST.getlist('awards')
+            for f in request.POST.getlist('awards'):
+                checked_awards_fields[f] = True
         # if 'projectstatus' in request.POST:
         #     search_config['project_status'] = request.POST.getlist('projectstatus')
         #     for f in request.POST.getlist('projectstatus'):
@@ -134,7 +134,7 @@ def volunteer_list_view(request):
                             'leaderboards': UserService.get_volunteer_leaderboards(request.user),
                             'volunteer_list': volunteers_page,
                             # 'checked_social_cause_fields': checked_social_cause_fields,
-                            # 'checked_project_fields': checked_project_fields,
+                            'checked_awards_fields': checked_awards_fields,
                             'filter_username': filter_username,
                             'filter_skills': filter_skills,
                         })

@@ -1,5 +1,6 @@
 from dssgmkt.models.common import SocialCause
 from dssgmkt.models.proj import ProjectStatus
+from dssgmkt.models.user import BadgeType
 
 def get_field_value(object, path):
     if isinstance(path, str):
@@ -35,3 +36,10 @@ project_status_view_model_translation = {
                                             'in_progress': ProjectStatus.IN_PROGRESS,
                                             'completed': ProjectStatus.COMPLETED,
                                         }
+
+award_view_model_translation = {
+                                             'review_score': BadgeType.REVIEW_SCORE,
+                                             'number_of_projects': BadgeType.NUMBER_OF_PROJECTS,
+                                             'fast_work': BadgeType.WORK_SPEED,
+                                             'early_user': BadgeType.EARLY_USER,
+                                         }

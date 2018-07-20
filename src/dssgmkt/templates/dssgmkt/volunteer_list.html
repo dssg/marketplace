@@ -35,19 +35,27 @@
           Skills
           <input class="form-control" type="text" id="skills" name="skills" placeholder="" value="{{ filter_skills }}"></input></label>
 
-          <button type="submit"
-                  form="volunteerlist"
-                  formmethod="post"
-                  formaction="{% url 'dssgmkt:volunteer_list' %}"
-                  class="btn btn-success col-lg-12 mt-3">
-            <i class="material-icons" style="vertical-align: middle">filter_list</i>
-            Apply filters
-          </button>
-          <a class="btn btn-outline-primary col-lg-12 mt-3"
-             href="{% url 'dssgmkt:volunteer_list' %}">
-             <i class="material-icons" style="vertical-align: middle">close</i>
-             Clear filters
-          </a>
+        <fieldset name="badges">
+          <legend>Project status</legend>
+          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='awards' field_value='review_score' field_text='Great reviews' is_checked=checked_awards_fields.review_score %}
+          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='awards' field_value='number_of_projects' field_text='Number of tasks completed' is_checked=checked_awards_fields.number_of_projects %}
+          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='awards' field_value='fast_work' field_text='Fast work' is_checked=checked_awards_fields.fast_work %}
+          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='awards' field_value='early_user' field_text='Early user' is_checked=checked_awards_fields.early_user %}
+        </fieldset>
+
+        <button type="submit"
+                form="volunteerlist"
+                formmethod="post"
+                formaction="{% url 'dssgmkt:volunteer_list' %}"
+                class="btn btn-success col-lg-12 mt-3">
+          <i class="material-icons" style="vertical-align: middle">filter_list</i>
+          Apply filters
+        </button>
+        <a class="btn btn-outline-primary col-lg-12 mt-3"
+           href="{% url 'dssgmkt:volunteer_list' %}">
+           <i class="material-icons" style="vertical-align: middle">close</i>
+           Clear filters
+        </a>
       </form>
     </div>
     <div class="col-lg-9">

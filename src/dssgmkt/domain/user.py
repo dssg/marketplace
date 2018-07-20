@@ -11,7 +11,7 @@ from ..models.org import (
     OrganizationRole,
 )
 
-from .common import validate_consistent_keys
+from .common import validate_consistent_keys, award_view_model_translation
 from .org import OrganizationService
 from .proj import ProjectService, ProjectTaskService
 from dssgmkt.authorization.common import ensure_user_has_permission
@@ -33,14 +33,15 @@ class UserService():
             if 'skills' in search_config:
                 for skill_fragment in search_config['skills'].split():
                     base_query = base_query.filter(user__volunteerskill__skill__name__icontains=skill_fragment.strip())
-            # if 'social_cause' in search_config:
-            #     sc = search_config['social_cause']
-            #     if isinstance(sc, str):
-            #         sc = [sc]
-            #     social_causes = []
-            #     for social_cause_from_view in sc:
-            #         social_causes.append(social_cause_view_model_translation[social_cause_from_view])
-            #     base_query = base_query.filter(project_cause__in=social_causes)
+            if 'awards' in search_config:
+                aw = search_config['awards']
+                if isinstance(aw, str):
+                    aw = [aw]
+                awards = []
+                for award_from_view in aw:
+                    awards.append(award_view_model_translation[award_from_view])
+                print("###", awards)
+                base_query = base_query.filter(user__userbadge__type__in=awards)
             # if 'project_status' in search_config:
             #     project_status_list = search_config['project_status']
             #     if isinstance(project_status_list, str):
