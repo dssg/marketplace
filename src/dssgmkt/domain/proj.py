@@ -489,6 +489,9 @@ class ProjectService():
         project = Project.objects.get(pk=projid)
         ensure_user_has_permission(request_user, project, 'project.scope_edit')
         if project:
+            # TODO verify the project is not in completed status
+            if project.status in [ProjectStatus.COMPLETED, ProjectStatus.DELETED, ProjectStatus.EXPIRED]:
+                raise ValueError('You cannot edit the scope of a completed project.')
             # We set the primary key of the project scope being "edited" so
             # Django inserts a new instance in the db.
             project_scope.id = None
@@ -508,7 +511,7 @@ class ProjectService():
                                                   project.id,
                                                   message)
             except IntegrityError:
-                raise ValueError('Duplicate user role')
+                raise ValueError('Error saving project scope')
         else:
             raise KeyError('Project not found ' + str(projid))
 

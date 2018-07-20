@@ -12,7 +12,7 @@
 
     <div class="col-lg-4">
       {% has_perm 'project.scope_edit' user project as perm_scope_edit %}
-      {% if current_scope and showing_current_scope and perm_scope_edit %}
+      {% if current_scope and showing_current_scope and perm_scope_edit and not project.is_completed_status and not project.is_expired_status %}
         <a class="btn btn-success col-lg-12 mb-1"
            href="{% url 'dssgmkt:proj_scope_edit' project.id current_scope.id %}">
           <i class="material-icons" style="vertical-align: middle">edit</i>

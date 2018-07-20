@@ -334,18 +334,19 @@ def project_edit_scope_view(request, proj_pk, scope_pk):
                 ProjectService.update_project_scope(request.user, proj_pk, project_scope)
                 messages.info(request, 'Project scope edited successfully.')
                 return redirect('dssgmkt:proj_scope', proj_pk=proj_pk)
+            except ValueError as v:
+                form.add_error(None, str(v))
             except KeyError:
                 raise Http404
     elif request.method == 'GET':
         form = EditProjectScopeForm(instance=project_scope)
-
-        return render(request, 'dssgmkt/proj_scope_edit.html',
-                        add_project_common_context(request, project, 'scope',
-                            {
-                                'breadcrumb': project_breadcrumb(project, ('Scope', reverse('dssgmkt:proj_scope',  args=[proj_pk])), ('Edit', None)),
-                                'project_scope': project_scope,
-                                'form': form
-                            }))
+    return render(request, 'dssgmkt/proj_scope_edit.html',
+                    add_project_common_context(request, project, 'scope',
+                        {
+                            'breadcrumb': project_breadcrumb(project, ('Scope', reverse('dssgmkt:proj_scope',  args=[proj_pk])), ('Edit', None)),
+                            'project_scope': project_scope,
+                            'form': form
+                        }))
 
 class ProjectVolunteerInstructionsView(PermissionRequiredMixin, generic.ListView):
     template_name = 'dssgmkt/proj_instructions.html'
