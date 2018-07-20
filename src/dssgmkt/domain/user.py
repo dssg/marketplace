@@ -201,17 +201,17 @@ class UserService():
     @staticmethod
     def get_volunteer_leaderboards(request_user):
         return [{'title': 'Best reviewed',
-                 'data': User.objects.all()[0:10],
+                 'data': User.objects.order_by('-volunteerprofile__average_review_score')[0:10],
                  'type': 'review',
-                 'badge': UserBadge.objects.filter(type=BadgeType.REVIEW_SCORE, tier=BadgeTier.MASTER).first(),
+                 'badge': UserBadge(type=BadgeType.REVIEW_SCORE, tier=BadgeTier.MASTER),
                 },
                 {'title': 'Most completed projects',
-                 'data': User.objects.all()[0:10],
+                 'data': User.objects.order_by('-volunteerprofile__completed_task_count')[0:10],
                  'type': 'review',
-                 'badge': UserBadge.objects.filter(type=BadgeType.NUMBER_OF_PROJECTS, tier=BadgeTier.MASTER).first(),
+                 'badge':  UserBadge(type=BadgeType.NUMBER_OF_PROJECTS, tier=BadgeTier.MASTER),
                 },
                 {'title': 'Fastest work',
-                 'data': User.objects.all()[0:10],
+                 'data': User.objects.order_by('-volunteerprofile__ahead_of_time_task_ratio')[0:10],
                  'type': 'review',
-                 'badge': UserBadge.objects.filter(type=BadgeType.WORK_SPEED, tier=BadgeTier.MASTER).first(),
+                 'badge': UserBadge(type=BadgeType.WORK_SPEED, tier=BadgeTier.MASTER),
                 }, ]

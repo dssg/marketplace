@@ -950,12 +950,28 @@ class ProjectTaskService():
                                                          NotificationSeverity.INFO,
                                                          NotificationSource.BADGE,
                                                          new_badge.id)
+        else:
+            try:
+                current_badge = UserBadge.objects.get(user=request_user, type=badge_type)
+                current_badge.delete()
+                message = "Unfortunately your award for {0} was removed.".format(badge_name, current_badge.get_tier_display())
+                NotificationService.add_user_notification(request_user,
+                                                         message,
+                                                         NotificationSeverity.INFO,
+                                                         NotificationSource.BADGE,
+                                                         current_badge.id)
+            except:
+                pass
+
 
     @staticmethod
     def update_user_task_count(request_user):
         completed_task_count = ProjectTaskRole.objects.filter(task__stage=TaskStatus.COMPLETED, user=request_user).count()
-        request_user.volunteerprofile.completed_task_count = completed_task_count
-        request_user.volunteerprofile.save()
+        try:
+            request_user.volunteerprofile.completed_task_count = completed_task_count
+            request_user.volunteerprofile.save()
+        except:
+            pass
         badge_tier = None
         if completed_task_count > 10:
             badge_tier = BadgeTier.MASTER
@@ -969,42 +985,53 @@ class ProjectTaskService():
     @staticmethod
     def update_user_review_score(request_user):
         average_review_score = ProjectTaskReview.objects.filter(volunteer=request_user, review_result=ReviewStatus.ACCEPTED).aggregate(Avg('review_score'))['review_score__avg']
-        request_user.volunteerprofile.average_review_score = average_review_score
-        request_user.volunteerprofile.save()
-        badge_tier = None
-        if average_review_score >= 4:
-            badge_tier = BadgeTier.MASTER
-        elif average_review_score >= 3:
-            badge_tier = BadgeTier.ADVANCED
-        elif average_review_score >= 2:
-            badge_tier = BadgeTier.BASIC
-        ProjectTaskService.update_user_badge(request_user, BadgeType.REVIEW_SCORE, badge_tier, "getting great reviews")
+        if average_review_score is not None:
+            try:
+                request_user.volunteerprofile.average_review_score = average_review_score
+                request_user.volunteerprofile.save()
+            except:
+                pass
+            badge_tier = None
+            if average_review_score >= 4:
+                badge_tier = BadgeTier.MASTER
+            elif average_review_score >= 3:
+                badge_tier = BadgeTier.ADVANCED
+            elif average_review_score >= 2:
+                badge_tier = BadgeTier.BASIC
+            ProjectTaskService.update_user_badge(request_user, BadgeType.REVIEW_SCORE, badge_tier, "getting great reviews")
 
 
     @staticmethod
     def update_user_work_speed(request_user):
         completed_tasks = ProjectTaskRole.objects.filter(task__stage=TaskStatus.COMPLETED, user=request_user)
         completed_task_count = completed_tasks.count()
-        # TODO make this query work instead of iterating over all the tasks
-        # ahead_of_time_count = ProjectTaskRole.objects.filter(task__stage=TaskStatus.COMPLETED, user=request_user, \
-        #                             task__actual_end_date__lt=F('task__estimated_end_date') - F('task__estimated_start_date') + F('task__actual_start_date')).count()
-        ahead_of_time_count = 0
-        for task_role in completed_tasks:
-            task = task_role.task
-            if task.estimated_end_date - task.estimated_start_date > task.actual_end_date - task.actual_start_date:
-                ahead_of_time_count += 1
 
-        percentage_fast = float(ahead_of_time_count) / float(completed_task_count)
-        request_user.volunteerprofile.ahead_of_time_task_ratio = percentage_fast
-        request_user.volunteerprofile.save()
-        badge_tier = None
-        if percentage_fast >= 0.85:
-            badge_tier = BadgeTier.MASTER
-        elif percentage_fast >= 0.75:
-            badge_tier = BadgeTier.ADVANCED
-        elif percentage_fast >= 0.5:
-            badge_tier = BadgeTier.BASIC
-        ProjectTaskService.update_user_badge(request_user, BadgeType.WORK_SPEED, badge_tier, "being ahead of schedule")
+        if completed_task_count > 0:
+            # TODO make this query work instead of iterating over all the tasks
+            # ahead_of_time_count = ProjectTaskRole.objects.filter(task__stage=TaskStatus.COMPLETED, user=request_user, \
+            #                             task__actual_end_date__lt=F('task__estimated_end_date') - F('task__estimated_start_date') + F('task__actual_start_date')).count()
+            ahead_of_time_count = 0
+            for task_role in completed_tasks.all():
+                task = task_role.task
+                if task and task.estimated_end_date is not None and task.estimated_start_date is not None \
+                    and task.actual_end_date is not None and task.actual_start_date is not None:
+                    if task.estimated_end_date - task.estimated_start_date > task.actual_end_date - task.actual_start_date:
+                        ahead_of_time_count += 1
+
+            percentage_fast = float(ahead_of_time_count) / float(completed_task_count)
+            try:
+                request_user.volunteerprofile.ahead_of_time_task_ratio = percentage_fast
+                request_user.volunteerprofile.save()
+            except:
+                pass
+            badge_tier = None
+            if percentage_fast >= 0.85:
+                badge_tier = BadgeTier.MASTER
+            elif percentage_fast >= 0.75:
+                badge_tier = BadgeTier.ADVANCED
+            elif percentage_fast >= 0.5:
+                badge_tier = BadgeTier.BASIC
+            ProjectTaskService.update_user_badge(request_user, BadgeType.WORK_SPEED, badge_tier, "being ahead of schedule")
 
 
     @staticmethod
