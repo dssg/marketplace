@@ -151,13 +151,16 @@ fieldset legend {
 
 
 .badge-basic {
-  color: #cec654
+  /* color: #cec654 */
+  color: #e07614;
 }
 
 .badge-advanced {
-  color: #59b5d6
+  /* color: #59b5d6 */
+  color: #96918d;
 }
 
 .badge-master {
-  color: #6e1ca0
+  /* color: #6e1ca0 */
+  color: #d6be0c;
 }
