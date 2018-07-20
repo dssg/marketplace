@@ -231,6 +231,24 @@ class VolunteerProfile(models.Model):
         choices=ReviewStatus.get_choices(),
         default=ReviewStatus.NEW,
     )
+    completed_task_count = models.PositiveSmallIntegerField(
+        verbose_name="Completed task count",
+        help_text="Number of task this user has completed",
+        blank=True,
+        null=True,
+    )
+    average_review_score = models.FloatField(
+        verbose_name="Average review score",
+        help_text="Average review score",
+        blank=True,
+        null=True,
+    )
+    ahead_of_time_task_ratio = models.FloatField(
+        verbose_name="Ratio of tasks ahead of time",
+        help_text="Ratio of the tasks that the user completed ahead of the estimated time.",
+        blank=True,
+        null=True,
+    )
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,

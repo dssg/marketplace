@@ -13,7 +13,7 @@ from ..models.common import (
 from ..models.user import (
     User, NotificationSeverity, NotificationSource, VolunteerProfile, Skill, BadgeTier, UserBadge, BadgeType,
 )
-from django.db.models import Case, When, Count, Q, Subquery, Avg
+from django.db.models import Case, When, Count, Q, Subquery, Avg, F
 
 from .common import validate_consistent_keys, social_cause_view_model_translation, project_status_view_model_translation
 from .notifications import NotificationService
@@ -912,6 +912,7 @@ class ProjectTaskService():
                 for role in project_task.projecttaskrole_set.all():
                     ProjectTaskService.update_user_task_count(role.user)
                     ProjectTaskService.update_user_review_score(role.user)
+                    ProjectTaskService.update_user_work_speed(role.user)
             elif task_review.review_result == ReviewStatus.REJECTED and project_task.stage != TaskStatus.COMPLETED:
                 project_task.stage = TaskStatus.STARTED
                 ProjectTaskService.save_task_internal(request_user, projid, taskid, project_task)
@@ -953,6 +954,8 @@ class ProjectTaskService():
     @staticmethod
     def update_user_task_count(request_user):
         completed_task_count = ProjectTaskRole.objects.filter(task__stage=TaskStatus.COMPLETED, user=request_user).count()
+        request_user.volunteerprofile.completed_task_count = completed_task_count
+        request_user.volunteerprofile.save()
         badge_tier = None
         if completed_task_count > 10:
             badge_tier = BadgeTier.MASTER
@@ -966,6 +969,8 @@ class ProjectTaskService():
     @staticmethod
     def update_user_review_score(request_user):
         average_review_score = ProjectTaskReview.objects.filter(volunteer=request_user, review_result=ReviewStatus.ACCEPTED).aggregate(Avg('review_score'))['review_score__avg']
+        request_user.volunteerprofile.average_review_score = average_review_score
+        request_user.volunteerprofile.save()
         badge_tier = None
         if average_review_score >= 4:
             badge_tier = BadgeTier.MASTER
@@ -974,6 +979,32 @@ class ProjectTaskService():
         elif average_review_score >= 2:
             badge_tier = BadgeTier.BASIC
         ProjectTaskService.update_user_badge(request_user, BadgeType.REVIEW_SCORE, badge_tier, "getting great reviews")
+
+
+    @staticmethod
+    def update_user_work_speed(request_user):
+        completed_tasks = ProjectTaskRole.objects.filter(task__stage=TaskStatus.COMPLETED, user=request_user)
+        completed_task_count = completed_tasks.count()
+        # TODO make this query work instead of iterating over all the tasks
+        # ahead_of_time_count = ProjectTaskRole.objects.filter(task__stage=TaskStatus.COMPLETED, user=request_user, \
+        #                             task__actual_end_date__lt=F('task__estimated_end_date') - F('task__estimated_start_date') + F('task__actual_start_date')).count()
+        ahead_of_time_count = 0
+        for task_role in completed_tasks:
+            task = task_role.task
+            if task.estimated_end_date - task.estimated_start_date > task.actual_end_date - task.actual_start_date:
+                ahead_of_time_count += 1
+
+        percentage_fast = float(ahead_of_time_count) / float(completed_task_count)
+        request_user.volunteerprofile.ahead_of_time_task_ratio = percentage_fast
+        request_user.volunteerprofile.save()
+        badge_tier = None
+        if percentage_fast >= 0.85:
+            badge_tier = BadgeTier.MASTER
+        elif percentage_fast >= 0.75:
+            badge_tier = BadgeTier.ADVANCED
+        elif percentage_fast >= 0.5:
+            badge_tier = BadgeTier.BASIC
+        ProjectTaskService.update_user_badge(request_user, BadgeType.WORK_SPEED, badge_tier, "being ahead of schedule")
 
 
     @staticmethod
