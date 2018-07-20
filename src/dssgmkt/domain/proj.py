@@ -966,72 +966,81 @@ class ProjectTaskService():
 
     @staticmethod
     def update_user_task_count(request_user):
-        completed_task_count = ProjectTaskRole.objects.filter(task__stage=TaskStatus.COMPLETED, user=request_user).count()
         try:
-            request_user.volunteerprofile.completed_task_count = completed_task_count
-            request_user.volunteerprofile.save()
+            completed_task_count = ProjectTaskRole.objects.filter(task__stage=TaskStatus.COMPLETED, user=request_user).count()
+            try:
+                request_user.volunteerprofile.completed_task_count = completed_task_count
+                request_user.volunteerprofile.save()
+            except:
+                pass
+            badge_tier = None
+            if completed_task_count > 10:
+                badge_tier = BadgeTier.MASTER
+            elif completed_task_count > 5:
+                badge_tier = BadgeTier.ADVANCED
+            elif completed_task_count > 0:
+                badge_tier = BadgeTier.BASIC
+            ProjectTaskService.update_user_badge(request_user, BadgeType.NUMBER_OF_PROJECTS, badge_tier, "completing tasks")
         except:
-            pass
-        badge_tier = None
-        if completed_task_count > 10:
-            badge_tier = BadgeTier.MASTER
-        elif completed_task_count > 5:
-            badge_tier = BadgeTier.ADVANCED
-        elif completed_task_count > 0:
-            badge_tier = BadgeTier.BASIC
-        ProjectTaskService.update_user_badge(request_user, BadgeType.NUMBER_OF_PROJECTS, badge_tier, "completing tasks")
+            pass # TODO log this exception
 
 
     @staticmethod
     def update_user_review_score(request_user):
-        average_review_score = ProjectTaskReview.objects.filter(volunteer=request_user, review_result=ReviewStatus.ACCEPTED).aggregate(Avg('review_score'))['review_score__avg']
-        if average_review_score is not None:
-            try:
-                request_user.volunteerprofile.average_review_score = average_review_score
-                request_user.volunteerprofile.save()
-            except:
-                pass
-            badge_tier = None
-            if average_review_score >= 4:
-                badge_tier = BadgeTier.MASTER
-            elif average_review_score >= 3:
-                badge_tier = BadgeTier.ADVANCED
-            elif average_review_score >= 2:
-                badge_tier = BadgeTier.BASIC
-            ProjectTaskService.update_user_badge(request_user, BadgeType.REVIEW_SCORE, badge_tier, "getting great reviews")
+        try:
+            average_review_score = ProjectTaskReview.objects.filter(volunteer=request_user, review_result=ReviewStatus.ACCEPTED).aggregate(Avg('review_score'))['review_score__avg']
+            if average_review_score is not None:
+                try:
+                    request_user.volunteerprofile.average_review_score = average_review_score
+                    request_user.volunteerprofile.save()
+                except:
+                    pass
+                badge_tier = None
+                if average_review_score >= 4:
+                    badge_tier = BadgeTier.MASTER
+                elif average_review_score >= 3:
+                    badge_tier = BadgeTier.ADVANCED
+                elif average_review_score >= 2:
+                    badge_tier = BadgeTier.BASIC
+                ProjectTaskService.update_user_badge(request_user, BadgeType.REVIEW_SCORE, badge_tier, "getting great reviews")
+        except:
+            pass # TODO log this exception
 
 
     @staticmethod
     def update_user_work_speed(request_user):
-        completed_tasks = ProjectTaskRole.objects.filter(task__stage=TaskStatus.COMPLETED, user=request_user)
-        completed_task_count = completed_tasks.count()
+        try:
+            completed_tasks = ProjectTaskRole.objects.filter(task__stage=TaskStatus.COMPLETED, user=request_user)
+            completed_task_count = completed_tasks.count()
 
-        if completed_task_count > 0:
-            # TODO make this query work instead of iterating over all the tasks
-            # ahead_of_time_count = ProjectTaskRole.objects.filter(task__stage=TaskStatus.COMPLETED, user=request_user, \
-            #                             task__actual_end_date__lt=F('task__estimated_end_date') - F('task__estimated_start_date') + F('task__actual_start_date')).count()
-            ahead_of_time_count = 0
-            for task_role in completed_tasks.all():
-                task = task_role.task
-                if task and task.estimated_end_date is not None and task.estimated_start_date is not None \
-                    and task.actual_end_date is not None and task.actual_start_date is not None:
-                    if task.estimated_end_date - task.estimated_start_date > task.actual_end_date - task.actual_start_date:
-                        ahead_of_time_count += 1
+            if completed_task_count > 0:
+                # TODO make this query work instead of iterating over all the tasks
+                # ahead_of_time_count = ProjectTaskRole.objects.filter(task__stage=TaskStatus.COMPLETED, user=request_user, \
+                #                             task__actual_end_date__lt=F('task__estimated_end_date') - F('task__estimated_start_date') + F('task__actual_start_date')).count()
+                ahead_of_time_count = 0
+                for task_role in completed_tasks.all():
+                    task = task_role.task
+                    if task and task.estimated_end_date is not None and task.estimated_start_date is not None \
+                        and task.actual_end_date is not None and task.actual_start_date is not None:
+                        if task.estimated_end_date - task.estimated_start_date > task.actual_end_date - task.actual_start_date:
+                            ahead_of_time_count += 1
 
-            percentage_fast = float(ahead_of_time_count) / float(completed_task_count)
-            try:
-                request_user.volunteerprofile.ahead_of_time_task_ratio = percentage_fast
-                request_user.volunteerprofile.save()
-            except:
-                pass
-            badge_tier = None
-            if percentage_fast >= 0.85:
-                badge_tier = BadgeTier.MASTER
-            elif percentage_fast >= 0.75:
-                badge_tier = BadgeTier.ADVANCED
-            elif percentage_fast >= 0.5:
-                badge_tier = BadgeTier.BASIC
-            ProjectTaskService.update_user_badge(request_user, BadgeType.WORK_SPEED, badge_tier, "being ahead of schedule")
+                percentage_fast = float(ahead_of_time_count) / float(completed_task_count)
+                try:
+                    request_user.volunteerprofile.ahead_of_time_task_ratio = percentage_fast
+                    request_user.volunteerprofile.save()
+                except:
+                    pass
+                badge_tier = None
+                if percentage_fast >= 0.85:
+                    badge_tier = BadgeTier.MASTER
+                elif percentage_fast >= 0.75:
+                    badge_tier = BadgeTier.ADVANCED
+                elif percentage_fast >= 0.5:
+                    badge_tier = BadgeTier.BASIC
+                ProjectTaskService.update_user_badge(request_user, BadgeType.WORK_SPEED, badge_tier, "being ahead of schedule")
+        except:
+            pass # TODO log this exception
 
 
     @staticmethod

@@ -36,7 +36,7 @@
           <input class="form-control" type="text" id="skills" name="skills" placeholder="" value="{{ filter_skills }}"></input></label>
 
         <fieldset name="badges">
-          <legend>Project status</legend>
+          <legend>Awards</legend>
           {% include 'dssgmkt/components/filter_checkbox.html' with field_name='awards' field_value='review_score' field_text='Great reviews' is_checked=checked_awards_fields.review_score %}
           {% include 'dssgmkt/components/filter_checkbox.html' with field_name='awards' field_value='number_of_projects' field_text='Number of tasks completed' is_checked=checked_awards_fields.number_of_projects %}
           {% include 'dssgmkt/components/filter_checkbox.html' with field_name='awards' field_value='fast_work' field_text='Fast work' is_checked=checked_awards_fields.fast_work %}
