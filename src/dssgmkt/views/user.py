@@ -81,22 +81,6 @@ def get_url_for_notification(source_type, source_id):
                 url = reverse('dssgmkt:org_staff_request_review', args=[membership_request.organization.id, source_id])
     return url
 
-class VolunteerIndexView(generic.ListView):
-    template_name = 'dssgmkt/volunteer_list.html'
-    context_object_name = 'volunteer_list'
-    paginate_by = 15
-
-    def get_queryset(self):
-        return UserService.get_all_volunteer_profiles(self.request.user)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['breadcrumb'] = build_breadcrumb([home_link(),
-                                                  volunteers_link(include_link=False)])
-        context['leaderboards'] = UserService.get_volunteer_leaderboards(self.request.user)
-        return context
-
-
 def volunteer_list_view(request):
     # checked_social_cause_fields = {}
     checked_awards_fields = {}
