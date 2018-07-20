@@ -90,6 +90,7 @@ class VolunteerIndexView(generic.ListView):
         context = super().get_context_data(**kwargs)
         context['breadcrumb'] = build_breadcrumb([home_link(),
                                                   users_link(include_link=False)])
+        context['leaderboards'] = UserService.get_volunteer_leaderboards(self.request.user)
         return context
 
 

@@ -4,7 +4,7 @@ from ..models.common import (
     ReviewStatus,
 )
 from ..models.user import (
-    User, UserType, VolunteerProfile, VolunteerSkill,
+    User, UserType, VolunteerProfile, VolunteerSkill, UserBadge, BadgeType, BadgeTier,
 )
 from ..models.org import (
     OrganizationRole,
@@ -133,3 +133,21 @@ class UserService():
             todos.append({'text':'Project {0} is still in draft status and needs to be completed and published.'.format(proj.name)})
 
         return todos
+
+    @staticmethod
+    def get_volunteer_leaderboards(request_user):
+        return [{'title': 'Best reviewed',
+                 'data': User.objects.all()[0:10],
+                 'type': 'review',
+                 'badge': UserBadge.objects.filter(type=BadgeType.REVIEW_SCORE, tier=BadgeTier.MASTER).first(),
+                },
+                {'title': 'Most completed projects',
+                 'data': User.objects.all()[0:10],
+                 'type': 'review',
+                 'badge': UserBadge.objects.filter(type=BadgeType.NUMBER_OF_PROJECTS, tier=BadgeTier.MASTER).first(),
+                },
+                {'title': 'Fastest work',
+                 'data': User.objects.all()[0:10],
+                 'type': 'review',
+                 'badge': UserBadge.objects.filter(type=BadgeType.WORK_SPEED, tier=BadgeTier.MASTER).first(),
+                }, ]
