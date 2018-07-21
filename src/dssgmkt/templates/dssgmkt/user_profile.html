@@ -57,6 +57,20 @@
               </button>
             </form>
           {% endif %}
+
+          {% if user.volunteerprofile.is_pending_review %}
+            <div class="alert alert-warning">
+              <i class="fas fa-exclamation-triangle"></i>
+              Your application to volunteer is being reviewed by our staff. You will be notified
+              as soon as you are approved and can start applying to volunteer in projects.
+            </div>
+          {% elif user.volunteerprofile.is_rejected %}
+            <div class="alert alert-danger">
+              <i class="fas fa-exclamation-triangle"></i>
+              Your application to volunteer was reviewed by our staff and it was not accepted, so
+              you cannot apply to volunteer in projects at the moment.
+            </div>
+          {% endif %}
         </div>
       {% endif %}
     </div>
