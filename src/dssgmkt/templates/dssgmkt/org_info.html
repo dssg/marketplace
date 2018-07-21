@@ -7,6 +7,38 @@
   <div class="row mt-5 mb-5">
     <div class="col-lg-8">
       <p>{{ organization.description|markdown }}</p>
+      <h4 class="section-header">Organization's projects</h4>
+      <div class="row">
+        <div class="col-lg-12">
+        {% if projects %}
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                  <th>Project name</th>
+                  <th>Summary</th>
+                  <th>Status</th>
+                  <th>Social impact area</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for project in projects %}
+                <tr>
+                    <td><a href="{% url 'dssgmkt:proj_info' project.id %}">{{ project.name }}</a></td>
+                    <td>{{ project.short_summary }}</td>
+                    <td>{{ project.get_status_display }}</td>
+                    <td>{{ project.get_project_cause_display }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% url 'dssgmkt:org_info' as org_info_url %}
+          {% include 'dssgmkt/components/pagination.html' with baseurl=org_info_url page_obj=projects pagename='projects_page' %}
+        {% else %}
+          This organization has not posted any project yet.
+        {% endif %}
+        </div>
+      </div>
+
     </div>
 
     <div class="col-lg-4">
@@ -43,66 +75,33 @@
         </a>
       {% endif %}
 
-    </div>
-  </div>
-
-  <div class="card-deck">
-    <div class="card">
-      <div class="card-header">Contact information</div>
-      <div class="card-body">
-        <p>Phone number: {{ organization.phone_number }}</p>
-        <p>Email address: {{ organization.email }}</p>
+      <div class="card section-header">
+        <div class="card-header">Organization's details</div>
+        <div class="card-body">
+          <p>Years in operation: {{ organization.get_years_operation_display }}</p>
+          <p>Yearly budget: {{ organization.get_budget_display }}</p>
+          <p>Geographical scope: {{ organization.get_organization_scope_display }}</p>
+        </div>
       </div>
-    </div>
-    <div class="card">
-      <div class="card-header">Address</div>
-      <div class="card-body">
-        <p>{{ organization.street_address }}</p>
-        <p>{{ organization.address_line_2 }}</p>
-        <p>{{ organization.city }}, {{ organization.state }} {{ organization.zipcode }}</p>
-        <p>{{ organization.get_country_display }}</p>
+      <div class="card section-header">
+        <div class="card-header">Address</div>
+        <div class="card-body">
+          <p>{{ organization.street_address }}</p>
+          <p>{{ organization.address_line_2 }}</p>
+          <p>{{ organization.city }}, {{ organization.state }} {{ organization.zipcode }}</p>
+          <p>{{ organization.get_country_display }}</p>
+        </div>
       </div>
-    </div>
-    <div class="card">
-      <div class="card-header">Organization's details</div>
-      <div class="card-body">
-        <p>Years in operation: {{ organization.get_years_operation_display }}</p>
-        <p>Yearly budget: {{ organization.get_budget_display }}</p>
-        <p>Geographical scope: {{ organization.get_organization_scope_display }}</p>
+      <div class="card section-header">
+        <div class="card-header">Contact information</div>
+        <div class="card-body">
+          <p>Phone number: {{ organization.phone_number }}</p>
+          <p>Email address: {{ organization.email }}</p>
+        </div>
       </div>
     </div>
   </div>
 
-  <h4 class="section-header">Organization's projects</h4>
-  <div class="row">
-    <div class="col-lg-12">
-    {% if projects %}
-      <table class="table table-hover">
-        <thead>
-          <tr>
-              <th>Project name</th>
-              <th>Summary</th>
-              <th>Status</th>
-              <th>Social impact area</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for project in projects %}
-            <tr>
-                <td><a href="{% url 'dssgmkt:proj_info' project.id %}">{{ project.name }}</a></td>
-                <td>{{ project.short_summary }}</td>
-                <td>{{ project.get_status_display }}</td>
-                <td>{{ project.get_project_cause_display }}</td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-      {% url 'dssgmkt:org_info' as org_info_url %}
-      {% include 'dssgmkt/components/pagination.html' with baseurl=org_info_url page_obj=projects pagename='projects_page' %}
-    {% else %}
-      This organization has not posted any project yet.
-    {% endif %}
-    </div>
-  </div>
+
 
 {% endblock %}
