@@ -90,7 +90,7 @@
           {% for project in projects %}
             <tr>
                 <td><a href="{% url 'dssgmkt:proj_info' project.id %}">{{ project.name }}</a></td>
-                <td>{{ project.summary }}</td>
+                <td>{{ project.short_summary }}</td>
                 <td>{{ project.get_status_display }}</td>
                 <td>{{ project.get_project_cause_display }}</td>
             </tr>
