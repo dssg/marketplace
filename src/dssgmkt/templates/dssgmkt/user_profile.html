@@ -75,6 +75,25 @@
       {% endif %}
     </div>
 
+
+    {% if userprofile.pinnedtaskreview_set.all %}
+      <h4>Volunteer highlights</h4>
+      <div class="row">
+        {% for pinned_review in userprofile.pinnedtaskreview_set.all %}
+          <div class="col-lg-6 volunteer-highlight pr-5 pl-5">
+            <blockquote class="blockquote">
+              <div class="title text-muted d-flex">
+                <span class="flex-grow-1">Project {{ pinned_review.task_review.task.project.name }}: {{ pinned_review.task_review.task.name }}</span>
+                <span>Score {{ pinned_review.task_review.get_review_score_display }}</span>
+              </div>
+              <div class="mb-0 text">{{ pinned_review.task_review.public_reviewer_comments|markdown }}</div>
+              <footer class="blockquote-footer">{% include 'dssgmkt/components/user_display.html' with user=pinned_review.task_review.reviewer %}</footer>
+            </blockquote>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
     <div class="card-deck section-header">
       <div class="card">
         <div class="card-header">Personal information</div>

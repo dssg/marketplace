@@ -89,7 +89,7 @@
       </tr>
     </thead>
     <tbody>
-      {% for task_review in project_task.projecttaskreview_set.all %}
+      {% for task_review in task_reviews %}
         <tr>
           <td>
             <span
@@ -115,9 +115,20 @@
 
           <td>{{ task_review.public_reviewer_comments }}</td>
 
-          <td>{{ task_review.get_review_score_display }}</td>
+          <td>{%if task_review.is_accepted or task_review.is_rejected %}
+                {{ task_review.get_review_score_display }}
+              {% endif %}
+          </td>
 
-          <td></td>
+          <td>{% if task_review.is_accepted %}
+                <a href="{% url 'dssgmkt:proj_instructions_task_review_pin' project.id project_task.id task_review.id %}">
+                  {% if task_review.pinnedreview %}
+                    Unpin review
+                  {% else %}
+                    Pin review
+                  {% endif %}
+                </a>
+              {% endif %}</td>
         </tr>
       {% endfor %}
     </tbody>

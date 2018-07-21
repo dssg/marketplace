@@ -16,6 +16,7 @@ add_perm('project.volunteer_instructions_view', ProjectService.user_is_project_v
 add_perm('project.volunteer_task_finish', ProjectTaskService.user_is_task_volunteer)
 add_perm('project.volunteer_task_cancel', ProjectTaskService.user_is_task_volunteer)
 add_perm('project.task_review_view', ProjectService.user_is_project_member)
+add_perm('project.task_review_pin', ProjectTaskService.user_belongs_to_task_review)
 add_perm('project.task_review_do', ProjectService.user_is_project_official) # or user is task editor? do we let project managers to review task completion?
 add_perm('project.tasks_view', ProjectService.user_is_project_member)
 add_perm('project.task_edit', ProjectService.user_is_task_editor)

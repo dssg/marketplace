@@ -5,7 +5,7 @@ from datetime import date
 from ..models.proj import (
     Project, ProjectStatus, ProjectRole, ProjRole, ProjectFollower, ProjectLog, ProjectLogType, ProjectLogSource, ProjectDiscussionChannel, ProjectComment,
     ProjectTask, TaskStatus, TaskRole, ProjectTaskRole, ProjectTaskReview, VolunteerApplication,
-    ProjectTaskRequirement, TaskRequirementImportance, TaskType, ProjectScope,
+    ProjectTaskRequirement, TaskRequirementImportance, TaskType, ProjectScope, PinnedTaskReview,
 )
 from ..models.common import (
     ReviewStatus,
@@ -1467,3 +1467,33 @@ class ProjectTaskService():
                                                         project.id)
         else:
            raise KeyError('Project task not found')
+
+    @staticmethod
+    def get_task_reviews(request_user, project_task, expand_pinned=False):
+        base_query = ProjectTaskReview.objects.filter(task=project_task.id)
+        if expand_pinned:
+            base_query = base_query.annotate(pinnedreview=Count('pinnedtaskreview', fiter=Q(user=request_user)))
+        return base_query.order_by('-review_date')
+
+    @staticmethod
+    def user_belongs_to_task_review(request_user, task_review):
+        print(task_review)
+        print(request_user)
+        return ProjectTaskRole.objects.filter(user=request_user, task__projecttaskreview=task_review).exists()
+
+    @staticmethod
+    def toggle_pinned_task_review(request_user, projid, taskid, task_reviewid):
+        task_review = ProjectTaskReview.objects.get(pk=task_reviewid)
+        validate_consistent_keys(task_review, (['task', 'id'], taskid), (['task', 'project', 'id'], projid))
+        ensure_user_has_permission(request_user, task_review, 'project.task_review_pin')
+        if task_review:
+            pinned_review = PinnedTaskReview.objects.filter(user=request_user, task_review=task_review).first()
+            if pinned_review:
+                pinned_review.delete()
+            else:
+                pinned_review = PinnedTaskReview()
+                pinned_review.task_review = task_review
+                pinned_review.user = request_user
+                pinned_review.save()
+        else:
+            raise KeyError('Task review not found')

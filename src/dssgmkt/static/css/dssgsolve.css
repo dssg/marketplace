@@ -164,3 +164,16 @@ fieldset legend {
   /* color: #6e1ca0 */
   color: #d6be0c;
 }
+
+.volunteer-highlight .title {
+  text-transform: uppercase;
+  font-size: 0.6em;
+}
+
+.volunteer-highlight .text {
+  font-style: italic;
+  font-size: 0.8em;
+}
+.volunteer-highlight .blockquote-footer {
+
+}

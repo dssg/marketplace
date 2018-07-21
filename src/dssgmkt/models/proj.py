@@ -701,6 +701,25 @@ class ProjectTaskReview(models.Model):
     def is_rejected(self):
         return self.review_result == ReviewStatus.REJECTED
 
+
+class PinnedTaskReview(models.Model):
+    task_review = models.ForeignKey(
+        ProjectTaskReview,
+        on_delete=models.CASCADE,
+        verbose_name="Task review",
+        help_text="Project task review this pinned review is holding.",
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        verbose_name="Volunteer",
+        help_text="The volunteer pinning the review.",
+    )
+
+    class Meta:
+        unique_together = ('task_review','user')
+
+
 class TaskRequirementImportance():
     NICE_TO_HAVE = 0
     IMPORTANT = 1

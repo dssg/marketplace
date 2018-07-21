@@ -390,6 +390,7 @@ class ProjectVolunteerTaskDetailView(generic.DetailView):
         project_task = get_project_task(self.request, self.kwargs['proj_pk'], self.kwargs['task_pk'])
         context['breadcrumb'] = project_volunteer_task_breadcrumb(project_task)
         context['task_volunteers'] = ProjectTaskService.get_task_volunteers(self.request.user, self.kwargs['task_pk'])
+        context['task_reviews'] = ProjectTaskService.get_task_reviews(self.request.user, project_task, expand_pinned=True)
         add_project_task_common_context(self.request, project_task, 'instructions', context)
         context['project_tasks'] = ProjectTaskService.get_volunteer_all_project_tasks(self.request.user, self.request.user, project_task.project) # override the default tasks in the project.
         return context
@@ -1116,3 +1117,13 @@ def project_create_select_organization_view(request):
                             'breadcrumb': [home_link(), ('Select organization', None)],
                             'user_organizations': OrganizationService.get_organizations_with_user_create_project_permission(request.user),
                         })
+
+
+def pin_task_review_view(request, proj_pk, task_pk, review_pk):
+    if request.method == 'GET':
+        try:
+            ProjectTaskService.toggle_pinned_task_review(request.user, proj_pk, task_pk, review_pk)
+            return redirect('dssgmkt:proj_instructions_task', proj_pk=proj_pk, task_pk=task_pk)
+        except KeyError:
+            messages.error(request, 'There was an error while processing your request.')
+            return redirect('dssgmkt:proj_instructions_task', proj_pk=proj_pk, task_pk=task_pk)
