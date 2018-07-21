@@ -30,6 +30,10 @@
         <a href="{{ project.deliverable_documentation_url }}">Project documentation</a>
       {% endif %}
 
+
+
+
+
     </div>
 
     <div class="col-lg-4">
@@ -74,7 +78,48 @@
     </div>
 
   </div>
+  <h5 class="section-header">Task reviews</h5>
+  <table class="table table-hover">
+    <thead>
+      <tr>
+        <th>Status</th>
+        <th>Reviewer's comments</th>
+        <th>Score</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for task_review in project_task.projecttaskreview_set.all %}
+        <tr>
+          <td>
+            <span
+               class="{% if task_review.is_accepted %}
+                         text-success
+                       {% elif task_review.is_rejected %}
+                         text-danger
+                       {% elif task_review.is_pending %}
+                         text-info
+                       {% endif %}">
+              <i class="material-icons" style="vertical-align: middle">
+                {% if task_review.is_accepted %}
+                  check
+                {% elif task_review.is_rejected %}
+                  block
+                {% elif task_review.is_pending %}
+                  edit
+                {% endif %}
+            </i>
+              {{ task_review.get_review_result_display }}
+            </span>
+          </td>
 
-  {# TODO add the completed task reviews of this task (so the volunteer has feedback about the task always available) #}
+          <td>{{ task_review.public_reviewer_comments }}</td>
 
+          <td>{{ task_review.get_review_score_display }}</td>
+
+          <td></td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 {% endblock %}
