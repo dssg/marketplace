@@ -127,7 +127,7 @@ class OrganizationService():
                                               Q(last_name__icontains=query) | \
                                               Q(email__icontains=query) | \
                                               Q(username__icontains=query))
-        return base_query.values('first_name', 'last_name', 'email', 'id').order_by('first_name', 'last_name')[:25]
+        return base_query.values('first_name', 'last_name', 'email', 'username', 'id').order_by('first_name', 'last_name')[:25]
 
     @staticmethod
     def get_organization_projects(request_user, org):
@@ -180,6 +180,24 @@ class OrganizationService():
                                                             organization_role.organization.id)
             except IntegrityError:
                 raise ValueError('Duplicate user role')
+        else:
+            raise KeyError('Organization not found ' + str(orgid))
+
+    @staticmethod
+    def add_staff_member_by_id(request_user, orgid, userid, role):
+        organization = Organization.objects.get(pk=orgid)
+        user = User.objects.get(pk=userid)
+        if organization and user:
+            # We delegate the permissions check to add_staff_member
+            # ensure_user_has_permission(request_user, organization, 'organization.staff_edit')
+            organization_role = OrganizationRole()
+            organization_role.organization = organization
+            organization_role.user = user
+            if role:
+                organization_role.role = role
+            else:
+                organization_role.role = OrgRole.STAFF
+            OrganizationService.add_staff_member(request_user, orgid, organization_role)
         else:
             raise KeyError('Organization not found ' + str(orgid))
 
@@ -302,3 +320,8 @@ class OrganizationService():
         return Organization.objects.filter(organizationrole__user=request_user,
                                             organizationrole__role=OrgRole.ADMINISTRATOR,
                                             organizationmembershiprequest__status=ReviewStatus.NEW).distinct()
+
+    @staticmethod
+    def get_organization_roles():
+        # Reverse this list so the administrator role is not the first one
+        return reversed(OrgRole.get_choices())

@@ -50,23 +50,96 @@
 
   {% if user_is_administrator %}
     <h4 class="section-header">Add staff member</h4>
-    <form id="addstaff" class="form-inline">
-      {% if form.errors %}
-        <ol>
-        {% for error in form.subject.errors %}
-            <li><strong>{{ error|escape }}</strong></li>
-        {% endfor %}
-        </ol>
+    <noscript>
+      <style type="text/css">
+        #addstaffajax {display:none;}
+      </style>
+      <form id="addstaff" class="form-inline">
+        {% if form.errors %}
+          <ol>
+          {% for error in form.subject.errors %}
+              <li><strong>{{ error|escape }}</strong></li>
+          {% endfor %}
+          </ol>
+        {% endif %}
+
+        {% csrf_token %}
+        {% include 'dssgmkt/components/inline_form_fields.html' with form=add_staff_form %}
+
+        <div class="form-group col-lg-3">
+          <div>
+            <button type="submit"
+                    form="addstaff"
+                    formaction="{% url 'dssgmkt:org_staff' organization.id %}"
+                    formmethod="post"
+                    class="btn btn-success">
+              <i class="material-icons" style="vertical-align: middle">add_circle</i>
+              Add staff member
+            </button>
+          </div>
+        </div>
+      </form>
+    </noscript>
+
+    <form id="addstaffajax" class="form-inline">
+      {% if form_errors %}
+        <div class="alert alert-danger col-lg-12">
+          <ul>
+            {% for error in form_errors %}
+              <li>{{ error }}</li>
+            {% endfor %}
+          </ul>
+        </div>
       {% endif %}
 
+      
+      <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+      <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+      <script src="/static/js/bootstrap3-typeahead.min.js"></script>
+
       {% csrf_token %}
-      {% include 'dssgmkt/components/inline_form_fields.html' with form=add_staff_form %}
+       <div class="input-group">
+        <label class="control-label mr-1" for="username">User</label>
+        <div class="mr-5">
+          <input type="text" data-provide="typeahead" class="form-control typeahead" name="username" id="username" placeholder="Type a user name..." autocomplete="off">
+          <input type="hidden" id="userid" name="userid"></input>
+        </div>
+       </div>
+        <div class="input-group">
+         <label class="control-label mr-1" for="role">Role</label>
+         <div class="mr-5">
+           <select class="form-control" name="role" id="role">
+             {% for role_value, role_name in organization_roles %}
+                <option value="{{ role_value }}">{{ role_name }}</option>
+             {% endfor %}
+           </select>
+          </div>
+        </div>
+       <script>
+          var input = $('.typeahead');
+          $('.typeahead').typeahead({
+              source: function (query, process) {
+                  return $.getJSON(
+                      '/ajax/org/1/candidates/' + query,
+                      {},
+                      function (data) {
+                          console.log(data)
+                          return process(data['users']);
+                      })
+              },
+              afterSelect: function(x) {
+                $('#userid').val(x['id'])
+                console.log(x);
+              }
+          });
+
+      </script>
 
       <div class="form-group col-lg-3">
         <div>
           <button type="submit"
-                  form="addstaff"
-                  formaction="{% url 'dssgmkt:org_staff' organization.id %}"
+                  form="addstaffajax"
+                  formaction="{% url 'dssgmkt:org_staff_add' organization.id %}"
                   formmethod="post"
                   class="btn btn-success">
             <i class="material-icons" style="vertical-align: middle">add_circle</i>
@@ -75,6 +148,9 @@
         </div>
       </div>
     </form>
+
+
+
   {% endif %}
 
   <h4 class="section-header">Organization membership requests</h4>

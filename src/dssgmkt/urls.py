@@ -14,6 +14,7 @@ urlpatterns = [
     path('org/<int:org_pk>/', org.OrganizationView.as_view(), name='org_info'),
     path('org/<int:org_pk>/edit', org.OrganizationEdit.as_view(), name='org_info_edit'),
     path('org/<int:org_pk>/staff/', org.organization_staff_view, name='org_staff'),
+    path('org/<int:org_pk>/staff/add', org.add_organization_staff_view, name='org_staff_add'),
     path('org/<int:org_pk>/staff/<int:role_pk>/edit', org.OrganizationRoleEdit.as_view(), name='org_staff_edit'),
     path('org/<int:org_pk>/staff/<int:role_pk>/remove', org.organization_role_delete_view, name='org_staff_remove'),
     path('org/<int:org_pk>/staff/request', org.OrganizationMembershipRequestCreate.as_view(), name='org_staff_request'),

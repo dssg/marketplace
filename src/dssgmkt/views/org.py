@@ -191,9 +191,49 @@ def organization_staff_view(request, org_pk):
                         'organization_staff': staff_page,
                         'organization_requests': requests_page,
                         'add_staff_form': form,
+                        'organization_roles': OrganizationService.get_organization_roles(),
                         }))
 
 
+@permission_required('organization.staff_view', raise_exception=True, fn=objectgetter(Organization, 'org_pk'))
+def add_organization_staff_view(request, org_pk):
+    if request.method == 'POST':
+        form_errors = []
+        userid = request.POST.get('userid')
+        role = request.POST.get('role')
+        if userid and role:
+            try:
+                OrganizationService.add_staff_member_by_id(request.user, org_pk, userid, role)
+                messages.info(request, 'Staff member added successfully.')
+                return redirect('dssgmkt:org_staff', org_pk=org_pk)
+            except ValueError as v:
+                form_errors.append(str(v))
+            except KeyError as k:
+                form_errors.append(str(k))
+        else:
+            if not userid:
+                form_errors.append('Plese select a user to add to the organization.')
+            if not role:
+                form_errors.append('Plese select a role for the user.')
+
+
+    organization = get_organization(request, org_pk)
+    organization_staff = OrganizationService.get_organization_staff(request.user, organization)
+    staff_page = paginate(request, organization_staff, request_key='staff_page', page_size=25)
+
+    organization_requests = OrganizationService.get_membership_requests(request.user, organization)
+    requests_page = paginate(request, organization_requests, request_key='requests_page', page_size=25)
+    return render(request, 'dssgmkt/org_staff.html',
+                    add_organization_common_context(
+                        request,
+                        organization,
+                        'staff',
+                        {'breadcrumb': organization_breadcrumb(organization, ('Staff', None)),
+                        'organization_staff': staff_page,
+                        'organization_requests': requests_page,
+                        'organization_roles': OrganizationService.get_organization_roles(),
+                        'form_errors': form_errors,
+                        }))
 
 class OrganizationMembershipRequestCreate(CreateView):
     model = OrganizationMembershipRequest
@@ -410,7 +450,10 @@ class OrganizationCreateView(PermissionRequiredMixin, CreateView):
 
 def get_all_users_not_organization_members_json(request, org_pk, query=None):
     users = OrganizationService.get_all_users_not_organization_members(org_pk, query)
+    json_users = []
+    for user in users:
+        json_users.append({'name':user['first_name'] + user['last_name'] + user['email'] + user['username'], 'id': str(user['id'])})
     data = {
-        'users': list(users)
+        'users': json_users
     }
     return JsonResponse(data)
