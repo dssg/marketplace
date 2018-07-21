@@ -2,6 +2,7 @@ from dssgmkt.models.user import UserNotification
 from django.core.mail import send_mail
 
 from decouple import config
+from smtplib import SMTPException
 
 
 class NotificationService():
@@ -35,6 +36,9 @@ class NotificationService():
             to_email_or_list = [to_email_or_list]
         try:
             send_mail(subject, message, from_email, to_email_or_list, fail_silently=False)
-        except smtplib.SMTPException as e:
+        except SMTPException as se:
             # TODO log this exception
-            print(str(e))
+            print(str(se))
+        except ConnectionRefusedError as cre:
+            # TODO log this exception
+            print(str(cre))
