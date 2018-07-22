@@ -17,7 +17,7 @@ from rules.contrib.views import (
 
 from ..models.org import Organization, OrganizationMembershipRequest
 from ..models.proj import Project, ProjectStatus, ProjectTask, VolunteerApplication
-from ..models.user import Skill, User, VolunteerProfile, VolunteerSkill, UserNotification, NotificationSource
+from ..models.user import Skill, SkillLevel, User, VolunteerProfile, VolunteerSkill, UserNotification, NotificationSource
 from .common import build_breadcrumb, home_link, paginate
 
 from dssgmkt.domain.user import UserService
@@ -162,11 +162,15 @@ def home_view(request):
     if request.user.is_authenticated:
         return UserHomeView.as_view()(request)
     else:
+        featured_volunteer = UserService.get_featured_volunteer()
+        featured_volunteer_skills = featured_volunteer.user.volunteerskill_set.filter(level=SkillLevel.EXPERT)
+        featured_volunteer_skill_names = [volunteer_skill.skill.name for volunteer_skill in featured_volunteer_skills]
         return render(request, 'dssgmkt/home_anonymous.html',
             {
                 'featured_project': ProjectService.get_featured_project(),
                 'featured_organization': OrganizationService.get_featured_organization(),
-                'featured_volunteer': UserService.get_featured_volunteer(),
+                'featured_volunteer': featured_volunteer,
+                'featured_volunteer_skills': featured_volunteer_skill_names,
             })
 
 

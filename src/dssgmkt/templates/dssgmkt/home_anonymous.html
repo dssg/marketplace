@@ -127,6 +127,10 @@
        <h4>Featured volunteer</h4>
        <h3>{% include 'dssgmkt/components/user_display.html' with user=featured_volunteer.user %}</h3>
        <div class="last">Member since {{ featured_volunteer.user.date_joined }} </div>
+       <div class="last">Volunteer in {{ featured_volunteer.taskcount }} tasks</div>
+       {% if featured_volunteer_skills %}
+          <div class="last">Expert in {{ featured_volunteer_skills|join:", " }}</div>
+       {% endif %}
        <div class="mt-3 align-bottom"><a href="{% url 'dssgmkt:user_profile' featured_volunteer.user.id %}">Learn more</a></div>
       </li>
      </ul>

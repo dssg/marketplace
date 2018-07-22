@@ -1,5 +1,5 @@
 from django.db import IntegrityError, transaction
-from django.db.models import Case, Q, When
+from django.db.models import Case, Q, When, Count
 
 from ..models.common import OrgRole, ReviewStatus, SocialCause
 from ..models.org import (
@@ -48,7 +48,11 @@ class OrganizationService():
 
     @staticmethod
     def get_featured_organization():
-        return Organization.objects.all()[0]
+        # Long-term, devise a better way of selecting a featured organization.
+        return Organization.objects.all() \
+                                .annotate(projectcount=Count('project')) \
+                                .order_by('-projectcount')[0]
+
 
     @staticmethod
     def save_organization_info(request_user, orgid, organization):

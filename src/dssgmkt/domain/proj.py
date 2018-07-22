@@ -68,7 +68,13 @@ class ProjectService():
 
     @staticmethod
     def get_featured_project():
-        return filter_public_projects(Project.objects.all())[0]
+        # Long-term, make a more intelligent selection, choosing for example
+        # the project with best average task review score, the one with the 
+        # least deviation from estimates, etc.
+        return filter_public_projects(
+                Project.objects.all() \
+                                .annotate(volunteercount=Count('projecttask__projecttaskrole'))) \
+                                .order_by('-volunteercount')[0]
 
     @staticmethod
     def get_organization_public_projects(request_user, org):

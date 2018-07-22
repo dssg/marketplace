@@ -1,5 +1,5 @@
 from django.db import IntegrityError, transaction
-from django.db.models import Q
+from django.db.models import Q, Count
 
 from ..models.common import (
     ReviewStatus, SkillLevel,
@@ -55,7 +55,7 @@ class UserService():
 
     @staticmethod
     def get_featured_volunteer():
-        return VolunteerProfile.objects.all()[0]
+        return VolunteerProfile.objects.all().annotate(taskcount=Count('user__projecttaskrole')).order_by('-average_review_score', '-taskcount')[0]
 
     @staticmethod
     def create_user(request_user, new_user, user_type):
