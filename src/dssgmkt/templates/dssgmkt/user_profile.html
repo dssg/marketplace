@@ -84,7 +84,7 @@
             <blockquote class="blockquote">
               <div class="title text-muted d-flex">
                 <span class="flex-grow-1">Project {{ pinned_review.task_review.task.project.name }}: {{ pinned_review.task_review.task.name }}</span>
-                <span>Score {{ pinned_review.task_review.get_review_score_display }}</span>
+                <span>Score: {{ pinned_review.task_review.get_review_score_display }}</span>
               </div>
               <div class="mb-0 text">{{ pinned_review.task_review.public_reviewer_comments|markdown }}</div>
               <footer class="blockquote-footer">{% include 'dssgmkt/components/user_display.html' with user=pinned_review.task_review.reviewer %}</footer>
