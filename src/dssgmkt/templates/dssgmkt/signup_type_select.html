@@ -2,23 +2,47 @@
 
 {% block pagecontents %}
 
-  <div class="col-lg-9 offset-lg-3">
+  <div class="col-lg-12">
     <h4 class="section-header">What type of account do you want to create?</h4>
 
     <p>Select the option below that fits best:</p>
 
-    <div class="mb-3">
-      <a href="{% url 'dssgmkt:signup_form' 'volunteer' %}">
-      I am a volunteer and want to help projects with my skills.
-      </a>
-    </div>
-    <div class="mb-3">
-      <a href="{% url 'dssgmkt:signup_form' 'organization' %}">
-      I belong to an organization that wants to post new projects.
-      </a>
+    <div class="row mt-4">
+     <div class="card-deck main-cards col-lg-12">
+      <div class="card">
+       <div class="card-header"><h3>Organization member</h3></div>
+       <ul class="list-group list-group-flush">
+         <li class="list-group-item">
+            Organization members can post new projects and manage existing projects,
+            including defining the work, managing volunteers and performing QA on
+            the project tasks.
+
+            <p>After joining you will be able to join an existing organization and/or create your own.</p>
+            <p>Don't worry, you can still volunteer if you join the site as an organization member.</p>
+          </li>
+          <a class="list-group-item list-group-item-action bg-success text-white" href="{% url 'dssgmkt:signup_form' 'organization' %}">
+           Sign up as an organization member
+          </a>
+        </ul>
+      </div>
+      <div class="card d-flex">
+       <div class="card-header"><h3>Volunteer</h3></div>
+       <ul class="list-group list-group-flush flex-grow-1">
+         <li class="list-group-item flex-grow-1">
+           Volunteers can apply to help existing projects through the available work tasks.
+           After signing up, edit your volunteer profile and add your skills so you can be
+           matched to project tasks that align with your expertise.
+            <p>Don't worry, you can still join organizations later if you want.</p>
+          </li>
+          <a class="list-group-item list-group-item-action bg-success text-white" href="{% url 'dssgmkt:signup_form' 'volunteer' %}">
+           Sign up as a volunteerr
+         </a>
+        </ul>
+      </div>
+     </div>
     </div>
 
-    <div>
+    <div class="section-header">
       <a class="btn btn-outline-primary" href="{% url 'dssgmkt:home' %}">
         <i class="material-icons" style="vertical-align: middle">close</i>
         Cancel
