@@ -249,6 +249,10 @@ class VolunteerProfile(models.Model):
         blank=True,
         null=True,
     )
+    is_edited = models.BooleanField(
+        verbose_name="Is edited?",
+        help_text="Specifies if the user has edited the profile or if it has the default initial settings.",
+    )
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,

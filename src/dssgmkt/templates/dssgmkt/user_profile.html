@@ -58,7 +58,13 @@
             </form>
           {% endif %}
 
-          {% if user.volunteerprofile.is_pending_review %}
+          {% if not user.volunteerprofile.is_edited  %}
+            <div class="alert alert-warning">
+              <i class="fas fa-exclamation-triangle"></i>
+              Your need to fill out your volunteer profile to be able to apply
+              to volunteer in projects.
+            </div>
+          {% elif user.volunteerprofile.is_pending_review %}
             <div class="alert alert-warning">
               <i class="fas fa-exclamation-triangle"></i>
               Your application to volunteer is being reviewed by our staff. You will be notified

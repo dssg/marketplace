@@ -59,14 +59,18 @@ class UserService():
 
     @staticmethod
     def create_user(request_user, new_user, user_type):
-        if not user_type in ['volunteer', 'organization']:
-            raise ValueError('Unknown user type')
-        if user_type == 'volunteer':
-            new_user.initial_type = UserType.VOLUNTEER
-        elif user_type == 'organization':
-            new_user.initial_type = UserType.ORGANIZATION
-        new_user.save()
-        return new_user
+        with transaction.atomic():
+            if not user_type in ['volunteer', 'organization']:
+                raise ValueError('Unknown user type')
+            if user_type == 'volunteer':
+                new_user.initial_type = UserType.VOLUNTEER
+            elif user_type == 'organization':
+                new_user.initial_type = UserType.ORGANIZATION
+            new_user.save()
+
+            if new_user.initial_type == UserType.VOLUNTEER:
+                UserService.create_volunteer_profile(new_user, new_user.id)
+            return new_user
 
 
     @staticmethod
@@ -79,8 +83,10 @@ class UserService():
         signup_code = volunteer_profile.user.special_code
         if signup_code in ["AUTOAPPR"]: # TODO put this as a separate entity in the database
             volunteer_profile.volunteer_status = ReviewStatus.ACCEPTED
+            volunteer_profile.is_edited = True
         else:
             volunteer_profile.volunteer_status = ReviewStatus.NEW
+            volunteer_profile.is_edited = False
 
 
     @staticmethod
@@ -117,6 +123,7 @@ class UserService():
     def save_volunteer_profile(request_user, volunteer_pk, volunteer_profile):
         validate_consistent_keys(volunteer_profile, ('id', volunteer_pk))
         ensure_user_has_permission(request_user, volunteer_profile.user, 'user.is_same_user')
+        volunteer_profile.is_edited = True
         volunteer_profile.save()
 
     @staticmethod
@@ -189,10 +196,12 @@ class UserService():
             if not UserService.user_has_volunteer_profile(request_user):
                 todos.append({'text':'You have not created a volunteer profile yet!'})
             else:
-                if not ProjectService.user_is_volunteer(request_user):
+                if not request_user.volunteerprofile.is_edited:
+                    todos.append({'text':'You should fill out your volunteer profile.'})
+                elif not ProjectService.user_is_volunteer(request_user) and request_user.volunteerprofile.is_accepted:
                     todos.append({'text':'You are not volunteering for any organization, find a new project.'})
                 if not UserService.user_has_skills(request_user):
-                    todos.append({'text':'You have no listed skills, edit your profile and add some.'})
+                    todos.append({'text':'You have no listed skills, your should add your expertise to your profile.'})
         elif user.initial_type == UserType.ORGANIZATION:
             if not OrganizationRole.objects.filter(user=user).exists():
                 todos.append({'text':'You are not part of any organization - create or join one!'})

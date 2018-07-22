@@ -52,12 +52,17 @@
       </div>
       <div class="col-lg-12">
         {% if user.volunteerprofile %}
-          <h3 class="section-header">My tasks</h3>
-          {% if user.volunteerprofile.is_pending_review %}
+          <h3 class="section-header">My volunteer tasks</h3>
+          {% if user.volunteerprofile.is_pending_review and user.volunteerprofile.is_edited %}
             <div class="alert alert-warning">
               <i class="fas fa-exclamation-triangle"></i>
               Your application to volunteer is being reviewed by our staff. You will be notified
               as soon as you are approved and can start applying to volunteer in projects.
+            </div>
+          {% elif not user.volunteerprofile.is_edited %}
+            <div class="alert alert-warning">
+              <i class="fas fa-exclamation-triangle"></i>
+              Your need to fill out your volunteer profile to be able to apply to volunteer in projects.
             </div>
           {% elif user.volunteerprofile.is_rejected %}
             <div class="alert alert-danger">
