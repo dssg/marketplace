@@ -6,6 +6,7 @@ from ..models.common import (
 )
 from ..models.user import (
     User, UserType, VolunteerProfile, VolunteerSkill, UserBadge, BadgeType, BadgeTier, Skill,
+    NotificationSource, NotificationSeverity,
 )
 from ..models.org import (
     OrganizationRole,
@@ -14,6 +15,8 @@ from ..models.org import (
 from .common import validate_consistent_keys, award_view_model_translation
 from .org import OrganizationService
 from .proj import ProjectService, ProjectTaskService
+from .notifications import NotificationService
+
 from dssgmkt.authorization.common import ensure_user_has_permission
 
 class UserService():
@@ -52,6 +55,10 @@ class UserService():
         return base_query.distinct().order_by('user__first_name', 'user__last_name')
 
 
+    @staticmethod
+    def user_is_dssg_staff(request_user, user):
+        print(request_user, user)
+        return user.is_authenticated and user.initial_type == UserType.DSSG_STAFF
 
     @staticmethod
     def get_featured_volunteer():
@@ -127,6 +134,38 @@ class UserService():
         volunteer_profile.save()
 
     @staticmethod
+    def accept_volunteer_profile(request_user, volunteer_pk):
+        ensure_user_has_permission(request_user, request_user, 'volunteer.new_user_review')
+        volunteer_profile = VolunteerProfile.objects.get(pk=volunteer_pk)
+        if volunteer_profile:
+            volunteer_profile.volunteer_status = ReviewStatus.ACCEPTED
+            volunteer_profile.is_edited = True
+            volunteer_profile.save()
+            NotificationService.add_user_notification(volunteer_profile.user,
+                    "Congratulations! you have been accepted as a volunteer and can now apply to work on open projects.",
+                    NotificationSeverity.INFO,
+                    NotificationSource.VOLUNTEER_APPLICATION,
+                    volunteer_profile.id)
+        else:
+            raise KeyError("Volunteer profile not found.")
+
+    @staticmethod
+    def reject_volunteer_profile(request_user, volunteer_pk):
+        ensure_user_has_permission(request_user, request_user, 'volunteer.new_user_review')
+        volunteer_profile = VolunteerProfile.objects.get(pk=volunteer_pk)
+        if volunteer_profile:
+            volunteer_profile.volunteer_status = ReviewStatus.REJECTED
+            volunteer_profile.is_edited = True
+            volunteer_profile.save()
+            NotificationService.add_user_notification(volunteer_profile.user,
+                    "Unfortunately your volunteer application was not approved at the time.",
+                    NotificationSeverity.INFO,
+                    NotificationSource.VOLUNTEER_APPLICATION,
+                    volunteer_profile.id)
+        else:
+            raise KeyError("Volunteer profile not found.")
+
+    @staticmethod
     def get_skill_levels():
         return SkillLevel.get_choices()
 
@@ -187,6 +226,12 @@ class UserService():
     @staticmethod
     def user_is_organization_creator(request_user):
         return request_user.is_authenticated and request_user.initial_type == UserType.ORGANIZATION
+
+    @staticmethod
+    def get_pending_volunteer_profiles(request_user):
+        ensure_user_has_permission(request_user, request_user, 'volunteer.new_user_review')
+        return VolunteerProfile.objects.filter(volunteer_status=ReviewStatus.NEW).order_by('is_edited', '-creation_date')
+
 
     @staticmethod
     def get_user_todos(request_user, user):

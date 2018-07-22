@@ -1,7 +1,8 @@
 from rules import add_perm, predicate
 from rules.predicates import is_authenticated
 
-from dssgmkt.domain.user import User
+from dssgmkt.models.user import User
+from dssgmkt.domain.user import UserService
 
 
 add_perm('user.is_authenticated', is_authenticated)
@@ -11,3 +12,5 @@ def is_same_user(request_user, target_user):
     return request_user == target_user
 
 add_perm('user.is_same_user', is_same_user)
+
+add_perm('volunteer.new_user_review', UserService.user_is_dssg_staff)

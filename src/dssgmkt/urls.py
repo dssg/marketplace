@@ -1,7 +1,7 @@
 from django.contrib.auth import views as auth_views
 from django.urls import path, reverse_lazy
 
-from .views import common, org, proj, user
+from .views import common, org, proj, user, admin
 
 app_name = 'dssgmkt'
 urlpatterns = [
@@ -87,6 +87,9 @@ urlpatterns = [
     path('user/<int:user_pk>/volunteercreate', user.create_volunteer_profile_view, name='user_volunteer_profile_create'),
     path('user/<int:user_pk>/<int:volunteer_pk>/edit', user.VolunteerProfileEdit.as_view(), name='user_volunteer_profile_edit'),
     path('user/<int:user_pk>/skills', user.user_profile_skills_edit_view, name='user_profile_skills_edit'),
+
+    path('dssgadmin/', admin.AdminHomeView.as_view(), name='admin_home'),
+    path('dssgadmin/<int:volunteer_pk>/review/<str:action>', admin.review_volunteer_profile_view, name='admin_volunteer_review'),
 
     path('ajax/org/<int:org_pk>/candidates/', org.get_all_users_not_organization_members_json, name='validate_username'),
     path('ajax/org/<int:org_pk>/candidates/<str:query>', org.get_all_users_not_organization_members_json, name='validate_username_do'),

@@ -52,6 +52,9 @@ class User(AbstractUser):
     def standard_display_name(self):
         return self.full_name() + "(" + self.username + ")"
 
+    def is_type_dssg_staff(self):
+        return self.initial_type == UserType.DSSG_STAFF
+
 class NotificationSeverity():
     INFO = 0
     WARNING = 1
@@ -253,6 +256,7 @@ class VolunteerProfile(models.Model):
         verbose_name="Is edited?",
         help_text="Specifies if the user has edited the profile or if it has the default initial settings.",
     )
+    creation_date = models.DateTimeField(auto_now_add=True)
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
