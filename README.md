@@ -15,13 +15,13 @@ docker build -t dssgmkt .
 
 The app needs a set of environment variables to run - these are mandatory, the web app will not run without them.
 
-The easiest way to provide the variables is to use one of the environment variables:
+The easiest way to provide the variables is to use an env file:
 
 ```
 docker run -p 8000:8000 --env-file .env dssgmkt
 ```
 
-The file .env.example contains a list of the variables needed; you can use that file as a base for your configuration.
+The provided file .env.example contains a list of the variables needed; you can use that file as a base for your configuration.
 
 ## First time setup
 
@@ -57,7 +57,7 @@ You need to tell the app to collect the static assets (images, css, js, etc.) so
 python manage.py collectstatic
 ```
 
-Finally, restart webapp so it can read the static file changes:
+Finally, restart the webapp so it can read the static file changes:
 ```
 supervisorctl restart webapp
 ```
