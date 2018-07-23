@@ -19,7 +19,7 @@
             <li class="nav-item"><a class="nav-link" href="{% url 'dssgmkt:org_list' %}">Organizations</a></li>
             <li class="nav-item"><a class="nav-link" href="{% url 'dssgmkt:volunteer_list' %}">Volunteers</a></li>
             {% if user.is_type_dssg_staff %}
-              <li class="nav-item text-alert"><a class="nav-link" href="{% url 'dssgmkt:admin_home' %}">Admin</a></li>
+              <li class="nav-item"><a class="nav-link text-warning" href="{% url 'dssgmkt:admin_home' %}">Admin</a></li>
             {% endif %}
           </ul>
           <!-- <ul class="navbar-nav mr-auto">
