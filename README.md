@@ -5,7 +5,7 @@
 
 ## Run the web app
 
-### Build docker image
+### Build a docker image
 
 From the project root run
 ```
@@ -61,3 +61,5 @@ Finally, restart the webapp so it can read the static file changes:
 ```
 supervisorctl restart webapp
 ```
+
+Your site should be available now at `localhost:8000`.
