@@ -74,7 +74,7 @@ class ProjectService():
         return filter_public_projects(
                 Project.objects.all() \
                                 .annotate(volunteercount=Count('projecttask__projecttaskrole'))) \
-                                .order_by('-volunteercount')[0]
+                                .order_by('-volunteercount').first()
 
     @staticmethod
     def get_organization_public_projects(request_user, org):

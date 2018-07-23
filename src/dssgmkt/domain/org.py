@@ -51,7 +51,7 @@ class OrganizationService():
         # Long-term, devise a better way of selecting a featured organization.
         return Organization.objects.all() \
                                 .annotate(projectcount=Count('project')) \
-                                .order_by('-projectcount')[0]
+                                .order_by('-projectcount').first()
 
 
     @staticmethod

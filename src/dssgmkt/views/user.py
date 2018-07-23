@@ -164,8 +164,11 @@ def home_view(request):
         return UserHomeView.as_view()(request)
     else:
         featured_volunteer = UserService.get_featured_volunteer()
-        featured_volunteer_skills = featured_volunteer.user.volunteerskill_set.filter(level=SkillLevel.EXPERT)
-        featured_volunteer_skill_names = [volunteer_skill.skill.name for volunteer_skill in featured_volunteer_skills]
+        if featured_volunteer:
+            featured_volunteer_skills = featured_volunteer.user.volunteerskill_set.filter(level=SkillLevel.EXPERT)
+            featured_volunteer_skill_names = [volunteer_skill.skill.name for volunteer_skill in featured_volunteer_skills]
+        else:
+            featured_volunteer_skill_names = None
         return render(request, 'dssgmkt/home_anonymous.html',
             {
                 'featured_project': ProjectService.get_featured_project(),

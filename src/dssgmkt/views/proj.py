@@ -758,14 +758,20 @@ def create_default_project_task(request, proj_pk):
 
 
 class CreateProjectRoleForm(ModelForm):
+    def __init__(self, user, project, *args,**kwargs):
+        super (CreateProjectRoleForm,self ).__init__(*args,**kwargs) # populates the post
+        if project:
+            self.fields['user'].queryset = OrganizationService.get_organization_members(user, project.organization)
+
     class Meta:
         model = ProjectRole
         fields = ['role', 'user']
 
 @permission_required('project.staff_view', raise_exception=True, fn=objectgetter(Project, 'proj_pk'))
 def project_staff_view(request, proj_pk):
+    project = get_project(request, proj_pk)
     if request.method == 'POST':
-        form = CreateProjectRoleForm(request.POST)
+        form = CreateProjectRoleForm(request.user, project, request.POST)
         if form.is_valid:
             project_role = form.save(commit = False)
             try:
@@ -777,8 +783,7 @@ def project_staff_view(request, proj_pk):
             except ValueError:
                 form.add_error(None, "This user is already a member of the project.")
     elif request.method == 'GET':
-        form = CreateProjectRoleForm()
-    project = get_project(request, proj_pk)
+        form = CreateProjectRoleForm(request.user, project)
     project_staff = ProjectService.get_all_project_staff(request.user, proj_pk)
     staff_page = paginate(request, project_staff, request_key='staff_page', page_size=20)
 

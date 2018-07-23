@@ -18,7 +18,7 @@ from django.contrib.messages import constants as messages
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-SITE_NAME='DSSG Solve'
+SITE_NAME=config('SITE_NAME', default='DSSG Solve')
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
 
@@ -134,8 +134,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
 
 STATIC_URL = '/static/'
-# TODO change this to a real deployment path
-STATIC_ROOT = '/tmp/dssgsolve/static/'
+if DEBUG:
+    STATIC_ROOT = '/tmp/dssgsolve/static/'
+else:
+    STATIC_ROOT = '/app/static'
 
 
 
@@ -152,6 +154,12 @@ EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
 
 DEFAULT_FROM_EMAIL = config('EMAIL_FROM_ADDRESS')
 
+
+if DEBUG:
+    LOGS_HOME = '.'
+else:
+    LOGS_HOME = '/var/log/webapp'
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,
@@ -165,7 +173,7 @@ LOGGING = {
         'logfile': {
             'level':'DEBUG',
             'class':'logging.handlers.RotatingFileHandler',
-            'filename': 'dssgsolve.log',
+            'filename': os.path.join(LOGS_HOME,'dssgsolve.log'),
             'maxBytes': 50000,
             'backupCount': 2,
             'formatter': 'standard',
