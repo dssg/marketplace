@@ -1,0 +1,41 @@
+Computer Programming,Python
+Computer Programming,C/C++/C#
+Computer Programming,Java
+Computer Programming,Ruby
+Computer Programming,PHP
+Computer Programming,Clojure
+Computer Programming,Haskell
+Computer Programming,JavaScript
+Computer Programming,Computer Science (Algorithms)
+Statistics,R
+Statistics,Matlab
+Statistics,SAS
+Statistics,SPSS
+Statistics,Stata
+Statistics,Julia
+"Data Skills (SQL, Data ETL)",SQL
+"Data Skills (SQL, Data ETL)",Data in Text Files
+"Data Skills (SQL, Data ETL)",Data in Relational Databases
+"Data Skills (SQL, Data ETL)",Text Data (NLP)
+"Data Skills (SQL, Data ETL)",Network/Graph Data
+"Data Skills (SQL, Data ETL)",Multimedia Data (Video or Audio)
+"Data Skills (SQL, Data ETL)",Data from Sensors
+"Data Skills (SQL, Data ETL)",Data > 1TB
+"Data Skills (SQL, Data ETL)",Geospatial
+"Data Skills (SQL, Data ETL)",GIS tools
+Machine Learning,Decision Trees
+Machine Learning,SVMs
+Machine Learning,Random Forests
+Machine Learning,Neural Networks / Deep Learning
+Machine Learning,Time Series Models
+Machine Learning,Unsupervised models
+Machine Learning,Semi-Supervised models
+Machine Learning,Graphical models
+Machine Learning,Causal inference
+Machine Learning,"Matching (e.g., Propensity Score Matching )"
+Machine Learning,Instrumental Variables
+Machine Learning,Regression Discontinuity
+General skills,"Social Science (Economics, Sociology, etc.)"
+General skills,Experience working on real-world problems using data
+General skills,"Experimental Methods (RCTs, A/B testing, etc.)"
+General skills,Data Visualization
