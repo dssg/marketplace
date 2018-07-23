@@ -1,5 +1,5 @@
 from django.db import IntegrityError, transaction
-from django.db.models import Q, Count
+from django.db.models import Q, Count, F
 
 from ..models.common import (
     ReviewStatus, SkillLevel,
@@ -89,10 +89,18 @@ class UserService():
     @staticmethod
     def get_signup_code_type_by_text(code):
         if code:
-            existing_signup_codes = SignupCode.objects.filter(name=code).values('type')
+            existing_signup_codes = SignupCode.objects.filter(name=code, current_uses__lt=F('max_uses')).values('type')
             return [code.get('type') for code in existing_signup_codes]
         else:
             return None
+
+    @staticmethod
+    def use_signup_code(code):
+        if code:
+            existing_signup_codes = SignupCode.objects.filter(name=code, current_uses__lt=F('max_uses'))
+            for signup_code in existing_signup_codes:
+                signup_code.current_uses = signup_code.current_uses + 1
+                signup_code.save()
 
     @staticmethod
     def verify_if_automatically_approved(volunteer_profile):
@@ -101,6 +109,7 @@ class UserService():
         if existing_code_types and SignupCodeType.VOLUNTEER_AUTOMATIC_ACCEPT in existing_code_types:
             volunteer_profile.volunteer_status = ReviewStatus.ACCEPTED
             volunteer_profile.is_edited = True
+            UserService.use_signup_code(signup_code)
         else:
             volunteer_profile.volunteer_status = ReviewStatus.NEW
             volunteer_profile.is_edited = False

@@ -88,6 +88,7 @@ class SignupCode(models.Model):
     current_uses = models.IntegerField(
         verbose_name="Times used",
         help_text="Number of times this code has been used.",
+        default=0,
         blank=True,
         null=True,
     )
