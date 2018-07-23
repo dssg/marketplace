@@ -89,6 +89,22 @@
           {% endfor %}
         {% endif %}
       </div>
+
+
+      {% if my_task_applications %}
+        <div class="col-lg-12">
+          <h3 class="section-header">My volunteer applications</h3>
+          {% for task_application in my_task_applications %}
+            <a href="{% url 'dssgmkt:proj_info' task_application.task.project.id %}">
+              <div class="alert alert-info">
+                {{ task_application.task.project.name }}:
+                {% include 'dssgmkt/components/task_type_display.html' with project_task=task_application.task compact_display=True %}
+                {{ task_application.task.name }}
+              </div>
+            </a>
+          {% endfor %}
+        </div>
+      {% endif %}
       <div class="col-lg-12">
         <h3 class="section-header">My pending TODOs</h3>
         {% if todos %}

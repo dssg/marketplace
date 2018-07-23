@@ -69,7 +69,7 @@ class ProjectService():
     @staticmethod
     def get_featured_project():
         # Long-term, make a more intelligent selection, choosing for example
-        # the project with best average task review score, the one with the 
+        # the project with best average task review score, the one with the
         # least deviation from estimates, etc.
         return filter_public_projects(
                 Project.objects.all() \
@@ -645,6 +645,13 @@ class ProjectTaskService():
         return ProjectTask.objects.filter(project__pk=projid,
                                           projecttaskrole__user=volunteer,
                                           stage__in=[TaskStatus.STARTED, TaskStatus.WAITING_REVIEW])
+
+    @staticmethod
+    def get_volunteer_task_applications(request_user, projid):
+        base_query = VolunteerApplication.objects.filter(status=ReviewStatus.NEW, volunteer=request_user)
+        if projid:
+            base_query = base_query.filter(task__project=projid)
+        return base_query
 
     @staticmethod
     def get_volunteer_all_tasks(request_user, target_user):
