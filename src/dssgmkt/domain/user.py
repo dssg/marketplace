@@ -6,7 +6,7 @@ from ..models.common import (
 )
 from ..models.user import (
     User, UserType, VolunteerProfile, VolunteerSkill, UserBadge, BadgeType, BadgeTier, Skill,
-    NotificationSource, NotificationSeverity,
+    NotificationSource, NotificationSeverity, SignupCode, SignupCodeType,
 )
 from ..models.org import (
     OrganizationRole,
@@ -85,10 +85,20 @@ class UserService():
         validate_consistent_keys(user, ('id', user_pk))
         user.save()
 
+
+    @staticmethod
+    def get_signup_code_type_by_text(code):
+        if code:
+            existing_signup_codes = SignupCode.objects.filter(name=code).values('type')
+            return [code.get('type') for code in existing_signup_codes]
+        else:
+            return None
+
     @staticmethod
     def verify_if_automatically_approved(volunteer_profile):
         signup_code = volunteer_profile.user.special_code
-        if signup_code in ["AUTOAPPR"]: # TODO put this as a separate entity in the database
+        existing_code_types = UserService.get_signup_code_type_by_text(signup_code)
+        if existing_code_types and SignupCodeType.VOLUNTEER_AUTOMATIC_ACCEPT in existing_code_types:
             volunteer_profile.volunteer_status = ReviewStatus.ACCEPTED
             volunteer_profile.is_edited = True
         else:

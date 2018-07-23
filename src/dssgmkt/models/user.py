@@ -55,6 +55,44 @@ class User(AbstractUser):
     def is_type_dssg_staff(self):
         return self.initial_type == UserType.DSSG_STAFF
 
+class SignupCodeType():
+    VOLUNTEER_AUTOMATIC_ACCEPT = 0
+
+    def get_choices():
+        return (
+                    (SignupCodeType.VOLUNTEER_AUTOMATIC_ACCEPT, 'Automatically accept user as volunteer'),
+                )
+
+class SignupCode(models.Model):
+    name = models.CharField(
+        verbose_name="Signup code",
+        help_text="A code that users can type when signing up in the site that will grant them benefits.",
+        max_length=50,
+    )
+    type = models.IntegerField(
+        choices=SignupCodeType.get_choices(),
+        default=SignupCodeType.VOLUNTEER_AUTOMATIC_ACCEPT,
+    )
+    expiration_date = models.DateField(
+        verbose_name="Expiration date",
+        help_text="Expiration date after which the code will no longer valid",
+        blank=True,
+        null=True,
+    )
+    max_uses = models.IntegerField(
+        verbose_name="Maximum number of uses",
+        help_text="Maximum number of users that can use this code, if any.",
+        blank=True,
+        null=True,
+    )
+    current_uses = models.IntegerField(
+        verbose_name="Times used",
+        help_text="Number of times this code has been used.",
+        blank=True,
+        null=True,
+    )
+
+
 class NotificationSeverity():
     INFO = 0
     WARNING = 1
@@ -93,7 +131,6 @@ class UserNotification(models.Model):
     notification_date = models.DateTimeField(auto_now_add=True)
     notification_description = models.CharField(max_length=500)
     is_read = models.BooleanField()
-
     severity = models.IntegerField(
         choices=NotificationSeverity.get_choices(),
         default=NotificationSeverity.INFO,
