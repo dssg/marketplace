@@ -9,7 +9,7 @@
 
 From the project root run
 ```
-docker build -t dssgmkt .
+docker build -t dssgsolve .
 ```
 ### Run the docker image
 
@@ -18,7 +18,7 @@ The app needs a set of environment variables to run - these are mandatory, the w
 The easiest way to provide the variables is to use an env file:
 
 ```
-docker run -p 8000:8000 --env-file .env dssgmkt
+docker run -p 8000:8000 --env-file .env dssgsolve
 ```
 
 The provided file .env.example contains a list of the variables needed; you can use that file as a base for your configuration.
