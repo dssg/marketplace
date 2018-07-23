@@ -12,15 +12,9 @@
     <form id="addcomment" class="section-header">
 
       {% csrf_token %}
-      {% include 'dssgmkt/components/standard_form_fields.html' %}
+      {% include 'dssgmkt/components/standard_form_fields.html' with hide_field_labels=True %}
       <div class="form-row mb-3">
-        <div class="col-lg-9 offset-lg-3">
-          <div><strong>IMPORTANT</strong>: remember this discussion channel is public and can be seen by anybody that accesses this project's page (even anonymous visitors).</div>
-        </div>
-      </div>
-
-      <div class="form-row">
-        <div class="col-lg-9 offset-lg-3">
+        <div class="col-lg-3">
           <button type="submit"
                   form="addcomment"
                   formaction="{% url 'dssgmkt:proj_discussion_add' project.id channel %}"
@@ -29,6 +23,9 @@
             <i class="material-icons" style="vertical-align: middle">add_comment</i>
             Add comment
           </button>
+        </div>
+        <div class="col-lg-9">
+          <div><strong>IMPORTANT</strong>: remember this discussion channel is public and can be seen by anybody that accesses this project's page (even anonymous visitors).</div>
         </div>
       </div>
 
