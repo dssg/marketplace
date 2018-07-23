@@ -1,5 +1,6 @@
 from django.db import IntegrityError, transaction
 from django.db.models import Q, Count, F
+from django.utils import timezone
 
 from ..models.common import (
     ReviewStatus, SkillLevel,
@@ -89,7 +90,7 @@ class UserService():
     @staticmethod
     def get_signup_code_type_by_text(code):
         if code:
-            existing_signup_codes = SignupCode.objects.filter(name=code, current_uses__lt=F('max_uses')).values('type')
+            existing_signup_codes = SignupCode.objects.filter(name=code, current_uses__lt=F('max_uses'), expiration_date__gt=timezone.now()).values('type')
             return [code.get('type') for code in existing_signup_codes]
         else:
             return None
@@ -97,7 +98,7 @@ class UserService():
     @staticmethod
     def use_signup_code(code):
         if code:
-            existing_signup_codes = SignupCode.objects.filter(name=code, current_uses__lt=F('max_uses'))
+            existing_signup_codes = SignupCode.objects.filter(name=code, current_uses__lt=F('max_uses'), expiration_date__gt=timezone.now())
             for signup_code in existing_signup_codes:
                 signup_code.current_uses = signup_code.current_uses + 1
                 signup_code.save()
