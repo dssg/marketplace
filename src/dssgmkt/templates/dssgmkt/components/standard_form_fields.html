@@ -23,7 +23,7 @@
           {{ field.label }}
         </label>
       {% endif %}
-        <div class="{% if hide_field_labels %}col-sm-12{% elif wide_field_names %}col-sm-6{% else %}col-sm-9{% endif %}">
+        <div class="{% if hide_field_labels %}col-sm-12{% elif wide_field_names %}col-sm-6{% else %}col-sm-9{% endif %} {{ field|field_type }}">
             {{ field|attr:"class:form-control is-invalid" }}
             <div class="invalid-feedback">
                 {% for error in field.errors %}{{ error }}{% endfor %}
@@ -45,9 +45,17 @@
           </div>
         </div>
       {% endif %}
-      <div class="{% if hide_field_labels %}col-sm-12{% elif wide_field_names %}col-sm-6{% else %}col-sm-9{% endif %}">
+      <div class="{% if hide_field_labels %}col-sm-12{% elif wide_field_names %}col-sm-6{% else %}col-sm-9{% endif %} {{ field|field_type }}">
           {{ field|attr:"class:form-control" }}
       </div>
     </div>
   {% endif %}
+
+  <script>
+    $( function() {
+      $( ".datefield input" ).datepicker({
+          dateFormat:'yy-mm-dd',
+        });
+    } );
+  </script>
 {% endfor %}
