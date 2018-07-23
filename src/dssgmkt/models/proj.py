@@ -870,10 +870,12 @@ class ProjectRole(models.Model):
 
 class TaskRole():
     VOLUNTEER = 0
+    SUPPORT_STAFF = 1
 
     def get_choices():
         return (
                     (TaskRole.VOLUNTEER, 'Volunteer'),
+                    (TaskRole.SUPPORT_STAFF, 'Staff'),
                 )
 
 class ProjectTaskRole(models.Model):
@@ -900,4 +902,4 @@ class ProjectTaskRole(models.Model):
         return self.user.standard_display_name() + "-" + self.task.name + "-" + self.get_role_display()
 
     class Meta:
-        unique_together = ('user','task')
+        unique_together = ('user', 'task', 'role')

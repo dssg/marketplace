@@ -1,0 +1,47 @@
+{% extends 'dssgmkt/proj_task_base.html' %}
+
+{% block taskcontents %}
+
+  <h4 class="section-header">Task staff</h4>
+  <p>Select below the project staff that will be assigned to this task as supporting staff for the volunteers of this task.</p>
+
+    <form id="taskstaffform">
+      <div class="row">
+        {% csrf_token %}
+        {% for staff in task_staff %}
+
+          <div class="form-group col-lg-12">
+            <div class="row">
+              <input type="checkbox"
+                      class="form-control col-lg-1 mt-1"
+                      id="{{ staff.user.id }}"
+                      name="{{ staff.user.id }}"
+                      {% if staff.assigned %}checked="checked"{% endif %}>
+              </input>
+              <label class="control-label col-lg-11"
+                     for="{{ staff.user.id }}">
+                {% include 'dssgmkt/components/user_display.html' with user=staff.user %}
+              </label>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    <div class="form-row section-header">
+      <div class="col-lg-9 offset-lg-3">
+        <button type="submit"
+                form="taskstaffform"
+                formaction="{% url 'dssgmkt:proj_task_staff_edit' project.id project_task.id %}"
+                formmethod="post"
+                class="btn btn-success mr-3">
+          <i class="material-icons" style="vertical-align: middle">save</i>
+          Save task staff
+        </button>
+        <a class="btn btn-outline-primary"
+           href="{% url 'dssgmkt:proj_task_staff_edit' project.id project_task.id %}">
+           <i class="material-icons" style="vertical-align: middle">close</i>
+           Cancel
+        </a>
+      </div>
+    </div>
+  </form>
+{% endblock %}

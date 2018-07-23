@@ -75,6 +75,19 @@
           {% endfor %}
         </div>
       </div>
+
+      <div class="card section-header">
+        <div class="card-header"><i class="fas fa-people-carry"></i> Support staff</div>
+        <div class="card-body">
+          {% if task_staff %}
+            {% for staff in task_staff %}
+              <div>{% include 'dssgmkt/components/user_display.html' with user=staff %}</div>
+            {% endfor %}
+          {% else %}
+            No staff assigned to this task.
+          {% endif %}
+        </div>
+      </div>
     </div>
 
   </div>

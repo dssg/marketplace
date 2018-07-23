@@ -55,6 +55,9 @@ def task_link(project_task, include_link=True):
 def edit_task_requirements_link(project, task, include_link=True):
     return ('Edit requirements', reverse('dssgmkt:proj_task_requirements_edit', args=[project.id, task.id]) if include_link else None)
 
+def edit_task_staff_link(project, task, include_link=True):
+    return ('Edit staff', reverse('dssgmkt:proj_task_staff_edit', args=[project.id, task.id]) if include_link else None)
+
 def discussion_index_link(project, include_link=True):
     return ('Discussion', reverse('dssgmkt:proj_discussion', args=[project.id]) if include_link else None)
 
@@ -390,6 +393,7 @@ class ProjectVolunteerTaskDetailView(generic.DetailView):
         project_task = get_project_task(self.request, self.kwargs['proj_pk'], self.kwargs['task_pk'])
         context['breadcrumb'] = project_volunteer_task_breadcrumb(project_task)
         context['task_volunteers'] = ProjectTaskService.get_task_volunteers(self.request.user, self.kwargs['task_pk'])
+        context['task_staff'] = ProjectTaskService.get_task_staff(self.request.user, self.kwargs['task_pk'])
         context['task_reviews'] = ProjectTaskService.get_task_reviews(self.request.user, project_task, expand_pinned=True)
         add_project_task_common_context(self.request, project_task, 'instructions', context)
         context['project_tasks'] = ProjectTaskService.get_volunteer_all_project_tasks(self.request.user, self.request.user, project_task.project) # override the default tasks in the project.
@@ -584,6 +588,7 @@ class ProjectTaskDetailView(generic.DetailView):
         project_task = get_project_task(self.request, self.kwargs['proj_pk'], self.kwargs['task_pk'])
         context['breadcrumb'] = project_task_breadcrumb(project_task)
         context['task_volunteers'] = ProjectTaskService.get_task_volunteers(self.request.user, self.kwargs['task_pk'])
+        context['task_staff'] = ProjectTaskService.get_task_staff(self.request.user, self.kwargs['task_pk'])
         add_project_task_common_context(self.request, project_task, 'tasklist', context)
         return context
 
@@ -679,6 +684,30 @@ def project_task_requirements_edit_view(request, proj_pk, task_pk):
                             'system_skills': get_project_task_requirements(request, proj_pk, task_pk),
                             'skill_levels': UserService.get_skill_levels(),
                             'importance_levels': ProjectTaskService.get_project_taks_requirement_importance_levels(),
+                        }))
+
+@permission_required('project.task_staff_view', raise_exception=True, fn=objectgetter(Project, 'proj_pk'))
+def project_task_staff_edit_view(request, proj_pk, task_pk):
+    task = get_project_task(request, proj_pk, task_pk)
+    project = get_project(request, proj_pk)
+    if request.method == 'POST':
+        try:
+            ProjectTaskService.set_task_staff(request.user, proj_pk, task_pk, request.POST)
+            return redirect('dssgmkt:proj_task', proj_pk=proj_pk, task_pk=task_pk)
+        except KeyError:
+            raise Http404
+        except ValueError:
+            pass
+    elif request.method == 'GET':
+        pass
+    return render(request, 'dssgmkt/proj_task_staff_edit.html',
+                    add_project_task_common_context(request, task, 'tasklist',
+                        {
+                            'breadcrumb': project_breadcrumb(project,
+                                                            tasks_link(project),
+                                                            task_link(task),
+                                                            edit_task_staff_link(project, task, include_link=False)),
+                            'task_staff': ProjectTaskService.get_project_task_staff_for_editing(request.user, proj_pk, task_pk),
                         }))
 
 class ProjectTaskRemove(PermissionRequiredMixin, DeleteView):

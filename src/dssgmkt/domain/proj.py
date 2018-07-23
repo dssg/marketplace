@@ -659,7 +659,7 @@ class ProjectTaskService():
 
     @staticmethod
     def get_volunteer_all_project_tasks(request_user, target_user, project):
-        return ProjectTask.objects.filter(projecttaskrole__user=target_user, project=project)
+        return ProjectTask.objects.filter(projecttaskrole__user=target_user, projecttaskrole__role=TaskRole.VOLUNTEER, project=project)
 
     @staticmethod
     def user_is_task_volunteer(user, task):
@@ -680,6 +680,11 @@ class ProjectTaskService():
     @staticmethod
     def get_task_volunteers(request_user, taskid):
         return User.objects.filter(projecttaskrole__task=taskid, projecttaskrole__role=TaskRole.VOLUNTEER)
+
+    @staticmethod
+    def get_task_staff(request_user, taskid):
+        return User.objects.filter(projecttaskrole__task=taskid, projecttaskrole__role=TaskRole.SUPPORT_STAFF)
+
 
     @staticmethod
     def save_task_internal(request_user, projid, taskid, project_task):
@@ -1325,6 +1330,73 @@ class ProjectTaskService():
     @staticmethod
     def get_project_taks_requirement_importance_levels():
         return TaskRequirementImportance.get_choices()
+
+    @staticmethod
+    def get_project_task_staff_for_editing(request_user, projid, taskid):
+        project = Project.objects.get(pk=projid)
+        ensure_user_has_permission(request_user, project, 'project.task_staff_view')
+        task_staff_list = ProjectTaskRole.objects.filter(task__id=taskid, role=TaskRole.SUPPORT_STAFF)
+        task_staff_dict = {}
+        for staff_role in task_staff_list:
+            task_staff_dict[staff_role.user.id] = True
+
+        all_project_staff = User.objects.filter(projectrole__project=projid)
+        result_staff = []
+        for staff_member in all_project_staff:
+            result_staff.append({'user': staff_member, 'assigned': task_staff_dict.get(staff_member.id)})
+        return result_staff
+
+
+    @staticmethod
+    def set_task_staff(request_user, projid, taskid, post_object):
+        project_task = ProjectTask.objects.get(pk=taskid)
+        project = project_task.project
+        validate_consistent_keys(project_task, (['project', 'id'], projid))
+        ensure_user_has_permission(request_user, project_task.project, 'project.task_staff_edit')
+        task_staff_list = ProjectTaskRole.objects.filter(task__id=taskid, role=TaskRole.SUPPORT_STAFF)
+        task_staff_dict = {}
+        for staff_role in task_staff_list:
+            task_staff_dict[staff_role.user.id] = staff_role
+
+        all_project_staff = User.objects.filter(projectrole__project=projid)
+        for staff_member in all_project_staff:
+            assigned_form_value = bool(post_object.get(str(staff_member.id)))
+            task_role = task_staff_dict.get(staff_member.id)
+            if assigned_form_value:
+                if not task_role:
+                    task_role = ProjectTaskRole()
+                    task_role.user = staff_member
+                    task_role.task = project_task
+                    task_role.role = TaskRole.SUPPORT_STAFF
+                    task_role.save()
+                    message = "You have been added as support staff of task {0} of project {1}.".format(project_task.name, project.name)
+                    NotificationService.add_user_notification(task_role.user,
+                                                             message,
+                                                             NotificationSeverity.INFO,
+                                                             NotificationSource.TASK,
+                                                             project_task.id)
+            else:
+                if task_role:
+                    user = task_role.user
+                    task_role.delete()
+                    message = "You have been removed as support staff from task {0} of project {1}.".format(project_task.name, project.name)
+                    NotificationService.add_user_notification(user,
+                                                             message,
+                                                             NotificationSeverity.WARNING,
+                                                             NotificationSource.TASK,
+                                                             project_task.id)
+        message = "The staff assignments for task {0} of project {1} have changed.".format(project_task.name, project.name)
+        NotificationService.add_multiuser_notification(ProjectService.get_project_members(request_user, project),
+                                                 message,
+                                                 NotificationSeverity.INFO,
+                                                 NotificationSource.TASK,
+                                                 project_task.id)
+        ProjectService.add_project_change(request_user,
+                                           project,
+                                           ProjectLogType.EDIT,
+                                           ProjectLogSource.TASK,
+                                           project_task.id,
+                                           message)
 
     @staticmethod
     def get_project_task_requirements(request_user, projid, taskid):

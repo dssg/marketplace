@@ -34,6 +34,11 @@
                 <i class="fas fa-magic"></i>
                 Edit task requirements
               </a>
+              <a class="btn btn-success col-lg-12 mb-1"
+                 href="{% url 'dssgmkt:proj_task_staff_edit' project.id project_task.id %}">
+                <i class="fas fa-people-carry"></i>
+                Edit task staff
+              </a>
               <form id="togglevolunteers">
                 {% csrf_token %}
                 <button type="submit"
@@ -77,6 +82,18 @@
 
               <p>External task home: <a href="{{ project_task.task_home_url }}">{{ project_task.task_home_url }}</a></p>
               <p>External deliverables page: <a href="{{ project_task.task_deliverables_url }}">{{ project_task.task_deliverables_url }}</a></p>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><i class="fas fa-people-carry"></i> Support staff</div>
+            <div class="card-body">
+              {% if task_staff %}
+                {% for staff in task_staff %}
+                  <div>{% include 'dssgmkt/components/user_display.html' with user=staff %}</div>
+                {% endfor %}
+              {% else %}
+                No staff assigned to this task.
+              {% endif %}
             </div>
           </div>
         </div>
