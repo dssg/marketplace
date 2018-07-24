@@ -43,11 +43,11 @@ INSTALLED_APPS = [
     'rules',
     'widget_tweaks',
     'markdown_deux',
+    'storages',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -134,6 +134,22 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
+
+## Not using S3 will make the static and user uploaded files to only work when
+## DEBUG = True. When not in debug mode, Django will not serve those files locally
+## so it needs a remote storage system.
+## Whitenoise works for serving static files locally, but not for user-uploaded files.
+if config('USE_S3_FOR_FILE_STORAGE', cast=bool, default=False):
+    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    AWS_ACCESS_KEY_ID=config('AWS_ACCESS_KEY_ID')
+    AWS_SECRET_ACCESS_KEY=config('AWS_SECRET_ACCESS_KEY')
+    AWS_STORAGE_BUCKET_NAME=config('AWS_STORAGE_BUCKET_NAME', default='dssgsolve')
+    AWS_AUTO_CREATE_BUCKET=True
+    AWS_S3_REGION_NAME=config('AWS_S3_REGION_NAME')
+    if config('AWS_S3_ENDPOINT_URL', default=None):
+        AWS_S3_ENDPOINT_URL=config('AWS_S3_ENDPOINT_URL')
+
 
 STATIC_URL = '/static/'
 if DEBUG:

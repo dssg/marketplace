@@ -52,7 +52,12 @@ python manage.py init_skills
 
 ### Static assets collection
 
-You need to tell the app to collect the static assets (images, css, js, etc.) so that the web app can find them:
+You need to tell the app to collect the static assets (images, css, js, etc.) so that the web app can find them.
+If you want to run the web app with DEBUG=False, you need to use AWS S3 as the backend for static and user-uploaded
+files. The .env.example file contains a list of parameters that must be specified for using the S3 backend; those
+properties need to be set before calling the collectstatic operation, as that command will copy static files to
+the S3 bucket.
+
 ```
 python manage.py collectstatic
 ```
