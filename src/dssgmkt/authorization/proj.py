@@ -11,7 +11,7 @@ add_perm('project.approve_as_completed', ProjectService.user_is_project_official
 add_perm('project.scope_view', ProjectService.is_project_visible_by_user)
 add_perm('project.scope_edit', ProjectService.user_is_project_official)
 add_perm('project.log_view', ProjectService.user_is_project_member)
-add_perm('project.comment_add', ProjectService.user_is_project_commenter)
+add_perm('project.comment_add', ProjectService.user_is_channel_commenter)
 add_perm('project.volunteer_instructions_view', ProjectService.user_is_project_volunteer)
 add_perm('project.volunteer_task_finish', ProjectTaskService.user_is_task_volunteer)
 add_perm('project.volunteer_task_cancel', ProjectTaskService.user_is_task_volunteer)

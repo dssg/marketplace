@@ -426,30 +426,6 @@ class ProjectLog(models.Model):
     def __str__(self):
         return self.change_date.strftime('%Y-%m-%d %H:%M') + ": " + self.change_description
 
-class ProjectDiscussionChannel(models.Model):
-    name = models.TextField(max_length=100,
-        verbose_name="Name",
-        help_text="Descriptive name that identifies the discussion channel within the project.",
-    )
-    project = models.ForeignKey(
-        Project,
-        on_delete=models.CASCADE,
-    )
-
-class ProjectComment(models.Model):
-    comment = models.TextField(max_length=5000)
-    comment_date = models.DateTimeField(auto_now_add=True)
-    channel = models.ForeignKey(
-        ProjectDiscussionChannel,
-        on_delete=models.CASCADE,
-    )
-    author = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-    )
-
-    def __str__(self):
-        return self.comment_date.strftime('%Y-%m-%d %H:%M') + self.author.username + ": " + self.comment[:100]
 
 class ProjectFollower(models.Model):
     project = models.ForeignKey(
@@ -619,6 +595,49 @@ class ProjectTask(models.Model):
     def is_type_domain_work(self):
         return self.type == TaskType.DOMAIN_WORK_TASK
 
+class ProjectDiscussionChannel(models.Model):
+    name = models.TextField(
+        max_length=100,
+        verbose_name="Name",
+        help_text="Descriptive name that identifies the discussion channel within the project.",
+    )
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.CASCADE,
+    )
+    related_task =  models.OneToOneField(
+        ProjectTask,
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+    )
+    is_read_only =  models.BooleanField(
+        verbose_name="Read only channel",
+        help_text="Specifies if this channel has been archived and is read only.",
+        default=False,
+    )
+    description = models.TextField(
+        max_length=200,
+        verbose_name="Description",
+        help_text="Description of the purpose of this discussion channel.",
+        blank=True,
+        null=True,
+    )
+
+class ProjectComment(models.Model):
+    comment = models.TextField(max_length=5000)
+    comment_date = models.DateTimeField(auto_now_add=True)
+    channel = models.ForeignKey(
+        ProjectDiscussionChannel,
+        on_delete=models.CASCADE,
+    )
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+
+    def __str__(self):
+        return self.comment_date.strftime('%Y-%m-%d %H:%M') + self.author.username + ": " + self.comment[:100]
 
 class ProjectTaskReview(models.Model):
     volunteer_comment = models.TextField(

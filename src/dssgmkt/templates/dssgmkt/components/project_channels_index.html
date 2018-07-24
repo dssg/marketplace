@@ -3,7 +3,7 @@
 
 <div class="flex-column list-group">
   {% for chan in discussion_channels %}
-      <a class="d-flex list-group-item list-group-item-action {% if chan.id == channel %}active{% endif %}"
+      <a class="d-flex list-group-item list-group-item-action {% if chan.id == channel.id %}active{% endif %}"
          href="{% url 'dssgmkt:proj_discussion' project.id chan.id %}">
          <span class="mr-auto">
            {{ chan.name }}

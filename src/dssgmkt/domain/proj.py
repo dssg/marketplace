@@ -125,6 +125,11 @@ class ProjectService():
         return user.is_authenticated and (ProjectService.user_is_project_member(user, proj) or ProjectService.user_is_project_volunteer(user, proj))
 
     @staticmethod
+    def user_is_channel_commenter(user, channel):
+        project = channel.project
+        return user.is_authenticated and (ProjectService.user_is_project_member(user, project) or (not channel.related_task and ProjectService.user_is_project_volunteer(user, project)) or (channel.related_task and ProjectTaskService.user_is_task_volunteer(user, channel.related_task)))
+
+    @staticmethod
     def is_project_visible_by_user(user, project):
         if project.status == ProjectStatus.DRAFT:
             return ProjectService.user_is_project_owner(user, project)
@@ -206,10 +211,12 @@ class ProjectService():
     def add_project_comment(request_user, projid, channelid, project_comment):
         project = Project.objects.get(pk=projid)
         if project:
-            ensure_user_has_permission(request_user, project, 'project.comment_add')
             channel = ProjectService.get_project_channel(request_user, project, channelid)
             if not channel:
                 raise KeyError('Discussion channel {0} not found'.format(channelid))
+            ensure_user_has_permission(request_user, channel, 'project.comment_add')
+            if channel.is_read_only:
+                raise ValueError('Trying to post a comment on a read-only channel.')
             project_comment.author = request_user
             project_comment.channel = channel
             try:
@@ -301,17 +308,36 @@ class ProjectService():
             general_channel = ProjectDiscussionChannel()
             general_channel.project = project
             general_channel.name = "General discussion"
+            general_channel.description = "Discussion channel for general topics about the project."
             general_channel.save()
-
-            project_management_channel = ProjectDiscussionChannel()
-            project_management_channel.project = project
-            project_management_channel.name = "Project management"
-            project_management_channel.save()
 
             technical_channel = ProjectDiscussionChannel()
             technical_channel.project = project
             technical_channel.name = "Technical talk"
+            technical_channel.description = "Discussion channel for technical topics that are not specific to a single task."
             technical_channel.save()
+
+            project_management_channel = ProjectDiscussionChannel()
+            project_management_channel.project = project
+            project_management_channel.name = "Project management"
+            project_management_channel.related_task = project_management_task
+            project_management_channel.description = "Discussion channel for the task Project management."
+            project_management_channel.save()
+
+            scoping_channel = ProjectDiscussionChannel()
+            scoping_channel.project = project
+            scoping_channel.name = "Project scoping"
+            scoping_channel.related_task = scoping_task
+            scoping_channel.description = "Discussion channel for the task Project scoping."
+            scoping_channel.save()
+
+            domain_work_channel = ProjectDiscussionChannel()
+            domain_work_channel.project = project
+            domain_work_channel.name = "Domain work"
+            domain_work_channel.related_task = domain_work_task
+            domain_work_channel.description = "Discussion channel for the task Domain work."
+            domain_work_channel.save()
+
 
             message = "The project {0} was created by {1} within the organization {2}.".format(project.name, request_user.standard_display_name(), organization.name)
             NotificationService.add_multiuser_notification(organization_members,
@@ -694,6 +720,11 @@ class ProjectTaskService():
         with transaction.atomic():
             current_task = ProjectTask.objects.get(pk=project_task.id)
             project_task.save()
+            if project_task.name != current_task.name and project_task.projectdiscussionchannel:
+                channel = project_task.projectdiscussionchannel
+                channel.name = project_task.name
+                channel.description = "Discussion channel for the project task {0}".format(project_task.name)
+                channel.save()
             project = project_task.project
             if project_task.stage != current_task.stage:
                 if project_task.type == TaskType.SCOPING_TASK:
@@ -837,6 +868,14 @@ class ProjectTaskService():
             raise ValueError('Cannot delete a completed task')
         if ProjectTaskService.task_has_volunteers(request_user, project_task.id):
             raise ValueError('Cannot delete a task with active volunteers. Remove them or assign them to a different task before deleting this task.')
+        if project_task.projectdiscussionchannel:
+            if project_task.stage == TaskStatus.NOT_STARTED:
+                project_task.projectdiscussionchannel.delete()
+            else:
+                channel = project_task.projectdiscussionchannel
+                channel.related_task = None
+                channel.is_read_only = True
+                channel.save()
         project_task.delete()
         project = project_task.project
         message = "The task {0} has been deleted from project {1}.".format(project_task.name, project.name)
@@ -870,6 +909,14 @@ class ProjectTaskService():
             project_task.estimated_start_date = date.today()
             project_task.estimated_end_date = date.today()
             project_task.save()
+
+            channel = ProjectDiscussionChannel()
+            channel.name = project_task.name
+            channel.description = "Discussion channel for the project task {0}".format(project_task.name)
+            channel.related_task = project_task
+            channel.project = project
+            channel.save()
+
             if project.status == ProjectStatus.WAITING_REVIEW:
                 project.status = ProjectStatus.IN_PROGRESS
                 project.save()

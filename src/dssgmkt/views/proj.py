@@ -281,7 +281,7 @@ def project_channel_comments_view(request, proj_pk, channel_pk):
                             'breadcrumb': project_breadcrumb(project, discussion_index_link(project), (channel.name, None)),
                             'project_comments': project_comments_page,
                             'form': form,
-                            'channel': channel_pk,
+                            'channel': channel,
                             'discussion_channels': discussion_channels
                         }))
 

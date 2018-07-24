@@ -1,35 +1,42 @@
 {% extends "dssgmkt/proj_discussion_base.html" %}
 
 {% block discussioncontents %}
-  <p></p>
 
   {% load markdown_deux_tags %}
 
   {% load rules %}
-  {% has_perm 'project.comment_add' user project as user_is_project_commenter %}
+  {% has_perm 'project.comment_add' user channel as user_is_channel_commenter %}
 
-  {% if user_is_project_commenter %}
-    <form id="addcomment" class="section-header">
+  {% if channel.description %}
+    <p class="section-header">{{ channel.description }}</p>
+  {% endif %}
 
-      {% csrf_token %}
-      {% include 'dssgmkt/components/standard_form_fields.html' with hide_field_labels=True %}
-      <div class="form-row mb-3">
-        <div class="col-lg-3">
-          <button type="submit"
-                  form="addcomment"
-                  formaction="{% url 'dssgmkt:proj_discussion_add' project.id channel %}"
-                  formmethod="post"
-                  class="btn btn-success mr-3">
-            <i class="material-icons" style="vertical-align: middle">add_comment</i>
-            Add comment
-          </button>
+  {% if user_is_channel_commenter %}
+    {% if channel.is_read_only %}
+      This channel is locked and is now read only.
+    {% else %}
+      <form id="addcomment" class="section-header">
+
+        {% csrf_token %}
+        {% include 'dssgmkt/components/standard_form_fields.html' with hide_field_labels=True %}
+        <div class="form-row mb-3">
+          <div class="col-lg-3">
+            <button type="submit"
+                    form="addcomment"
+                    formaction="{% url 'dssgmkt:proj_discussion_add' project.id channel.id %}"
+                    formmethod="post"
+                    class="btn btn-success mr-3">
+              <i class="material-icons" style="vertical-align: middle">add_comment</i>
+              Add comment
+            </button>
+          </div>
+          <div class="col-lg-9">
+            <div><strong>IMPORTANT</strong>: remember this discussion channel is public and can be seen by anybody that accesses this project's page (even anonymous visitors).</div>
+          </div>
         </div>
-        <div class="col-lg-9">
-          <div><strong>IMPORTANT</strong>: remember this discussion channel is public and can be seen by anybody that accesses this project's page (even anonymous visitors).</div>
-        </div>
-      </div>
 
-    </form>
+      </form>
+    {% endif %}
   {% endif %}
 
   <div class="section-header">
