@@ -3,7 +3,7 @@ from django.db import models
 
 from dssgsolve import settings
 
-from .common import PHONE_REGEX, ReviewStatus, OrgRole, SkillLevel
+from .common import PHONE_REGEX, ReviewStatus, OrgRole, SkillLevel, validate_image_size
 
 class UserType():
     DSSG_STAFF = 0
@@ -44,6 +44,14 @@ class User(AbstractUser):
         max_length=20,
         blank=True,
         null=True,
+    )
+    profile_image_file = models.ImageField(
+        verbose_name="Profile image",
+        help_text="Your profile image.",
+        upload_to="userprofiles/",
+        blank=True,
+        null=True,
+        validators=[validate_image_size],
     )
 
     def full_name(self):

@@ -5,7 +5,7 @@ from django.utils.safestring import mark_safe
 
 from dssgsolve import settings
 
-from .common import SocialCause, ReviewStatus, OrgRole, PHONE_REGEX
+from .common import SocialCause, ReviewStatus, OrgRole, PHONE_REGEX, validate_image_size
 
 
 class Budget():
@@ -79,10 +79,18 @@ class Organization(models.Model):
         help_text="Write a description for volunteers to understand the context of your projects.",
     )
     logo_url = models.URLField(
-        verbose_name="Organization logo",
-        help_text="Upload an image file that represents your organization",
+        verbose_name="Organization logo URL",
+        help_text="URL of an external image file that represents your organization",
         blank=True,
         null=True,
+    )
+    logo_file = models.ImageField(
+        verbose_name="Organization logo",
+        help_text="Upload an image file that represents your organization",
+        upload_to="orglogos/",
+        blank=True,
+        null=True,
+        validators=[validate_image_size],
     )
     website_url = models.URLField(
         verbose_name="External website URL",

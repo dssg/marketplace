@@ -1,4 +1,5 @@
 from django.core.validators import RegexValidator
+from django.core.exceptions import ValidationError
 from django.db import models
 
 class SocialCause():
@@ -78,3 +79,11 @@ class OrgRole():
                 )
 
 PHONE_REGEX = RegexValidator(regex=r'^\+?1?\d{9,15}$', message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.")
+
+
+def validate_image_size(value):
+    filesize= value.size
+    if filesize > 512000:
+        raise ValidationError("The maximum image size that can be uploaded is 500KB.")
+    else:
+        return value

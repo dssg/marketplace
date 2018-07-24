@@ -3,7 +3,7 @@
 {% block pagecontents %}
 
 
-  <form id="edituserprofile">
+  <form id="edituserprofile" enctype="multipart/form-data">
     <h4 class="section-header">Edit my profile</h4>
     {% csrf_token %}
     {% include 'dssgmkt/components/standard_form_fields.html' %}

@@ -5,7 +5,7 @@ from dssgsolve import settings
 
 from .common import (
     SocialCause, ReviewStatus, Score, PHONE_REGEX,
-    SkillLevel
+    SkillLevel, validate_image_size,
 )
 from .org import Organization
 from .user import Skill
@@ -74,6 +74,14 @@ class Project(models.Model):
         max_length=200,
         blank=True,
         null=True,
+    )
+    banner_image_file = models.ImageField(
+        verbose_name="Project main image",
+        help_text="A descriptive image identifying the project, it can be a project logo, an image representing the problem you want to solve, etc.",
+        upload_to="projlogos/",
+        blank=True,
+        null=True,
+        validators=[validate_image_size],
     )
     project_cause = models.CharField(
         verbose_name="Social cause",

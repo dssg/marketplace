@@ -20,8 +20,11 @@
         {% endif %}
       </div>
 
-      {% if user == userprofile %}
-        <div class="col-lg-4">
+      <div class="col-lg-4">
+        {% if userprofile.profile_image_file %}
+          <img class="img-fluid mb-3" src="{{ userprofile.profile_image_file.url }}"></img>
+        {% endif %}
+        {% if user == userprofile %}
           <a class="btn btn-success col-lg-12 mb-1"
              href="{% url 'dssgmkt:user_profile_edit' userprofile.id %}">
              <i class="material-icons" style="vertical-align: middle">account_circle</i>
@@ -77,8 +80,8 @@
               you cannot apply to volunteer in projects at the moment.
             </div>
           {% endif %}
-        </div>
-      {% endif %}
+        {% endif %}
+      </div>
     </div>
 
 

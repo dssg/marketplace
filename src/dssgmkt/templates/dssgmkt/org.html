@@ -11,7 +11,11 @@
         </h4>
       </div>
       <div class="col-lg-3">
-        <img class="img-fluid" src="{{ organization.logo_url }}"></img>
+        {% if organization.logo_file %}
+          <img class="img-fluid" src="{{ organization.logo_file.url }}"></img>
+        {% elif organization.logo_url %}
+          <img class="img-fluid" src="{{ organization.logo_url }}"></img>
+        {% endif %}
       </div>
     </div>
 

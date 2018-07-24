@@ -13,7 +13,11 @@
       <p>{{ project.short_summary }}</p>
     </div>
     <div class="col-lg-3">
-      <img class="img-fluid" src="{{ project.banner_image_url }}"></img>
+      {% if project.banner_image_file %}
+        <img class="img-fluid" src="{{ project.banner_image_file.url }}"></img>
+      {% elif project.banner_image_url %}
+        <img class="img-fluid" src="{{ project.banner_image_url }}"></img>
+      {% endif %}
     </div>
     {% include 'dssgmkt/components/project_status.html' %}
   </div>

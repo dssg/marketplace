@@ -203,7 +203,7 @@ class UserProfileView(generic.DetailView):
 
 class UserProfileEdit(PermissionRequiredMixin, UpdateView):
     model = User
-    fields = ['first_name', 'last_name', 'email', 'phone_number', 'skype_name' ]
+    fields = ['first_name', 'last_name', 'email', 'profile_image_file', 'phone_number', 'skype_name' ]
     template_name = 'dssgmkt/user_profile_edit.html'
     pk_url_kwarg = 'user_pk'
     permission_required = 'user.is_same_user'

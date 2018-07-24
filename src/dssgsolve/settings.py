@@ -139,9 +139,11 @@ STATIC_URL = '/static/'
 if DEBUG:
     STATIC_ROOT = '/tmp/dssgsolve/static/'
 else:
-    STATIC_ROOT = '/app/static'
+    STATIC_ROOT = '/app/static/'
 
-
+MEDIA_ROOT = os.path.join(STATIC_ROOT, 'uploads/')
+MEDIA_URL = "/media/"
+MAX_UPLOAD_SIZE = "10"
 
 if DEBUG:
     EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
