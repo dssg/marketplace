@@ -17,6 +17,9 @@ from .common import validate_consistent_keys, award_view_model_translation
 from .org import OrganizationService
 from .proj import ProjectService, ProjectTaskService
 from .notifications import NotificationService
+import requests
+from decouple import config
+
 
 from dssgmkt.authorization.common import ensure_user_has_permission
 
@@ -66,8 +69,22 @@ class UserService():
         return VolunteerProfile.objects.all().annotate(taskcount=Count('user__projecttaskrole')).order_by('-average_review_score', '-taskcount').first()
 
     @staticmethod
-    def create_user(request_user, new_user, user_type):
+    def verify_captcha(captcha_response):
+        secret_key = config('RECAPTCHA_SECRET_KEY', default=None)
+        if secret_key is None:
+            return True
+        url = 'https://www.google.com/recaptcha/api/siteverify'
+        data = {
+            "secret": secret_key,
+            "response": captcha_response,
+            }
+        return requests.post(url, data=data).json().get('success') == True
+
+    @staticmethod
+    def create_user(request_user, new_user, user_type, captcha_response):
         with transaction.atomic():
+            if not UserService.verify_captcha(captcha_response):
+                raise ValueError('Incorrect reCAPTCHA answer')
             if not user_type in ['volunteer', 'organization']:
                 raise ValueError('Unknown user type')
             if user_type == 'volunteer':

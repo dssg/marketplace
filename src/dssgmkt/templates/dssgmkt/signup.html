@@ -2,12 +2,22 @@
 
 {% block pagecontents %}
 
+  {% if captcha_site_key %}
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+  {% endif %}
+
   <div class="col-lg-12">
     <form id="signup">
       <h2 class="section-header">Sign up</h2>
 
       {% csrf_token %}
       {% include 'dssgmkt/components/standard_form_fields.html' with wide_field_names=True %}
+
+      {% if captcha_site_key %}
+        <div class="col-lg-6 offset-lg-6 mb-5">
+          <div class="g-recaptcha" data-sitekey="{{ captcha_site_key }}"></div>
+        </div>
+      {% endif %}
 
       <div class="form-row">
         <div class="col-lg-6 offset-lg-6">

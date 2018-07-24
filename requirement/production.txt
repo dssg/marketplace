@@ -9,3 +9,4 @@ gunicorn==19.7.1
 django-markdown-deux==1.0.5
 psycopg2==2.7.5
 django-storages==1.6.6
+requests==2.18.4
