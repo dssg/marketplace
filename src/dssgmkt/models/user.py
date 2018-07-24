@@ -65,10 +65,12 @@ class User(AbstractUser):
 
 class SignupCodeType():
     VOLUNTEER_AUTOMATIC_ACCEPT = 0
+    MAKE_DSSG_STAFF = 1
 
     def get_choices():
         return (
                     (SignupCodeType.VOLUNTEER_AUTOMATIC_ACCEPT, 'Automatically accept user as volunteer'),
+                    (SignupCodeType.MAKE_DSSG_STAFF, 'Automatically make users DSSG staff members so they can review volunteer applications'),
                 )
 
 class SignupCode(models.Model):

@@ -74,6 +74,9 @@ class UserService():
                 new_user.initial_type = UserType.VOLUNTEER
             elif user_type == 'organization':
                 new_user.initial_type = UserType.ORGANIZATION
+            if UserService.has_valid_special_signup_code(new_user, SignupCodeType.MAKE_DSSG_STAFF):
+                new_user.initial_type = UserType.DSSG_STAFF
+                UserService.use_signup_code(new_user.special_code, SignupCodeType.MAKE_DSSG_STAFF)
             new_user.save()
 
             if new_user.initial_type == UserType.VOLUNTEER:
