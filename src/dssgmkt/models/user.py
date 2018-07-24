@@ -185,12 +185,18 @@ class Skill(models.Model):
 
 
 class EducationLevel():
-    BACHELORS = 0
-    MASTERS = 1
-    PHD = 2
+    OTHER = 0
+    PRIMARY = 1
+    SECONDARY = 2
+    BACHELORS = 3
+    MASTERS = 4
+    PHD = 5
 
     def get_choices():
         return (
+                    (EducationLevel.OTHER, 'Other'),
+                    (EducationLevel.PRIMARY, 'Primary education'),
+                    (EducationLevel.SECONDARY, 'Secondary education'),
                     (EducationLevel.BACHELORS, 'Bachelor\'s'),
                     (EducationLevel.MASTERS, 'Master\'s'),
                     (EducationLevel.PHD, 'PhD')
