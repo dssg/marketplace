@@ -288,17 +288,23 @@ class UserService():
     @staticmethod
     def get_volunteer_leaderboards(request_user):
         return [{'title': 'Best reviewed',
-                 'data': User.objects.exclude(volunteerprofile__isnull=True).order_by('-volunteerprofile__average_review_score')[0:10],
+                 'data': User.objects.exclude(volunteerprofile__isnull=True) \
+                                     .exclude(volunteerprofile__volunteer_status__in=[ReviewStatus.NEW, ReviewStatus.REJECTED]) \
+                                     .order_by('-volunteerprofile__average_review_score')[0:10],
                  'type': 'review',
                  'badge': UserBadge(type=BadgeType.REVIEW_SCORE, tier=BadgeTier.MASTER),
                 },
                 {'title': 'Most completed projects',
-                 'data': User.objects.exclude(volunteerprofile__isnull=True).order_by('-volunteerprofile__completed_task_count')[0:10],
+                 'data': User.objects.exclude(volunteerprofile__isnull=True) \
+                                     .exclude(volunteerprofile__volunteer_status__in=[ReviewStatus.NEW, ReviewStatus.REJECTED]) \
+                                     .order_by('-volunteerprofile__completed_task_count')[0:10],
                  'type': 'review',
                  'badge':  UserBadge(type=BadgeType.NUMBER_OF_PROJECTS, tier=BadgeTier.MASTER),
                 },
                 {'title': 'Meets deadlines',
-                 'data': User.objects.exclude(volunteerprofile__isnull=True).order_by('-volunteerprofile__ahead_of_time_task_ratio')[0:10],
+                 'data': User.objects.exclude(volunteerprofile__isnull=True) \
+                                     .exclude(volunteerprofile__volunteer_status__in=[ReviewStatus.NEW, ReviewStatus.REJECTED]) \
+                                     .order_by('-volunteerprofile__ahead_of_time_task_ratio')[0:10],
                  'type': 'review',
                  'badge': UserBadge(type=BadgeType.WORK_SPEED, tier=BadgeTier.MASTER),
                 }, ]
