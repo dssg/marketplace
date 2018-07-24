@@ -61,7 +61,6 @@ class UserService():
 
     @staticmethod
     def user_is_dssg_staff(request_user, user):
-        print(request_user, user)
         return user.is_authenticated and user.initial_type == UserType.DSSG_STAFF
 
     @staticmethod
