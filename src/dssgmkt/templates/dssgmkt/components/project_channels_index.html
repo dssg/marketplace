@@ -1,7 +1,9 @@
 {% if discussion_channels %}
 
 
-<div class="flex-column list-group">
+<div class="card flex-column">
+  <div class="card-header">Channels</div>
+  <ul class="list-group list-group-flush">
   {% for chan in discussion_channels %}
       <a class="d-flex list-group-item list-group-item-action {% if chan.id == channel.id %}active{% endif %}"
          href="{% url 'dssgmkt:proj_discussion' project.id chan.id %}">
@@ -10,6 +12,7 @@
          </span>
        </a>
   {% endfor %}
+</ul>
 </div>
 
 {% endif %}

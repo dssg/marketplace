@@ -1,7 +1,10 @@
 {% if project_tasks %}
 
 
-<div class="flex-column list-group">
+
+<div class="card flex-column">
+  <div class="card-header">Tasks</div>
+  <ul class="list-group list-group-flush">
   {% for task in project_tasks %}
       <a class="d-flex list-group-item list-group-item-action {% if task == project_task %}active{% endif %}"
          href="{% url 'dssgmkt:proj_task' project.id task.id %}">
@@ -14,6 +17,7 @@
          </span>
        </a>
   {% endfor %}
+  </ul>
 </div>
 
 {% endif %}
