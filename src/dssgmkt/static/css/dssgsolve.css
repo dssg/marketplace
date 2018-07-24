@@ -88,7 +88,7 @@ fieldset legend {
 }
 
 .status {
-  background-color: #80a415;
+  background-color: #a0c455;
   color: #dddddd;
   padding: 5px;
   flex: 1;
@@ -126,7 +126,7 @@ fieldset legend {
 }
 
 .svgdiagnoal polygon {
-  fill: #80a415;
+  fill: #a0c455;
 }
 
 .status-active ~ .status .svgdiagnoal polygon {
