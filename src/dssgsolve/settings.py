@@ -143,7 +143,6 @@ else:
 
 MEDIA_ROOT = os.path.join(STATIC_ROOT, 'uploads/')
 MEDIA_URL = "/media/"
-MAX_UPLOAD_SIZE = "10"
 
 if DEBUG:
     EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
