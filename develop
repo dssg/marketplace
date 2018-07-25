@@ -1,0 +1,169 @@
+#!/usr/bin/env bash
+#
+# install-cli
+#
+# Copy this file into your project to enable easy, guided
+# installation/bootstrapping.
+#
+# Don't like sh/bash/etc? Sure.
+#
+# Love sh/bash/etc? Yeah, but....
+#
+# Let's use it here, to bootstrap whatever tools/libraries/etc. we
+# *really* love for our project.
+#
+# You can name your implementation of this script whatever you like,
+# such as: install
+#
+
+# Update INSTALL_VERSION to require the version of install-cli this
+# script expects
+INSTALL_VERSION=0.0.4
+
+#
+# start bootstrap installation lib
+#
+# This is a *bit* of boilerplate to ensure we've downloaded the correct
+# version of install-cli. (You probably don't need to touch this.)
+#
+
+INSTALL_FILE=.install.${INSTALL_VERSION//./-}.bash.inc
+
+INSTALL_URL=https://raw.githubusercontent.com/dssg/install-cli/$INSTALL_VERSION/install.bash.inc
+
+[ -f $INSTALL_FILE ] || curl -#L $INSTALL_URL -o $INSTALL_FILE
+
+. $INSTALL_FILE
+
+#
+# end bootstrap installation lib
+#
+
+#
+# start project check/install
+#
+
+# pyenv
+
+exists_pyenv() {
+  icli::check_command pyenv
+}
+
+install_pyenv() {
+  curl -#L https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer | bash
+}
+
+require pyenv \
+  exists_pyenv \
+  install_pyenv \
+  --fail-prefix="not found"
+
+# python
+
+PY_VERSION=3.7.0
+
+exists_python() {
+  pyenv versions 2> /dev/null | grep -E "^ *${PY_VERSION}$" > /dev/null
+}
+
+install_python() {
+  pyenv install -s $PY_VERSION
+}
+
+require "python-${PY_VERSION}" \
+  exists_python \
+  install_python \
+  --fail-prefix="v${PY_VERSION} not found"
+
+# virtualenv
+
+PROJECT=$(<.python-version)
+
+exists_virtualenv() {
+  test "$(pyenv version-name 2> /dev/null)" == "$PROJECT"
+}
+
+install_virtualenv() {
+  pyenv virtualenv $PY_VERSION $PROJECT
+}
+
+require $PROJECT \
+  exists_virtualenv \
+  install_virtualenv \
+  --fail-prefix="project virtual environment not found"
+
+# python libs
+
+install_lib() {
+  pip install -r requirement/console.txt
+}
+
+# no great way to check that python libs installed;
+# rather, always fail check and let pip figure it out
+require lib \
+  icli::always_install \
+  install_lib
+
+# ecs-cli
+
+ECSCLI_PATH=~/.local/bin/ecs
+
+ECSCLI_URL=https://s3.amazonaws.com/amazon-ecs-cli/ecs-cli-linux-amd64-latest
+ECSCLI_MD5="$ECSCLI_URL.md5"
+
+exists_ecscli() {
+  icli::check_command ecs
+}
+
+install_ecscli() {
+  curl -#L -o $ECSCLI_PATH $ECSCLI_URL
+  echo "$(curl -s $ECSCLI_MD5) $ECSCLI_PATH" | md5sum -c -
+}
+
+require ecs-cli \
+  exists_ecscli \
+  install_ecscli \
+  --fail-prefix="not found ($ECSCLI_PATH)"
+
+[ -x $ECSCLI_PATH ] || chmod u+x $ECSCLI_PATH
+
+# env
+
+icli::set_context env
+
+if [ ! -e .env ]
+then
+  cp .env.example .env
+
+  SECRET_KEY=$(python - <<<"
+import random
+import string
+sys_random = random.SystemRandom()
+allowed = string.ascii_lowercase + string.digits + '!@#$%^&*(-_=+)'
+chars = (sys_random.choice(allowed) for _i in range(50))
+print(*chars, sep='')
+")
+
+  echo -e "\nSECRET_KEY=$SECRET_KEY" >> .env
+
+  echo
+  icli::message "${T_FYELLOW}customize .env as needed"
+fi
+
+icli::unset_context
+
+# # environment variables
+#
+# EXPECTED_ENVVARS="PGHOST PGPORT PGUSER PGDATABASE"
+#
+# check_envvars() {
+#   icli::check_envvars $EXPECTED_ENVVARS
+# }
+#
+# require envvars \
+#   check_envvars \
+#   --fail-prefix="one or more of these environment variables missing ($EXPECTED_ENVVARS)"
+
+#
+# end project check/install
+#
