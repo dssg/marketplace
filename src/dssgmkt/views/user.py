@@ -315,7 +315,7 @@ class SignUpForm(UserCreationForm):
     class Meta:
         model = User
         fields = ['username', 'password1', 'password2',
-                  'first_name', 'last_name', 'phone_number', 'skype_name',
+                  'first_name', 'last_name', 'email', 'phone_number', 'skype_name',
                   'special_code']
 
 def signup(request, user_type=None):
