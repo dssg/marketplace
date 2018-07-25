@@ -8,8 +8,8 @@ https://docs.djangoproject.com/en/2.0/topics/settings/
 
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.0/ref/settings/
-"""
 
+"""
 import os
 
 from decouple import Csv, config
@@ -20,13 +20,15 @@ from django.contrib.messages import constants as messages
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SITE_NAME=config('SITE_NAME', default='DSSG Solve')
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
 
 SECRET_KEY = config('SECRET_KEY')
-DEBUG = config('DEBUG', default = False, cast = bool)
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast = Csv())
+DEBUG = config('DEBUG', default=False, cast=bool)
+
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv())
 
 
 # Application definition
@@ -83,8 +85,8 @@ WSGI_APPLICATION = 'dssgsolve.wsgi.application'
 DATABASES = {
     'default': config(
         'DATABASE_URL',
-        default = 'sqlite:///' + os.path.join(BASE_DIR, 'db.sqlite3'),
-        cast=db_url
+        default='sqlite:///' + os.path.join(BASE_DIR, 'db.sqlite3'),
+        cast=db_url,
     )
 }
 
@@ -147,14 +149,15 @@ if DEBUG:
     EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_FILE_PATH = '/tmp/app-messages'
-EMAIL_HOST = config('EMAIL_HOST')
-EMAIL_PORT = config('EMAIL_PORT', cast=int)
-EMAIL_HOST_USER = config('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
-EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
 
-DEFAULT_FROM_EMAIL = config('EMAIL_FROM_ADDRESS')
+EMAIL_FILE_PATH = '/tmp/app-messages'
+# EMAIL_HOST = config('EMAIL_HOST')
+# EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
+# EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+# EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+# EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
+
+# DEFAULT_FROM_EMAIL = config('EMAIL_FROM_ADDRESS')
 
 
 if DEBUG:
@@ -190,7 +193,7 @@ LOGGING = {
         'django': {
             'handlers':['console'],
             'propagate': True,
-            'level':config('DJANGO_LOG_LEVEL', default='WARN'),
+            'level': config('DJANGO_LOG_LEVEL', default='WARN'),
         },
         'django.db.backends': {
             'handlers': ['console'],
