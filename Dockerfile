@@ -1,7 +1,7 @@
 # DSSG Solve container build file
 #
 
-ARG PYVERSION=3.6.5
+ARG PYVERSION=3.7
 
 FROM python:$PYVERSION
 
@@ -12,7 +12,7 @@ ARG TARGET=production
 # redeclare PYVERSION argument for access in label (FIXME: does this work?)
 ARG PYVERSION
 
-LABEL version="0.1" \
+LABEL version="0.2" \
       pyversion="$PYVERSION" \
       target="$TARGET"
 
