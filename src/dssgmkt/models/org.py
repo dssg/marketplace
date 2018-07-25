@@ -64,7 +64,7 @@ class GeographicalScope():
 
 class Organization(models.Model):
     name = models.CharField(
-        max_length=50,
+        max_length=200,
         verbose_name="Organization name",
         help_text="Type the name of your organization.",
     )

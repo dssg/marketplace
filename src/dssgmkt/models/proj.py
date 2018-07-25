@@ -40,7 +40,7 @@ class Project(models.Model):
     name = models.CharField(
         verbose_name="Name",
         help_text="Name of this project. Make sure it is distinctive and recognizable on its own.",
-        max_length=50,
+        max_length=200,
     )
     short_summary = models.TextField(
         verbose_name="Short summary",
