@@ -9,3 +9,4 @@ gunicorn==19.7.1
 whitenoise==3.3.1
 django-markdown-deux==1.0.5
 psycopg2==2.7.5
+requests==2.19.1

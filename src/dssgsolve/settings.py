@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/2.0/ref/settings/
 """
 import os
 
+import requests
 from decouple import Csv, config
 from dj_database_url import parse as db_url
 from django.contrib.messages import constants as messages
@@ -29,6 +30,22 @@ SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', default=False, cast=bool)
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv())
+
+if DEBUG:
+    EC2_PRIVATE_IP = None
+else:
+    try:
+        response = requests.get(
+            'http://169.254.169.254/latest/meta-data/local-ipv4',
+            timeout=0.01
+        )
+    except requests.exceptions.RequestException:
+        EC2_PRIVATE_IP = None
+    else:
+        EC2_PRIVATE_IP = response.text
+
+    if EC2_PRIVATE_IP:
+        ALLOWED_HOSTS.append(EC2_PRIVATE_IP)
 
 
 # Application definition
