@@ -415,7 +415,7 @@ def organization_role_delete_view(request, org_pk, role_pk):
 class CreateOrganizationForm(ModelForm):
     class Meta:
         model = Organization
-        fields = ['name', 'short_summary', 'description', 'logo_url', 'website_url', 'phone_number',
+        fields = ['name', 'short_summary', 'description', 'logo_file', 'website_url', 'phone_number',
                 'email_address', 'street_address', 'address_line_2', 'city', 'state',
                 'zipcode', 'country', 'budget', 'years_operation', 'main_cause',
                 'organization_scope',]

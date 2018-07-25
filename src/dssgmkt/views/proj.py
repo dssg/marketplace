@@ -1117,7 +1117,7 @@ class CreateProjectForm(ModelForm):
     class Meta:
         model = Project
         fields = ['name', 'project_cause', 'short_summary', 'motivation',
-                    'solution_description', 'challenges', 'banner_image_url',
+                    'solution_description', 'challenges', 'banner_image_file',
                     'developer_agreement', 'project_impact', 'scoping_process',
                     'available_staff', 'available_data', 'intended_start_date',
                     'intended_end_date', 'deliverable_github_url',
