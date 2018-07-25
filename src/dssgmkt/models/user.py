@@ -346,6 +346,15 @@ class VolunteerSkill(models.Model):
         verbose_name="User",
     )
 
+    def is_level_beginner(self):
+        return self.level == SkillLevel.BEGINNER
+
+    def is_level_intermediate(self):
+        return self.level == SkillLevel.INTERMEDIATE
+
+    def is_level_expert(self):
+        return self.level == SkillLevel.EXPERT
+
     class Meta:
         unique_together = ('user','skill')
 

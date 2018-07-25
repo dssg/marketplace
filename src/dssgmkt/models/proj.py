@@ -786,6 +786,15 @@ class ProjectTaskRequirement(models.Model):
         help_text="Project task this requirement applies to.",
     )
 
+    def is_level_beginner(self):
+        return self.level == SkillLevel.BEGINNER
+
+    def is_level_intermediate(self):
+        return self.level == SkillLevel.INTERMEDIATE
+
+    def is_level_expert(self):
+        return self.level == SkillLevel.EXPERT
+
     def standard_display_name(self):
         return "{0}:{1} ({2})".format(self.skill.standard_display_name(), self.get_level_display(), self.get_importance_display())
 

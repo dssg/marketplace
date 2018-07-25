@@ -104,8 +104,8 @@
             <div class="card-header"><i class="fas fa-magic"></i> Skill requirements</div>
             <div class="card-body">
               {% for task_requirement in project_task.projecttaskrequirement_set.all %}
-                <p>{{ task_requirement.skill.area }}/{{ task_requirement.skill.name }}:{{ task_requirement.get_level_display }} ({{ task_requirement.get_importance_display }})
-                </p>
+                {% if not forloop.first %}, {% endif %}
+                <span>{% include 'dssgmkt/components/skill_level_display.html' with object=task_requirement %}</span>
               {% endfor %}
             </div>
           </div>

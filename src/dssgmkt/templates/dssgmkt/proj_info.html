@@ -103,9 +103,10 @@
 
                   <ul class="list-group list-group-flush">
                     <li class="list-group-item">{{ project_task.short_summary }}</li>
-                    <li class="list-group-item">Required skills:
+                    <li class="list-group-item"><div>Required skills:</div>
                       {% for task_requirement in project_task.projecttaskrequirement_set.all %}
-                        <div>{{ task_requirement.skill.area }}/{{ task_requirement.skill.name }}:{{ task_requirement.get_level_display }}</div>
+                        {% if not forloop.first %}, {% endif %}
+                        <span>{% include 'dssgmkt/components/skill_level_display.html' with object=task_requirement %}</span>
                       {% endfor %}
                     </li>
                       {% if project_task.accepting_volunteers %}

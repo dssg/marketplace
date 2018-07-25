@@ -178,7 +178,7 @@
           <div class="card-body">
           {% if userprofile.volunteerskill_set.all %}
             {% for volunteerskill in userprofile.volunteerskill_set.all %}
-                <p>{{ volunteerskill.skill.area }}/{{ volunteerskill.skill.name }}: {{ volunteerskill.get_level_display }}</p>
+                <div>{% include 'dssgmkt/components/skill_level_display.html' with object=volunteerskill %}</div>
             {% endfor %}
           {% else %}
               <p>No skills listed.</p>
