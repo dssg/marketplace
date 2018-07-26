@@ -1,8 +1,9 @@
-from dssgmkt.models.user import UserNotification
+from smtplib import SMTPException
+
+from django.conf import settings
 from django.core.mail import send_mail
 
-from decouple import config
-from smtplib import SMTPException
+from dssgmkt.models.user import UserNotification
 
 
 class NotificationService():
@@ -17,7 +18,12 @@ class NotificationService():
         notification.save()
         if user.email:
             message = "You have a new notification pending:\n{0}".format(notification_description)
-            NotificationService.send_email(config('EMAIL_FROM_ADDRESS'), user.email, "[{0}] You have a new notification".format(config('SITE_NAME')), message)
+            NotificationService.send_email(
+                settings.DEFAULT_FROM_EMAIL,
+                user.email,
+                f"[{settings.SITE_NAME}] You have a new notification",
+                message,
+            )
 
     @staticmethod
     def add_multiuser_notification(users, notification_description, severity, source, target_id):

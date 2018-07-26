@@ -8,10 +8,11 @@ https://docs.djangoproject.com/en/2.0/topics/settings/
 
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.0/ref/settings/
-"""
 
+"""
 import os
 
+import requests
 from decouple import Csv, config
 from dj_database_url import parse as db_url
 from django.contrib.messages import constants as messages
@@ -20,13 +21,35 @@ from django.contrib.messages import constants as messages
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SITE_NAME=config('SITE_NAME', default='DSSG Solve')
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
 
 SECRET_KEY = config('SECRET_KEY')
-DEBUG = config('DEBUG', default = False, cast = bool)
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast = Csv())
+DEBUG = config('DEBUG', default=False, cast=bool)
+
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv())
+
+if DEBUG:
+    EC2_PRIVATE_IP = None
+else:
+    # TODO: Could perhaps instead determine this value at EC2 instance
+    # TODO: initialization (via user data or something)?
+    # TODO: ...Such that container processes can retrieve it locally
+    # TODO: (or from the host)?
+    try:
+        response = requests.get(
+            'http://169.254.169.254/latest/meta-data/local-ipv4',
+            timeout=0.01
+        )
+    except requests.exceptions.RequestException:
+        EC2_PRIVATE_IP = None
+    else:
+        EC2_PRIVATE_IP = response.text
+
+    if EC2_PRIVATE_IP:
+        ALLOWED_HOSTS.append(EC2_PRIVATE_IP)
 
 
 # Application definition
@@ -83,8 +106,8 @@ WSGI_APPLICATION = 'dssgsolve.wsgi.application'
 DATABASES = {
     'default': config(
         'DATABASE_URL',
-        default = 'sqlite:///' + os.path.join(BASE_DIR, 'db.sqlite3'),
-        cast=db_url
+        default='sqlite:///' + os.path.join(BASE_DIR, 'db.sqlite3'),
+        cast=db_url,
     )
 }
 
@@ -142,13 +165,17 @@ USE_TZ = True
 if config('USE_S3_FOR_FILE_STORAGE', cast=bool, default=False):
     DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
     STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-    AWS_ACCESS_KEY_ID=config('AWS_ACCESS_KEY_ID')
-    AWS_SECRET_ACCESS_KEY=config('AWS_SECRET_ACCESS_KEY')
-    AWS_STORAGE_BUCKET_NAME=config('AWS_STORAGE_BUCKET_NAME', default='dssgsolve')
-    AWS_AUTO_CREATE_BUCKET=True
-    AWS_S3_REGION_NAME=config('AWS_S3_REGION_NAME')
+
+    AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')
+    AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')
+    AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME')
+    AWS_S3_REGION_NAME = config('AWS_S3_REGION_NAME', default=None)
+
     if config('AWS_S3_ENDPOINT_URL', default=None):
-        AWS_S3_ENDPOINT_URL=config('AWS_S3_ENDPOINT_URL')
+        AWS_S3_ENDPOINT_URL = config('AWS_S3_ENDPOINT_URL')
+
+    if DEBUG:
+        AWS_AUTO_CREATE_BUCKET = True
 
 
 STATIC_URL = '/static/'
@@ -160,18 +187,19 @@ else:
 MEDIA_ROOT = os.path.join(STATIC_ROOT, 'uploads/')
 MEDIA_URL = "/media/"
 
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
+
 if DEBUG:
     EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+    EMAIL_FILE_PATH = '/tmp/app-messages'
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_FILE_PATH = '/tmp/app-messages'
-EMAIL_HOST = config('EMAIL_HOST')
-EMAIL_PORT = config('EMAIL_PORT', cast=int)
-EMAIL_HOST_USER = config('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
-EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
 
-DEFAULT_FROM_EMAIL = config('EMAIL_FROM_ADDRESS')
+    # EMAIL_HOST = config('EMAIL_HOST')
+    # EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
+    # EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+    # EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+    # EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
 
 
 if DEBUG:
@@ -207,7 +235,7 @@ LOGGING = {
         'django': {
             'handlers':['console'],
             'propagate': True,
-            'level':config('DJANGO_LOG_LEVEL', default='WARN'),
+            'level': config('DJANGO_LOG_LEVEL', default='WARN'),
         },
         'django.db.backends': {
             'handlers': ['console'],

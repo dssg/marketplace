@@ -1,7 +1,6 @@
 .env
-**/*.sqlite3
+*.log
+*.sqlite3
+__pycache__/
 
-**/__pycache__
-**/*.pyc
-
-**/*.log
+/.install.*.bash.inc
