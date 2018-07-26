@@ -1,70 +1,127 @@
-# marketplace
+# DSSG Marketplace
 
+## Development
 
-# Deployment
+### Getting started
 
-## Run the web app
+The DSSG marketplace is built to run under Python v3.7. Virtual environment management is strongly recommended in development, using at least the `venv` module, or [pyenv](https://github.com/pyenv/pyenv).
 
-### Build a docker image
+To quickly bootstrap your development environment, having cloned the repository, invoke the executable `develop` script from your system shell:
 
-From the project root run
-```
-docker build -t dssgsolve .
-```
-### Run the docker image
+    ./develop
 
-The app needs a set of environment variables to run - these are mandatory, the web app will not run without them.
+A wizard will initialize a local configuration file (`.env`), and suggest set-up steps and optionally execute these, for example:
 
-The easiest way to provide the variables is to use an env file:
+    (install) begin
 
-```
-docker run -p 8000:8000 --env-file .env dssgsolve
-```
+    (pyenv) installed ✓
 
-The provided file .env.example contains a list of the variables needed; you can use that file as a base for your configuration.
+    (python-3.7.0) installed ✓
 
-## First time setup
+    (marketplace) installed ✓
 
-After the container is started, you need to do some first time setup before using the site.
+    (lib) install?
+    1) yes, install {pip install -r requirement/console.txt}
+    2) no, ignore
+    #? 1
 
-If you run the commands below from outside the Docker container using `docker exec`, remember to run them as the user webapp:
+The marketplace assumes a Docker image build target; and so, the Python requirements of the Web app are not themselves automatically installed into the project virtual environment.
 
-```
-docker exec -it <container_id> su webapp -c '<my_command>'
-```
+If you'd like to build the app in your project virtual environment, you may:
 
-### DB initialization
+    pip install -r requirement/development.txt
 
-First, do a Django database migration:
-```
-python manage.py migrate
-```
+Regardless, ensure that `docker` is installed on your system.
 
-Second, create a superuser, if needed access to the admin interface (remember to use your own values for username, password and email):
-```
-python manage.py create_superuser_cli --username test1 --password 123321 --noinput --email "blank@email.com"
-```
+### Build for development
 
-Third, load the list of skills into the database:
-```
-python manage.py init_skills
-```
+To build the app's Docker image for local development:
 
-### Static assets collection
+    manage develop [-b/--build]
 
-You need to tell the app to collect the static assets (images, css, js, etc.) so that the web app can find them.
-If you want to run the web app with DEBUG=False, you need to use AWS S3 as the backend for static and user-uploaded
-files. The .env.example file contains a list of parameters that must be specified for using the S3 backend; those
-properties need to be set before calling the collectstatic operation, as that command will copy static files to
-the S3 bucket.
+The above command will build an image of the app, with additional development utilities, and start a container of this image, with the local (host) `src/` directory mounted into the container, and using your local configuration (from `.env`).
 
-```
-python manage.py collectstatic
-```
+To recreate this container without rebuilding, simply omit the `--build` argument.
 
-Finally, restart the webapp so it can read the static file changes:
-```
-supervisorctl restart webapp
-```
+### Local app management
 
-Your site should be available now at `localhost:8000`.
+To manage the app container through Docker, many commands must be of the form:
+
+    docker exec [-u webapp] [-i] [-t] <container_id> <command> ...
+
+…or via the management shortcut:
+
+    manage develop shell [--root] [<command> ...]
+
+The most common Web app commands are routed through Django, via `src/manage.py`, *e.g.*:
+
+    ./src/manage.py migrate
+
+…and so a management shortcut is provided to invoke Django commands from within the app container:
+
+    manage develop djmanage <command> ...
+
+### Local app intialization
+
+Initialize and migrate the database:
+
+    manage develop djmanage migrate
+
+Load skills data:
+
+    manage develop djmanage init_skills
+
+Create a superuser:
+
+    manage develop djmanage createsuperuser
+
+And, so long as you are not using Django's `runserver` command along with its filesystem-based static asset backend, you'll have to "collect" these assets (images, css, js, *etc.*), and then restart the Web server:
+
+    manage develop djmanage collectstatic
+
+To restart the Web server:
+
+    manage develop shell --root supervisorctl restart webapp
+
+The Web app binds to `localhost:8000`.
+
+## Deployment
+
+### Build for deployment
+
+To build the app's Docker image for deployment:
+
+    manage build [--label=LABEL]
+
+It is recommended to provide a label, in the form of a version number, *e.g.*: `1.0.2`.
+
+### Configure deployment
+
+The image repository name and base URI may be specified every time as arguments to `manage build`, or set in the process environment, under the names:
+
+| Environment variable    | Build CLI argument  |
+| --------------------    | ------------------  |
+| `IMAGE_REPOSITORY_NAME` | `--repository-name` |
+| `IMAGE_REPOSITORY_URI`  | `--repository-uri`  |
+
+Some deployment commands moreover require Amazon Web Services (AWS) credentials, which must be set in the environment – either the pair, `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`, or simply `AWS_PROFILE`.
+
+### Push to repository
+
+The latest deployment image may be pushed to the image repository via the build sub-command `push`:
+
+    manage build push
+
+Or a new image may be built and pushed in one command:
+
+    manage build [-p/--push]
+
+### Authentication
+
+In order to push an image to the repository, you must have created an authenticated session. The `-l/--login` flag may be passed to both `build` and `build push`:
+
+    manage build -lp
+
+### Image promotion
+
+TODO
