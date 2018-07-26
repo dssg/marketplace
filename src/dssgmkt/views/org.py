@@ -124,9 +124,14 @@ class OrganizationView(generic.DetailView):
 
         return context
 
+class EditOrganizationForm(ModelForm):
+    class Meta:
+        model = Organization
+        exclude = ['logo_url']
+
 class OrganizationEdit(PermissionRequiredMixin, UpdateView):
     model = Organization
-    fields = '__all__'
+    form_class = EditOrganizationForm
     template_name = 'dssgmkt/org_info_edit.html'
     pk_url_kwarg = 'org_pk'
     permission_required = 'organization.information_edit'
@@ -410,7 +415,7 @@ def organization_role_delete_view(request, org_pk, role_pk):
 class CreateOrganizationForm(ModelForm):
     class Meta:
         model = Organization
-        fields = ['name', 'short_summary', 'description', 'logo_url', 'website_url', 'phone_number',
+        fields = ['name', 'short_summary', 'description', 'logo_file', 'website_url', 'phone_number',
                 'email_address', 'street_address', 'address_line_2', 'city', 'state',
                 'zipcode', 'country', 'budget', 'years_operation', 'main_cause',
                 'organization_scope',]

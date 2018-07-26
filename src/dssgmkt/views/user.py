@@ -24,6 +24,7 @@ from dssgmkt.domain.user import UserService
 from dssgmkt.domain.proj import ProjectService, ProjectTaskService
 from dssgmkt.domain.org import OrganizationService
 from dssgmkt.domain.notifications import NotificationService
+from decouple import config
 
 
 def users_link(include_link=True):
@@ -203,7 +204,7 @@ class UserProfileView(generic.DetailView):
 
 class UserProfileEdit(PermissionRequiredMixin, UpdateView):
     model = User
-    fields = ['first_name', 'last_name', 'email', 'phone_number', 'skype_name' ]
+    fields = ['first_name', 'last_name', 'email', 'profile_image_file', 'phone_number', 'skype_name' ]
     template_name = 'dssgmkt/user_profile_edit.html'
     pk_url_kwarg = 'user_pk'
     permission_required = 'user.is_same_user'
@@ -314,7 +315,7 @@ class SignUpForm(UserCreationForm):
     class Meta:
         model = User
         fields = ['username', 'password1', 'password2',
-                  'first_name', 'last_name', 'phone_number', 'skype_name',
+                  'first_name', 'last_name', 'email', 'phone_number', 'skype_name',
                   'special_code']
 
 def signup(request, user_type=None):
@@ -324,13 +325,18 @@ def signup(request, user_type=None):
         form = SignUpForm(request.POST)
         if form.is_valid():
             new_user = form.save(commit=False)
-            new_user = UserService.create_user(request.user, new_user, user_type)
-            username = form.cleaned_data.get('username')
-            raw_password = form.cleaned_data.get('password1')
-            user = authenticate(username=username, password=raw_password)
-            login(request, user)
-            messages.info(request, 'Welcome to DSSG Solve! Your account was created successfully.')
-            return redirect('dssgmkt:home')
+            try:
+                new_user = UserService.create_user(request.user, new_user, user_type, request.POST.get('g-recaptcha-response'))
+                username = form.cleaned_data.get('username')
+                raw_password = form.cleaned_data.get('password1')
+                user = authenticate(username=username, password=raw_password)
+                login(request, user)
+                messages.info(request, 'Welcome to DSSG Solve! Your account was created successfully.')
+                return redirect('dssgmkt:home')
+            except KeyError as k:
+                form.add_error(None, str(k))
+            except ValueError as v:
+                form.add_error(None, str(v))
     else:
         form = SignUpForm()
     return render(request, 'dssgmkt/signup.html',
@@ -339,4 +345,5 @@ def signup(request, user_type=None):
                         'user_type': user_type,
                         'breadcrumb': build_breadcrumb([home_link(),
                                                         ('Sign up', None)]),
+                        'captcha_site_key': config('RECAPTCHA_SITE_KEY', default=None),
                     })

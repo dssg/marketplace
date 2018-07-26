@@ -17,6 +17,9 @@ from .common import validate_consistent_keys, award_view_model_translation
 from .org import OrganizationService
 from .proj import ProjectService, ProjectTaskService
 from .notifications import NotificationService
+import requests
+from decouple import config
+
 
 from dssgmkt.authorization.common import ensure_user_has_permission
 
@@ -58,7 +61,6 @@ class UserService():
 
     @staticmethod
     def user_is_dssg_staff(request_user, user):
-        print(request_user, user)
         return user.is_authenticated and user.initial_type == UserType.DSSG_STAFF
 
     @staticmethod
@@ -66,14 +68,31 @@ class UserService():
         return VolunteerProfile.objects.all().annotate(taskcount=Count('user__projecttaskrole')).order_by('-average_review_score', '-taskcount').first()
 
     @staticmethod
-    def create_user(request_user, new_user, user_type):
+    def verify_captcha(captcha_response):
+        secret_key = config('RECAPTCHA_SECRET_KEY', default=None)
+        if secret_key is None:
+            return True
+        url = 'https://www.google.com/recaptcha/api/siteverify'
+        data = {
+            "secret": secret_key,
+            "response": captcha_response,
+            }
+        return requests.post(url, data=data).json().get('success') == True
+
+    @staticmethod
+    def create_user(request_user, new_user, user_type, captcha_response):
         with transaction.atomic():
+            if not UserService.verify_captcha(captcha_response):
+                raise ValueError('Incorrect reCAPTCHA answer')
             if not user_type in ['volunteer', 'organization']:
                 raise ValueError('Unknown user type')
             if user_type == 'volunteer':
                 new_user.initial_type = UserType.VOLUNTEER
             elif user_type == 'organization':
                 new_user.initial_type = UserType.ORGANIZATION
+            if UserService.has_valid_special_signup_code(new_user, SignupCodeType.MAKE_DSSG_STAFF):
+                new_user.initial_type = UserType.DSSG_STAFF
+                UserService.use_signup_code(new_user.special_code, SignupCodeType.MAKE_DSSG_STAFF)
             new_user.save()
 
             if new_user.initial_type == UserType.VOLUNTEER:
@@ -88,32 +107,32 @@ class UserService():
 
 
     @staticmethod
-    def get_signup_code_type_by_text(code):
-        if code:
-            existing_signup_codes = SignupCode.objects.filter(name=code, current_uses__lt=F('max_uses'), expiration_date__gt=timezone.now()).values('type')
-            return [code.get('type') for code in existing_signup_codes]
+    def get_signup_codes_by_text(code_name):
+        if code_name:
+            return SignupCode.objects.filter(name=code_name) \
+                                    .filter(Q(current_uses__lt=F('max_uses')) | Q(max_uses__isnull=True)) \
+                                    .filter(Q(expiration_date__gt=timezone.now()) | Q(expiration_date__isnull=True))
         else:
             return None
 
     @staticmethod
-    def use_signup_code(code):
-        if code:
-            existing_signup_codes = SignupCode.objects.filter(name=code, current_uses__lt=F('max_uses'), expiration_date__gt=timezone.now())
+    def use_signup_code(code_name, code_type):
+        if code_name:
+            existing_signup_codes = UserService.get_signup_codes_by_text(code_name)
             for signup_code in existing_signup_codes:
-                signup_code.current_uses = signup_code.current_uses + 1
+                signup_code.current_uses = signup_code.current_uses + 1 if signup_code.current_uses else 1
                 signup_code.save()
 
     @staticmethod
-    def verify_if_automatically_approved(volunteer_profile):
-        signup_code = volunteer_profile.user.special_code
-        existing_code_types = UserService.get_signup_code_type_by_text(signup_code)
-        if existing_code_types and SignupCodeType.VOLUNTEER_AUTOMATIC_ACCEPT in existing_code_types:
-            volunteer_profile.volunteer_status = ReviewStatus.ACCEPTED
-            volunteer_profile.is_edited = True
-            UserService.use_signup_code(signup_code)
+    def has_valid_special_signup_code(user, code_type):
+        signup_code = user.special_code
+        if signup_code:
+            existing_signup_codes = UserService.get_signup_codes_by_text(signup_code)
+            existing_code_types = [code.type for code in existing_signup_codes]
+            return existing_code_types and code_type in existing_code_types
         else:
-            volunteer_profile.volunteer_status = ReviewStatus.NEW
-            volunteer_profile.is_edited = False
+            return False
+
 
 
     @staticmethod
@@ -121,29 +140,35 @@ class UserService():
         target_user = UserService.get_user(request_user, user_pk)
         ensure_user_has_permission(request_user, target_user, 'user.is_same_user')
         if not VolunteerProfile.objects.filter(user=request_user).exists():
-            volunteer_profile = VolunteerProfile()
-            volunteer_profile.user = request_user
-            UserService.verify_if_automatically_approved(volunteer_profile)
-            try:
-                volunteer_profile.save()
+            with transaction.atomic():
+                volunteer_profile = VolunteerProfile()
+                volunteer_profile.user = request_user
+                volunteer_profile.volunteer_status = ReviewStatus.NEW
+                volunteer_profile.is_edited = False
+                if UserService.has_valid_special_signup_code(volunteer_profile.user, SignupCodeType.VOLUNTEER_AUTOMATIC_ACCEPT):
+                    volunteer_profile.volunteer_status = ReviewStatus.ACCEPTED
+                    volunteer_profile.is_edited = True
+                    UserService.use_signup_code(volunteer_profile.user.special_code, SignupCodeType.VOLUNTEER_AUTOMATIC_ACCEPT)
+                try:
+                    volunteer_profile.save()
 
-                new_badge_tier = None
-                if volunteer_profile.id < 100:
-                    new_badge_tier = BadgeTier.MASTER
-                elif volunteer_profile.id < 500:
-                    new_badge_tier = BadgeTier.ADVANCED
-                elif volunteer_profile.id < 1000:
-                    new_badge_tier = BadgeTier.BASIC
-                if new_badge_tier is not None:
-                    new_user_badge = UserBadge()
-                    new_user_badge.tier = new_badge_tier
-                    new_user_badge.type = BadgeType.EARLY_USER
-                    new_user_badge.user = volunteer_profile.user
-                    new_user_badge.save()
+                    new_badge_tier = None
+                    if volunteer_profile.id < 100:
+                        new_badge_tier = BadgeTier.MASTER
+                    elif volunteer_profile.id < 500:
+                        new_badge_tier = BadgeTier.ADVANCED
+                    elif volunteer_profile.id < 1000:
+                        new_badge_tier = BadgeTier.BASIC
+                    if new_badge_tier is not None:
+                        new_user_badge = UserBadge()
+                        new_user_badge.tier = new_badge_tier
+                        new_user_badge.type = BadgeType.EARLY_USER
+                        new_user_badge.user = volunteer_profile.user
+                        new_user_badge.save()
 
-                return volunteer_profile
-            except IntegrityError:
-                raise ValueError('User already has a volunteer profile')
+                    return volunteer_profile
+                except IntegrityError:
+                    raise ValueError('User already has a volunteer profile')
 
 
     @staticmethod

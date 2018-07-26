@@ -3,7 +3,7 @@ from django.db import models
 
 from dssgsolve import settings
 
-from .common import PHONE_REGEX, ReviewStatus, OrgRole, SkillLevel
+from .common import PHONE_REGEX, ReviewStatus, OrgRole, SkillLevel, validate_image_size
 
 class UserType():
     DSSG_STAFF = 0
@@ -45,6 +45,14 @@ class User(AbstractUser):
         blank=True,
         null=True,
     )
+    profile_image_file = models.ImageField(
+        verbose_name="Profile image",
+        help_text="Your profile image.",
+        upload_to="userprofiles/",
+        blank=True,
+        null=True,
+        validators=[validate_image_size],
+    )
 
     def full_name(self):
         return self.first_name + " " + self.last_name
@@ -57,10 +65,12 @@ class User(AbstractUser):
 
 class SignupCodeType():
     VOLUNTEER_AUTOMATIC_ACCEPT = 0
+    MAKE_DSSG_STAFF = 1
 
     def get_choices():
         return (
                     (SignupCodeType.VOLUNTEER_AUTOMATIC_ACCEPT, 'Automatically accept user as volunteer'),
+                    (SignupCodeType.MAKE_DSSG_STAFF, 'Automatically make users DSSG staff members so they can review volunteer applications'),
                 )
 
 class SignupCode(models.Model):
@@ -185,12 +195,18 @@ class Skill(models.Model):
 
 
 class EducationLevel():
-    BACHELORS = 0
-    MASTERS = 1
-    PHD = 2
+    OTHER = 0
+    PRIMARY = 1
+    SECONDARY = 2
+    BACHELORS = 3
+    MASTERS = 4
+    PHD = 5
 
     def get_choices():
         return (
+                    (EducationLevel.OTHER, 'Other'),
+                    (EducationLevel.PRIMARY, 'Primary education'),
+                    (EducationLevel.SECONDARY, 'Secondary education'),
                     (EducationLevel.BACHELORS, 'Bachelor\'s'),
                     (EducationLevel.MASTERS, 'Master\'s'),
                     (EducationLevel.PHD, 'PhD')

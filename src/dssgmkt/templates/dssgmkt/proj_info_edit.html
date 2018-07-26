@@ -3,7 +3,7 @@
 {% block tabcontents %}
 
 
-  <form id="editproj">
+  <form id="editproj" enctype="multipart/form-data">
     <h4 class="section-header">Edit project information</h4>
     {% csrf_token %}
     {% include 'dssgmkt/components/standard_form_fields.html' %}

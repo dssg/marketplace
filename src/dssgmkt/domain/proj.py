@@ -1609,8 +1609,6 @@ class ProjectTaskService():
 
     @staticmethod
     def user_belongs_to_task_review(request_user, task_review):
-        print(task_review)
-        print(request_user)
         return ProjectTaskRole.objects.filter(user=request_user, task__projecttaskreview=task_review).exists()
 
     @staticmethod

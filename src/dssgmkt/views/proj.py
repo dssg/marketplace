@@ -242,7 +242,10 @@ def project_comment_channel_index_view(request, proj_pk):
     elif request.method == 'GET':
         project = get_project(request, proj_pk)
         discussion_channels = ProjectService.get_project_channels(request.user, project)
-        return render(request, 'dssgmkt/proj_discussion_channels.html',
+        if discussion_channels:
+            return redirect('dssgmkt:proj_discussion', proj_pk=proj_pk, channel_pk=discussion_channels[0].id)
+        else:
+            return render(request, 'dssgmkt/proj_discussion_channels.html',
                         add_project_common_context(
                             request,
                             project,
@@ -365,16 +368,21 @@ class ProjectVolunteerInstructionsView(PermissionRequiredMixin, generic.ListView
     allow_empty = True
 
     def get_queryset(self):
-        return ProjectTaskService.get_volunteer_current_tasks(self.request.user, self.request.user, self.kwargs['proj_pk'])
+        project = get_project(self.request, self.kwargs['proj_pk'])
+        return ProjectTaskService.get_volunteer_all_project_tasks(self.request.user, self.request.user,  project)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         project = get_project(self.request, self.kwargs['proj_pk'])
         context['breadcrumb'] = project_breadcrumb(project, ('Volunteer instructions', None))
-        context['project_tasks'] = ProjectTaskService.get_volunteer_all_project_tasks(self.request.user, self.request.user, project)
-        # context['task_volunteers'] = ProjectTaskService.get_task_volunteers(self.request.user, self.kwargs['task_pk'])
         add_project_common_context(self.request, project, 'instructions', context)
         return context
+
+    def get(self, *args, **kwargs):
+        tasks = self.get_queryset()
+        if tasks:
+            return HttpResponseRedirect(reverse('dssgmkt:proj_instructions_task', args=[self.kwargs['proj_pk'], tasks[0].id]))
+        return super(ProjectVolunteerInstructionsView, self).get(*args, **kwargs)
 
     def get_permission_object(self):
         return get_project(self.request, self.kwargs['proj_pk'])
@@ -570,6 +578,12 @@ class ProjectTaskIndex(PermissionRequiredMixin, generic.ListView):
         add_project_common_context(self.request, project, 'tasklist', context)
         return context
 
+    def get(self, *args, **kwargs):
+        tasks = self.get_queryset()
+        if tasks:
+            return HttpResponseRedirect(reverse('dssgmkt:proj_task', args=[self.kwargs['proj_pk'], tasks[0].id]))
+        return super(ProjectTaskIndex, self).get(*args, **kwargs)
+
     def get_permission_object(self):
         return get_project(self.request, self.kwargs['proj_pk'])
 
@@ -628,9 +642,10 @@ class ProjectTaskEdit(PermissionRequiredMixin, UpdateView):
     def get_permission_object(self):
         return get_project(self.request, self.kwargs['proj_pk'])
 
+
 class ProjectEdit(PermissionRequiredMixin, UpdateView):
     model = Project
-    fields = ['name', 'short_summary', 'motivation','solution_description', 'challenges', 'banner_image_url', 'project_cause',
+    fields = ['name', 'short_summary', 'motivation','solution_description', 'challenges', 'banner_image_file', 'project_cause',
             'developer_agreement', 'intended_start_date',
             'intended_end_date', 'deliverables_description', 'deliverable_github_url', 'deliverable_management_url', 'deliverable_documentation_url',
             'deliverable_reports_url', 'status']
@@ -1102,7 +1117,7 @@ class CreateProjectForm(ModelForm):
     class Meta:
         model = Project
         fields = ['name', 'project_cause', 'short_summary', 'motivation',
-                    'solution_description', 'challenges', 'banner_image_url',
+                    'solution_description', 'challenges', 'banner_image_file',
                     'developer_agreement', 'project_impact', 'scoping_process',
                     'available_staff', 'available_data', 'intended_start_date',
                     'intended_end_date', 'deliverable_github_url',
