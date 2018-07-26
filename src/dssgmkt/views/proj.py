@@ -1120,7 +1120,7 @@ class CreateProjectForm(ModelForm):
                     'solution_description', 'challenges', 'banner_image_file',
                     'developer_agreement', 'project_impact', 'scoping_process',
                     'available_staff', 'available_data', 'intended_start_date',
-                    'intended_end_date', 'deliverable_github_url',
+                    'intended_end_date', 'deliverables_description', 'deliverable_github_url',
                     'deliverable_management_url', 'deliverable_documentation_url',
                     'deliverable_reports_url',]
 
