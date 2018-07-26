@@ -34,6 +34,10 @@ ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv())
 if DEBUG:
     EC2_PRIVATE_IP = None
 else:
+    # TODO: Could perhaps instead determine this value at EC2 instance
+    # TODO: initialization (via user data or something)?
+    # TODO: ...Such that container processes can retrieve it locally
+    # TODO: (or from the host)?
     try:
         response = requests.get(
             'http://169.254.169.254/latest/meta-data/local-ipv4',
@@ -183,19 +187,19 @@ else:
 MEDIA_ROOT = os.path.join(STATIC_ROOT, 'uploads/')
 MEDIA_URL = "/media/"
 
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
+
 if DEBUG:
     EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+    EMAIL_FILE_PATH = '/tmp/app-messages'
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
-EMAIL_FILE_PATH = '/tmp/app-messages'
-# EMAIL_HOST = config('EMAIL_HOST')
-# EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
-# EMAIL_HOST_USER = config('EMAIL_HOST_USER')
-# EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
-# EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
-
-# DEFAULT_FROM_EMAIL = config('EMAIL_FROM_ADDRESS')
+    # EMAIL_HOST = config('EMAIL_HOST')
+    # EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
+    # EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+    # EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+    # EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
 
 
 if DEBUG:
