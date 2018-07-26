@@ -1,3 +1,5 @@
+import os
+
 from pathlib import Path
 
 from argcmdr import Local, LocalRoot, localmethod
@@ -5,6 +7,13 @@ from argcmdr import Local, LocalRoot, localmethod
 
 ROOT_PATH = Path(__file__).parent.resolve()
 SRC_PATH = ROOT_PATH / 'src'
+
+IMAGE_REPOSITORY_NAME_DEFAULT = os.getenv('IMAGE_REPOSITORY_NAME')
+IMAGE_REPOSITORY_URI_DEFAULT = os.getenv('IMAGE_REPOSITORY_URI')
+
+
+def add_default(text, default):
+    return f'{text} (default: {default})' if default else text
 
 
 class Marketplace(LocalRoot):
@@ -15,21 +24,25 @@ class Marketplace(LocalRoot):
 class Build(Local):
     """build app container image"""
 
-    DEFAULT_NAMETAG = 'dsapp/marketplace/web:{tag}'
-
-    REGISTRY = '093198349272.dkr.ecr.us-west-2.amazonaws.com'
-
-    default_name = DEFAULT_NAMETAG.format(tag='latest')
-
-    @classmethod
-    def get_full_name(cls, name):
-        return '/'.join((cls.REGISTRY, name))
-
     def __init__(self, parser):
+        default_name = IMAGE_REPOSITORY_NAME_DEFAULT and (IMAGE_REPOSITORY_NAME_DEFAULT + ':latest')
+
+        parser.add_argument(
+            '--repository-uri',
+            default=IMAGE_REPOSITORY_URI_DEFAULT,
+            help=add_default('Image repository URI',
+                             IMAGE_REPOSITORY_URI_DEFAULT),
+        )
+        parser.add_argument(
+            '--repository-name',
+            default=IMAGE_REPOSITORY_NAME_DEFAULT,
+            help=add_default('Image repository name',
+                             IMAGE_REPOSITORY_NAME_DEFAULT),
+        )
         parser.add_argument(
             '-n', '--name',
-            default=self.default_name,
-            help=f'Image name/tag (default: {self.default_name})',
+            default=default_name,
+            help=add_default('Image name:tag', default_name),
         )
         parser.add_argument(
             '--label',
@@ -59,7 +72,29 @@ class Build(Local):
             help="deploy the container once the image is pushed",
         )
 
+    def get_full_name(self, name):
+        if not self.args.repository_uri:
+            self.args.__parser__.error(
+                "image repository URI required "
+                "(specify argument --repository-uri or "
+                "environment variable IMAGE_REPOSITORY_URI)"
+            )
+
+        return '/'.join((self.args.repository_uri, name))
+
     def prepare(self, args, parser):
+        dynamically_missing = [
+            argument_descriptor for (argument_descriptor, argument_value) in (
+                ('-n/--name', args.name),
+                ('--repository-name', args.repository_name),
+            ) if not argument_value
+        ]
+        if dynamically_missing:
+            parser.error(
+                "the following argument values could not be dynamically determined: " +
+                ', '.join(dynamically_missing)
+            )
+
         if args.login and not args.push:
             parser.error("will not log in outside of push operation")
 
@@ -72,7 +107,7 @@ class Build(Local):
 
         if args.label:
             for label in args.label:
-                name = self.DEFAULT_NAMETAG.format(tag=label)
+                name = args.repository_name + ':' + label
                 command = command[
                     '-t', name,
                     '-t', self.get_full_name(name),
