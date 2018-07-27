@@ -1,4 +1,4 @@
-<a href="{% url 'dssgmkt:user_profile' user.id %}">
+{% if not hide_anchor %}<a href="{% url 'dssgmkt:user_profile' user.id %}">{% endif %}
   {{ user.first_name }}
   {{ user.last_name }}
   {% if not hide_username %}
@@ -8,4 +8,4 @@
   {% for badge in user.userbadge_set.all %}
     {% include 'dssgmkt/components/user_badge.html' with badge=badge compact_display=True %}
   {% endfor %}
-</a>
+{% if not hide_anchor %}</a>{% endif %}
