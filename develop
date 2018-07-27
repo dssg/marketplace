@@ -133,8 +133,6 @@ icli::set_context env
 
 if [ ! -e .env ]
 then
-  cp .env.example .env
-
   SECRET_KEY=$(python - <<<"
 import random
 import string
@@ -143,8 +141,7 @@ allowed = string.ascii_lowercase + string.digits + '!@#$%^&*(-_=+)'
 chars = (sys_random.choice(allowed) for _i in range(50))
 print(*chars, sep='')
 ")
-
-  echo -e "\nSECRET_KEY=$SECRET_KEY" >> .env
+  sed "s/^SECRET_KEY=$/\0$SECRET_KEY/" .env.example > .env
 
   echo
   icli::message "${T_FYELLOW}customize .env as needed"

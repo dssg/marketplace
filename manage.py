@@ -1,5 +1,5 @@
 import os
-
+from argparse import REMAINDER
 from pathlib import Path
 
 from argcmdr import Local, LocalRoot, localmethod
@@ -165,6 +165,7 @@ class Build(Local):
 
 @Marketplace.register
 class Develop(Local):
+    """build, run and manage a Docker development container"""
 
     DEFAULT_NAMETAG = 'marketplace_web'
 
@@ -199,6 +200,20 @@ class Develop(Local):
             help="(re-)build image before container creation",
         )
 
+    def exec(self, user='webapp', interactive=True, tty=True):
+        command = self.local['docker']['exec']
+
+        if user:
+            command = command['-u', user]
+
+        if interactive:
+            command = command['-i']
+
+        if tty:
+            command = command['-t']
+
+        return command[self.args.name]
+
     def prepare(self, args):
         if args.build:
             yield self.local['docker'][
@@ -208,7 +223,45 @@ class Develop(Local):
                 ROOT_PATH,
             ]
 
+        try:
+            yield self.local['docker'][
+                'stop',
+                args.name,
+            ]
+        except self.local.ProcessExecutionError:
+            pass
+        else:
+            yield self.local['docker'][
+                'rm',
+                args.name,
+            ]
+
         yield self.run(
             '-d',
             '--name', args.name,
+        )
+
+    @localmethod('cmd', metavar='command', nargs=REMAINDER, help="shell command (default: bash)")
+    @localmethod('--root', action='store_true', help="execute command as root")
+    def shell(self, args):
+        """execute a command -- by default a Bash shell -- in a running container"""
+        kwargs = {'user': None} if args.root else {}
+        yield (
+            # foreground command to fully support shell
+            self.local.FG(retcode=None),
+            self.exec(**kwargs)[args.cmd or 'bash'],
+        )
+
+    @localmethod('mcmd', metavar='command', help="django management command")
+    @localmethod('remainder', metavar='command arguments', nargs=REMAINDER)
+    def djmanage(self, args):
+        """manage the django project in a running container"""
+        yield (
+            # foreground command to fully support shell
+            self.local.FG(retcode=None),
+            self.exec()[
+                './manage.py',
+                args.mcmd,
+                args.remainder,
+            ],
         )
