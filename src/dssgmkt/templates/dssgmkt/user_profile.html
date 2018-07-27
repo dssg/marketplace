@@ -202,7 +202,6 @@
                     <th>Social impact area</th>
                     <th>Project summary</th>
                     <th>Task name</th>
-                    <th>Volunteer role</th>
                     <th>Task status</th>
                 </tr>
               </thead>
@@ -214,10 +213,14 @@
                       <td>
                         {% include 'dssgmkt/components/social_cause_display.html' with object=project_task.project social_cause=project_task.project.get_project_cause_display %}
                       </td>
-                      <td>{{ project_task.project.summary }}</td>
-                      <td>{{ project_task.name }}</td>
-                      <td>{{ project_task.get_type_display }}</td>
-                      <td>{{ project_task.project.get_status_display }}</td>
+                      <td>{{ project_task.project.short_summary }}</td>
+                      <td>
+                        {% include 'dssgmkt/components/task_type_display.html' with compact_display=True %}
+                        {{ project_task.name }}
+                      </td>
+                      <td>
+                        {% include 'dssgmkt/components/task_stage_display.html' %}
+                      </td>
                   </tr>
                 {% endfor %}
               </tbody>
