@@ -457,7 +457,7 @@ def get_all_users_not_organization_members_json(request, org_pk, query=None):
     users = OrganizationService.get_all_users_not_organization_members(org_pk, query)
     json_users = []
     for user in users:
-        json_users.append({'name':user['first_name'] + user['last_name'] + user['email'] + user['username'], 'id': str(user['id'])})
+        json_users.append({'name':user['first_name'] + " " + user['last_name'] + " (" + user['username'] + ")", 'id': str(user['id'])})
     data = {
         'users': json_users
     }
