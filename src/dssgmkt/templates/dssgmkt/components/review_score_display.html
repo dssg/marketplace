@@ -1,0 +1,17 @@
+<span title="{{ score_display }}">
+  {% if review.is_score_one_star %}
+    <i class="fas fa-thumbs-down text-muted"></i>
+  {% elif review.is_score_two_stars %}
+    <i class="far fa-thumbs-down text-muted"></i>
+  {% elif review.is_score_three_stars %}
+    <i class="fas fa-equals"></i>
+  {% elif review.is_score_four_stars %}
+    <i class="far fa-thumbs-up text-success"></i>
+  {% elif review.is_score_five_stars %}
+    <i class="fas fa-thumbs-up text-success"></i>
+  {% endif %}
+
+  {% if not compact_display %}
+    {{ score_display }}
+  {% endif %}
+</span>

@@ -733,6 +733,21 @@ class ProjectTaskReview(models.Model):
     def is_rejected(self):
         return self.review_result == ReviewStatus.REJECTED
 
+    def is_score_one_star(self):
+        return self.review_score == Score.ONE_STAR
+
+    def is_score_two_stars(self):
+        return self.review_score == Score.TWO_STARS
+
+    def is_score_three_stars(self):
+        return self.review_score == Score.THREE_STARS
+
+    def is_score_four_stars(self):
+        return self.review_score == Score.FOUR_STARS
+
+    def is_score_five_stars(self):
+        return self.review_score == Score.FIVE_STARS
+
 
 class PinnedTaskReview(models.Model):
     task_review = models.ForeignKey(
