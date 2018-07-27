@@ -13,22 +13,37 @@
     <div class="status-row col-lg-12 border-top rounded-left rounded-right">
       {% if task.is_draft %}
         <span class="status status-active bg-danger border-bottom rounded-left">
-            <span>Draft</span>
+          <span>
+            <i class="fas fa-drafting-compass"></i>
+            Draft
           </span>
+        </span>
       {% endif %}
       <span class="status {% if task.is_not_started %}status-active{% endif %} border-bottom rounded-left">
         {% if task.is_draft %}
           {% include 'dssgmkt/components/status_chevron.html' %}
         {% endif %}
-        <span><i class="material-icons" style="vertical-align: middle">check</i>New</span>
+        <span>
+          <i class="completed-icon material-icons" style="vertical-align: middle">check</i>
+          <i class="ongoing-icon fas fa-gift"></i>
+          New
+        </span>
       </span>
       <span class="status {% if task.is_in_progress %}status-active{% endif %} border-bottom">
         {% include 'dssgmkt/components/status_chevron.html' %}
-        <span><i class="material-icons" style="vertical-align: middle">check</i>In progress</span>
+        <span>
+          <i class="completed-icon material-icons" style="vertical-align: middle">check</i>
+          <i class="ongoing-icon fas fa-tasks"></i>
+          In progress
+        </span>
       </span>
       <span class="status {% if task.is_pending_review %}status-active{% endif %} border-bottom">
         {% include 'dssgmkt/components/status_chevron.html' %}
-        <span><i class="material-icons" style="vertical-align: middle">check</i>Task QA</span>
+        <span>
+          <i class="completed-icon material-icons" style="vertical-align: middle">check</i>
+          <i class="ongoing-icon fas fa-award"></i>
+          Task QA
+        </span>
       </span>
       <span class="status {% if task.is_completed %}status-active bg-success{% endif %} border-bottom rounded-right border-right">
         {% include 'dssgmkt/components/status_chevron.html' %}
