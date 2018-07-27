@@ -31,10 +31,21 @@ social_cause_view_model_translation = {
                                         'other': SocialCause.OTHER,
                                        }
 
+
+
+
+
+
+
 project_status_view_model_translation = {
-                                            'new': ProjectStatus.NEW,
-                                            'in_progress': ProjectStatus.IN_PROGRESS,
-                                            'completed': ProjectStatus.COMPLETED,
+                                            'new': [ProjectStatus.NEW],
+                                            'in_progress': [ProjectStatus.DESIGN,
+                                                            ProjectStatus.WAITING_DESIGN_APPROVAL,
+                                                            ProjectStatus.WAITING_STAFF,
+                                                            ProjectStatus.IN_PROGRESS,
+                                                            ProjectStatus.WAITING_REVIEW,
+                                                            ],
+                                            'completed': [ProjectStatus.COMPLETED],
                                         }
 
 award_view_model_translation = {

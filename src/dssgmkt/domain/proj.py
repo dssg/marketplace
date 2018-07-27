@@ -57,7 +57,8 @@ class ProjectService():
                     project_status_list = [project_status_list]
                 project_statuses = []
                 for project_status_from_view in project_status_list:
-                    project_statuses.append(project_status_view_model_translation[project_status_from_view])
+                    status_filter = project_status_view_model_translation[project_status_from_view]
+                    project_statuses.extend(status_filter)
                 base_query = base_query.filter(status__in=project_statuses).distinct()
         return base_query.distinct().order_by('name')
 
