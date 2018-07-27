@@ -61,6 +61,9 @@ def edit_task_staff_link(project, task, include_link=True):
 def discussion_index_link(project, include_link=True):
     return ('Discussion', reverse('dssgmkt:proj_discussion', args=[project.id]) if include_link else None)
 
+def publish_task_link(project, task, include_link=True):
+    return ('Publish task', reverse('dssgmkt:proj_task_publish', args=[project.id, task.id]) if include_link else None)
+
 def project_breadcrumb(project, *items):
     breadcrumb_items = [home_link(),
                         projects_link(),
@@ -1176,3 +1179,32 @@ def pin_task_review_view(request, proj_pk, task_pk, review_pk):
         except KeyError:
             messages.error(request, 'There was an error while processing your request.')
             return redirect('dssgmkt:proj_instructions_task', proj_pk=proj_pk, task_pk=task_pk)
+
+
+@permission_required('project.task_edit', raise_exception=True, fn=objectgetter(Project, 'proj_pk'))
+def publish_project_task_view(request, proj_pk, task_pk):
+    project_task = get_project_task(request, proj_pk, task_pk)
+    project = project_task.project
+    if request.method == 'POST':
+        try:
+            ProjectTaskService.publish_project_task(request.user, proj_pk, task_pk, project_task)
+            return redirect('dssgmkt:proj_task', proj_pk=proj_pk, task_pk=task_pk)
+        except KeyError:
+            messages.error(request, 'There was an error while processing your request.')
+            return redirect('dssgmkt:proj_task', proj_pk=proj_pk, task_pk=task_pk)
+    elif request.method == 'GET':
+        pass
+    if project_task:
+        return render(request, 'dssgmkt/proj_task_publish.html',
+                        add_project_task_common_context(
+                            request,
+                            project_task,
+                            'tasklist',
+                            {
+                                'breadcrumb': project_breadcrumb(project,
+                                                                tasks_link(project),
+                                                                task_link(project_task),
+                                                                publish_task_link(project, project_task, include_link=False)),
+                            }))
+    else:
+        raise Http404

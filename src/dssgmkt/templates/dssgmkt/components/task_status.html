@@ -1,6 +1,6 @@
 
   <div class="status-component col-lg-12 border-round round-top border-light mt-3 mb-3">
-    {% if not task.is_completed %}
+    {% if not task.is_completed and not task.is_draft %}
       <div class="status-description col-lg-12 {% if task.accepting_volunteers %}bg-success{% else %}bg-warning{% endif %} text-white rounded-left rounded-right">
         {% if task.accepting_volunteers %}
           This task is accepting volunteers.
@@ -11,7 +11,19 @@
     {% endif %}
 
     <div class="status-row col-lg-12 border-top rounded-left rounded-right">
+      {% if task.is_draft %}
+        <span class="status status-active bg-danger border-bottom rounded-left">
+            <span>Draft</span>
+          </span>
+      {% endif %}
       <span class="status {% if task.is_not_started %}status-active{% endif %} border-bottom rounded-left">
+        {% if task.is_draft %}
+          <svg class="svgdiagnoal" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 100" preserveAspectRatio="none">
+            <polygon points="0 100 40 50 0 50" /><polygon points="0 0 40 50 0 50" />
+            <line x1="0" y1="100" x2="40" y2="50" stroke="#ecf0f1" stroke-width="3"/>
+            <line x1="0" y1="0" x2="40" y2="50" stroke="#ecf0f1" stroke-width="3"/>
+          </svg>
+        {% endif %}
         <span><i class="material-icons" style="vertical-align: middle">check</i>New</span>
       </span>
       <span class="status {% if task.is_in_progress %}status-active{% endif %} border-bottom">
@@ -39,7 +51,7 @@
         <span><i class="material-icons final" style="vertical-align: middle">done_all</i>Completed</span></span>
     </div>
 
-  <div class="status-description col-lg-12 bg-primary text-white {% if task.is_completed %} bg-success{% endif %} rounded">
+  <div class="status-description col-lg-12 bg-primary text-white {% if task.is_completed %} bg-success{% elif task.is_draft %}bg-danger{% endif %} rounded">
     {% if task.is_not_started %}
       This task has not started
     {% elif task.is_in_progress %}
@@ -48,6 +60,8 @@
       This task is pending the QA review
     {% elif task.is_completed %}
       This task is completed
+    {% elif task.is_draft %}
+      This task is in draft status
     {% endif %}
   </div>
 

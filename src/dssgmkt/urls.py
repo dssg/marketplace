@@ -45,6 +45,7 @@ urlpatterns = [
     path('proj/<int:proj_pk>/task/add', proj.create_default_project_task, name='proj_task_add'),
     path('proj/<int:proj_pk>/task/<int:task_pk>/', proj.ProjectTaskDetailView.as_view(), name='proj_task'),
     path('proj/<int:proj_pk>/task/<int:task_pk>/finish', proj.ProjectTaskReviewCreate.as_view(), name='proj_task_finish'),
+    path('proj/<int:proj_pk>/task/<int:task_pk>/publish', proj.publish_project_task_view, name='proj_task_publish'),
     path('proj/<int:proj_pk>/task/<int:task_pk>/review/<int:review_pk>/', proj.process_task_review_request_view, name='proj_task_review'),
     path('proj/<int:proj_pk>/task/<int:task_pk>/review/<int:review_pk>/resolve/<str:action>', proj.process_task_review_request_view, name='proj_task_review_do'),
     path('proj/<int:proj_pk>/task/<int:task_pk>/cancel', proj.ProjectTaskCancel.as_view(), name='proj_task_cancel'),

@@ -461,6 +461,7 @@ class TaskType():
                 )
 
 class TaskStatus():
+    DRAFT='DRF'
     NOT_STARTED='NOT'
     # ACCEPTING_VOLUNTEERS='AVL'
     STARTED='STA'
@@ -470,6 +471,7 @@ class TaskStatus():
 
     def get_choices():
         return (
+                    (TaskStatus.DRAFT, 'Draft'),
                     (TaskStatus.NOT_STARTED, 'Not started'),
                     # (TaskStatus.ACCEPTING_VOLUNTEERS, 'Accepting volunteers'),
                     (TaskStatus.STARTED, 'Started'),
@@ -581,6 +583,9 @@ class ProjectTask(models.Model):
 
     def __str__(self):
         return self.name
+
+    def is_draft(self):
+        return self.stage == TaskStatus.DRAFT
 
     def is_not_started(self):
         return self.stage == TaskStatus.NOT_STARTED
