@@ -119,23 +119,25 @@ fieldset legend {
   display: inherit !important;
 }
 
-.svgdiagnoal {
+.svgdiagonal {
   height: 100%;
   left: 0px;
   position: absolute;
 }
 
-.svgdiagnoal polygon {
+.svgdiagonal polygon {
   fill: #a0c455;
 }
 
-.status-active ~ .status .svgdiagnoal polygon {
+.status-active ~ .status .svgdiagonal polygon {
   fill: white;
 }
-.status-active + .status .svgdiagnoal polygon {
+
+.status-active + .status .svgdiagonal polygon {
   fill: #2C3E50;
 }
-.status-active.bg-danger + .status .svgdiagnoal polygon {
+
+.status-active.bg-danger + .status .svgdiagonal polygon {
   fill: #E74C3C;
 }
 
