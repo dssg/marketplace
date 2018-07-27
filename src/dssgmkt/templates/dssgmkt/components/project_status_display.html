@@ -1,0 +1,26 @@
+<span>
+  {% if project.is_draft_status %}
+    <i class="text-danger fas fa-drafting-compass"></i>
+  {% elif project.is_new_status %}
+    <i class="text-info fas fa-gift"></i>
+  {% elif project.is_design_status %}
+    <i class="text-info fas fa-ruler"></i>
+  {% elif project.is_waiting_design_approval_status %}
+    <i class="text-info fas fa-pencil-ruler"></i>
+  {% elif project.is_waiting_staff_status %}
+    <i class="fas fa-hands-helping"></i>
+  {% elif project.is_in_progress_status %}
+    <i class="fas fa-tasks"></i>
+  {% elif project.is_waiting_review_status %}
+    <i class="text-warning fas fa-award"></i>
+  {% elif project.is_completed_status %}
+    <i class="text-success material-icons" style="vertical-align: middle">done_all</i>
+  {% elif project.is_expired_status %}
+    <i class="text-muted fas fa-exclamation"></i>
+  {% endif %}
+
+  {% if not compact_display %}
+    {{ project.get_status_display }}
+  {% endif %}
+
+</span>
