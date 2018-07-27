@@ -5,7 +5,7 @@ from django.utils.safestring import mark_safe
 
 from dssgsolve import settings
 
-from .common import SocialCause, ReviewStatus, OrgRole, PHONE_REGEX, validate_image_size
+from .common import SocialCause, ReviewStatus, OrgRole, validate_image_size
 
 
 class Budget():
@@ -101,7 +101,7 @@ class Organization(models.Model):
     )
     phone_number = models.CharField(
         verbose_name="Phone number",
-        validators=[PHONE_REGEX],
+        # validators=[PHONE_REGEX],
         max_length=17,
         blank=True,
         null=True,

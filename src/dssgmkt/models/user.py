@@ -6,7 +6,6 @@ from django.contrib.auth.models import (
 from django.db import models
 
 from .common import (
-    PHONE_REGEX,
     ReviewStatus,
     OrgRole,
     SkillLevel,
@@ -50,8 +49,7 @@ class User(AbstractUser):
     )
     phone_number = models.CharField(
         verbose_name="Phone number",
-        help_text="Type your phone number in the format +999999999999999",
-        validators=[PHONE_REGEX],
+        # validators=[PHONE_REGEX],
         max_length=17,
         blank=True,
         null=True,

@@ -4,7 +4,7 @@ from django_countries.fields import CountryField
 from dssgsolve import settings
 
 from .common import (
-    SocialCause, ReviewStatus, Score, PHONE_REGEX,
+    SocialCause, ReviewStatus, Score,
     SkillLevel, validate_image_size,
 )
 from .org import Organization
