@@ -1,9 +1,10 @@
 from django.contrib.auth.management.commands import createsuperuser
 from django.core.management import CommandError
-from dssgmkt.models.user import UserType
+
 
 class Command(createsuperuser.Command):
-    help = 'Crate a superuser, and allow password to be provided'
+
+    help = 'Create a superuser, and allow password to be provided'
 
     def add_arguments(self, parser):
         super(Command, self).add_arguments(parser)
@@ -25,5 +26,4 @@ class Command(createsuperuser.Command):
         if password:
             user = self.UserModel._default_manager.db_manager(database).get(username=username)
             user.set_password(password)
-            user.initial_type = UserType.DSSG_STAFF
             user.save()
