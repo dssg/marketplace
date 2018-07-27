@@ -586,18 +586,19 @@ class ProjectService():
 
     @staticmethod
     def toggle_follower(request_user, projid):
-        project = Project.objects.get(pk=projid)
-        if project:
-            project_follower = ProjectFollower.objects.filter(project=project, user=request_user).first()
-            if project_follower:
-                project_follower.delete()
+        if request_user.is_authenticated:
+            project = Project.objects.get(pk=projid)
+            if project:
+                project_follower = ProjectFollower.objects.filter(project=project, user=request_user).first()
+                if project_follower:
+                    project_follower.delete()
+                else:
+                    project_follower = ProjectFollower()
+                    project_follower.project = project
+                    project_follower.user = request_user
+                    project_follower.save()
             else:
-                project_follower = ProjectFollower()
-                project_follower.project = project
-                project_follower.user = request_user
-                project_follower.save()
-        else:
-            raise KeyError('Project not found')
+                raise KeyError('Project not found')
 
     @staticmethod
     def get_user_projects_with_pending_volunteer_requests(request_user):
