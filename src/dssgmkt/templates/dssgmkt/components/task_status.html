@@ -24,30 +24,41 @@
           {% include 'dssgmkt/components/status_chevron.html' %}
         {% endif %}
         <span>
-          <i class="completed-icon material-icons" style="vertical-align: middle">check</i>
-          <i class="ongoing-icon fas fa-gift"></i>
+          {% if not task.is_draft %}
+            <i class="completed-icon material-icons" style="vertical-align: middle">check</i>
+            <i class="ongoing-icon fas fa-gift"></i>
+          {% endif %}
           New
         </span>
       </span>
       <span class="status {% if task.is_in_progress %}status-active{% endif %} border-bottom">
         {% include 'dssgmkt/components/status_chevron.html' %}
         <span>
-          <i class="completed-icon material-icons" style="vertical-align: middle">check</i>
-          <i class="ongoing-icon fas fa-tasks"></i>
+          {% if not task.is_draft %}
+            <i class="completed-icon material-icons" style="vertical-align: middle">check</i>
+            <i class="ongoing-icon fas fa-tasks"></i>
+          {% endif %}
           In progress
         </span>
       </span>
       <span class="status {% if task.is_pending_review %}status-active{% endif %} border-bottom">
         {% include 'dssgmkt/components/status_chevron.html' %}
         <span>
-          <i class="completed-icon material-icons" style="vertical-align: middle">check</i>
-          <i class="ongoing-icon fas fa-award"></i>
+          {% if not task.is_draft %}
+            <i class="completed-icon material-icons" style="vertical-align: middle">check</i>
+            <i class="ongoing-icon fas fa-award"></i>
+          {% endif %}
           Task QA
         </span>
       </span>
       <span class="status {% if task.is_completed %}status-active bg-success{% endif %} border-bottom rounded-right border-right">
         {% include 'dssgmkt/components/status_chevron.html' %}
-        <span><i class="material-icons final" style="vertical-align: middle">done_all</i>Completed</span></span>
+        <span>
+          {% if not task.is_draft %}
+            <i class="material-icons final" style="vertical-align: middle">done_all</i>
+          {% endif %}
+          Completed</span>
+        </span>
     </div>
 
   <div class="status-description col-lg-12 bg-primary text-white {% if task.is_completed %} bg-success{% elif task.is_draft %}bg-danger{% endif %} rounded">
