@@ -16,6 +16,7 @@ import requests
 from decouple import Csv, config
 from dj_database_url import parse as db_url
 from django.contrib.messages import constants as messages
+from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -51,6 +52,12 @@ else:
     if EC2_PRIVATE_IP:
         ALLOWED_HOSTS.append(EC2_PRIVATE_IP)
 
+file_storage_option = config('DEFAULT_FILE_STORAGE', default='') or 'filesystem'
+file_storage_options = {'s3', 'whitenoise', 'filesystem'}
+if file_storage_option not in file_storage_options:
+    raise ImproperlyConfigured("unrecognized value for DEFAULT_FILE_STORAGE: "
+                               f"{file_storage_option!r} not in {file_storage_options}")
+
 
 # Application definition
 
@@ -66,8 +73,11 @@ INSTALLED_APPS = [
     'rules',
     'widget_tweaks',
     'markdown_deux',
-    'storages',
 ]
+
+if file_storage_option == 's3':
+    INSTALLED_APPS.append('storages')
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -78,6 +88,10 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+if file_storage_option == 'whitenoise':
+    MIDDLEWARE.append('whitenoise.middleware.WhiteNoiseMiddleware')
+
 
 ROOT_URLCONF = 'dssgsolve.urls'
 
@@ -162,7 +176,7 @@ USE_TZ = True
 ## DEBUG = True. When not in debug mode, Django will not serve those files locally
 ## so it needs a remote storage system.
 ## Whitenoise works for serving static files locally, but not for user-uploaded files.
-if config('USE_S3_FOR_FILE_STORAGE', cast=bool, default=False):
+if file_storage_option == 's3':
     DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
     STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 

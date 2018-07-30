@@ -8,7 +8,7 @@
       <thead>
         <tr>
             <th>Full name</th>
-            <th>Email address</th>
+            {# <th>Email address</th> #}
             <th>Role</th>
             <th>Member since</th>
             {% if user_is_administrator %}
@@ -21,7 +21,7 @@
         {% for staff in organization_staff %}
           <tr>
               <td>{% include 'dssgmkt/components/user_display.html' with user=staff.user %}</td>
-              <td><a href="{% url 'dssgmkt:user_profile' staff.user.id %}">{{ staff.user.email }}</a></td>
+              {# <td><a href="{% url 'dssgmkt:user_profile' staff.user.id %}">{{ staff.user.email }}</a></td> #}
               <td>{{ staff.get_role_display }}</td>
               <td>{{ staff.creation_date }}</td>
               {% if user_is_administrator %}
@@ -92,7 +92,7 @@
         </div>
       {% endif %}
 
-      
+
       <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
       <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
       <script src="/static/js/bootstrap3-typeahead.min.js"></script>
@@ -120,16 +120,14 @@
           $('.typeahead').typeahead({
               source: function (query, process) {
                   return $.getJSON(
-                      '/ajax/org/1/candidates/' + query,
+                      '/ajax/org/{{ organization.id }}/candidates/' + query,
                       {},
                       function (data) {
-                          console.log(data)
                           return process(data['users']);
                       })
               },
               afterSelect: function(x) {
                 $('#userid').val(x['id'])
-                console.log(x);
               }
           });
 
@@ -159,7 +157,7 @@
       <thead>
         <tr>
             <th>Full name</th>
-            <th>Email address</th>
+            {# <th>Email address</th> #}
             <th>Request date</th>
             <th>Status</th>
             <th>Resolution date</th>
@@ -169,7 +167,7 @@
         {% for request in organization_requests %}
           <tr>
               <td>{% include 'dssgmkt/components/user_display.html' with user=request.user %}</td>
-              <td><a href="{% url 'dssgmkt:user_profile' request.user.id %}">{{ request.user.email }}</a></td>
+              {# <td><a href="{% url 'dssgmkt:user_profile' request.user.id %}">{{ request.user.email }}</a></td> #}
               <td>{{ request.request_date }}</td>
               <td>
                 <a href="{% url 'dssgmkt:org_staff_request_review' organization.id request.id %}"

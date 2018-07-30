@@ -60,6 +60,13 @@
                 <i class="material-icons" style="vertical-align: middle">remove_circle</i>
                 Delete task
               </a>
+              {% if project_task.is_draft %}
+                <a class="btn btn-success col-lg-12 mb-1"
+                   href="{% url 'dssgmkt:proj_task_publish' project.id project_task.id %}">
+                  <i class="material-icons" style="vertical-align: middle">publish</i>
+                  Publish task
+                </a>
+              {% endif %}
             {% endif %}
           </div>
         </div>

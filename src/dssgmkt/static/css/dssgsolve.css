@@ -106,36 +106,49 @@ fieldset legend {
 .status span {
   display: inline-block;
   padding: 5px;
-  margin-left: 10px;
+  margin-left: 5px;
 }
 
-.status-active ~ .status span i{
+.ongoing-icon {
+  display: none !important;
+}
+
+.status-active ~ .status span .completed-icon {
   display: none;
 }
-.status-active span i{
+
+.status-active ~ .status span .ongoing-icon {
+  display: inherit !important;
+}
+.status-active span .completed-icon{
   display: none;
+}
+.status-active span .ongoing-icon{
+  display: inherit !important;
 }
 .status-active i.final{
   display: inherit !important;
 }
 
-.svgdiagnoal {
+.svgdiagonal {
   height: 100%;
   left: 0px;
   position: absolute;
 }
 
-.svgdiagnoal polygon {
+.svgdiagonal polygon {
   fill: #a0c455;
 }
 
-.status-active ~ .status .svgdiagnoal polygon {
+.status-active ~ .status .svgdiagonal polygon {
   fill: white;
 }
-.status-active + .status .svgdiagnoal polygon {
+
+.status-active + .status .svgdiagonal polygon {
   fill: #2C3E50;
 }
-.status-active.bg-danger + .status .svgdiagnoal polygon {
+
+.status-active.bg-danger + .status .svgdiagonal polygon {
   fill: #E74C3C;
 }
 
@@ -174,6 +187,7 @@ fieldset legend {
   font-style: italic;
   font-size: 0.8em;
 }
+
 .volunteer-highlight .blockquote-footer {
 
 }
@@ -189,10 +203,12 @@ fieldset legend {
     width: 280px;
     font-size: 14px !important;
 }
+
 .ui-datepicker a,
 .ui-datepicker a:hover {
     text-decoration: none;
 }
+
 .ui-datepicker a:hover,
 .ui-datepicker td:hover a {
     color: #2A6496;
@@ -201,13 +217,16 @@ fieldset legend {
          -o-transition: color 0.1s ease-in-out;
             transition: color 0.1s ease-in-out;
 }
+
 .ui-datepicker .ui-datepicker-header {
     margin-bottom: 4px;
     text-align: center;
 }
+
 .ui-datepicker .ui-datepicker-title {
     font-weight: 700;
 }
+
 .ui-datepicker .ui-datepicker-prev,
 .ui-datepicker .ui-datepicker-next {
     cursor: pointer;
@@ -217,24 +236,29 @@ fieldset legend {
     width: 40px;
     color: #999;
 }
+
 .ui-datepicker .ui-datepicker-prev {
     float: left;
     text-align: left;
 }
+
 .ui-datepicker .ui-datepicker-next {
     float: right;
     text-align: right;
 }
+
 .ui-datepicker .ui-datepicker-calendar {
   table-layout: fixed;
     width: 100%;
 }
+
 .ui-datepicker .ui-datepicker-calendar th,
 .ui-datepicker .ui-datepicker-calendar td {
     text-align: center;
     padding: 4px 0;
     color: #000 !important;
 }
+
 .ui-datepicker .ui-datepicker-calendar td {
     border-radius: 4px;
     -webkit-transition: background-color 0.1s ease-in-out, color 0.1s ease-in-out;
@@ -242,21 +266,26 @@ fieldset legend {
          -o-transition: background-color 0.1s ease-in-out, color 0.1s ease-in-out;
             transition: background-color 0.1s ease-in-out, color 0.1s ease-in-out;
 }
+
 .ui-datepicker .ui-datepicker-calendar td:hover:not(.ui-datepicker-current-day) {
     background-color: #eee;
     cursor: pointer;
 }
+
 .ui-datepicker .ui-datepicker-calendar td a {
     text-decoration: none;
     color: #000;
 }
+
 .ui-datepicker .ui-datepicker-current-day {
     background-color: #285e8e;
     /* background-color: #4289cc; */
 }
+
 .ui-datepicker td.ui-datepicker-current-day a {
     color: #fff;
 }
+
 .ui-datepicker .ui-datepicker-calendar .ui-datepicker-unselectable:hover {
     background-color: #fff;
     cursor: default;

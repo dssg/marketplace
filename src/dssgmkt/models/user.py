@@ -1,9 +1,17 @@
-from django.contrib.auth.models import AbstractUser
+from django.conf import settings
+from django.contrib.auth.models import (
+    AbstractUser,
+    UserManager as AuthUserManager,
+)
 from django.db import models
 
-from dssgsolve import settings
+from .common import (
+    ReviewStatus,
+    OrgRole,
+    SkillLevel,
+    validate_image_size,
+)
 
-from .common import PHONE_REGEX, ReviewStatus, OrgRole, SkillLevel, validate_image_size
 
 class UserType():
     DSSG_STAFF = 0
@@ -17,7 +25,16 @@ class UserType():
                 (UserType.ORGANIZATION, 'Organization member'),
                 )
 
+
+class UserManager(AuthUserManager):
+
+    def create_superuser(self, *args, **kwargs):
+        kwargs.setdefault('initial_type', UserType.DSSG_STAFF)
+        return super().create_superuser(*args, **kwargs)
+
+
 class User(AbstractUser):
+
     initial_type = models.IntegerField(
         verbose_name="Initial type of user",
         help_text="Users can check their preference when they sign up to indicate they want to be volunteers or create/join organizations",
@@ -32,8 +49,7 @@ class User(AbstractUser):
     )
     phone_number = models.CharField(
         verbose_name="Phone number",
-        help_text="Type your phone number in the format +999999999999999",
-        validators=[PHONE_REGEX],
+        # validators=[PHONE_REGEX],
         max_length=17,
         blank=True,
         null=True,
@@ -53,6 +69,8 @@ class User(AbstractUser):
         null=True,
         validators=[validate_image_size],
     )
+
+    objects = UserManager()
 
     def full_name(self):
         return self.first_name + " " + self.last_name

@@ -16,7 +16,7 @@
     </div>
 
     <div class="col-lg-4">
-      {% if not project.is_completed %}
+      {% if not project.is_completed and user.is_authenticated %}
         <form id="followproject">
           {% csrf_token %}
           <button type="submit"

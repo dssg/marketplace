@@ -57,7 +57,8 @@ class ProjectService():
                     project_status_list = [project_status_list]
                 project_statuses = []
                 for project_status_from_view in project_status_list:
-                    project_statuses.append(project_status_view_model_translation[project_status_from_view])
+                    status_filter = project_status_view_model_translation[project_status_from_view]
+                    project_statuses.extend(status_filter)
                 base_query = base_query.filter(status__in=project_statuses).distinct()
         return base_query.distinct().order_by('name')
 
@@ -279,7 +280,7 @@ class ProjectService():
             project_management_task.short_summary = 'Project management task to ensure the project is successful.'
             project_management_task.description = 'This project needs experienced project managers that can ensure the project gets successfully completed on time. Duties include managing the status of all the tasks in the project, ensuring work gets done at the required pace, foreseeing risks to the project and preventing blockers. Project managers will also review volunteer applications and will QA the work done by volunteers.'
             project_management_task.onboarding_instructions = 'Describe in detail the volunteer onboarding instructions for project management.'
-            project_management_task.stage = TaskStatus.NOT_STARTED
+            project_management_task.stage = TaskStatus.DRAFT
             project_management_task.type = TaskType.PROJECT_MANAGEMENT_TASK
             project_management_task.accepting_volunteers = False
             project_management_task.project = project
@@ -294,7 +295,7 @@ class ProjectService():
             domain_work_task.short_summary = 'Project work description.'
             domain_work_task.description = 'Domain work tasks represent the tasks that need to be completed to finish the project. '
             domain_work_task.onboarding_instructions = 'Describe in detail the volunteer onboarding instructions for this domain work task.'
-            domain_work_task.stage = TaskStatus.NOT_STARTED
+            domain_work_task.stage = TaskStatus.DRAFT
             domain_work_task.type = TaskType.DOMAIN_WORK_TASK
             domain_work_task.accepting_volunteers = False
             domain_work_task.project = project
@@ -586,18 +587,19 @@ class ProjectService():
 
     @staticmethod
     def toggle_follower(request_user, projid):
-        project = Project.objects.get(pk=projid)
-        if project:
-            project_follower = ProjectFollower.objects.filter(project=project, user=request_user).first()
-            if project_follower:
-                project_follower.delete()
+        if request_user.is_authenticated:
+            project = Project.objects.get(pk=projid)
+            if project:
+                project_follower = ProjectFollower.objects.filter(project=project, user=request_user).first()
+                if project_follower:
+                    project_follower.delete()
+                else:
+                    project_follower = ProjectFollower()
+                    project_follower.project = project
+                    project_follower.user = request_user
+                    project_follower.save()
             else:
-                project_follower = ProjectFollower()
-                project_follower.project = project
-                project_follower.user = request_user
-                project_follower.save()
-        else:
-            raise KeyError('Project not found')
+                raise KeyError('Project not found')
 
     @staticmethod
     def get_user_projects_with_pending_volunteer_requests(request_user):
@@ -643,12 +645,12 @@ class ProjectTaskService():
     @staticmethod
     def get_open_tasks(request_user, proj):
         return ProjectTask.objects.filter(accepting_volunteers = True,
-                                          project=proj).exclude(stage=TaskStatus.COMPLETED).order_by('estimated_start_date')
+                                          project=proj).exclude(stage__in=[TaskStatus.COMPLETED, TaskStatus.DRAFT, TaskStatus.DELETED]).order_by('estimated_start_date')
 
     @staticmethod
     def get_public_tasks(request_user, proj):
         query_set = ProjectTask.objects.filter(project=proj) \
-                                    .exclude(stage=TaskStatus.DELETED) \
+                                    .exclude(stage__in=[TaskStatus.DRAFT, TaskStatus.DELETED]) \
                                     .annotate(volunteer_count=Count('projecttaskrole', filter=Q(projecttaskrole__role=TaskRole.VOLUNTEER), distinct=True))
         if not request_user.is_anonymous:
             query_set = query_set.annotate(already_applied=Count('volunteerapplication', filter=Q(volunteerapplication__volunteer=request_user, volunteerapplication__status=ReviewStatus.NEW), distinct=True)) \
@@ -663,7 +665,7 @@ class ProjectTaskService():
 
     @staticmethod
     def get_non_finished_tasks(request_user, proj):
-        return ProjectTask.objects.filter(project=proj).exclude(stage=TaskStatus.COMPLETED).exclude(stage=TaskStatus.DELETED).order_by('estimated_start_date')
+        return ProjectTask.objects.filter(project=proj).exclude(stage__in=[TaskStatus.DRAFT, TaskStatus.COMPLETED, TaskStatus.DELETED]).order_by('estimated_start_date')
 
     @staticmethod
     def get_volunteer_current_tasks(request_user, volunteer, projid):
@@ -901,7 +903,7 @@ class ProjectTaskService():
             project_task.short_summary = 'This is the task short summary'
             project_task.description = 'This is the task description'
             project_task.onboarding_instructions = 'These are the volunteer onboarding instructions'
-            project_task.stage = TaskStatus.NOT_STARTED
+            project_task.stage = TaskStatus.DRAFT
             project_task.accepting_volunteers = False
             project_task.project = project
             project_task.percentage_complete = 0
@@ -1627,3 +1629,25 @@ class ProjectTaskService():
                 pinned_review.save()
         else:
             raise KeyError('Task review not found')
+
+
+    @staticmethod
+    def publish_project_task(request_user, projid, taskid, project_task):
+        validate_consistent_keys(project_task, ('id', taskid), (['project', 'id'], projid))
+        project = project_task.project
+        ensure_user_has_permission(request_user, project, 'project.task_edit')
+        if project_task.stage == TaskStatus.DRAFT:
+            project_task.stage = TaskStatus.NOT_STARTED
+            project_task.save()
+            message = "The project task {0} from project {1} was published by {2}.".format(project_task.name, project.name, request_user.standard_display_name())
+            NotificationService.add_multiuser_notification(ProjectService.get_project_members(request_user, project),
+                                          message,
+                                          NotificationSeverity.WARNING,
+                                          NotificationSource.TASK,
+                                          project_task.id)
+            ProjectService.add_project_change(request_user,
+                                    project,
+                                    ProjectLogType.EDIT,
+                                    ProjectLogSource.TASK,
+                                    project_task.id,
+                                    message)

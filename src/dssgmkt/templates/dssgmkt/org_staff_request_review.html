@@ -12,8 +12,8 @@
       application and accept or reject it.</p>
 
       <p>User: {% include 'dssgmkt/components/user_display.html' with user=organizationmembershiprequest.user %}</p>
-      <p>Email addres:<a href="{% url 'dssgmkt:user_profile' organizationmembershiprequest.user.id %}">
-        {{ organizationmembershiprequest.user.email }}</a></p>
+      {% comment %} <p>Email addres:<a href="{% url 'dssgmkt:user_profile' organizationmembershiprequest.user.id %}">
+        {{ organizationmembershiprequest.user.email }}</a></p> {% endcomment %}
       <p>Request date: {{ organizationmembershiprequest.request_date }} </p>
     </div>
   </div>

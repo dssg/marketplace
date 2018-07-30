@@ -5,7 +5,7 @@
   <form id="removestaff">
     <h4 class="section-header">Remove staff member</h4>
     <p>User: {% include 'dssgmkt/components/user_display.html' with user=organizationrole.user %}</p>
-    <p>Email: {{ organizationrole.user.email }}</p>
+    {# <p>Email: {{ organizationrole.user.email }}</p> #}
     {% csrf_token %}
     {% include 'dssgmkt/components/standard_form_fields.html' %}
 

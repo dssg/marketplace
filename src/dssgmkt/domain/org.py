@@ -131,7 +131,7 @@ class OrganizationService():
                                               Q(last_name__icontains=query) | \
                                               Q(email__icontains=query) | \
                                               Q(username__icontains=query))
-        return base_query.values('first_name', 'last_name', 'email', 'username', 'id').order_by('first_name', 'last_name')[:25]
+        return base_query.values('first_name', 'last_name', 'username', 'id').order_by('first_name', 'last_name')[:25]
 
     @staticmethod
     def get_organization_projects(request_user, org):

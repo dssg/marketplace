@@ -80,6 +80,7 @@
                                 </i>
                                 {{ task_review.get_review_result_display }}
                             </span></p>
+    <p>Score: {% include 'dssgmkt/components/review_score_display.html' with review=task_review score_display=task_review.get_review_score_display %}</p>
     <p>Resolution date: {{ task_review.review_date }}</p>
     <p>Reviewer: {% include 'dssgmkt/components/user_display.html' with user=task_review.reviewer %}</p>
     {% if task_review.public_reviewer_comments %}

@@ -1,79 +1,80 @@
 
-
 <div class="col-lg-12 p-3">
   <div class="status-component col-lg-12 border-light mt-3 mb-3">
     <div class="status-row col-lg-12 border-top rounded-right rounded-left {% if not project.is_completed_status %}border-right{% endif %}">
       {% if project.is_draft_status %}
         <span class="status status-active bg-danger border-bottom rounded-left">
+            <i class="fas fa-drafting-compass"></i>
             <span>Draft</span>
           </span>
       {% endif %}
       <span class="status {% if project.is_new_status %}status-active{% endif %} border-bottom {% if not project.is_draft_status %}rounded-left{% endif %}">
         {% if project.is_draft_status %}
-          <svg class="svgdiagnoal" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 100" preserveAspectRatio="none">
-            <polygon points="0 100 40 50 0 50" /><polygon points="0 0 40 50 0 50" />
-            <line x1="0" y1="100" x2="40" y2="50" stroke="#ecf0f1" stroke-width="3"/>
-            <line x1="0" y1="0" x2="40" y2="50" stroke="#ecf0f1" stroke-width="3"/>
-          </svg>
+          {% include 'dssgmkt/components/status_chevron.html' %}
         {% endif %}
-        <span><i class="material-icons" style="vertical-align: middle">check</i>New</span>
+        <span>
+          <i class="completed-icon material-icons" style="vertical-align: middle">check</i>
+          <i class="ongoing-icon fas fa-gift"></i>
+          New
+        </span>
       </span>
       <span class="status {% if project.is_design_status %}status-active{% endif %} border-bottom">
-        <svg class="svgdiagnoal" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 100" preserveAspectRatio="none">
-          <polygon points="0 100 40 50 0 50" /><polygon points="0 0 40 50 0 50" />
-          <line x1="0" y1="100" x2="40" y2="50" stroke="#ecf0f1" stroke-width="3"/>
-          <line x1="0" y1="0" x2="40" y2="50" stroke="#ecf0f1" stroke-width="3"/>
-        </svg>
-        <span><i class="material-icons" style="vertical-align: middle">check</i>Scoping</span>
+        {% include 'dssgmkt/components/status_chevron.html' %}
+        <span>
+          <i class="completed-icon material-icons" style="vertical-align: middle">check</i>
+          <i class="ongoing-icon fas fa-ruler"></i>
+          Scoping
+        </span>
       </span>
       <span class="status {% if project.is_waiting_design_approval_status %}status-active{% endif %} border-bottom">
-        <svg class="svgdiagnoal" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 100" preserveAspectRatio="none">
-          <polygon points="0 100 40 50 0 50" /><polygon points="0 0 40 50 0 50" />
-          <line x1="0" y1="100" x2="40" y2="50" stroke="#ecf0f1" stroke-width="3"/>
-          <line x1="0" y1="0" x2="40" y2="50" stroke="#ecf0f1" stroke-width="3"/>
-        </svg>
-        <span><i class="material-icons" style="vertical-align: middle">check</i>Scoping QA</span>
+        {% include 'dssgmkt/components/status_chevron.html' %}
+        <span>
+          <i class="completed-icon material-icons" style="vertical-align: middle">check</i>
+          <i class="ongoing-icon fas fa-pencil-ruler"></i>
+          Scoping QA
+        </span>
       </span>
       <span class="status {% if project.is_waiting_staff_status %}status-active{% endif %} border-bottom">
-        <svg class="svgdiagnoal" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 100" preserveAspectRatio="none">
-          <polygon points="0 100 40 50 0 50" /><polygon points="0 0 40 50 0 50" />
-          <line x1="0" y1="100" x2="40" y2="50" stroke="#ecf0f1" stroke-width="3"/>
-          <line x1="0" y1="0" x2="40" y2="50" stroke="#ecf0f1" stroke-width="3"/>
-        </svg>
-        <span><i class="material-icons" style="vertical-align: middle">check</i>Staffing</span>
+        {% include 'dssgmkt/components/status_chevron.html' %}
+        <span>
+          <i class="completed-icon material-icons" style="vertical-align: middle">check</i>
+          <i class="ongoing-icon fas fa-hands-helping"></i>
+          Staffing
+        </span>
       </span>
       <span class="status {% if project.is_in_progress_status %}status-active{% endif %} border-bottom">
-        <svg class="svgdiagnoal" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 100" preserveAspectRatio="none">
-          <polygon points="0 100 40 50 0 50" /><polygon points="0 0 40 50 0 50" />
-          <line x1="0" y1="100" x2="40" y2="50" stroke="#ecf0f1" stroke-width="3"/>
-          <line x1="0" y1="0" x2="40" y2="50" stroke="#ecf0f1" stroke-width="3"/>
-        </svg>
-        <span><i class="material-icons" style="vertical-align: middle">check</i>In progress</span>
+        {% include 'dssgmkt/components/status_chevron.html' %}
+        <span>
+          <i class="completed-icon material-icons" style="vertical-align: middle">check</i>
+          <i class="ongoing-icon fas fa-tasks"></i>
+          In progress
+        </span>
       </span>
       <span class="status {% if project.is_waiting_review_status %}status-active{% endif %} border-bottom">
-        <svg class="svgdiagnoal" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 100" preserveAspectRatio="none">
-          <polygon points="0 100 40 50 0 50" /><polygon points="0 0 40 50 0 50" />
-          <line x1="0" y1="100" x2="40" y2="50" stroke="#ecf0f1" stroke-width="3"/>
-          <line x1="0" y1="0" x2="40" y2="50" stroke="#ecf0f1" stroke-width="3"/>
-        </svg>
-        <span><i class="material-icons" style="vertical-align: middle">check</i>Final QA</span>
+        {% include 'dssgmkt/components/status_chevron.html' %}
+        <span>
+          <i class="completed-icon material-icons" style="vertical-align: middle">check</i>
+          <i class="ongoing-icon fas fa-award"></i>
+          Final QA
+        </span>
       </span>
       {% if project.is_expired_status %}
         <span class="status status-active bg-danger border-bottom">
-          <svg class="svgdiagnoal" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 100" preserveAspectRatio="none">
-            <polygon points="0 100 40 50 0 50" /><polygon points="0 0 40 50 0 50" />
-            <line x1="0" y1="100" x2="40" y2="50" stroke="#ecf0f1" stroke-width="3"/>
-            <line x1="0" y1="0" x2="40" y2="50" stroke="#ecf0f1" stroke-width="3"/>
-          </svg>
-          <span><i class="material-icons" style="vertical-align: middle">check</i>Expired</span></span>
+          {% include 'dssgmkt/components/status_chevron.html' %}
+          <span>
+            <i class="material-icons" style="vertical-align: middle">check</i>
+            <i class="text-muted fas fa-exclamation"></i>
+            Expired
+          </span>
+        </span>
       {% else %}
         <span class="status {% if project.is_completed_status %}status-active bg-success{% endif %} border-bottom rounded-right ">
-          <svg class="svgdiagnoal" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 100" preserveAspectRatio="none">
-            <polygon points="0 100 40 50 0 50" /><polygon points="0 0 40 50 0 50" />
-            <line x1="0" y1="100" x2="40" y2="50" stroke="#ecf0f1" stroke-width="3"/>
-            <line x1="0" y1="0" x2="40" y2="50" stroke="#ecf0f1" stroke-width="3"/>
-          </svg>
-          <span><i class="material-icons final" style="vertical-align: middle">done_all</i>Completed</span></span>
+          {% include 'dssgmkt/components/status_chevron.html' %}
+          <span>
+            <i class="material-icons final" style="vertical-align: middle">done_all</i>
+            Completed
+          </span>
+        </span>
       {% endif %}
     </div>
     <div class="status-description col-lg-12 rounded-left rounded-right {% if project.is_draft_status or project.is_expired_status %}bg-danger{% elif project.is_completed_status %}bg-success{% else %}bg-primary{% endif %} text-white">

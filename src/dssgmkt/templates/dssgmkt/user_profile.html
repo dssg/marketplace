@@ -93,7 +93,7 @@
             <blockquote class="blockquote">
               <div class="title text-muted d-flex">
                 <span class="flex-grow-1">Project {{ pinned_review.task_review.task.project.name }}: {{ pinned_review.task_review.task.name }}</span>
-                <span>Score: {{ pinned_review.task_review.get_review_score_display }}</span>
+                <span>Score: {% include 'dssgmkt/components/review_score_display.html' with review=pinned_review.task_review score_display=pinned_review.task_review.get_review_score_display %}</span>
               </div>
               <div class="mb-0 text">{{ pinned_review.task_review.public_reviewer_comments|markdown }}</div>
               <footer class="blockquote-footer">{% include 'dssgmkt/components/user_display.html' with user=pinned_review.task_review.reviewer %}</footer>
@@ -109,9 +109,9 @@
         <div class="card-body">
           <p>Full name: {{ userprofile.full_name }}</p>
           <p>User name: {{ userprofile.username }}</p>
-          <p>Email address: {{ userprofile.email }}</p>
-          <p>Phone number: {{ userprofile.phone_number }}</p>
-          <p>Skype name: {{ userprofile.skype_name }}</p>
+          {# <p>Email address: {{ userprofile.email }}</p> #}
+          {# <p>Phone number: {{ userprofile.phone_number }}</p> #}
+          {% if userprofile.skype_name %}<p>Skype name: {{ userprofile.skype_name }}</p> {% endif %}
         </div>
       </div>
       <div class="card">
@@ -202,7 +202,6 @@
                     <th>Social impact area</th>
                     <th>Project summary</th>
                     <th>Task name</th>
-                    <th>Volunteer role</th>
                     <th>Task status</th>
                 </tr>
               </thead>
@@ -214,10 +213,14 @@
                       <td>
                         {% include 'dssgmkt/components/social_cause_display.html' with object=project_task.project social_cause=project_task.project.get_project_cause_display %}
                       </td>
-                      <td>{{ project_task.project.summary }}</td>
-                      <td>{{ project_task.name }}</td>
-                      <td>{{ project_task.get_type_display }}</td>
-                      <td>{{ project_task.project.get_status_display }}</td>
+                      <td>{{ project_task.project.short_summary }}</td>
+                      <td>
+                        {% include 'dssgmkt/components/task_type_display.html' with compact_display=True %}
+                        {{ project_task.name }}
+                      </td>
+                      <td>
+                        {% include 'dssgmkt/components/task_stage_display.html' %}
+                      </td>
                   </tr>
                 {% endfor %}
               </tbody>

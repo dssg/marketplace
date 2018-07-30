@@ -4,7 +4,7 @@ from django_countries.fields import CountryField
 from dssgsolve import settings
 
 from .common import (
-    SocialCause, ReviewStatus, Score, PHONE_REGEX,
+    SocialCause, ReviewStatus, Score,
     SkillLevel, validate_image_size,
 )
 from .org import Organization
@@ -461,6 +461,7 @@ class TaskType():
                 )
 
 class TaskStatus():
+    DRAFT='DRF'
     NOT_STARTED='NOT'
     # ACCEPTING_VOLUNTEERS='AVL'
     STARTED='STA'
@@ -470,6 +471,7 @@ class TaskStatus():
 
     def get_choices():
         return (
+                    (TaskStatus.DRAFT, 'Draft'),
                     (TaskStatus.NOT_STARTED, 'Not started'),
                     # (TaskStatus.ACCEPTING_VOLUNTEERS, 'Accepting volunteers'),
                     (TaskStatus.STARTED, 'Started'),
@@ -581,6 +583,9 @@ class ProjectTask(models.Model):
 
     def __str__(self):
         return self.name
+
+    def is_draft(self):
+        return self.stage == TaskStatus.DRAFT
 
     def is_not_started(self):
         return self.stage == TaskStatus.NOT_STARTED
@@ -727,6 +732,21 @@ class ProjectTaskReview(models.Model):
 
     def is_rejected(self):
         return self.review_result == ReviewStatus.REJECTED
+
+    def is_score_one_star(self):
+        return self.review_score == Score.ONE_STAR
+
+    def is_score_two_stars(self):
+        return self.review_score == Score.TWO_STARS
+
+    def is_score_three_stars(self):
+        return self.review_score == Score.THREE_STARS
+
+    def is_score_four_stars(self):
+        return self.review_score == Score.FOUR_STARS
+
+    def is_score_five_stars(self):
+        return self.review_score == Score.FIVE_STARS
 
 
 class PinnedTaskReview(models.Model):

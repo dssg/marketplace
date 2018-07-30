@@ -66,8 +66,7 @@
           <thead>
             <tr>
                 <th>User</th>
-                <th>username</th>
-                <th>Email address</th>
+                {# <th>Email address</th> #}
                 <th>Member since</th>
             </tr>
           </thead>
@@ -75,8 +74,7 @@
             {% for volunteer in volunteer_list %}
               <tr>
                   <td>{% include 'dssgmkt/components/user_display.html' with user=volunteer.user hide_username=True %}</td>
-                  <td><a href="{% url 'dssgmkt:user_profile' volunteer.user.id %}">{{ volunteer.user.username }}</a></td>
-                  <td><a href="{% url 'dssgmkt:user_profile' volunteer.user.id %}">{{ volunteer.user.email }}</a></td>
+                  {# <td><a href="{% url 'dssgmkt:user_profile' volunteer.user.id %}">{{ volunteer.user.email }}</a></td> #}
                   <td>{{ volunteer.user.date_joined }}</td>
               </tr>
             {% endfor %}

@@ -1,3 +1,4 @@
+import logging
 from smtplib import SMTPException
 
 from django.conf import settings
@@ -6,7 +7,11 @@ from django.core.mail import send_mail
 from dssgmkt.models.user import UserNotification
 
 
+LOG = logging.getLogger(__name__)
+
+
 class NotificationService():
+
     @staticmethod
     def add_user_notification(user, notification_description, severity, source, target_id):
         notification = UserNotification(user=user,
@@ -40,11 +45,15 @@ class NotificationService():
     def send_email(from_email, to_email_or_list, subject, message):
         if isinstance(to_email_or_list, str):
             to_email_or_list = [to_email_or_list]
+
         try:
-            send_mail(subject, message, from_email, to_email_or_list, fail_silently=False)
-        except SMTPException as se:
-            # TODO log this exception
-            print(str(se))
-        except ConnectionRefusedError as cre:
-            # TODO log this exception
-            print(str(cre))
+            send_mail(
+                subject,
+                message,
+                from_email,
+                to_email_or_list,
+                fail_silently=False,
+            )
+        except (OSError, SMTPException):
+            LOG.exception("send_mail failed [from_email: %r] [to_email: %r]",
+                          from_email, to_email_or_list)
