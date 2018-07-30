@@ -186,6 +186,11 @@ class Project(models.Model):
         blank=True,
         null=True,
     )
+    is_demo = models.BooleanField(
+        verbose_name="Demo project?",
+        help_text="Specifies if this is a demonstration project",
+        default=False,
+    )
     creation_date = models.DateTimeField(
         verbose_name="Creation date",
         auto_now_add=True,

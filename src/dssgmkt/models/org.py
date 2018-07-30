@@ -162,6 +162,11 @@ class Organization(models.Model):
         choices=GeographicalScope.get_choices(),
         default=GeographicalScope.LOCAL,
     )
+    is_demo = models.BooleanField(
+        verbose_name="Demo organization?",
+        help_text="Specifies if this is a demonstration organization",
+        default=False,
+    )
     creation_date = models.DateTimeField(auto_now_add=True)
     last_modified_date = models.DateTimeField(auto_now= True)
 
