@@ -103,6 +103,5 @@ The 'project_cause' field must be set to one of:
                         ProjectService.save_project(owner, new_project.id, new_project)
                     self.stdout.write('Created project {0}'.format(new_project))
                 except Exception as e:
-                    print(str(e))
-                    self.stdout.write(self.style.WARNING('Failed to create project {0}'.format(new_project)))
+                    self.stdout.write(self.style.WARNING('Failed to create project {0}: {1}'.format(new_project, str(e))))
         self.stdout.write(self.style.SUCCESS('Finished loading projects.'))
