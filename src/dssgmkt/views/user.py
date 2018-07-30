@@ -11,6 +11,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.views import generic
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
+from django.conf import settings
 from rules.contrib.views import (
     PermissionRequiredMixin, objectgetter, permission_required,
 )
@@ -24,7 +25,6 @@ from dssgmkt.domain.user import UserService
 from dssgmkt.domain.proj import ProjectService, ProjectTaskService
 from dssgmkt.domain.org import OrganizationService
 from dssgmkt.domain.notifications import NotificationService
-from decouple import config
 
 
 def users_link(include_link=True):
@@ -345,5 +345,5 @@ def signup(request, user_type=None):
                         'user_type': user_type,
                         'breadcrumb': build_breadcrumb([home_link(),
                                                         ('Sign up', None)]),
-                        'captcha_site_key': config('RECAPTCHA_SITE_KEY', default=None),
+                        'captcha_site_key': settings.RECAPTCHA_SITE_KEY,
                     })

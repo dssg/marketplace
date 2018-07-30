@@ -272,3 +272,7 @@ MESSAGE_TAGS = {
     messages.WARNING: 'alert-warning',
     messages.ERROR: 'alert-danger',
 }
+
+
+RECAPTCHA_SITE_KEY = config('RECAPTCHA_SITE_KEY', default=None)
+RECAPTCHA_SECRET_KEY = config('RECAPTCHA_SECRET_KEY', default=None)
