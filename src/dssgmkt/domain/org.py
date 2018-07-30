@@ -122,6 +122,10 @@ class OrganizationService():
     @staticmethod
     def get_organization_members(request_user, org):
         return User.objects.filter(organizationrole__organization=org)
+        
+    @staticmethod
+    def get_organization_admins(request_user, org):
+        return User.objects.filter(organizationrole__role=OrgRole.ADMINISTRATOR, organizationrole__organization=org)
 
     @staticmethod
     def get_all_users_not_organization_members(orgid, query=None):
@@ -146,9 +150,6 @@ class OrganizationService():
         organization_members = OrganizationService.get_organization_members(request_user, orgid)
         return ProjectService.create_project(request_user, project, organization, organization_members)
 
-    @staticmethod
-    def get_organization_admins(request_user, org):
-        return User.objects.filter(organizationrole__role=OrgRole.ADMINISTRATOR, organizationrole__organization=org)
 
     @staticmethod
     def get_organizations_with_user_create_project_permission(request_user):
