@@ -1,6 +1,7 @@
 from django.db import IntegrityError, transaction
 from django.db.models import Q, Count, F
 from django.utils import timezone
+from django.conf import settings
 
 from ..models.common import (
     ReviewStatus, SkillLevel,
@@ -18,8 +19,6 @@ from .org import OrganizationService
 from .proj import ProjectService, ProjectTaskService
 from .notifications import NotificationService
 import requests
-from decouple import config
-
 
 from dssgmkt.authorization.common import ensure_user_has_permission
 
@@ -69,7 +68,7 @@ class UserService():
 
     @staticmethod
     def verify_captcha(captcha_response):
-        secret_key = config('RECAPTCHA_SECRET_KEY', default=None)
+        secret_key = settings.RECAPTCHA_SECRET_KEY
         if secret_key is None:
             return True
         url = 'https://www.google.com/recaptcha/api/siteverify'
