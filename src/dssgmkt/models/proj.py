@@ -314,10 +314,6 @@ class ProjectScope(models.Model):
         verbose_name="Creation date",
         auto_now_add=True,
     )
-    is_current = models.BooleanField(
-        verbose_name="Is current?",
-        help_text="Specifies if this is the latest scope of the project.",
-    )
     project = models.ForeignKey(
         Project,
         on_delete=models.CASCADE,
