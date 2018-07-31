@@ -81,7 +81,7 @@
           </tbody>
         </table>
         {% url 'dssgmkt:proj_list' as proj_list_url %}
-        {% include 'dssgmkt/components/pagination.html' with baseurl=proj_list_url %}
+        {% include 'dssgmkt/components/pagination.html' with baseurl=proj_list_url page_obj=proj_list %}
 
       {% else %}
         <p>No projects found.</p>
