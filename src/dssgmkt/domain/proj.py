@@ -255,7 +255,6 @@ class ProjectService():
             project_scope.scoping_process = project.scoping_process
             project_scope.available_staff = project.available_staff
             project_scope.available_data = project.available_data
-            project_scope.is_current = False
             project_scope.author = request_user
             project_scope.version_notes = "Initial scope at project creation time."
             project_scope.save()
