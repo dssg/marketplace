@@ -81,7 +81,7 @@
           </tbody>
         </table>
         {% url 'dssgmkt:volunteer_list' as volunteer_list_url %}
-        {% include 'dssgmkt/components/pagination.html' with baseurl=volunteer_list_url %}
+        {% include 'dssgmkt/components/pagination.html' with baseurl=volunteer_list_url page_obj=volunteer_list %}
 
       {% else %}
         <p>No volunteers found.</p>
