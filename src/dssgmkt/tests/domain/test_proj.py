@@ -127,6 +127,7 @@ class ProjectTestCase(TestCase):
         scoping_task = None
         project_management_task = None
         domain_work_task = None
+        volunteer_applications = []
         for task in tasks:
             ProjectTaskService.publish_project_task(self.owner_user, self.project.id, task.id, task)
             ProjectTaskService.toggle_task_accepting_volunteers(self.owner_user, self.project.id, task.id)
@@ -146,6 +147,8 @@ class ProjectTestCase(TestCase):
             self.assertEqual(list(ProjectService.get_user_projects_with_pending_volunteer_requests(self.owner_user)), [self.project])
             ProjectTaskService.accept_volunteer(self.owner_user, self.project.id, task.id, application)
             self.assertEqual(list(ProjectService.get_user_projects_with_pending_volunteer_requests(self.owner_user)), [])
+            volunteer_applications.append(application)
+        self.assertEqual(set(ProjectService.get_all_volunteer_applications(self.owner_user, self.project.id)), set(volunteer_applications))
 
     def test_project_roles(self):
         self.create_standard_project_structure()
@@ -240,15 +243,9 @@ class ProjectTestCase(TestCase):
         all_scopes = ProjectService.get_all_project_scopes(self.owner_user, self.project.id)
         self.assertEqual(len(all_scopes), 2)
 
-# ProjectService.get_all_project_scopes(request_user, projid)
-# ProjectService.get_current_project_scope(request_user, projid)
-# ProjectService.get_project_scope(request_user, projid, scopeid)
-# ProjectService.update_project_scope(request_user, projid, project_scope)
 
 # ProjectService.get_project_role(request_user, projid, roleid)
 
-
-# ProjectService.get_all_volunteer_applications(request_user, projid)
 
 # ProjectService.save_project_role(request_user, projid, project_role)
 # ProjectService.delete_project_role(request_user, projid, project_role)
