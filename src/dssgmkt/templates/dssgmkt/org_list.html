@@ -72,7 +72,7 @@
         </table>
 
         {% url 'dssgmkt:org_list' as org_list_url %}
-        {% include 'dssgmkt/components/pagination.html' with baseurl=org_list_url %}
+        {% include 'dssgmkt/components/pagination.html' with baseurl=org_list_url page_obj=org_list %}
 
 
       {% else %}
