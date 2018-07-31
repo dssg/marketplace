@@ -30,7 +30,7 @@ class ProjectService():
         return Project.objects.filter(pk=projid).annotate(follower_count=Count('projectfollower')).first()
 
     @staticmethod
-    def get_all_projects(request_user, search_config=None):
+    def get_all_public_projects(request_user, search_config=None):
         # We could also add the projects that are non-public but that also belong
         # to the organizations that the user is member of. Should that be added
         # or should users access those projects through the page of their org?
@@ -133,6 +133,7 @@ class ProjectService():
     @staticmethod
     def is_project_visible_by_user(user, project):
         if project.status == ProjectStatus.DRAFT:
+            # TODO Maybe add the project staff here.
             return ProjectService.user_is_project_owner(user, project)
         return True
 
@@ -1223,6 +1224,7 @@ class ProjectTaskService():
 
     @staticmethod
     def apply_to_volunteer(request_user, projid, taskid, task_application_request):
+        # TODO check that the task is not in draft stage
         project_task = ProjectTask.objects.get(pk=taskid, project__id=projid)
         validate_consistent_keys(project_task, 'Task not found in that project', (['project', 'id'], projid))
         ensure_user_has_permission(request_user, None, 'project.task_apply')

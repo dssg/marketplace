@@ -8,7 +8,8 @@ from dssgmkt.models.org import Organization, OrganizationRole, Budget, YearsInOp
 from dssgmkt.domain.user import UserService
 from dssgmkt.domain.org import OrganizationService
 
-# Create your tests here.
+from dssgmkt.tests.domain.common import example_organization_user, example_staff_user, example_volunteer_user, example_organization
+
 class OrganizationTestCase(TestCase):
     organization_user = None
     staff_user = None
@@ -16,41 +17,14 @@ class OrganizationTestCase(TestCase):
     organization = None
 
     def setUp(self):
-        self.organization_user = User()
-        self.organization_user.username = "OrgUser"
-        self.organization_user.first_name = "Organization"
-        self.organization_user.last_name = "User"
+        self.organization_user = example_organization_user()
         UserService.create_user(None, self.organization_user, 'organization', None)
-
-        self.staff_user = User()
-        self.staff_user.username = "StaffUser"
-        self.staff_user.first_name = "Staff"
-        self.staff_user.last_name = "User"
+        self.staff_user = example_staff_user()
         UserService.create_user(None, self.staff_user, 'organization', None)
-
-        self.volunteer_user = User()
-        self.volunteer_user.username = "VolUser"
-        self.volunteer_user.first_name = "Volunteer"
-        self.volunteer_user.last_name = "User"
-        self.volunteer_user.email = "volunteer@email.com"
+        self.volunteer_user = example_volunteer_user()
         UserService.create_user(None, self.volunteer_user, 'volunteer', None)
 
-        self.organization = Organization()
-        self.organization.name = "Organization A"
-        self.organization.short_summary = "A short description of the org"
-        self.organization.description = "A long form description of the organization"
-        self.organization.website_url = "http://exampleorg.com"
-        self.organization.phone_number = "(111)111-1111"
-        self.organization.email_address = "email@org.org"
-        self.organization.street_address = "1 One Street"
-        self.organization.city = "OrgCity"
-        self.organization.state = "OrgState"
-        self.organization.zipcode = "11111"
-        # self.organization.country = CountryField(verbose_name="Country")
-        self.organization.budget = Budget.B100K
-        self.organization.years_operation = YearsInOperation.Y0
-        self.organization.main_cause = SocialCause.EDUCATION
-        self.organization.organization_scope = GeographicalScope.LOCAL
+        self.organization = example_organization()
 
     def test_create_organization(self):
         all_organizations = OrganizationService.get_all_organizations(self.organization_user)
@@ -252,8 +226,7 @@ class OrganizationTestCase(TestCase):
         self.assertTrue(OrganizationService.user_is_organization_staff(self.staff_user, self.organization))
 
         membership_request = OrganizationMembershipRequest()
-        # We make sure the user is automatically replaced later with the right one
-        membership_request.user = self.staff_user
+        membership_request.user = self.staff_user # We make sure the user is automatically replaced later with the right one
         membership_request.role = OrgRole.STAFF
         OrganizationService.create_membership_request(self.organization_user, self.volunteer_user, self.organization.id, membership_request)
         with self.assertRaisesMessage(PermissionDenied, ''):

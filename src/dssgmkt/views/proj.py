@@ -143,9 +143,9 @@ def project_list_view(request):
             search_config['project_status'] = request.POST.getlist('projectstatus')
             for f in request.POST.getlist('projectstatus'):
                 checked_project_fields[f] = True
-        projects =  ProjectService.get_all_projects(request.user, search_config)
+        projects =  ProjectService.get_all_public_projects(request.user, search_config)
     elif request.method == 'GET':
-        projects =  ProjectService.get_all_projects(request.user)
+        projects =  ProjectService.get_all_public_projects(request.user)
 
     if projects:
         projects_page = paginate(request, projects, page_size=15)
