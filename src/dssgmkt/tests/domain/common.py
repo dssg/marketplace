@@ -1,4 +1,5 @@
 from django.utils import timezone
+from django.core.exceptions import PermissionDenied
 
 from dssgmkt.models.common import ReviewStatus, SocialCause
 from dssgmkt.models.user import User
@@ -69,3 +70,15 @@ def example_project():
     project.deliverable_reports_url = None
     project.is_demo = False
     return project
+
+
+def test_users_group_inclusion(test_case, all_users, included_users, predicate):
+    for user in all_users:
+        with test_case.subTest(user=user):
+            test_case.assertEqual(predicate(user), user in included_users)
+
+def test_permission_denied_operation(test_case, users, operation):
+    for user in users:
+        with test_case.subTest(user=user):
+            with test_case.assertRaisesMessage(PermissionDenied, ''):
+                operation(user)
