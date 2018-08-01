@@ -8,7 +8,11 @@ from dssgmkt.models.org import Organization, OrganizationRole, Budget, YearsInOp
 from dssgmkt.domain.user import UserService
 from dssgmkt.domain.org import OrganizationService
 
-from dssgmkt.tests.domain.common import example_organization_user, example_staff_user, example_volunteer_user, example_organization
+from dssgmkt.tests.domain.common import (
+    example_organization_user, example_staff_user, example_volunteer_user,
+    example_organization,
+    test_users_group_inclusion, test_permission_denied_operation,
+)
 
 class OrganizationTestCase(TestCase):
     organization_user = None
@@ -28,32 +32,31 @@ class OrganizationTestCase(TestCase):
 
     def test_create_organization(self):
         all_organizations = OrganizationService.get_all_organizations(self.organization_user)
-        self.assertFalse(all_organizations.exists())
+        with self.subTest(stage='No starting organizations'):
+            self.assertFalse(all_organizations.exists())
 
-        with self.assertRaisesMessage(PermissionDenied, ''):
-            OrganizationService.create_organization(AnonymousUser(), self.organization)
 
-        with self.assertRaisesMessage(PermissionDenied, ''):
-            OrganizationService.create_organization(self.volunteer_user, self.organization)
+        with self.subTest(stage='Create organization'):
+            test_permission_denied_operation(self, [AnonymousUser(), self.volunteer_user],
+                lambda x: OrganizationService.create_organization(x, self.organization))
+            OrganizationService.create_organization(self.organization_user, self.organization)
 
-        OrganizationService.create_organization(self.organization_user, self.organization)
         all_organizations = OrganizationService.get_all_organizations(self.organization_user)
         saved_organization = OrganizationService.get_organization(self.organization_user, self.organization.id)
-        self.assertEqual(len(all_organizations), 1)
-        self.assertEqual(all_organizations.first().name, self.organization.name)
-        self.assertEqual(all_organizations.first(), saved_organization)
-        self.assertEqual(
-            list(OrganizationService.get_all_organizations(AnonymousUser())),
-            list(OrganizationService.get_all_organizations(self.organization_user)),
-        )
-        self.assertEqual(
-            saved_organization,
-            OrganizationService.get_organization(AnonymousUser(), self.organization.id),
-        )
 
-    def test_get_featured_organization(self):
-        OrganizationService.create_organization(self.organization_user, self.organization)
-        self.assertEqual(OrganizationService.get_featured_organization(), self.organization)
+        with self.subTest(stage='Test created organization'):
+            self.assertEqual(len(all_organizations), 1)
+            self.assertEqual(all_organizations.first().name, self.organization.name)
+            self.assertEqual(all_organizations.first(), saved_organization)
+            self.assertEqual(
+                list(OrganizationService.get_all_organizations(AnonymousUser())),
+                list(OrganizationService.get_all_organizations(self.organization_user)),
+            )
+            self.assertEqual(
+                saved_organization,
+                OrganizationService.get_organization(AnonymousUser(), self.organization.id),
+            )
+            self.assertEqual(OrganizationService.get_featured_organization(), self.organization)
 
     def test_edit_organization(self):
         OrganizationService.create_organization(self.organization_user, self.organization)
@@ -71,18 +74,15 @@ class OrganizationTestCase(TestCase):
         self.organization.years_operation = YearsInOperation.Y25
         self.organization.main_cause = SocialCause.HEALTH
         self.organization.organization_scope = GeographicalScope.COUNTRY
-        with self.assertRaisesMessage(PermissionDenied, ''):
-            OrganizationService.save_organization_info(AnonymousUser(), self.organization.id, self.organization)
 
-        with self.assertRaisesMessage(PermissionDenied, ''):
-            OrganizationService.save_organization_info(self.volunteer_user, self.organization.id, self.organization)
+        with self.subTest(stage='Add staff member'):
+            OrganizationService.add_staff_member_by_id(self.organization_user, self.organization.id, self.staff_user.id, None)
 
-        OrganizationService.add_staff_member_by_id(self.organization_user, self.organization.id, self.staff_user.id, None)
-        with self.assertRaisesMessage(PermissionDenied, ''):
-            OrganizationService.save_organization_info(self.staff_user, self.organization.id, self.organization)
-
-        OrganizationService.save_organization_info(self.organization_user, self.organization.id, self.organization)
-        self.assertEqual(self.organization, OrganizationService.get_organization(self.organization_user, self.organization.id))
+        with self.subTest(stage='Edit organization'):
+            test_permission_denied_operation(self, [AnonymousUser(), self.volunteer_user, self.staff_user],
+                lambda x: OrganizationService.save_organization_info(x, self.organization.id, self.organization))
+            OrganizationService.save_organization_info(self.organization_user, self.organization.id, self.organization)
+            self.assertEqual(self.organization, OrganizationService.get_organization(self.organization_user, self.organization.id))
 
 
     def test_filter_organization(self):
@@ -104,92 +104,92 @@ class OrganizationTestCase(TestCase):
 
     def test_organization_roles(self):
         OrganizationService.create_organization(self.organization_user, self.organization)
-        self.assertTrue(OrganizationService.user_is_organization_admin(self.organization_user, self.organization))
-        self.assertTrue(OrganizationService.user_is_organization_member(self.organization_user, self.organization))
-        self.assertFalse(OrganizationService.user_is_organization_staff(self.organization_user, self.organization))
-        self.assertTrue(OrganizationService.user_is_any_organization_member(self.organization_user))
+        with self.subTest(stage='Check initial organization user\'s roles'):
+            self.assertTrue(OrganizationService.user_is_organization_admin(self.organization_user, self.organization))
+            self.assertTrue(OrganizationService.user_is_organization_member(self.organization_user, self.organization))
+            self.assertFalse(OrganizationService.user_is_organization_staff(self.organization_user, self.organization))
+            self.assertTrue(OrganizationService.user_is_any_organization_member(self.organization_user))
 
-        self.assertFalse(OrganizationService.user_is_organization_admin(self.volunteer_user, self.organization))
-        self.assertFalse(OrganizationService.user_is_organization_member(self.volunteer_user, self.organization))
-        self.assertFalse(OrganizationService.user_is_organization_staff(self.volunteer_user, self.organization))
-        self.assertFalse(OrganizationService.user_is_any_organization_member(self.volunteer_user))
+        with self.subTest(stage='Check initial volunteer user\'s roles'):
+            self.assertFalse(OrganizationService.user_is_organization_admin(self.volunteer_user, self.organization))
+            self.assertFalse(OrganizationService.user_is_organization_member(self.volunteer_user, self.organization))
+            self.assertFalse(OrganizationService.user_is_organization_staff(self.volunteer_user, self.organization))
+            self.assertFalse(OrganizationService.user_is_any_organization_member(self.volunteer_user))
 
-        with self.assertRaisesMessage(PermissionDenied, ''):
-            OrganizationService.add_staff_member_by_id(AnonymousUser(), self.organization.id, self.staff_user.id, None)
-        with self.assertRaisesMessage(PermissionDenied, ''):
-            OrganizationService.add_staff_member_by_id(self.staff_user, self.organization.id, self.staff_user.id, None)
-        OrganizationService.add_staff_member_by_id(self.organization_user, self.organization.id, self.staff_user.id, None)
+        with self.subTest(stage='Add staff member'):
+            test_permission_denied_operation(self, [AnonymousUser(), self.volunteer_user, self.staff_user],
+                lambda x: OrganizationService.add_staff_member_by_id(x, self.organization.id, self.staff_user.id, None))
+            OrganizationService.add_staff_member_by_id(self.organization_user, self.organization.id, self.staff_user.id, None)
 
-        self.assertFalse(OrganizationService.user_is_organization_admin(self.staff_user, self.organization))
-        self.assertTrue(OrganizationService.user_is_organization_member(self.staff_user, self.organization))
-        self.assertTrue(OrganizationService.user_is_organization_staff(self.staff_user, self.organization))
-        self.assertTrue(OrganizationService.user_is_any_organization_member(self.staff_user))
+        with self.subTest(stage='Check staff user\'s roles'):
+            self.assertFalse(OrganizationService.user_is_organization_admin(self.staff_user, self.organization))
+            self.assertTrue(OrganizationService.user_is_organization_member(self.staff_user, self.organization))
+            self.assertTrue(OrganizationService.user_is_organization_staff(self.staff_user, self.organization))
+            self.assertTrue(OrganizationService.user_is_any_organization_member(self.staff_user))
 
-        organization_staff_roles = OrganizationService.get_organization_staff(self.organization_user, self.organization)
-        org_admin_user_role = OrganizationService.get_organization_role(self.organization_user, self.organization.id, self.organization_user.id)
-        org_staff_user_role = OrganizationService.get_organization_role(self.organization_user, self.organization.id, self.staff_user.id)
-        self.assertEqual(list(organization_staff_roles), [
-            org_admin_user_role,
-            org_staff_user_role,
-        ])
-        self.assertEqual(org_admin_user_role, OrganizationService.get_organization_role_by_pk(self.organization_user, self.organization.id, org_admin_user_role.id))
-        self.assertEqual(org_staff_user_role, OrganizationService.get_organization_role_by_pk(self.organization_user, self.organization.id, org_staff_user_role.id))
 
-        organization_members = OrganizationService.get_organization_members(self.organization_user, self.organization)
-        self.assertEqual(set(organization_members), set([self.organization_user, self.staff_user]))
+        with self.subTest(stage='Check organization group roles'):
+            organization_staff_roles = OrganizationService.get_organization_staff(self.organization_user, self.organization)
+            org_admin_user_role = OrganizationService.get_organization_role(self.organization_user, self.organization.id, self.organization_user.id)
+            org_staff_user_role = OrganizationService.get_organization_role(self.organization_user, self.organization.id, self.staff_user.id)
+            self.assertEqual(list(organization_staff_roles), [
+                org_admin_user_role,
+                org_staff_user_role,
+            ])
+            self.assertEqual(org_admin_user_role, OrganizationService.get_organization_role_by_pk(self.organization_user, self.organization.id, org_admin_user_role.id))
+            self.assertEqual(org_staff_user_role, OrganizationService.get_organization_role_by_pk(self.organization_user, self.organization.id, org_staff_user_role.id))
 
-        organization_admins = OrganizationService.get_organization_admins(self.organization_user, self.organization)
-        self.assertEqual(set(organization_admins), set([self.organization_user]))
+        with self.subTest(stage='Check organization members'):
+            organization_members = OrganizationService.get_organization_members(self.organization_user, self.organization)
+            self.assertEqual(set(organization_members), set([self.organization_user, self.staff_user]))
 
-        volunteer_user_match = {
-            'id': self.volunteer_user.id,
-            'first_name': self.volunteer_user.first_name,
-            'last_name': self.volunteer_user.last_name,
-            'username': self.volunteer_user.username,
-        }
-        self.assertEqual(list(OrganizationService.get_all_users_not_organization_members(self.organization.id)), [volunteer_user_match])
-        self.assertEqual(list(OrganizationService.get_all_users_not_organization_members(self.organization.id, "olu")), [volunteer_user_match])
-        self.assertEqual(list(OrganizationService.get_all_users_not_organization_members(self.organization.id, "volunteer")), [volunteer_user_match])
-        self.assertEqual(list(OrganizationService.get_all_users_not_organization_members(self.organization.id, "use")), [volunteer_user_match])
-        self.assertEqual(list(OrganizationService.get_all_users_not_organization_members(self.organization.id, "eer@ema")), [volunteer_user_match])
-        self.assertEqual(list(OrganizationService.get_all_users_not_organization_members(self.organization.id, "bad_match")), [])
+        with self.subTest(stage='Check organization admins'):
+            organization_admins = OrganizationService.get_organization_admins(self.organization_user, self.organization)
+            self.assertEqual(set(organization_admins), set([self.organization_user]))
 
-        with self.assertRaisesMessage(PermissionDenied, ''):
-            OrganizationService.leave_organization(AnonymousUser(), self.organization.id, org_staff_user_role)
-        with self.assertRaisesMessage(PermissionDenied, ''):
-            OrganizationService.leave_organization(self.volunteer_user, self.organization.id, org_staff_user_role)
-        with self.assertRaisesMessage(PermissionDenied, ''):
-            OrganizationService.leave_organization(self.organization_user, self.organization.id, org_staff_user_role)
-        OrganizationService.leave_organization(self.staff_user, self.organization.id, org_staff_user_role)
-        self.assertFalse(OrganizationService.user_is_organization_admin(self.staff_user, self.organization))
-        self.assertFalse(OrganizationService.user_is_organization_member(self.staff_user, self.organization))
-        self.assertFalse(OrganizationService.user_is_organization_staff(self.staff_user, self.organization))
-        self.assertFalse(OrganizationService.user_is_any_organization_member(self.staff_user))
-        with self.assertRaisesMessage(OrganizationRole.DoesNotExist, 'OrganizationRole matching query does not exist.'):
-            OrganizationService.get_organization_role(self.organization_user, self.organization.id, self.staff_user.id)
+        with self.subTest(stage='Check non members'):
+            volunteer_user_match = {
+                'id': self.volunteer_user.id,
+                'first_name': self.volunteer_user.first_name,
+                'last_name': self.volunteer_user.last_name,
+                'username': self.volunteer_user.username,
+            }
+            self.assertEqual(list(OrganizationService.get_all_users_not_organization_members(self.organization.id)), [volunteer_user_match])
+            self.assertEqual(list(OrganizationService.get_all_users_not_organization_members(self.organization.id, "olu")), [volunteer_user_match])
+            self.assertEqual(list(OrganizationService.get_all_users_not_organization_members(self.organization.id, "volunteer")), [volunteer_user_match])
+            self.assertEqual(list(OrganizationService.get_all_users_not_organization_members(self.organization.id, "use")), [volunteer_user_match])
+            self.assertEqual(list(OrganizationService.get_all_users_not_organization_members(self.organization.id, "eer@ema")), [volunteer_user_match])
+            self.assertEqual(list(OrganizationService.get_all_users_not_organization_members(self.organization.id, "bad_match")), [])
 
-        with self.assertRaisesMessage(PermissionDenied, ''):
-            OrganizationService.add_staff_member(AnonymousUser(), self.organization.id, org_staff_user_role)
-        with self.assertRaisesMessage(PermissionDenied, ''):
-            OrganizationService.add_staff_member(self.staff_user, self.organization.id, org_staff_user_role)
-        OrganizationService.add_staff_member(self.organization_user, self.organization.id, org_staff_user_role)
-        org_staff_user_role.role = OrgRole.ADMINISTRATOR
-        with self.assertRaisesMessage(PermissionDenied, ''):
-            OrganizationService.save_organization_role(AnonymousUser(), self.organization.id, org_staff_user_role)
-        with self.assertRaisesMessage(PermissionDenied, ''):
-            OrganizationService.save_organization_role(self.volunteer_user, self.organization.id, org_staff_user_role)
-        with self.assertRaisesMessage(PermissionDenied, ''):
-            OrganizationService.save_organization_role(self.staff_user, self.organization.id, org_staff_user_role)
-        OrganizationService.save_organization_role(self.organization_user, self.organization.id, org_staff_user_role)
-        self.assertTrue(OrganizationService.user_is_organization_admin(self.staff_user, self.organization))
+        with self.subTest(stage='Leave organization'):
+            test_permission_denied_operation(self, [AnonymousUser(), self.volunteer_user, self.organization_user],
+                lambda x: OrganizationService.leave_organization(x, self.organization.id, org_staff_user_role))
+            OrganizationService.leave_organization(self.staff_user, self.organization.id, org_staff_user_role)
+            self.assertFalse(OrganizationService.user_is_organization_admin(self.staff_user, self.organization))
+            self.assertFalse(OrganizationService.user_is_organization_member(self.staff_user, self.organization))
+            self.assertFalse(OrganizationService.user_is_organization_staff(self.staff_user, self.organization))
+            self.assertFalse(OrganizationService.user_is_any_organization_member(self.staff_user))
+            with self.assertRaisesMessage(OrganizationRole.DoesNotExist, 'OrganizationRole matching query does not exist.'):
+                OrganizationService.get_organization_role(self.organization_user, self.organization.id, self.staff_user.id)
 
-        with self.assertRaisesMessage(PermissionDenied, ''):
-            OrganizationService.delete_organization_role(AnonymousUser(), self.organization.id, org_staff_user_role)
-        with self.assertRaisesMessage(PermissionDenied, ''):
-            OrganizationService.delete_organization_role(self.volunteer_user, self.organization.id, org_staff_user_role)
-        OrganizationService.delete_organization_role(self.organization_user, self.organization.id, org_staff_user_role)
-        self.assertFalse(OrganizationService.user_is_organization_admin(self.staff_user, self.organization))
-        self.assertFalse(OrganizationService.user_is_organization_member(self.staff_user, self.organization))
+        with self.subTest(stage='Add staff member'):
+            test_permission_denied_operation(self, [AnonymousUser(), self.staff_user],
+                lambda x: OrganizationService.add_staff_member(x, self.organization.id, org_staff_user_role))
+            OrganizationService.add_staff_member(self.organization_user, self.organization.id, org_staff_user_role)
+
+        with self.subTest(stage='Edit organization role'):
+            org_staff_user_role.role = OrgRole.ADMINISTRATOR
+            test_permission_denied_operation(self, [AnonymousUser(), self.volunteer_user, self.staff_user],
+                lambda x: OrganizationService.save_organization_role(x, self.organization.id, org_staff_user_role))
+            OrganizationService.save_organization_role(self.organization_user, self.organization.id, org_staff_user_role)
+            self.assertTrue(OrganizationService.user_is_organization_admin(self.staff_user, self.organization))
+
+        with self.subTest(stage='Delete organization role'):
+            test_permission_denied_operation(self, [AnonymousUser(), self.volunteer_user],
+                lambda x: OrganizationService.delete_organization_role(x, self.organization.id, org_staff_user_role))
+            OrganizationService.delete_organization_role(self.organization_user, self.organization.id, org_staff_user_role)
+            self.assertFalse(OrganizationService.user_is_organization_admin(self.staff_user, self.organization))
+            self.assertFalse(OrganizationService.user_is_organization_member(self.staff_user, self.organization))
 
     def test_create_duplicate_role(self):
         OrganizationService.create_organization(self.organization_user, self.organization)
@@ -199,42 +199,42 @@ class OrganizationTestCase(TestCase):
 
     def test_organization_membership_requests(self):
         OrganizationService.create_organization(self.organization_user, self.organization)
-        self.assertEqual(list(OrganizationService.get_membership_requests(self.organization_user, self.organization)), [])
-        self.assertEqual(list(OrganizationService.get_user_organizations_with_pending_requests(self.organization_user)), [])
+        with self.subTest(stage='Initial membership requests'):
+            self.assertEqual(list(OrganizationService.get_membership_requests(self.organization_user, self.organization)), [])
+            self.assertEqual(list(OrganizationService.get_user_organizations_with_pending_requests(self.organization_user)), [])
 
         membership_request = OrganizationMembershipRequest()
         membership_request.user = self.staff_user
         membership_request.role = OrgRole.STAFF
-        with self.assertRaisesMessage(ValueError, ''):
-            OrganizationService.create_membership_request(self.staff_user, AnonymousUser(), self.organization.id, membership_request)
-        OrganizationService.create_membership_request(self.staff_user, self.staff_user, self.organization.id, membership_request)
-        self.assertEqual(list(OrganizationService.get_membership_requests(self.organization_user, self.organization)), [membership_request])
-        self.assertEqual(list(OrganizationService.get_user_organizations_with_pending_requests(self.organization_user)), [self.organization])
+
+        with self.subTest(stage='Create membership request'):
+            with self.assertRaisesMessage(ValueError, ''):
+                OrganizationService.create_membership_request(self.staff_user, AnonymousUser(), self.organization.id, membership_request)
+            OrganizationService.create_membership_request(self.staff_user, self.staff_user, self.organization.id, membership_request)
+            self.assertEqual(list(OrganizationService.get_membership_requests(self.organization_user, self.organization)), [membership_request])
+            self.assertEqual(list(OrganizationService.get_user_organizations_with_pending_requests(self.organization_user)), [self.organization])
 
 
-        with self.assertRaisesMessage(PermissionDenied, ''):
-            OrganizationService.accept_membership_request(AnonymousUser(), self.organization.id, membership_request)
-        with self.assertRaisesMessage(PermissionDenied, ''):
-            OrganizationService.accept_membership_request(self.volunteer_user, self.organization.id, membership_request)
-        OrganizationService.accept_membership_request(self.organization_user, self.organization.id, membership_request)
-        self.assertEqual(OrganizationService.get_organization_membership_request(
-            self.organization_user,
-            self.organization.id,
-            membership_request.id
-        ).status, ReviewStatus.ACCEPTED)
-        self.assertEqual(list(OrganizationService.get_user_organizations_with_pending_requests(self.organization_user)), [])
-        self.assertTrue(OrganizationService.user_is_organization_staff(self.staff_user, self.organization))
+        with self.subTest(stage='Accept membership request'):
+            test_permission_denied_operation(self, [AnonymousUser(), self.volunteer_user],
+                lambda x: OrganizationService.accept_membership_request(x, self.organization.id, membership_request))
+            OrganizationService.accept_membership_request(self.organization_user, self.organization.id, membership_request)
+            self.assertEqual(OrganizationService.get_organization_membership_request(
+                self.organization_user,
+                self.organization.id,
+                membership_request.id
+            ).status, ReviewStatus.ACCEPTED)
+            self.assertEqual(list(OrganizationService.get_user_organizations_with_pending_requests(self.organization_user)), [])
+            self.assertTrue(OrganizationService.user_is_organization_staff(self.staff_user, self.organization))
 
         membership_request = OrganizationMembershipRequest()
         membership_request.user = self.staff_user # We make sure the user is automatically replaced later with the right one
         membership_request.role = OrgRole.STAFF
-        OrganizationService.create_membership_request(self.organization_user, self.volunteer_user, self.organization.id, membership_request)
-        with self.assertRaisesMessage(PermissionDenied, ''):
-            OrganizationService.reject_membership_request(AnonymousUser(), self.organization.id, membership_request)
-        with self.assertRaisesMessage(PermissionDenied, ''):
-            OrganizationService.reject_membership_request(self.volunteer_user, self.organization.id, membership_request)
-        with self.assertRaisesMessage(PermissionDenied, ''):
-            OrganizationService.reject_membership_request(self.staff_user, self.organization.id, membership_request)
-        OrganizationService.reject_membership_request(self.organization_user, self.organization.id, membership_request)
-        self.assertEqual(list(OrganizationService.get_user_organizations_with_pending_requests(self.organization_user)), [])
-        self.assertFalse(OrganizationService.user_is_organization_member(self.volunteer_user, self.organization))
+
+        with self.subTest(stage='Reject membership request'):
+            OrganizationService.create_membership_request(self.organization_user, self.volunteer_user, self.organization.id, membership_request)
+            test_permission_denied_operation(self, [AnonymousUser(), self.volunteer_user, self.staff_user],
+                lambda x: OrganizationService.reject_membership_request(x, self.organization.id, membership_request))
+            OrganizationService.reject_membership_request(self.organization_user, self.organization.id, membership_request)
+            self.assertEqual(list(OrganizationService.get_user_organizations_with_pending_requests(self.organization_user)), [])
+            self.assertFalse(OrganizationService.user_is_organization_member(self.volunteer_user, self.organization))
