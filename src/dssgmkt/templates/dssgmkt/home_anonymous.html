@@ -19,6 +19,22 @@
       <h1 class="text-white">Work that matters</h1>
       <h2 class="text-success">Data Science applied to social good.</h2>
      </div>
+     <div class="col-lg-12 row mt-5 action-links">
+       <div class="col-lg-4 offset-lg-2 d-flex">
+         <a class="btn btn-lg btn-warning text-primary flex-grow-1 pt-3" href="{% url 'dssgmkt:signup_form' 'organization' %}">
+           <h2>
+             Post a project
+           </h2>
+         </a>
+       </div>
+       <div class="col-lg-4 d-flex">
+         <a class="btn btn-lg btn-warning text-primary flex-grow-1 pt-3" href="{% url 'dssgmkt:signup_form' 'volunteer' %}">
+           <h2>
+             Start volunteering
+           </h2>
+         </a>
+       </div>
+     </div>
    </div>
 </div>
 
@@ -56,7 +72,11 @@
      </div>
      <div class="card-footer">
       <div class="footer-title">Do you represent an organization?</div>
-      <div><a href="{% url 'dssgmkt:signup_form' 'organization' %}">Post your projects now</a></div>
+      <div class="d-flex mt-2 mb-2">
+        <a class="btn btn-warning text-primary flex-grow-1" href="{% url 'dssgmkt:signup_form' 'organization' %}">
+            Post your projects now
+        </a>
+      </div>
      </div>
     </div>
     <div class="card text-white bg-success">
@@ -75,7 +95,11 @@
      </div>
      <div class="card-footer">
       <div class="footer-title">Are you ready to start helping projects?</div>
-      <div><a href="{% url 'dssgmkt:signup_form' 'volunteer' %}">Sign up now</a></div>
+      <div class="d-flex mt-2 mb-2">
+        <a class="btn btn-warning text-primary flex-grow-1" href="{% url 'dssgmkt:signup_form' 'volunteer' %}">
+            Sign up now
+        </a>
+      </div>
      </div>
     </div>
    </div>
