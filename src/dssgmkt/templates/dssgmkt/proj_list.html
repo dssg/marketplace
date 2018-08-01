@@ -16,8 +16,8 @@
           Skill requirements
           <input class="form-control" type="text" id="skills" name="skills" placeholder="" value="{{ filter_skills }}"></input></label>
 
-        <fieldset name="socialcause">
-          <legend>Project main cause</legend>
+        <fieldset class="mt-3" name="socialcause">
+          <legend>Social impact area</legend>
           {% include 'dssgmkt/components/filter_checkbox.html' with field_name='socialcause' field_value='education' field_text='Education' is_checked=checked_social_cause_fields.education %}
           {% include 'dssgmkt/components/filter_checkbox.html' with field_name='socialcause' field_value='health' field_text='Health' is_checked=checked_social_cause_fields.health %}
           {% include 'dssgmkt/components/filter_checkbox.html' with field_name='socialcause' field_value='environment' field_text='Environment' is_checked=checked_social_cause_fields.environment %}
@@ -30,7 +30,7 @@
           {% include 'dssgmkt/components/filter_checkbox.html' with field_name='socialcause' field_value='other' field_text='Other' is_checked=checked_social_cause_fields.other %}
         </fieldset>
 
-        <fieldset name="status">
+        <fieldset class="mt-3" name="status">
           <legend>Project status</legend>
           {% include 'dssgmkt/components/filter_checkbox.html' with field_name='projectstatus' field_value='new' field_text='New' is_checked=checked_project_fields.new %}
           {% include 'dssgmkt/components/filter_checkbox.html' with field_name='projectstatus' field_value='in_progress' field_text='In progress' is_checked=checked_project_fields.in_progress %}
