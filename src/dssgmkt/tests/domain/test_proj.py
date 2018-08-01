@@ -3,7 +3,10 @@ from django.core.exceptions import PermissionDenied
 from django.contrib.auth.models import AnonymousUser
 
 from dssgmkt.models.common import ReviewStatus
-from dssgmkt.models.proj import ProjectRole, ProjRole, TaskType, VolunteerApplication, ProjectScope
+from dssgmkt.models.proj import (
+    ProjectRole, ProjRole, TaskType, VolunteerApplication, ProjectScope,
+    TaskStatus,
+)
 from dssgmkt.models.user import SignupCodeType, SignupCode
 from dssgmkt.domain.user import UserService
 from dssgmkt.domain.org import OrganizationService
@@ -269,7 +272,7 @@ class ProjectTestCase(TestCase):
             self.assertEqual(set(ProjectService.get_project_followers(self.owner_user, self.project.id)), set([]))
 
         # Test that the owner user is still in the public notification group
-        # even not being a follower
+        # even when not being a follower
         with self.subTest(stage='Check public notification group'):
             self.assertEqual(set(ProjectService.get_public_notification_users(self.owner_user, self.project.id)), set([self.owner_user]))
 
@@ -328,3 +331,122 @@ class ProjectTestCase(TestCase):
 
 # ProjectService.finish_project(request_user, projid, project)
 # ProjectService.get_user_projects_with_pending_task_requests(request_user)
+
+
+
+    def test_task_operations(self):
+        self.create_standard_project_structure()
+
+        task = None
+        with self.subTest(stage='Create new task'):
+            test_permission_denied_operation(self, [AnonymousUser(), self.volunteer_user, self.staff_user, self.proj_mgmt_user],
+                lambda x: ProjectTaskService.create_default_task(x, self.project.id))
+            task = ProjectTaskService.create_default_task(self.scoping_user, self.project.id)
+            self.assertTrue(task.stage == TaskStatus.DRAFT)
+            self.assertTrue(task.accepting_volunteers == False)
+
+        with self.subTest(stage='Edit task'):
+            task.name = 'New edited task'
+            test_permission_denied_operation(self, [AnonymousUser(), self.volunteer_user, self.staff_user, self.proj_mgmt_user],
+                lambda x: ProjectTaskService.save_task(x, self.project.id, task.id, task))
+            ProjectTaskService.save_task(self.owner_user, self.project.id, task.id, task)
+            self.assertEqual(task, ProjectTaskService.get_project_task(self.owner_user, self.project.id, task.id))
+
+        application = VolunteerApplication()
+        application.volunteer_application_letter = "This is the letter."
+        application.task = task
+        application.volunteer = self.volunteer_user
+
+        # with self.subTest(stage='Prevent applying to draft tasks'):
+        #     with self.assertRaisesMessage(ValueError, ''):
+        #         ProjectTaskService.apply_to_volunteer(self.volunteer_user, self.project.id, task.id, application)
+
+        with self.subTest(stage='Publish task'):
+            test_permission_denied_operation(self, [AnonymousUser(), self.volunteer_user, self.staff_user, self.proj_mgmt_user],
+                lambda x: ProjectTaskService.publish_project_task(x, self.project.id, task.id, task))
+            ProjectTaskService.publish_project_task(self.owner_user, self.project.id, task.id, task)
+            self.assertTrue(task.stage == TaskStatus.NOT_STARTED)
+
+        if not task:
+            task = ProjectTaskService.get_all_tasks(self.owner_user, self.project.id).first()
+        initial_accepting_volunteers = task.accepting_volunteers
+        with self.subTest(stage='Toggle task accepting volunteers'):
+            test_permission_denied_operation(self, [AnonymousUser(), self.volunteer_user, self.staff_user, self.proj_mgmt_user],
+                lambda x: ProjectTaskService.toggle_task_accepting_volunteers(x, self.project.id, task.id))
+            ProjectTaskService.toggle_task_accepting_volunteers(self.owner_user, self.project.id, task.id)
+            self.assertTrue(initial_accepting_volunteers != ProjectTaskService.get_project_task(self.owner_user, self.project.id, task.id).accepting_volunteers)
+            ProjectTaskService.toggle_task_accepting_volunteers(self.owner_user, self.project.id, task.id)
+            self.assertTrue(initial_accepting_volunteers == ProjectTaskService.get_project_task(self.owner_user, self.project.id, task.id).accepting_volunteers)
+
+        with self.subTest(stage='Apply to task'):
+            ProjectTaskService.apply_to_volunteer(self.volunteer_user, self.project.id, task.id, application)
+
+        # with self.subTest(stage='Prevent applying twice to the same task'):
+        #     with self.assertRaisesMessage(ValueError, ''):
+        #         ProjectTaskService.apply_to_volunteer(self.volunteer_user, self.project.id, task.id, application)
+
+        with self.subTest(stage='Prevent applying to task without volunteer profile'):
+            with self.assertRaisesMessage(PermissionDenied, ''):
+                application.volunteer = self.owner_user
+                ProjectTaskService.apply_to_volunteer(self.owner_user, self.project.id, task.id, application)
+
+#
+# check the all the paths within ProjectTaskService.save_task_internal(request_user, projid, taskid, project_task) ??
+#
+# ProjectTaskService.delete_task(request_user, projid, project_task)
+
+#
+#
+# ProjectTaskService.apply_to_volunteer(request_user, projid, taskid, task_application_request)
+# ProjectTaskService.get_volunteer_application(request_user, projid, taskid, volunteer_application_pk)
+# ProjectTaskService.save_volunteer_application(request_user, projid, taskid, volunteer_application) ??
+# ProjectTaskService.accept_volunteer(request_user, projid, taskid, volunteer_application)
+# ProjectTaskService.reject_volunteer(request_user, projid, taskid, volunteer_application)
+#
+#
+# ProjectTaskService.mark_task_as_completed(request_user, projid, taskid, project_task_review)
+# ProjectTaskService.get_project_task_review(request_user, projid, taskid, reviewid)
+# ProjectTaskService.save_task_review(request_user, projid, taskid, task_review) ??
+# ProjectTaskService.update_user_badge(request_user, badge_type, badge_tier, badge_name) ??
+# ProjectTaskService.update_user_task_count(request_user) ??
+# ProjectTaskService.update_user_review_score(request_user) ??
+# ProjectTaskService.update_user_work_speed(request_user) ??
+# ProjectTaskService.accept_task_review(request_user, projid, taskid, task_review)
+# ProjectTaskService.reject_task_review(request_user, projid, taskid, task_review)
+# ProjectTaskService.get_task_reviews(request_user, project_task, expand_pinned=False)
+# ProjectTaskService.user_belongs_to_task_review(request_user, task_review)
+# ProjectTaskService.toggle_pinned_task_review(request_user, projid, taskid, task_reviewid)
+#
+# ProjectTaskService.get_project_task(request_user, projid, taskid)
+# ProjectTaskService.get_all_tasks(request_user, proj)
+# ProjectTaskService.get_open_tasks(request_user, proj)
+# ProjectTaskService.get_public_tasks(request_user, proj)
+# ProjectTaskService.get_project_tasks_summary(request_user, proj)
+# ProjectTaskService.get_non_finished_tasks(request_user, proj)
+# ProjectTaskService.get_volunteer_current_tasks(request_user, volunteer, projid)
+# ProjectTaskService.get_volunteer_task_applications(request_user, projid)
+# ProjectTaskService.get_volunteer_all_tasks(request_user, target_user)
+# ProjectTaskService.get_volunteer_all_project_tasks(request_user, target_user, project)
+# ProjectTaskService.get_user_in_progress_tasks(request_user)
+#
+# ProjectTaskService.user_is_task_volunteer(user, task)
+# ProjectTaskService.user_can_view_volunteer_application(user, volunteer_application)
+# ProjectTaskService.user_can_review_task(user, task)
+# ProjectTaskService.task_has_volunteers(request_user, taskid)
+# ProjectTaskService.get_task_volunteers(request_user, taskid)
+#
+# ProjectTaskService.cancel_volunteering(request_user, projid, taskid, project_task_role)
+#
+# ProjectTaskService.get_task_staff(request_user, taskid)
+# ProjectTaskService.get_project_task_staff_for_editing(request_user, projid, taskid)
+# ProjectTaskService.set_task_staff(request_user, projid, taskid, post_object)
+#
+#
+# ProjectTaskService.get_project_taks_requirement_importance_levels()
+# ProjectTaskService.get_project_task_requirements(request_user, projid, taskid)
+# ProjectTaskService.set_task_requirements(request_user, projid, taskid, post_object)
+#
+# ProjectTaskService.get_project_task_role(request_user, projid, taskid, roleid)
+# ProjectTaskService.get_own_project_task_role(request_user, projid, taskid)
+# ProjectTaskService.save_project_task_role(request_user, projid, taskid, project_task_role)
+# ProjectTaskService.delete_project_task_role(request_user, projid, taskid, project_task_role)
