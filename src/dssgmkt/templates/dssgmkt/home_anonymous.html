@@ -59,9 +59,29 @@
   </div>
 
 
+  {% if not news %}
+  <div class="row mt-4 bg-light pt-4 pb-4 pl-3 pr-3">
+    <div class="col-lg-12">
+     <h2>Recent highlights</h2>
+    </div>
+    <div class="col-lg-6">
+      <h4><a href="">Link to the news</a></h4>
+     <p class="">
+       Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis mollis bibendum lacus, nec tincidunt sem eleifend ac. Aliquam eu sodales mi. Aenean dictum id neque id dignissim. Etiam vitae enim arcu. Fusce gravida eget nibh a iaculis. Maecenas fringilla aliquet lacinia. Nullam id enim quis justo sollicitudin fermentum. Proin tincidunt, nisl ac tempus convallis, lectus augue tempor ipsum, vitae gravida est risus ac nunc.
+     </p>
+    </div>
+    <div class="col-lg-6">
+      <h4><a href="">Link to the news</a></h4>
+     <p class="">
+       Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis mollis bibendum lacus, nec tincidunt sem eleifend ac. Aliquam eu sodales mi. Aenean dictum id neque id dignissim. Etiam vitae enim arcu. Fusce gravida eget nibh a iaculis. Maecenas fringilla aliquet lacinia. Nullam id enim quis justo sollicitudin fermentum. Proin tincidunt, nisl ac tempus convallis, lectus augue tempor ipsum, vitae gravida est risus ac nunc.
+     </p>
+    </div>
+   </div>
+  {% endif %}
+
   <div class="row mt-4">
    <div class="card-deck main-cards col-lg-12">
-    <div class="card text-white bg-success">
+    <div class="card text-white bg-primary">
      <div class="card-header"><h3>For organizations</h3></div>
      <div class="card-body">
       <div>DSSG Solve enables organizations to manage their social good projects within the platform,
@@ -79,7 +99,7 @@
       </div>
      </div>
     </div>
-    <div class="card text-white bg-success">
+    <div class="card text-white bg-primary">
      <div class="card-header"><h3>For volunteers</h3></div>
      <div class="card-body">
       <div>
@@ -110,8 +130,7 @@
   <div class="row mt-5">
    <div class="card-deck col-lg-12">
     <div class="card">
-     <div class="card-header"><h4>Projects</h4></div>
-
+     <div class="card-header bg-primary text-white"><h4 class="mt-2">Projects</h4></div>
      <ul class="list-group list-group-flush">
       <li class="list-group-item">
         <p>Take a look at the list of projects that our volunteers are working on.</p>
@@ -135,7 +154,7 @@
      </ul>
     </div>
     <div class="card">
-     <div class="card-header"><h4>Organizations</h4></div>
+     <div class="card-header bg-primary text-white"><h4 class="mt-2">Organizations</h4></div>
      <ul class="list-group list-group-flush">
       <li class="list-group-item">
         <p>Browse organizations that are working towards social good and need your help.</p>
@@ -159,7 +178,7 @@
      </ul>
     </div>
     <div class="card">
-     <div class="card-header"><h4>Volunteers</h4></div>
+     <div class="card-header bg-primary text-white"><h4 class="mt-2">Volunteers</h4></div>
      <ul class="list-group list-group-flush">
       <li class="list-group-item">
         <p>Check out all the passionate people that are making these projects a reality.</p>
