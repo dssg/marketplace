@@ -265,3 +265,48 @@ class Develop(Local):
                 args.remainder,
             ],
         )
+
+
+@Marketplace.register
+class Db(Local):
+    """manage the app database
+
+    assuming a PostgreSQL target
+
+    """
+    class User(Local):
+
+        user_flags = (
+            '--encrypted',
+            '--login',
+            '--no-createdb',
+            '--no-createrole',
+            '--no-inherit',
+            '--no-replication',
+            '--no-superuser',
+            '--echo',
+            '--interactive',
+            '--pwprompt',
+        )
+
+        default_database = 'marketplace'
+        default_username = 'marketplace_webapp'
+
+        @localmethod('name', nargs='?', default=default_username,
+                     help=add_default("database user name", default_username))
+        @localmethod('-g', '--group', action='append', dest='groups',
+                     help='group(s)/role(s) to which to add user')
+        @localmethod('-d', '--database', default=default_database,
+                     help=add_default("database to which user is given access",
+                                      default_database))
+        def create(self, args):
+            """create a database log-in for the webapp"""
+            createuser = self.local['createuser'][self.user_flags]
+            for group in args.groups or ():
+                createuser = createuser['-g', group]
+
+            yield createuser[args.name]
+
+            yield self.local['psql'] << f'''
+                grant connect on database {args.database} to {args.name};
+            '''
