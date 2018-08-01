@@ -62,11 +62,31 @@
         </a>
       {% endif %}
 
+      {% if project.is_completed %}
+        <div class="card mb-3 section-header">
+          <div class="card-header">Project results</div>
+          <div class="card-body">
+            {% if project.deliverable_management_url %}
+              <div><a href="{{ project.deliverable_management_url }}">Project home</a></div>
+            {% endif %}
+            {% if project.deliverable_github_url %}
+              <div><a href="{{ project.deliverable_github_url }}">Project github page</a></div>
+            {% endif %}
+            {% if project.deliverable_reports_url %}
+              <div><a href="{{ project.deliverable_reports_url }}">Project reports</a></div>
+            {% endif %}
+            {% if project.deliverable_documentation_url %}
+              <div><a href="{{ project.deliverable_documentation_url }}">Project documentation</a></div>
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
+
       <div class="card mb-3 section-header">
         <div class="card-header"><i class="far fa-calendar-alt"></i> Schedule</div>
         <div class="card-body">
-          <p>Start date: {% if project.actual_start_date %}{{ project.actual_start_date }}{% else %}{{ project.intended_start_date }}{% endif %}</p>
-          <p>End date: {% if project.actual_end_date %}{{ project.actual_end_date }}{% else %}{{ project.intended_end_date }}{% endif %}</p>
+          <div>Start date: {% if project.actual_start_date %}{{ project.actual_start_date }}{% else %}{{ project.intended_start_date }}{% endif %}</div>
+          <div>End date: {% if project.actual_end_date %}{{ project.actual_end_date }}{% else %}{{ project.intended_end_date }}{% endif %}</div>
         </div>
       </div>
 
