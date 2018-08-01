@@ -13,8 +13,14 @@ from dssgmkt.tests.domain.common import example_organization_user, example_staff
 
 def test_users_group_inclusion(test_case, all_users, included_users, predicate):
     for user in all_users:
-        # print("User ", user, " is ", user in included_users, " test: ", predicate(user))
-        test_case.assertEqual(predicate(user), user in included_users)
+        with test_case.subTest(user=user):
+            test_case.assertEqual(predicate(user), user in included_users)
+
+def test_permission_denied_operation(test_case, users, operation):
+    for user in users:
+        with test_case.subTest(user=user):
+            with test_case.assertRaisesMessage(PermissionDenied, ''):
+                operation(user)
 
 class ProjectTestCase(TestCase):
     owner_user = None
@@ -67,12 +73,8 @@ class ProjectTestCase(TestCase):
         self.assertEqual(list(ProjectService.get_user_projects_in_draft_status(self.owner_user)), [])
         self.assertEqual(list(ProjectService.get_user_projects_in_draft_status(self.volunteer_user)), [])
 
-        with self.assertRaisesMessage(PermissionDenied, ''):
-            OrganizationService.create_project(AnonymousUser(), self.organization.id, self.project)
-        with self.assertRaisesMessage(PermissionDenied, ''):
-            OrganizationService.create_project(self.volunteer_user, self.organization.id, self.project)
-        with self.assertRaisesMessage(PermissionDenied, ''):
-            OrganizationService.create_project(self.staff_user, self.organization.id, self.project)
+        test_permission_denied_operation(self, [AnonymousUser(), self.volunteer_user, self.staff_user],
+            lambda x: OrganizationService.create_project(x, self.organization.id, self.project))
         OrganizationService.create_project(self.owner_user, self.organization.id, self.project)
 
         projects_list = [self.project]
@@ -89,17 +91,14 @@ class ProjectTestCase(TestCase):
         self.assertEqual(list(ProjectService.get_user_projects_in_draft_status(self.volunteer_user)), [])
 
         self.project.name = "EDITED demo project 1"
-        with self.assertRaisesMessage(PermissionDenied, ''):
-            ProjectService.save_project(AnonymousUser(), self.project.id, self.project)
-        with self.assertRaisesMessage(PermissionDenied, ''):
-            ProjectService.save_project(self.volunteer_user, self.project.id, self.project)
+
+        test_permission_denied_operation(self, [AnonymousUser(), self.volunteer_user],
+            lambda x: ProjectService.save_project(x, self.project.id, self.project))
         ProjectService.save_project(self.owner_user, self.project.id, self.project)
         self.assertEqual(ProjectService.get_project(self.owner_user, self.project.id), self.project)
 
-        with self.assertRaisesMessage(PermissionDenied, ''):
-            ProjectService.publish_project(self.volunteer_user, self.project.id, self.project)
-        with self.assertRaisesMessage(PermissionDenied, ''):
-            ProjectService.publish_project(AnonymousUser(), self.project.id, self.project)
+        test_permission_denied_operation(self, [AnonymousUser(), self.volunteer_user],
+            lambda x: ProjectService.publish_project(x, self.project.id, self.project))
         ProjectService.publish_project(self.owner_user, self.project.id, self.project)
 
         self.assertEqual(list(ProjectService.get_all_public_projects(self.owner_user, None)), [self.project])
@@ -115,12 +114,9 @@ class ProjectTestCase(TestCase):
         staff_user_role.user = self.staff_user
         staff_user_role.project = self.project
         staff_user_role.role = ProjRole.STAFF
-        with self.assertRaisesMessage(PermissionDenied, ''):
-            ProjectService.add_staff_member(self.staff_user, self.project.id, staff_user_role)
-        with self.assertRaisesMessage(PermissionDenied, ''):
-            ProjectService.add_staff_member(self.volunteer_user, self.project.id, staff_user_role)
-        with self.assertRaisesMessage(PermissionDenied, ''):
-            ProjectService.add_staff_member(AnonymousUser(), self.project.id, staff_user_role)
+
+        test_permission_denied_operation(self, [AnonymousUser(), self.volunteer_user, self.staff_user],
+            lambda x: ProjectService.add_staff_member(x, self.project.id, staff_user_role))
         ProjectService.add_staff_member(self.owner_user, self.project.id, staff_user_role)
 
         tasks = ProjectTaskService.get_all_tasks(self.owner_user, self.project)
@@ -224,6 +220,10 @@ class ProjectTestCase(TestCase):
 
     def test_project_scopes(self):
         self.create_standard_project_structure()
+
+        all_scopes = ProjectService.get_all_project_scopes(self.owner_user, self.project.id)
+        self.assertEqual(len(all_scopes), 1)
+
         new_scope = ProjectScope()
         new_scope.scope = "New scope."
         new_scope.project_impact = "New project impact."
@@ -233,7 +233,11 @@ class ProjectTestCase(TestCase):
         new_scope.version_notes = "New version notes."
         new_scope.project = self.project
         new_scope.author = self.owner_user
+
+        test_permission_denied_operation(self, [AnonymousUser(), self.volunteer_user, self.staff_user],
+            lambda x: ProjectService.update_project_scope(x, self.project.id, new_scope))
         ProjectService.update_project_scope(self.owner_user, self.project.id, new_scope)
+
         new_scope_saved = ProjectService.get_project_scope(self.owner_user, self.project.id, new_scope.id)
         self.assertEqual(new_scope_saved, new_scope)
 
