@@ -21,6 +21,14 @@
       {% elif project.banner_image_url %}
         <img class="img-fluid" src="{{ project.banner_image_url }}"></img>
       {% endif %}
+
+      {% if user.volunteerprofile and user.volunteerprofile.is_accepted and first_open_task %}
+        <a class="btn btn-success col-lg-12 mb-1 section-header"
+           href="{% url 'dssgmkt:proj_task_apply' project.id first_open_task.id %}">
+          <i class="material-icons" style="vertical-align: middle">edit</i>
+          Apply to volunteer
+        </a>
+      {% endif %}
     </div>
     {% include 'dssgmkt/components/project_status.html' %}
   </div>
