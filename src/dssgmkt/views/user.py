@@ -25,6 +25,7 @@ from dssgmkt.domain.user import UserService
 from dssgmkt.domain.proj import ProjectService, ProjectTaskService
 from dssgmkt.domain.org import OrganizationService
 from dssgmkt.domain.notifications import NotificationService
+from dssgmkt.domain.news import NewsService
 
 
 def users_link(include_link=True):
@@ -176,6 +177,7 @@ def home_view(request):
                 'featured_organization': OrganizationService.get_featured_organization(),
                 'featured_volunteer': featured_volunteer,
                 'featured_volunteer_skills': featured_volunteer_skill_names,
+                'news': NewsService.get_latest_news(request.user),
             })
 
 
