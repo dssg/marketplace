@@ -375,6 +375,7 @@ class VolunteerSkill(models.Model):
 
     class Meta:
         unique_together = ('user','skill')
+        ordering = ['skill__area','-level']
 
 
 class BadgeType():

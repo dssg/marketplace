@@ -123,11 +123,8 @@
 
                   <ul class="list-group list-group-flush">
                     <li class="list-group-item">{{ project_task.short_summary }}</li>
-                    <li class="list-group-item"><div>Required skills:</div>
-                      {% for task_requirement in project_task.projecttaskrequirement_set.all %}
-                        {% if not forloop.first %}, {% endif %}
-                        <span>{% include 'dssgmkt/components/skill_level_display.html' with object=task_requirement %}</span>
-                      {% endfor %}
+                    <li class="list-group-item">
+                      {% include 'dssgmkt/components/requirements_display.html' with task_requirements=project_task.projecttaskrequirement_set.all compact_display=True header_skill_text='Required skill' %}
                     </li>
                       {% if project_task.accepting_volunteers %}
                         {% if project_task.already_applied %}

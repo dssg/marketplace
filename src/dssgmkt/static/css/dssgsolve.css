@@ -192,6 +192,12 @@ fieldset legend {
 
 }
 
+
+.skills-header {
+  /* font-weight: bold; */
+  text-transform: uppercase;
+}
+
 .ui-datepicker {
     background-color: #fff;
     border: 1px solid #66AFE9;

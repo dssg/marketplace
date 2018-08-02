@@ -821,6 +821,7 @@ class ProjectTaskRequirement(models.Model):
 
     class Meta:
         unique_together = ('skill','task')
+        ordering = ['-level']
 
 
 class VolunteerApplication(models.Model):

@@ -177,9 +177,7 @@
           <div class="card-header">Skills</div>
           <div class="card-body">
           {% if userprofile.volunteerskill_set.all %}
-            {% for volunteerskill in userprofile.volunteerskill_set.all %}
-                <div>{% include 'dssgmkt/components/skill_level_display.html' with object=volunteerskill %}</div>
-            {% endfor %}
+            {% include 'dssgmkt/components/requirements_display.html' with task_requirements=userprofile.volunteerskill_set.all compact_display=True %}
           {% else %}
               <p>No skills listed.</p>
           {% endif %}

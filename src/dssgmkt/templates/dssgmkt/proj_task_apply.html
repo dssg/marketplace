@@ -17,9 +17,6 @@
                {% include 'dssgmkt/components/task_type_display.html' with project_task=task compact_display=True %}
                {{ task.name }}
              </span>
-             <span>
-               {% include 'dssgmkt/components/task_stage_display.html' with project_task=task compact_display=True %}
-             </span>
            </a>
       {% endfor %}
       </ul>
@@ -49,19 +46,6 @@
           </div>
         </div>
         <div class="card">
-          <div class="card-header"><i class="fas fa-magic"></i> Skill requirements</div>
-          <div class="card-body">
-            {% for task_requirement in project_task.projecttaskrequirement_set.all %}
-              {% if not forloop.first %}, {% endif %}
-              <span>{% include 'dssgmkt/components/skill_level_display.html' with object=task_requirement %}</span>
-            {% endfor %}
-          </div>
-        </div>
-      </div>
-
-
-      <div class="card-deck section-header">
-        <div class="card">
           <div class="card-header"><i class="fas fa-user-cog"></i> Current volunteers</div>
           <div class="card-body">
             {% for volunteer in task_volunteers %}
@@ -85,6 +69,15 @@
         </div>
       </div>
 
+      <div class="card-deck section-header">
+        <div class="card">
+          <div class="card-header"><i class="fas fa-magic"></i> Skill requirements</div>
+          <div class="card-body">
+            {% include 'dssgmkt/components/requirements_display.html' with task_requirements=project_task.projecttaskrequirement_set.all header_skill_text='Required skill'%}
+
+          </div>
+        </div>
+      </div>
 
       <div class="section-header"></div>
       {% csrf_token %}
