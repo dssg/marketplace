@@ -2,7 +2,7 @@
 
 <div>
   <div class="d-flex skills-header">
-    <div class="text-right pr-2" style="flex-basis: 50%">
+    <div class="text-right pr-2" style="flex-basis: {% if extra_wide_display %}30%{% else %}50%{% endif %}">
       {% if header_skill_text %}
         {{ header_skill_text }}
       {% else %}
@@ -10,27 +10,30 @@
       {% endif %}
     </div>
 
-    {% if compact_display %}
-      <div class="text-center" style="flex-basis: 50%">Expertise level</div>
-    {% else %}
-      <div class="text-center" style="flex-basis: 17%">Beginner</div>
-      <div class="text-center" style="flex-basis: 17%">Intermediate</div>
-      <div class="text-center" style="flex-basis: 15%">Expert</div>
-    {% endif %}
+    <div class="d-flex" style="flex-basis: {% if extra_wide_display %}70%{% else %}50%{% endif %}">
+      {% if compact_display %}
+        <div class="text-center" style="flex-basis: 100%">Expertise level</div>
+      {% else %}
+        <div class="text-center" style="flex-basis: 33%">Beginner</div>
+        <div class="text-center" style="flex-basis: 33%">Intermediate</div>
+        <div class="text-center" style="flex-basis: 32%">Expert</div>
+      {% endif %}
+    </div>
   </div>
 
   {% for task_requirement in task_requirements %}
     <div class="mt-2 d-flex" title="{{ task_requirement.skill.area }} / {{ task_requirement.skill.name }} : {% if task_requirement.is_level_beginner %}Beginner{% elif task_requirement.is_level_intermediate %}Intermediate{% elif task_requirement.is_level_expert %}Expert{% endif %}">
-      <div style="flex-basis: 50%" class="text-right pr-2">{{ task_requirement.skill.name }}</div>
+      <div style="flex-basis: {% if extra_wide_display %}30%{% else %}50%{% endif %}"
+           class="text-right pr-2">{{ task_requirement.skill.name }}</div>
 
-      <div style="flex-basis: 50%">
+      <div style="flex-basis: {% if extra_wide_display %}70%{% else %}50%{% endif %}">
         <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="20px" viewBox="0 0 1000 100" preserveAspectRatio="none">
           <line x1="333" y1="10" x2="333" y2="90" stroke="#2C3E50" stroke-width="4"/>
           <line x1="666" y1="10" x2="666" y2="90" stroke="#2C3E50" stroke-width="4"/>
           <rect x="0" y="30" width="1000" height="40" fill="white" stroke-width="3" stroke="#2C3E50"></rect>
           <line x1="999" y1="10" x2="999" y2="90" stroke="#2C3E50" stroke-width="4"/>
           <line x1="0" y1="10" x2="0" y2="90" stroke="#2C3E50" stroke-width="4"/>
-          
+
           {% if task_requirement.is_level_expert %}
             <rect x="0" y="30"  height="40" width="1000" fill="#2C3E50"></rect>
           {% endif %}
