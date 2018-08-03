@@ -8,6 +8,7 @@
 
 {% block pagecontents %}
 
+{% load markdown_deux_tags %}
 
 <div class="marketing-header">
   <div class="row">
@@ -74,7 +75,7 @@
         <div class="text-muted">{{ newspiece.creation_date }}</div>
        {% if newspiece.contents %}
           <p class="">
-            {{ newspiece.contents }}
+            {{ newspiece.contents|markdown }}
           </p>
        {% endif %}
       </div>
