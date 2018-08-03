@@ -144,10 +144,12 @@ class UserService():
                 volunteer_profile.user = request_user
                 volunteer_profile.volunteer_status = ReviewStatus.NEW
                 volunteer_profile.is_edited = False
-                if UserService.has_valid_special_signup_code(volunteer_profile.user, SignupCodeType.VOLUNTEER_AUTOMATIC_ACCEPT):
+                if UserService.has_valid_special_signup_code(volunteer_profile.user, SignupCodeType.VOLUNTEER_AUTOMATIC_ACCEPT) \
+                    or settings.AUTOMATICALLY_ACCEPT_VOLUNTEERS:
                     volunteer_profile.volunteer_status = ReviewStatus.ACCEPTED
                     volunteer_profile.is_edited = True
-                    UserService.use_signup_code(volunteer_profile.user.special_code, SignupCodeType.VOLUNTEER_AUTOMATIC_ACCEPT)
+                    if volunteer_profile.user.special_code:
+                        UserService.use_signup_code(volunteer_profile.user.special_code, SignupCodeType.VOLUNTEER_AUTOMATIC_ACCEPT)
                 try:
                     volunteer_profile.save()
 
