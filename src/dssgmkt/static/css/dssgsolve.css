@@ -198,6 +198,18 @@ fieldset legend {
   text-transform: uppercase;
 }
 
+.requirement-editor-control {
+  pointer-events: all;
+  opacity: 0;
+  cursor: pointer;
+}
+.requirement-editor-control-active {
+  opacity: 1;
+}
+.requirement-editor-control:hover {
+  opacity: 0.5;
+}
+
 .ui-datepicker {
     background-color: #fff;
     border: 1px solid #66AFE9;

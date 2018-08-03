@@ -686,6 +686,7 @@ class ProjectEdit(PermissionRequiredMixin, UpdateView):
 
 @permission_required('project.task_requirements_view', raise_exception=True, fn=objectgetter(Project, 'proj_pk'))
 def project_task_requirements_edit_view(request, proj_pk, task_pk):
+    print(request)
     task = get_project_task(request, proj_pk, task_pk)
     project = get_project(request, proj_pk)
     if request.method == 'POST':
@@ -694,7 +695,8 @@ def project_task_requirements_edit_view(request, proj_pk, task_pk):
             return redirect('dssgmkt:proj_task', proj_pk=proj_pk, task_pk=task_pk)
         except KeyError:
             raise Http404
-        except ValueError:
+        except ValueError as v:
+            print(str(v))
             pass
     elif request.method == 'GET':
         pass

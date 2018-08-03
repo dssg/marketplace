@@ -1492,7 +1492,10 @@ class ProjectTaskService():
         all_skills = Skill.objects.all()
         for skill in all_skills:
             level_form_value = int(post_object.get(str(skill.id)))
-            importance_form_value = int(post_object.get("i" + str(skill.id)))
+            if post_object.get("i" + str(skill.id)):
+                importance_form_value = int(post_object.get("i" + str(skill.id)))
+            else:
+                importance_form_value = TaskRequirementImportance.NICE_TO_HAVE
             task_requirement = task_requirement_dict.get(skill.id)
             if level_form_value == -1:
                 if task_requirement:

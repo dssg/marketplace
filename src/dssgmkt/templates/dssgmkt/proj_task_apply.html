@@ -73,8 +73,7 @@
         <div class="card">
           <div class="card-header"><i class="fas fa-magic"></i> Skill requirements</div>
           <div class="card-body">
-            {% include 'dssgmkt/components/requirements_display.html' with task_requirements=project_task.projecttaskrequirement_set.all header_skill_text='Required skill'%}
-
+            {% include 'dssgmkt/components/requirements_display.html' with task_requirements=project_task.projecttaskrequirement_set.all header_skill_text='Required skill' %}
           </div>
         </div>
       </div>
