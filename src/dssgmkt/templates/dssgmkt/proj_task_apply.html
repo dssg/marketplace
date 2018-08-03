@@ -69,15 +69,17 @@
         </div>
       </div>
 
-      <div class="card-deck section-header">
-        <div class="card">
-          <div class="card-header"><i class="fas fa-magic"></i> Skill requirements</div>
-          <div class="card-body">
-            {% include 'dssgmkt/components/requirements_display.html' with task_requirements=project_task.projecttaskrequirement_set.all header_skill_text='Required skill' %}
+      {% if project_task.projecttaskrequirement_set.all %}
+        <div class="card-deck section-header">
+          <div class="card">
+            <div class="card-header"><i class="fas fa-magic"></i> Skill requirements</div>
+            <div class="card-body">
+              {% include 'dssgmkt/components/requirements_display.html' with task_requirements=project_task.projecttaskrequirement_set.all header_skill_text='Required skill' %}
+            </div>
           </div>
         </div>
-      </div>
-
+      {% endif %}
+      
       <div class="section-header"></div>
       {% csrf_token %}
       {% include 'dssgmkt/components/standard_form_fields.html' %}
