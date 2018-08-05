@@ -18,7 +18,7 @@
      <div class="col-lg-7">
       <h1 class="text-success">Projects that matter</h1>
       <h1 class="text-white">Work that matters</h1>
-      <h2 class="text-success">Data Science applied to social good.</h2>
+      <h2 class="text-success">Data Science for Social Good.</h2>
      </div>
      <div class="col-lg-12 row mt-5 action-links">
        <div class="col-lg-4 offset-lg-2 d-flex">
@@ -48,9 +48,9 @@
      <h2>What is <span class="text-warning">DSSG Solve</span>?</h2>
     </div>
     <div class="col-lg-12">
-     <p class="main-text">DSSG Solve: an online marketplace where governments and non-profits can post projects,
-      where volunteers with expertise in the field can ask questions and scope those projects
-      into well-defined problems, and where data scientists can team up to solve those problems
+     <p class="main-text">DSSG Solve: an online platform for social good organization to post projects,
+      for volunteers to help refine and scope projects
+      into well-defined problems, and for data scientists and technologists to help solve those problems
       collaboratively</p>
    </div>
   </div>
@@ -86,19 +86,24 @@
   <div class="row mt-4">
    <div class="card-deck main-cards col-lg-12">
     <div class="card text-white bg-primary">
-     <div class="card-header"><h3>For organizations</h3></div>
+     <div class="card-header"><h3>For social good organizations</h3></div>
      <div class="card-body">
-      <div>DSSG Solve enables organizations to manage their social good projects within the platform,
-      including volunteers, deliverables and reviews. Staff your projects with highly qualified
-      volunteers and turn them into a team that works effectively throughout all phases of the
-      project, from project scoping to the final QA validation.</div>
+      <div> DSSG Solve enables organizations to use data-intensive methods to better achieve their missions. 
+       Post your project to connect with skilled volunteers who can:
+       <ul>
+        <li>Understand your goals and scope out technical solutions</li>
+        <li>Work as a team with you and with other volunteers</li>
+        <li>Evaluate and validate the solutions</li>
+        <li>Help you understand the results</li>
+       </ul>
+
+</div>
      <img src="{% static 'img/front_page_project_diagram.svg' %}" class="img-fluid mt-3 col-lg-12"></img>
      </div>
      <div class="card-footer">
-      <div class="footer-title">Do you represent an organization?</div>
       <div class="d-flex mt-2 mb-2">
         <a class="btn btn-warning text-primary flex-grow-1" href="{% url 'dssgmkt:signup_form' 'organization' %}">
-            Post your projects now
+            Post a project now
         </a>
       </div>
      </div>
@@ -110,15 +115,18 @@
        <div class="image-wrapper float-right pl-3 pb-2 col-lg-4">
         <img src="{% static 'img/front_page_volunteer_diagram.png' %}" class="img-fluid"></img>
        </div>
-       DSSG Solve is a productive community of volunteers that are passionate about using
-       technology and data for social good. Join us and start using your skills to solve
-       important, high impact projects that help us all. Showcase your skills and put
-       them to good use, while collaborating with other intelligent, driven volunteers.
-       Build a history of successful projects and increase your visibility in the community.
-      </div>
+      DSSG Solve needs a global community of volunteers that are passionate about using technology and data for social good. Join us to: 
+      <ul>
+       <li>Apply your skills for work that matters</li>
+       <li>Collaborate with other smart and passionate volunteers</li>
+       <li>Gain data science experience and build your portfolio of work</li>
+       <li>Showcase your skills and increase your visibility</li>
+      </ul>
+
+          </div>
      </div>
      <div class="card-footer">
-      <div class="footer-title">Are you ready to start helping projects?</div>
+      <div class="footer-title">Ready to help?</div>
       <div class="d-flex mt-2 mb-2">
         <a class="btn btn-warning text-primary flex-grow-1" href="{% url 'dssgmkt:signup_form' 'volunteer' %}">
             Sign up now
@@ -137,7 +145,7 @@
      <div class="card-header bg-primary text-white"><h4 class="mt-2">Projects</h4></div>
      <ul class="list-group list-group-flush">
       <li class="list-group-item">
-        <p>Take a look at the list of projects that our volunteers are working on.</p>
+        <p>Pprojects our volunteers are working on.</p>
         <p><a href="{% url 'dssgmkt:proj_list' %}">Browse projects</a></p>
       </li>
       <li class="list-group-item featured d-flex flex-column">
@@ -161,7 +169,7 @@
      <div class="card-header bg-primary text-white"><h4 class="mt-2">Organizations</h4></div>
      <ul class="list-group list-group-flush">
       <li class="list-group-item">
-        <p>Browse organizations that are working towards social good and need your help.</p>
+        <p>Organizations that are working towards social good</p>
         <p><a href="{% url 'dssgmkt:org_list' %}">Browse organizations</a></p>
       </li>
       <li class="list-group-item featured d-flex flex-column">
@@ -185,7 +193,7 @@
      <div class="card-header bg-primary text-white"><h4 class="mt-2">Volunteers</h4></div>
      <ul class="list-group list-group-flush">
       <li class="list-group-item">
-        <p>Check out all the passionate people that are making these projects a reality.</p>
+        <p>Volunteers that are making our projects a reality</p>
         <p><a href="{% url 'dssgmkt:volunteer_list' %}">Browse volunteers</a></p>
       </li>
       <li class="list-group-item featured d-flex flex-column">
