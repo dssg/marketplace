@@ -15,10 +15,11 @@
             <li class="nav-item navbar-padder"></li>
             <li class="nav-item"><a class="nav-link" href="{% url 'dssgmkt:home' %}">Home</a></li>
             <li class="nav-item"><a class="nav-link" href="{% url 'dssgmkt:about' %}">About us</a></li>
-            <li class="nav-item"><a class="nav-link" href="{% url 'dssgmkt:resources' %}">Resources</a></li>
             <li class="nav-item"><a class="nav-link" href="{% url 'dssgmkt:proj_list' %}">Projects</a></li>
             <li class="nav-item"><a class="nav-link" href="{% url 'dssgmkt:org_list' %}">Organizations</a></li>
             <li class="nav-item"><a class="nav-link" href="{% url 'dssgmkt:volunteer_list' %}">Volunteers</a></li>
+            <li class="nav-item"><a class="nav-link" href="{% url 'dssgmkt:resources' %}">Resources</a></li>
+
             {% if user.is_type_dssg_staff %}
               <li class="nav-item"><a class="nav-link text-warning" href="{% url 'dssgmkt:admin_home' %}">Admin</a></li>
             {% endif %}
@@ -44,10 +45,11 @@
             <li class="nav-item navbar-padder"></li>
             <li class="nav-item"><a class="nav-link" href="{% url 'dssgmkt:home' %}">Home</a></li>
             <li class="nav-item"><a class="nav-link" href="{% url 'dssgmkt:about' %}">About us</a></li>
-            <li class="nav-item"><a class="nav-link" href="{% url 'dssgmkt:resources' %}">Resources</a></li>
             <li class="nav-item"><a class="nav-link" href="{% url 'dssgmkt:proj_list' %}">Projects</a></li>
             <li class="nav-item"><a class="nav-link" href="{% url 'dssgmkt:org_list' %}">Organizations</a></li>
             <li class="nav-item"><a class="nav-link" href="{% url 'dssgmkt:volunteer_list' %}">Volunteers</a></li>
+            <li class="nav-item"><a class="nav-link" href="{% url 'dssgmkt:resources' %}">Resources</a></li>
+
           </ul>
           <ul class="navbar-nav">
             <li class="nav-item"><a class="nav-link" href="{% url 'dssgmkt:signup_type_select' %}">Sign up</a></li>
