@@ -13,16 +13,16 @@
       <p>This project has been completed. Below you can find links to all the public results, documentation, data, code, etc. that has been generated as part of the project.</p>
     {% endif %}
     {% if project.deliverable_management_url %}
-      <a href="{{ project.deliverable_management_url }}">Project home</a>
+      <div><a href="{{ project.deliverable_management_url }}">Project home</a></div>
     {% endif %}
     {% if project.deliverable_github_url %}
-      <a href="{{ project.deliverable_github_url }}">Project github page</a>
+      <div><a href="{{ project.deliverable_github_url }}">Project github page</a></div>
     {% endif %}
     {% if project.deliverable_reports_url %}
-      <a href="{{ project.deliverable_reports_url }}">Project reports</a>
+      <div><a href="{{ project.deliverable_reports_url }}">Project reports</a></div>
     {% endif %}
     {% if project.deliverable_documentation_url %}
-      <a href="{{ project.deliverable_documentation_url }}">Project documentation</a>
+      <div><a href="{{ project.deliverable_documentation_url }}">Project documentation</a></div>
     {% endif %}
   {% else %}
     <p>This project is still in progress, so no public deliverables are available.</p>
