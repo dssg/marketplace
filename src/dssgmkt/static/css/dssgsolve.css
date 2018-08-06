@@ -210,6 +210,13 @@ fieldset legend {
   opacity: 0.5;
 }
 
+
+
+.card-header {
+  background-color: #517293;
+  color: white;
+}
+
 .ui-datepicker {
     background-color: #fff;
     border: 1px solid #66AFE9;

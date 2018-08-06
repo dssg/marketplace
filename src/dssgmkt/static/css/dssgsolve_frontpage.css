@@ -77,3 +77,7 @@ h1, h2, h3 {
 .featured .itemlink {
   text-transform: none;
 }
+
+.card-header {
+  background-color: #2C3E50;
+}
