@@ -127,7 +127,7 @@ class Build(Local):
             yield from self['push'].prepare(args)
 
         if args.deploy:
-            yield self['deploy'].prepare(args, parser)
+            yield from self['deploy'].prepare(args, parser)
 
     @localmethod('-l', '--login', action='store_true', help="log in to AWS ECR")
     def push(self, args):
@@ -226,7 +226,7 @@ class Build(Local):
                 '--service', service,
             ]
 
-            if args.report and stdout is not None:
+            if getattr(args, 'report', True) and stdout is not None:
                 try:
                     result = json.loads(stdout)
 
