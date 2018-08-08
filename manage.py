@@ -3,7 +3,7 @@ import enum
 import json
 import os
 import sys
-from argparse import REMAINDER
+from argparse import _StoreAction, REMAINDER
 from pathlib import Path
 
 from argcmdr import Local, LocalRoot, localmethod
@@ -13,15 +13,58 @@ from terminaltables import AsciiTable
 ROOT_PATH = Path(__file__).parent.resolve()
 SRC_PATH = ROOT_PATH / 'src'
 
-IMAGE_REPOSITORY_NAME_DEFAULT = os.getenv('IMAGE_REPOSITORY_NAME')
-IMAGE_REPOSITORY_URI_DEFAULT = os.getenv('IMAGE_REPOSITORY_URI')
 
-ECS_CLUSTER_NAME_DEFAULT = os.getenv('ECS_CLUSTER_NAME')
-ECS_SERVICE_NAME_DEFAULT = os.getenv('ECS_SERVICE_NAME')
+def store_env_override(option_strings,
+                       dest,
+                       envvar,
+                       nargs=None,
+                       default=None,
+                       type=None,
+                       choices=None,
+                       description=None,
+                       help=None,
+                       metavar=None):
+    if envvar == '':
+        raise ValueError("unsupported environment variable name", envvar)
 
+    envvalue = os.getenv(envvar)
 
-def add_default(text, default):
-    return f'{text} (default: {default})' if default else text
+    if default is None:
+        default_value = envvalue
+    elif callable(default):
+        default_value = default(envvalue)
+    else:
+        raise TypeError("unsupported default -- expected callable or None")
+
+    if description and help:
+        raise ValueError(
+            "only specify help to override its optional generation from "
+            "description -- not both"
+        )
+    elif description:
+        if default_value:
+            help = '{} (default {} envvar {}: {})'.format(
+                description,
+                'provided by' if default is None else 'derived from',
+                envvar,
+                default_value,
+            )
+        else:
+            help = (f'{description} (required because '
+                    f'envvar {envvar} is empty)')
+
+    return _StoreAction(
+        option_strings=option_strings,
+        dest=dest,
+        nargs=nargs,
+        const=None,
+        default=default_value,
+        type=type,
+        choices=choices,
+        required=(not default_value),
+        help=help,
+        metavar=metavar,
+    )
 
 
 class Marketplace(LocalRoot):
@@ -33,36 +76,36 @@ class Build(Local):
     """build app container image"""
 
     def __init__(self, parser):
-        default_name = IMAGE_REPOSITORY_NAME_DEFAULT and (IMAGE_REPOSITORY_NAME_DEFAULT + ':latest')
-
         parser.add_argument(
             '--repository-uri',
-            default=IMAGE_REPOSITORY_URI_DEFAULT,
-            help=add_default('Image repository URI',
-                             IMAGE_REPOSITORY_URI_DEFAULT),
+            action=store_env_override,
+            envvar='IMAGE_REPOSITORY_URI',
+            description='image repository URI',
         )
         parser.add_argument(
             '--repository-name',
-            default=IMAGE_REPOSITORY_NAME_DEFAULT,
-            help=add_default('Image repository name',
-                             IMAGE_REPOSITORY_NAME_DEFAULT),
+            action=store_env_override,
+            envvar='IMAGE_REPOSITORY_NAME',
+            description='image repository name',
         )
         parser.add_argument(
             '-n', '--name',
-            default=default_name,
-            help=add_default('Image name:tag', default_name),
+            action=store_env_override,
+            envvar='IMAGE_REPOSITORY_NAME',
+            default=lambda envvalue: envvalue and f'{envvalue}:latest',
+            description='image name:tag',
         )
         parser.add_argument(
             '--label',
             action='append',
-            help='Additional name/tags to label image; the first of these, '
+            help='additional name/tags to label image; the first of these, '
                  'if any, is treated as the "version"',
         )
         parser.add_argument(
             '--target',
             choices=('development', 'production'),
             default='production',
-            help="Target environment (default: production)",
+            help="target environment (default: production)",
         )
         parser.add_argument(
             '-l', '--login',
@@ -81,28 +124,9 @@ class Build(Local):
         )
 
     def get_full_name(self, name):
-        if not self.args.repository_uri:
-            self.args.__parser__.error(
-                "image repository URI required "
-                "(specify argument --repository-uri or "
-                "environment variable IMAGE_REPOSITORY_URI)"
-            )
-
         return '/'.join((self.args.repository_uri, name))
 
     def prepare(self, args, parser):
-        dynamically_missing = [
-            argument_descriptor for (argument_descriptor, argument_value) in (
-                ('-n/--name', args.name),
-                ('--repository-name', args.repository_name),
-            ) if not argument_value
-        ]
-        if dynamically_missing:
-            parser.error(
-                "the following argument values could not be dynamically determined: " +
-                ', '.join(dynamically_missing)
-            )
-
         if args.login and not args.push:
             parser.error("will not log in outside of push operation")
 
@@ -178,18 +202,16 @@ class Build(Local):
         def __init__(self, parser):
             parser.add_argument(
                 '--cluster',
-                default=ECS_CLUSTER_NAME_DEFAULT,
-                help=add_default(
-                    "The short name or full Amazon Resource Name (ARN) of the "
-                    "cluster that your service is running on",
-                    ECS_CLUSTER_NAME_DEFAULT
-                ),
+                action=store_env_override,
+                envvar='ECS_CLUSTER_NAME',
+                description="short name or full Amazon Resource Name (ARN) "
+                            "of the cluster that your service is running on",
             )
             parser.add_argument(
                 '--service',
-                default=ECS_SERVICE_NAME_DEFAULT,
-                help=add_default("The name of the service to update",
-                                 ECS_SERVICE_NAME_DEFAULT),
+                action=store_env_override,
+                envvar='ECS_SERVICE_NAME',
+                description="name of the service to update",
             )
             parser.add_argument(
                 '--no-quiet',
@@ -203,27 +225,16 @@ class Build(Local):
                 action='store_false',
                 default=True,
                 dest='report',
-                help="print deployment result",
+                help="do not print deployment result",
             )
 
         def prepare(self, args, parser):
-            cluster = getattr(args, 'cluster', ECS_CLUSTER_NAME_DEFAULT)
-            service = getattr(args, 'service', ECS_SERVICE_NAME_DEFAULT)
-
-            for (name, value) in (
-                ('--cluster', cluster),
-                ('--service', service),
-            ):
-                if not value:
-                    parser.error(f"no value supplied for {name} and no value "
-                                 "found in environment")
-
             (_retcode, stdout, _stderr) = yield self.local['aws'][
                 'ecs',
                 'update-service',
                 '--force-new-deployment',
-                '--cluster', cluster,
-                '--service', service,
+                '--cluster', args.cluster,
+                '--service', args.service,
             ]
 
             if getattr(args, 'report', True) and stdout is not None:
