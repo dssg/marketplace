@@ -710,6 +710,14 @@ class ProjectTaskService():
         return user.is_authenticated and ProjectTaskRole.objects.filter(user=user, role=TaskRole.VOLUNTEER, task=task).exists()
 
     @staticmethod
+    def user_can_view_task_review(user, task_review):
+        return user.is_authenticated and (ProjectService.user_is_project_member(user, task_review.task.project) or ProjectTaskService.user_belongs_to_task_review(user, task_review))
+
+    @staticmethod
+    def user_can_view_all_task_reviews(user, task):
+        return user.is_authenticated and (ProjectService.user_is_project_member(user, task.project) or ProjectTaskService.user_is_task_volunteer(user, task))
+
+    @staticmethod
     def user_can_view_volunteer_application(user, volunteer_application):
         return user == volunteer_application.volunteer or ProjectService.user_is_project_official(user, volunteer_application.task.project)
 
@@ -965,12 +973,6 @@ class ProjectTaskService():
             return project_task
         else:
             raise KeyError('Project not found')
-
-    @staticmethod
-    def user_can_view_task_review(request_user, task_review):
-        return request_user.is_authenticated and \
-            (ProjectService.user_is_project_member(request_user, task_review.task.project) \
-            or ProjectTaskService.user_belongs_to_task_review(request_user, task_review))
 
     @staticmethod
     def get_project_task_review(request_user, projid, taskid, reviewid):
@@ -1636,7 +1638,7 @@ class ProjectTaskService():
 
     @staticmethod
     def get_task_reviews(request_user, project_task, expand_pinned=False):
-        ensure_user_has_permission(request_user, project_task.project, 'project.all_task_reviews_view')
+        ensure_user_has_permission(request_user, project_task, 'project.all_task_reviews_view')
         base_query = ProjectTaskReview.objects.filter(task=project_task.id)
         if expand_pinned:
             base_query = base_query.annotate(pinnedreview=Count('pinnedtaskreview', fiter=Q(user=request_user)))

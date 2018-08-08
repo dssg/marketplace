@@ -476,13 +476,14 @@ class ProjectTestCase(TestCase):
             ProjectTaskService.mark_task_as_completed(self.volunteer_applicant_user, self.project.id, task.id, task_review)
             test_permission_denied_operation(self, [AnonymousUser(), self.volunteer_user],
                 lambda x: ProjectTaskService.get_project_task_review(x, self.project.id, task.id, task_review.id))
-            self.assertEqual(ProjectTaskService.get_project_task_review(self.volunteer_applicant_user,
+            self.assertEqual(ProjectTaskService.get_project_task_review(self.owner_user,
                 self.project.id, task.id, task_review.id).review_result, ReviewStatus.NEW)
             test_permission_denied_operation(self, [AnonymousUser(), self.volunteer_user],
                 lambda x: ProjectTaskService.get_task_reviews(x, task))
             task_reviews = ProjectTaskService.get_task_reviews(self.owner_user, task)
             self.assertEqual(len(task_reviews), 1)
             self.assertEqual(task_reviews[0], task_review)
+
 
         with self.subTest(stage='Reject task review'):
             task_review = ProjectTaskService.get_task_reviews(self.owner_user, task)[0]
