@@ -1,5 +1,6 @@
 from django.db import IntegrityError, transaction
 from django.utils import timezone
+from django.core.exceptions import PermissionDenied
 from datetime import date
 
 from ..models.proj import (
@@ -1339,6 +1340,8 @@ class ProjectTaskService():
     @staticmethod
     def accept_volunteer(request_user, projid, taskid, volunteer_application):
         validate_consistent_keys(volunteer_application, (['task', 'id'], taskid), (['task', 'project', 'id'], projid))
+        if request_user.is_anonymous:
+            raise PermissionDenied()
         if volunteer_application.status != ReviewStatus.NEW:
             raise ValueError('Volunteer application review was already completed')
         volunteer_application.status = ReviewStatus.ACCEPTED
@@ -1368,6 +1371,8 @@ class ProjectTaskService():
     @staticmethod
     def reject_volunteer(request_user, projid, taskid, volunteer_application):
         validate_consistent_keys(volunteer_application, (['task', 'id'], taskid), (['task', 'project', 'id'], projid))
+        if request_user.is_anonymous:
+            raise PermissionDenied()
         if volunteer_application.status != ReviewStatus.NEW:
             raise ValueError('Volunteer application review was already completed')
         volunteer_application.status = ReviewStatus.REJECTED

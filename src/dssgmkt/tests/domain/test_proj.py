@@ -5,7 +5,7 @@ from django.contrib.auth.models import AnonymousUser
 from dssgmkt.models.common import ReviewStatus
 from dssgmkt.models.proj import (
     ProjectRole, ProjRole, TaskType, VolunteerApplication, ProjectScope,
-    TaskStatus, ProjectComment,
+    TaskStatus, ProjectComment, ProjectTaskRole,
 )
 from dssgmkt.models.user import SignupCodeType, SignupCode
 from dssgmkt.domain.user import UserService
@@ -23,6 +23,7 @@ class ProjectTestCase(TestCase):
     owner_user = None
     staff_user = None
     volunteer_user = None
+    volunteer_applicant_user = None
     scoping_user = None
     proj_mgmt_user = None
     organization = None
@@ -44,6 +45,11 @@ class ProjectTestCase(TestCase):
         self.volunteer_user.special_code = "AUTOMATICVOLUNTEER"
         UserService.create_user(None, self.volunteer_user, 'volunteer', None)
         UserService.create_volunteer_profile(self.volunteer_user, self.volunteer_user.id)
+
+        self.volunteer_applicant_user = example_volunteer_user(username="applicant")
+        self.volunteer_applicant_user.special_code = "AUTOMATICVOLUNTEER"
+        UserService.create_user(None, self.volunteer_applicant_user, 'volunteer', None)
+        UserService.create_volunteer_profile(self.volunteer_applicant_user, self.volunteer_applicant_user.id)
 
         self.scoping_user = example_volunteer_user(username="scopinguser")
         self.scoping_user.special_code = "AUTOMATICVOLUNTEER"
@@ -359,6 +365,8 @@ class ProjectTestCase(TestCase):
 
     def test_task_operations(self):
         self.create_standard_project_structure()
+        all_users = [self.owner_user, self.staff_user, self.scoping_user, self.proj_mgmt_user, self.volunteer_user, self.volunteer_applicant_user]
+
 
         task = None
         with self.subTest(stage='Create new task'):
@@ -378,8 +386,9 @@ class ProjectTestCase(TestCase):
         application = VolunteerApplication()
         application.volunteer_application_letter = "This is the letter."
         application.task = task
-        application.volunteer = self.volunteer_user
+        application.volunteer = self.volunteer_applicant_user
 
+        ## TODO This check is not currently implemented in the domain logic layer
         # with self.subTest(stage='Prevent applying to draft tasks'):
         #     with self.assertRaisesMessage(ValueError, ''):
         #         ProjectTaskService.apply_to_volunteer(self.volunteer_user, self.project.id, task.id, application)
@@ -402,21 +411,85 @@ class ProjectTestCase(TestCase):
             self.assertTrue(initial_accepting_volunteers == ProjectTaskService.get_project_task(self.owner_user, self.project.id, task.id).accepting_volunteers)
 
         with self.subTest(stage='Apply to task'):
-            ProjectTaskService.apply_to_volunteer(self.volunteer_user, self.project.id, task.id, application)
+            ProjectTaskService.apply_to_volunteer(self.volunteer_applicant_user, self.project.id, task.id, application)
 
         # with self.subTest(stage='Prevent applying twice to the same task'):
         #     with self.assertRaisesMessage(ValueError, ''):
         #         ProjectTaskService.apply_to_volunteer(self.volunteer_user, self.project.id, task.id, application)
+
+        with self.subTest(stage='Get volunteer applications'):
+            all_applications = ProjectService.get_all_volunteer_applications(self.owner_user, self.project.id)
+            self.assertEqual(len(all_applications), 4)
+            open_applications = [x for x in all_applications if x.status == ReviewStatus.NEW]
+            self.assertEqual(open_applications, [application])
+            test_permission_denied_operation(self, [AnonymousUser(), self.staff_user, self.volunteer_user],
+                lambda x: ProjectTaskService.get_volunteer_application(x, self.project.id, task.id, application.id))
+
+            viewers = [self.owner_user, self.scoping_user, self.proj_mgmt_user, self.volunteer_applicant_user]
+            with self.subTest(stage='Volunteer application viewers'):
+                test_users_group_inclusion(self, all_users, viewers, lambda x: ProjectTaskService.user_can_view_volunteer_application(x, application))
+
+
+        with self.subTest(stage='Reject volunteer application'):
+            test_permission_denied_operation(self, [AnonymousUser(), self.staff_user, self.volunteer_user, self.volunteer_applicant_user],
+                lambda x: ProjectTaskService.reject_volunteer(x, self.project.id, task.id, ProjectTaskService.get_volunteer_application(self.owner_user, self.project.id, task.id, application.id)))
+            application = ProjectTaskService.get_volunteer_application(self.owner_user, self.project.id, task.id, application.id)
+            ProjectTaskService.reject_volunteer(self.scoping_user, self.project.id, task.id, application)
+            saved_application = ProjectTaskService.get_volunteer_application(self.owner_user, self.project.id, task.id, application.id)
+            self.assertEqual(saved_application.status, ReviewStatus.REJECTED)
+            self.assertFalse(ProjectService.user_is_project_volunteer(self.volunteer_applicant_user, self.project))
+            self.assertFalse(ProjectTaskService.user_is_task_volunteer(self.volunteer_applicant_user, task))
+
+        with self.subTest(stage='Accept volunteer application'):
+            application.id = None
+            ProjectTaskService.apply_to_volunteer(self.volunteer_applicant_user, self.project.id, task.id, application)
+            test_permission_denied_operation(self, [AnonymousUser(), self.staff_user, self.volunteer_user, self.volunteer_applicant_user],
+                lambda x: ProjectTaskService.accept_volunteer(x, self.project.id, task.id, ProjectTaskService.get_volunteer_application(self.owner_user, self.project.id, task.id, application.id)))
+            application = ProjectTaskService.get_volunteer_application(self.owner_user, self.project.id, task.id, application.id)
+            ProjectTaskService.accept_volunteer(self.scoping_user, self.project.id, task.id, application)
+            saved_application = ProjectTaskService.get_volunteer_application(self.owner_user, self.project.id, task.id, application.id)
+            self.assertEqual(saved_application.status, ReviewStatus.ACCEPTED)
+            self.assertTrue(ProjectTaskService.user_is_task_volunteer(self.volunteer_applicant_user, task))
+
 
         with self.subTest(stage='Prevent applying to task without volunteer profile'):
             with self.assertRaisesMessage(PermissionDenied, ''):
                 application.volunteer = self.owner_user
                 ProjectTaskService.apply_to_volunteer(self.owner_user, self.project.id, task.id, application)
 
+        with self.subTest(stage='Prevent deleting task with volunteers'):
+            with self.assertRaisesMessage(ValueError, ''):
+                ProjectTaskService.delete_task(self.owner_user, self.project.id, task)
+
+        with self.subTest(stage='Prevent deleting completed tasks'):
+            # TODO mark the task as completed
+            # with self.assertRaisesMessage(ValueError, ''):
+            #     ProjectTaskService.delete_task(self.owner_user, self.project.id, task)
+            pass
+
+        with self.subTest(stage='Cancel volunteering'):
+            role = ProjectTaskService.get_own_project_task_role(self.volunteer_applicant_user, self.project.id, task.id)
+            test_permission_denied_operation(self, [AnonymousUser(), self.volunteer_user, self.staff_user, self.proj_mgmt_user, self.scoping_user, self.owner_user],
+                lambda x: ProjectTaskService.cancel_volunteering(x, self.project.id, task.id, role))
+            ProjectTaskService.cancel_volunteering(self.volunteer_applicant_user, self.project.id, task.id, role)
+            self.assertFalse(ProjectService.user_is_project_volunteer(self.volunteer_applicant_user, self.project))
+            self.assertFalse(ProjectTaskService.user_is_task_volunteer(self.volunteer_applicant_user, task))
+            with self.assertRaisesMessage(ProjectTaskRole.DoesNotExist, ''):
+                ProjectTaskService.get_own_project_task_role(self.volunteer_applicant_user, self.project.id, task.id)
+
+
+        with self.subTest(stage='Delete task'):
+            test_permission_denied_operation(self, [AnonymousUser(), self.volunteer_user, self.staff_user, self.proj_mgmt_user],
+                lambda x: ProjectTaskService.delete_task(x, self.project.id, task))
+            task = ProjectTaskService.create_default_task(self.scoping_user, self.project.id)
+            ProjectTaskService.delete_task(self.owner_user, self.project.id, task)
+            task = ProjectTaskService.create_default_task(self.scoping_user, self.project.id)
+            ProjectTaskService.delete_task(self.scoping_user, self.project.id, task)
+
 #
 # check the all the paths within ProjectTaskService.save_task_internal(request_user, projid, taskid, project_task) ??
 #
-# ProjectTaskService.delete_task(request_user, projid, project_task)
+#
 
 #
 #
@@ -452,13 +525,9 @@ class ProjectTestCase(TestCase):
 # ProjectTaskService.get_volunteer_all_project_tasks(request_user, target_user, project)
 # ProjectTaskService.get_user_in_progress_tasks(request_user)
 #
-# ProjectTaskService.user_is_task_volunteer(user, task)
-# ProjectTaskService.user_can_view_volunteer_application(user, volunteer_application)
 # ProjectTaskService.user_can_review_task(user, task)
 # ProjectTaskService.task_has_volunteers(request_user, taskid)
 # ProjectTaskService.get_task_volunteers(request_user, taskid)
-#
-# ProjectTaskService.cancel_volunteering(request_user, projid, taskid, project_task_role)
 #
 # ProjectTaskService.get_task_staff(request_user, taskid)
 # ProjectTaskService.get_project_task_staff_for_editing(request_user, projid, taskid)
