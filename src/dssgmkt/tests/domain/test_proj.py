@@ -5,7 +5,7 @@ from django.contrib.auth.models import AnonymousUser
 from dssgmkt.models.common import ReviewStatus
 from dssgmkt.models.proj import (
     ProjectRole, ProjRole, TaskType, VolunteerApplication, ProjectScope,
-    TaskStatus, ProjectComment, ProjectTaskRole,
+    TaskStatus, ProjectComment, ProjectTaskRole, ProjectTaskReview,
 )
 from dssgmkt.models.user import SignupCodeType, SignupCode
 from dssgmkt.domain.user import UserService
@@ -382,6 +382,7 @@ class ProjectTestCase(TestCase):
 
         with self.subTest(stage='Edit task'):
             task.name = 'New edited task'
+            task.type = TaskType.DOMAIN_WORK_TASK
             test_permission_denied_operation(self, [AnonymousUser(), self.volunteer_user, self.staff_user, self.proj_mgmt_user],
                 lambda x: ProjectTaskService.save_task(x, self.project.id, task.id, task))
             ProjectTaskService.save_task(self.owner_user, self.project.id, task.id, task)
@@ -465,6 +466,32 @@ class ProjectTestCase(TestCase):
             with self.assertRaisesMessage(ValueError, ''):
                 ProjectTaskService.delete_task(self.owner_user, self.project.id, task)
 
+
+        with self.subTest(stage='Complete task'):
+            task_review = ProjectTaskReview()
+            task_review.volunteer_comment = "Completed."
+            task_review.volunteer_effort_hours = 1
+            test_permission_denied_operation(self, [AnonymousUser(), self.volunteer_user, self.staff_user, self.proj_mgmt_user, self.scoping_user, self.owner_user],
+                lambda x: ProjectTaskService.mark_task_as_completed(x, self.project.id, task.id, task_review))
+            ProjectTaskService.mark_task_as_completed(self.volunteer_applicant_user, self.project.id, task.id, task_review)
+            test_permission_denied_operation(self, [AnonymousUser(), self.volunteer_user],
+                lambda x: ProjectTaskService.get_project_task_review(x, self.project.id, task.id, task_review.id))
+            self.assertEqual(ProjectTaskService.get_project_task_review(self.volunteer_applicant_user,
+                self.project.id, task.id, task_review.id).review_result, ReviewStatus.NEW)
+            test_permission_denied_operation(self, [AnonymousUser(), self.volunteer_user],
+                lambda x: ProjectTaskService.get_task_reviews(x, task))
+            task_reviews = ProjectTaskService.get_task_reviews(self.owner_user, task)
+            self.assertEqual(len(task_reviews), 1)
+            self.assertEqual(task_reviews[0], task_review)
+
+        with self.subTest(stage='Reject task review'):
+            task_review = ProjectTaskService.get_task_reviews(self.owner_user, task)[0]
+            test_permission_denied_operation(self, [AnonymousUser(), self.volunteer_user, self.staff_user, self.volunteer_applicant_user],
+                lambda x: ProjectTaskService.reject_task_review(x, self.project.id, task.id, task_review))
+            ProjectTaskService.reject_task_review(self.owner_user, self.project.id, task.id, task_review)
+            self.assertEqual(ProjectTaskService.get_project_task_review(self.owner_user, self.project.id, task.id, task_review.id).review_result, ReviewStatus.REJECTED)
+            self.assertEqual(ProjectTaskService.get_project_task(self.owner_user, self.project.id, task.id).stage, TaskStatus.STARTED)
+
         with self.subTest(stage='Prevent deleting completed tasks'):
             # TODO mark the task as completed
             # with self.assertRaisesMessage(ValueError, ''):
@@ -503,6 +530,9 @@ class ProjectTestCase(TestCase):
 # ProjectTaskService.accept_volunteer(request_user, projid, taskid, volunteer_application)
 # ProjectTaskService.reject_volunteer(request_user, projid, taskid, volunteer_application)
 #
+
+
+
 #
 # ProjectTaskService.mark_task_as_completed(request_user, projid, taskid, project_task_review)
 # ProjectTaskService.get_project_task_review(request_user, projid, taskid, reviewid)
@@ -511,9 +541,10 @@ class ProjectTestCase(TestCase):
 # ProjectTaskService.update_user_task_count(request_user) ??
 # ProjectTaskService.update_user_review_score(request_user) ??
 # ProjectTaskService.update_user_work_speed(request_user) ??
+
 # ProjectTaskService.accept_task_review(request_user, projid, taskid, task_review)
 # ProjectTaskService.reject_task_review(request_user, projid, taskid, task_review)
-# ProjectTaskService.get_task_reviews(request_user, project_task, expand_pinned=False)
+
 # ProjectTaskService.user_belongs_to_task_review(request_user, task_review)
 # ProjectTaskService.toggle_pinned_task_review(request_user, projid, taskid, task_reviewid)
 #

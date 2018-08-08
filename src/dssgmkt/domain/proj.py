@@ -967,10 +967,16 @@ class ProjectTaskService():
             raise KeyError('Project not found')
 
     @staticmethod
+    def user_can_view_task_review(request_user, task_review):
+        return request_user.is_authenticated and \
+            (ProjectService.user_is_project_member(request_user, task_review.task.project) \
+            or ProjectTaskService.user_belongs_to_task_review(request_user, task_review))
+
+    @staticmethod
     def get_project_task_review(request_user, projid, taskid, reviewid):
         project = Project.objects.get(pk=projid)
-        ensure_user_has_permission(request_user, project, 'project.task_review_view')
         task_review = ProjectTaskReview.objects.get(pk=reviewid)
+        ensure_user_has_permission(request_user, task_review, 'project.task_review_view')
         validate_consistent_keys(task_review, 'Task review not found in that project', (['task', 'id'], taskid), (['task', 'project', 'id'], projid))
         return task_review
 
@@ -1630,6 +1636,7 @@ class ProjectTaskService():
 
     @staticmethod
     def get_task_reviews(request_user, project_task, expand_pinned=False):
+        ensure_user_has_permission(request_user, project_task.project, 'project.all_task_reviews_view')
         base_query = ProjectTaskReview.objects.filter(task=project_task.id)
         if expand_pinned:
             base_query = base_query.annotate(pinnedreview=Count('pinnedtaskreview', fiter=Q(user=request_user)))

@@ -455,7 +455,7 @@ class ProjectTaskReviewForm(ModelForm):
         fields = ['review_score', 'public_reviewer_comments', 'private_reviewer_notes']
 
 
-@permission_required('project.task_review_view', raise_exception=True, fn=objectgetter(Project, 'proj_pk'))
+@permission_required('project.task_review_view', raise_exception=True, fn=objectgetter(ProjectTaskReview, 'review_pk'))
 def process_task_review_request_view(request, proj_pk, task_pk, review_pk, action=None):
     project_task_review = get_project_task_review(request, proj_pk, task_pk, review_pk)
     if request.method == 'POST':
