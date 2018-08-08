@@ -64,7 +64,10 @@ class UserService():
 
     @staticmethod
     def get_featured_volunteer():
-        return VolunteerProfile.objects.all().annotate(taskcount=Count('user__projecttaskrole')).order_by('-average_review_score', '-taskcount').first()
+        return VolunteerProfile.objects.filter(volunteer_status=ReviewStatus.ACCEPTED) \
+            .annotate(taskcount=Count('user__projecttaskrole')) \
+            .order_by('-average_review_score', '-taskcount') \
+            .first()
 
     @staticmethod
     def verify_captcha(captcha_response):
