@@ -201,7 +201,7 @@ class UserProfileView(generic.DetailView):
 
         project_tasks = ProjectTaskService.get_volunteer_all_tasks(self.request.user, self.object)
         context['project_tasks'] = paginate(self.request, project_tasks, request_key='project_tasks_page', page_size=15)
-
+        context['pinned_reviews'] = ProjectTaskService.get_pinned_task_reviews(self.request.user, self.object)
         return context
 
 class UserProfileEdit(PermissionRequiredMixin, UpdateView):

@@ -6,6 +6,7 @@ from dssgmkt.models.common import ReviewStatus
 from dssgmkt.models.proj import (
     ProjectRole, ProjRole, TaskType, VolunteerApplication, ProjectScope,
     TaskStatus, ProjectComment, ProjectTaskRole, ProjectTaskReview,
+    ProjectStatus,
 )
 from dssgmkt.models.user import SignupCodeType, SignupCode
 from dssgmkt.domain.user import UserService
@@ -371,7 +372,6 @@ class ProjectTestCase(TestCase):
         self.create_standard_project_structure()
         all_users = self.get_all_users()
 
-
         task = None
         with self.subTest(stage='Create new task'):
             test_permission_denied_operation(self, [AnonymousUser(), self.volunteer_user, self.staff_user, self.proj_mgmt_user],
@@ -483,7 +483,14 @@ class ProjectTestCase(TestCase):
             task_reviews = ProjectTaskService.get_task_reviews(self.owner_user, task)
             self.assertEqual(len(task_reviews), 1)
             self.assertEqual(task_reviews[0], task_review)
+            self.assertEqual(ProjectTaskService.get_project_task(self.owner_user, self.project.id, task.id).stage, TaskStatus.WAITING_REVIEW)
+            with self.subTest(stage='Volunteer belongs to task review'):
+                test_users_group_inclusion(self, all_users, [self.volunteer_applicant_user],
+                    lambda x: ProjectTaskService.user_belongs_to_task_review(x, task_review))
 
+        with self.subTest(stage='User can review task'):
+            test_users_group_inclusion(self, all_users, [self.owner_user, self.scoping_user, self.proj_mgmt_user],
+                lambda x: ProjectTaskService.user_can_review_task(x, task))
 
         with self.subTest(stage='Reject task review'):
             task_review = ProjectTaskService.get_task_reviews(self.owner_user, task)[0]
@@ -493,22 +500,57 @@ class ProjectTestCase(TestCase):
             self.assertEqual(ProjectTaskService.get_project_task_review(self.owner_user, self.project.id, task.id, task_review.id).review_result, ReviewStatus.REJECTED)
             self.assertEqual(ProjectTaskService.get_project_task(self.owner_user, self.project.id, task.id).stage, TaskStatus.STARTED)
 
+        with self.subTest(stage='Accept task review'):
+            task_review = ProjectTaskReview()
+            task_review.volunteer_comment = "Completed."
+            task_review.volunteer_effort_hours = 1
+            ProjectTaskService.mark_task_as_completed(self.volunteer_applicant_user, self.project.id, task.id, task_review)
+            test_permission_denied_operation(self, [AnonymousUser(), self.volunteer_user, self.staff_user, self.volunteer_applicant_user],
+                lambda x: ProjectTaskService.accept_task_review(x, self.project.id, task.id, task_review))
+            ProjectTaskService.accept_task_review(self.owner_user, self.project.id, task.id, task_review)
+            self.assertEqual(ProjectTaskService.get_project_task_review(self.owner_user, self.project.id, task.id, task_review.id).review_result, ReviewStatus.ACCEPTED)
+            self.assertEqual(ProjectTaskService.get_project_task(self.owner_user, self.project.id, task.id).stage, TaskStatus.COMPLETED)
+
+        with self.subTest(stage='Pin task review'):
+            task_reviews = ProjectTaskService.get_task_reviews(self.owner_user, task)
+            for task_review in task_reviews:
+                test_permission_denied_operation(self, [AnonymousUser(), self.volunteer_user, self.staff_user, self.owner_user, self.proj_mgmt_user, self.scoping_user],
+                    lambda x: ProjectTaskService.toggle_pinned_task_review(x, self.project.id, task.id, task_review.id))
+                ProjectTaskService.toggle_pinned_task_review(self.volunteer_applicant_user, self.project.id, task.id, task_review.id)
+            pinned_reviews = ProjectTaskService.get_pinned_task_reviews(AnonymousUser(), self.volunteer_applicant_user)
+            self.assertEqual(len(pinned_reviews), len(task_reviews))
+
         with self.subTest(stage='Prevent deleting completed tasks'):
-            # TODO mark the task as completed
-            # with self.assertRaisesMessage(ValueError, ''):
-            #     ProjectTaskService.delete_task(self.owner_user, self.project.id, task)
-            pass
+            with self.assertRaisesMessage(ValueError, ''):
+                ProjectTaskService.delete_task(self.owner_user, self.project.id, task)
+
+        with self.subTest(stage='Prevent marking as completed tasks that are already completed'):
+            role = ProjectTaskService.get_own_project_task_role(self.volunteer_applicant_user, self.project.id, task.id)
+            with self.assertRaisesMessage(ValueError, ''):
+                ProjectTaskService.cancel_volunteering(self.volunteer_applicant_user, self.project.id, task.id, role)
+
+
+        task = ProjectTaskService.create_default_task(self.scoping_user, self.project.id)
+        task.name = 'New edited task'
+        task.type = TaskType.DOMAIN_WORK_TASK
+        ProjectTaskService.save_task(self.owner_user, self.project.id, task.id, task)
+        ProjectTaskService.publish_project_task(self.owner_user, self.project.id, task.id, task)
+        ProjectTaskService.toggle_task_accepting_volunteers(self.owner_user, self.project.id, task.id)
+        application = VolunteerApplication()
+        application.volunteer_application_letter = "This is the letter."
+        application.task = task
+        application.volunteer = self.volunteer_applicant_user
+        ProjectTaskService.apply_to_volunteer(self.volunteer_applicant_user, self.project.id, task.id, application)
+        ProjectTaskService.accept_volunteer(self.scoping_user, self.project.id, task.id, application)
 
         with self.subTest(stage='Cancel volunteering'):
             role = ProjectTaskService.get_own_project_task_role(self.volunteer_applicant_user, self.project.id, task.id)
             test_permission_denied_operation(self, [AnonymousUser(), self.volunteer_user, self.staff_user, self.proj_mgmt_user, self.scoping_user, self.owner_user],
                 lambda x: ProjectTaskService.cancel_volunteering(x, self.project.id, task.id, role))
             ProjectTaskService.cancel_volunteering(self.volunteer_applicant_user, self.project.id, task.id, role)
-            self.assertFalse(ProjectService.user_is_project_volunteer(self.volunteer_applicant_user, self.project))
             self.assertFalse(ProjectTaskService.user_is_task_volunteer(self.volunteer_applicant_user, task))
             with self.assertRaisesMessage(ProjectTaskRole.DoesNotExist, ''):
                 ProjectTaskService.get_own_project_task_role(self.volunteer_applicant_user, self.project.id, task.id)
-
 
         with self.subTest(stage='Delete task'):
             test_permission_denied_operation(self, [AnonymousUser(), self.volunteer_user, self.staff_user, self.proj_mgmt_user],
@@ -518,6 +560,12 @@ class ProjectTestCase(TestCase):
             task = ProjectTaskService.create_default_task(self.scoping_user, self.project.id)
             ProjectTaskService.delete_task(self.scoping_user, self.project.id, task)
 
+
+    def test_task_operations(self):
+        self.create_standard_project_structure()
+        all_users = self.get_all_users()
+        self.assertEqual(ProjectService.get_project(self.owner_user, self.project.id).status, ProjectStatus.DESIGN)
+        # TODO check the project status gets automatically modified by completing tasks
 #
 # check the all the paths within ProjectTaskService.save_task_internal(request_user, projid, taskid, project_task) ??
 #
@@ -543,12 +591,7 @@ class ProjectTestCase(TestCase):
 # ProjectTaskService.update_user_review_score(request_user) ??
 # ProjectTaskService.update_user_work_speed(request_user) ??
 
-# ProjectTaskService.accept_task_review(request_user, projid, taskid, task_review)
-# ProjectTaskService.reject_task_review(request_user, projid, taskid, task_review)
 
-# ProjectTaskService.user_belongs_to_task_review(request_user, task_review)
-# ProjectTaskService.toggle_pinned_task_review(request_user, projid, taskid, task_reviewid)
-#
 # ProjectTaskService.get_project_task(request_user, projid, taskid)
 # ProjectTaskService.get_all_tasks(request_user, proj)
 # ProjectTaskService.get_open_tasks(request_user, proj)
@@ -561,7 +604,7 @@ class ProjectTestCase(TestCase):
 # ProjectTaskService.get_volunteer_all_project_tasks(request_user, target_user, project)
 # ProjectTaskService.get_user_in_progress_tasks(request_user)
 #
-# ProjectTaskService.user_can_review_task(user, task)
+#
 # ProjectTaskService.task_has_volunteers(request_user, taskid)
 # ProjectTaskService.get_task_volunteers(request_user, taskid)
 #

@@ -1217,6 +1217,8 @@ class ProjectTaskService():
         ensure_user_has_permission(request_user, project_task_role.task, 'project.volunteer_task_cancel')
         if project_task_role.user != request_user:
             raise ValueError('Role does not match current user')
+        elif project_task_role.task.stage in [TaskStatus.DRAFT, TaskStatus.NOT_STARTED, TaskStatus.COMPLETED]:
+            raise ValueError('Only tasks in progress and/or QA can be cancelled by the volunteer')
         else:
             project_task = project_task_role.task
             with transaction.atomic():
@@ -1646,7 +1648,7 @@ class ProjectTaskService():
 
     @staticmethod
     def user_belongs_to_task_review(request_user, task_review):
-        return ProjectTaskRole.objects.filter(user=request_user, task__projecttaskreview=task_review).exists()
+        return request_user.is_authenticated and ProjectTaskRole.objects.filter(user=request_user, task__projecttaskreview=task_review).exists()
 
     @staticmethod
     def toggle_pinned_task_review(request_user, projid, taskid, task_reviewid):
@@ -1665,6 +1667,9 @@ class ProjectTaskService():
         else:
             raise KeyError('Task review not found')
 
+    @staticmethod
+    def get_pinned_task_reviews(request_user, target_user):
+        return PinnedTaskReview.objects.filter(user=target_user)
 
     @staticmethod
     def publish_project_task(request_user, projid, taskid, project_task):
