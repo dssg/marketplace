@@ -1,8 +1,13 @@
+import datetime
+import enum
+import json
 import os
+import sys
 from argparse import REMAINDER
 from pathlib import Path
 
 from argcmdr import Local, LocalRoot, localmethod
+from terminaltables import AsciiTable
 
 
 ROOT_PATH = Path(__file__).parent.resolve()
@@ -10,6 +15,9 @@ SRC_PATH = ROOT_PATH / 'src'
 
 IMAGE_REPOSITORY_NAME_DEFAULT = os.getenv('IMAGE_REPOSITORY_NAME')
 IMAGE_REPOSITORY_URI_DEFAULT = os.getenv('IMAGE_REPOSITORY_URI')
+
+ECS_CLUSTER_NAME_DEFAULT = os.getenv('ECS_CLUSTER_NAME')
+ECS_SERVICE_NAME_DEFAULT = os.getenv('ECS_SERVICE_NAME')
 
 
 def add_default(text, default):
@@ -119,11 +127,11 @@ class Build(Local):
             yield from self['push'].prepare(args)
 
         if args.deploy:
-            yield self['deploy'].prepare(args)
+            yield self['deploy'].prepare(args, parser)
 
     @localmethod('-l', '--login', action='store_true', help="log in to AWS ECR")
     def push(self, args):
-        """push already-built image to registry"""
+        """push latest image to registry"""
         if args.login:
             login_command = self.local['aws'][
                 'ecr',
@@ -144,23 +152,100 @@ class Build(Local):
             self.get_full_name(args.name),
         ]
 
-    @localmethod
-    def deploy(self, args):
-        """deploy an image container"""
-        # FIXME
-        raise NotImplementedError
+    class Deploy(Local):
+        """deploy the latest image container to the cluster service"""
 
-        command = self.local['eb']['deploy']
+        class UpdateServiceColumns(str, enum.Enum):
 
-        # specify environment
-        if args.target == 'production':
-            command = command['appy-reviews-pro']
-        else:
-            command = command['appy-reviews-dev']
+            id = 'ID'
+            status = 'Status'
+            desiredCount = 'Desired'
+            pendingCount = 'Pending'
+            createdAt = 'Created'
+            updatedAt = 'Updated'
 
-        if args.label:
-            return command['-l', args.label[0]]
-        return command
+            def __str__(self):
+                return self.value.__str__()
+
+            def get_string(self, data):
+                value = data[self.name]
+
+                if self is self.createdAt or self is self.updatedAt:
+                    return datetime.datetime.fromtimestamp(value).strftime('%Y-%m-%d %H:%M:%S')
+
+                return str(value)
+
+        def __init__(self, parser):
+            parser.add_argument(
+                '--cluster',
+                default=ECS_CLUSTER_NAME_DEFAULT,
+                help=add_default(
+                    "The short name or full Amazon Resource Name (ARN) of the "
+                    "cluster that your service is running on",
+                    ECS_CLUSTER_NAME_DEFAULT
+                ),
+            )
+            parser.add_argument(
+                '--service',
+                default=ECS_SERVICE_NAME_DEFAULT,
+                help=add_default("The name of the service to update",
+                                 ECS_SERVICE_NAME_DEFAULT),
+            )
+            parser.add_argument(
+                '--no-quiet',
+                action='store_true',
+                default=False,
+                dest='foreground',
+                help="print command output",
+            )
+            parser.add_argument(
+                '-qq',
+                action='store_false',
+                default=True,
+                dest='report',
+                help="print deployment result",
+            )
+
+        def prepare(self, args, parser):
+            cluster = getattr(args, 'cluster', ECS_CLUSTER_NAME_DEFAULT)
+            service = getattr(args, 'service', ECS_SERVICE_NAME_DEFAULT)
+
+            for (name, value) in (
+                ('--cluster', cluster),
+                ('--service', service),
+            ):
+                if not value:
+                    parser.error(f"no value supplied for {name} and no value "
+                                 "found in environment")
+
+            (_retcode, stdout, _stderr) = yield self.local['aws'][
+                'ecs',
+                'update-service',
+                '--force-new-deployment',
+                '--cluster', cluster,
+                '--service', service,
+            ]
+
+            if args.report and stdout is not None:
+                try:
+                    result = json.loads(stdout)
+
+                    service_name = result['service']['serviceName']
+                    deployments = result['service']['deployments']
+
+                    data = [self.UpdateServiceColumns]
+                    data.extend(
+                        [
+                            column.get_string(deployment)
+                            for column in self.UpdateServiceColumns
+                        ]
+                        for deployment in deployments
+                    )
+                except (KeyError, ValueError):
+                    print('unexpected command output:', stdout, file=sys.stderr, sep='\n')
+                else:
+                    table = AsciiTable(data, title=f"{service_name} deployments")
+                    print(table.table)
 
 
 @Marketplace.register
