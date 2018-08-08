@@ -156,13 +156,17 @@ class ProjectTestCase(TestCase):
             volunteer_applications.append(application)
         self.assertEqual(set(ProjectService.get_all_volunteer_applications(self.owner_user, self.project.id)), set(volunteer_applications))
 
+    def get_all_users(self):
+        return [self.owner_user, self.staff_user, self.scoping_user, self.proj_mgmt_user, self.volunteer_user, self.volunteer_applicant_user]
+
     def test_project_roles(self):
         self.create_standard_project_structure()
 
         # Check the membership of users to the various user groups that exist in projects
-        all_users = [self.owner_user, self.staff_user, self.scoping_user, self.proj_mgmt_user, self.volunteer_user]
-        self.assertEqual(set(ProjectService.get_all_project_users(self.owner_user, self.project)), set(all_users))
-        self.assertEqual(set(ProjectService.get_public_notification_users(self.owner_user, self.project)), set(all_users))
+        all_users = self.get_all_users()
+        project_users = [self.owner_user, self.staff_user, self.scoping_user, self.proj_mgmt_user, self.volunteer_user]
+        self.assertEqual(set(ProjectService.get_all_project_users(self.owner_user, self.project)), set(project_users))
+        self.assertEqual(set(ProjectService.get_public_notification_users(self.owner_user, self.project)), set(project_users))
 
         owner_users = [self.owner_user]
         with self.subTest(stage='Owner users'):
@@ -265,7 +269,7 @@ class ProjectTestCase(TestCase):
                 ProjectService.toggle_follower(user, self.project.id)
 
         # Test that all followers are identified correctly
-        all_users = [self.owner_user, self.staff_user, self.scoping_user, self.proj_mgmt_user, self.volunteer_user]
+        all_users = self.get_all_users()
         with self.subTest(stage='Test followers'):
             test_users_group_inclusion(self, all_users, followers, lambda x: ProjectService.user_is_project_follower(x, self.project))
             self.assertEqual(set(ProjectService.get_project_followers(self.owner_user, self.project.id)), set(followers))
@@ -333,7 +337,7 @@ class ProjectTestCase(TestCase):
             all_channels = ProjectService.get_project_channels(self.owner_user, self.project.id)
             self.assertEqual(len(all_channels), 5)
 
-        all_users = [self.owner_user, self.staff_user, self.scoping_user, self.proj_mgmt_user, self.volunteer_user]
+        all_users = self.get_all_users()
         for channel in all_channels:
             with self.subTest(stage='Test channel operations', channel=channel):
                 self.assertEqual(channel, ProjectService.get_project_channel(self.owner_user, self.project, channel.id))
@@ -365,7 +369,7 @@ class ProjectTestCase(TestCase):
 
     def test_task_operations(self):
         self.create_standard_project_structure()
-        all_users = [self.owner_user, self.staff_user, self.scoping_user, self.proj_mgmt_user, self.volunteer_user, self.volunteer_applicant_user]
+        all_users = self.get_all_users()
 
 
         task = None
