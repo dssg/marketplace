@@ -5,7 +5,7 @@ from django.contrib.auth.models import AnonymousUser
 from dssgmkt.models.common import ReviewStatus
 from dssgmkt.models.proj import (
     ProjectRole, ProjRole, TaskType, VolunteerApplication, ProjectScope,
-    TaskStatus,
+    TaskStatus, ProjectComment,
 )
 from dssgmkt.models.user import SignupCodeType, SignupCode
 from dssgmkt.domain.user import UserService
@@ -318,15 +318,38 @@ class ProjectTestCase(TestCase):
 
 
 
+    def test_project_channels(self):
+        self.create_standard_project_structure()
+
+        all_channels = []
+        # Test that the project has the right channels created initially
+        with self.subTest(stage='Get initial project discussion channels'):
+            all_channels = ProjectService.get_project_channels(self.owner_user, self.project.id)
+            self.assertEqual(len(all_channels), 5)
+
+        all_users = [self.owner_user, self.staff_user, self.scoping_user, self.proj_mgmt_user, self.volunteer_user]
+        for channel in all_channels:
+            with self.subTest(stage='Test channel operations', channel=channel):
+                self.assertEqual(channel, ProjectService.get_project_channel(self.owner_user, self.project, channel.id))
+                for user in all_users:
+                    if ProjectService.user_is_channel_commenter(user, channel):
+                        current_comments = list(ProjectService.get_project_comments(user, channel.id, self.project))
+                        comment_text = "C" + str(user.id)
+                        comment = ProjectComment()
+                        comment.comment = comment_text
+                        comment.author = user
+                        ProjectService.add_project_comment(user, self.project.id, channel.id, comment)
+                        new_comments = ProjectService.get_project_comments(user, channel.id, self.project)
+                        self.assertEqual(current_comments, list(new_comments)[1:])
+                        self.assertEqual(list(new_comments)[0], comment)
+                    else:
+                        with self.assertRaisesMessage(PermissionDenied, ''):
+                            ProjectService.add_project_comment(user, self.project.id, channel.id, "No comment " + str(user.id))
+
+
+
 # ProjectService.get_project_changes(request_user, proj)
 # ProjectService.add_project_change(request_user, proj, type, target_type, target_id, description)
-
-
-# ProjectService.get_project_channels(request_user, proj)
-# ProjectService.get_project_channel(request_user, proj, channelid)
-# ProjectService.get_project_comments(request_user, channelid, proj)
-# ProjectService.add_project_comment(request_user, projid, channelid, project_comment)
-# ProjectService.user_is_channel_commenter(user, channel)
 
 
 # ProjectService.finish_project(request_user, projid, project)
