@@ -107,11 +107,11 @@
       <div class="card">
         <div class="card-header">Personal information</div>
         <div class="card-body">
-          <p>Full name: {{ userprofile.full_name }}</p>
-          <p>User name: {{ userprofile.username }}</p>
-          {# <p>Email address: {{ userprofile.email }}</p> #}
-          {# <p>Phone number: {{ userprofile.phone_number }}</p> #}
-          {% if userprofile.skype_name %}<p>Skype name: {{ userprofile.skype_name }}</p> {% endif %}
+          <div>Full name: {{ userprofile.full_name }}</div>
+          <div>User name: {{ userprofile.username }}</div>
+          {# <div>Email address: {{ userprofile.email }}</div> #}
+          {# <div>Phone number: {{ userprofile.phone_number }}</div> #}
+          {% if userprofile.skype_name %}<div>Skype name: {{ userprofile.skype_name }}</div> {% endif %}
         </div>
       </div>
       <div class="card">
@@ -119,12 +119,12 @@
         <div class="card-body">
           {% if userprofile.organizationrole_set.all %}
             {% for organizationrole in userprofile.organizationrole_set.all %}
-                <p><a href="{% url 'dssgmkt:org_info' organizationrole.organization.id %}">{{ organizationrole.organization.name }}</a>
+                <div><a href="{% url 'dssgmkt:org_info' organizationrole.organization.id %}">{{ organizationrole.organization.name }}</a>
                     ({{ organizationrole.get_role_display }})
-                </p>
+                </div>
             {% endfor %}
           {% else %}
-              <p>Not a member of any organization.</p>
+              <div>Not a member of any organization.</div>
           {% endif %}
         </div>
       </div>
@@ -134,12 +134,12 @@
           <div class="card-body">
             {% if userprofile.userbadge_set.exists %}
               {% for badge in userprofile.userbadge_set.all %}
-                  <p>
+                  <div>
                     {% include 'dssgmkt/components/user_badge.html' with badge=badge compact_display=False %}
-                  </p>
+                  </div>
               {% endfor %}
             {% else %}
-                <p>No awards received yet.</p>
+                <div>No awards received yet.</div>
             {% endif %}
           </div>
         </div>
@@ -152,34 +152,35 @@
           <div class="card-header">Volunteer background</div>
           <div class="card-body">
             {% if userprofile.volunteerprofile.degree_name %}
-              <p>Education: {{ userprofile.volunteerprofile.get_degree_level_display }} on {{ userprofile.volunteerprofile.degree_name }} ({{ userprofile.volunteerprofile.university }})</p>
+              <div>Education: {{ userprofile.volunteerprofile.get_degree_level_display }} on {{ userprofile.volunteerprofile.degree_name }} ({{ userprofile.volunteerprofile.university }})</div>
             {% endif %}
             {% if userprofile.volunteerprofile.linkedin_url %}
-              <p><a href="{{ userprofile.volunteerprofile.linkedin_url }}">LinkedIn profile</a></p>
+              <div><a href="{{ userprofile.volunteerprofile.linkedin_url }}">LinkedIn profile</a></div>
             {% endif %}
             {% if userprofile.volunteerprofile.github_url %}
-              <p><a href="userprofile.volunteerprofile.github_url">Github profile</a></p>
+              <div><a href="userprofile.volunteerprofile.github_url">Github profile</a></div>
             {% endif %}
             {% if userprofile.volunteerprofile.portfolio_url %}
-              <p><a href="userprofile.volunteerprofile.portfolio_url">Portfolio</a></p>
+              <div><a href="userprofile.volunteerprofile.portfolio_url">Portfolio</a></div>
             {% endif %}
           </div>
         </div>
         <div class="card">
           <div class="card-header">Volunteer availability</div>
           <div class="card-body">
-            <p>Start date: {{ userprofile.volunteerprofile.availability_start_date }}</p>
-            <p>End date: {{ userprofile.volunteerprofile.availability_end_date }}</p>
-            <p>Hours available per week: {{ userprofile.volunteerprofile.weekly_availability_hours }}</p>
+            <div>Start date: {{ userprofile.volunteerprofile.availability_start_date }}</div>
+            <div>End date: {{ userprofile.volunteerprofile.availability_end_date }}</div>
+            <div>Hours available per week: {{ userprofile.volunteerprofile.weekly_availability_hours }}</div>
           </div>
         </div>
+      </div>
+
+      <div class="card-deck section-header">
         <div class="card">
           <div class="card-header">Skills</div>
           <div class="card-body">
           {% if userprofile.volunteerskill_set.all %}
-            {% for volunteerskill in userprofile.volunteerskill_set.all %}
-                <div>{% include 'dssgmkt/components/skill_level_display.html' with object=volunteerskill %}</div>
-            {% endfor %}
+            {% include 'dssgmkt/components/requirements_display.html' with task_requirements=userprofile.volunteerskill_set.all extra_wide_display=True %}
           {% else %}
               <p>No skills listed.</p>
           {% endif %}

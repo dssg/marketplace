@@ -15,6 +15,9 @@ def home_view(request):
 def about_view(request):
     return render(request, 'dssgmkt/about.html')
 
+def resources_view(request):
+    return render(request, 'dssgmkt/resources.html')
+
 def home_link(include_link=True):
     return ('Home', reverse_lazy('dssgmkt:home') if include_link else None)
 

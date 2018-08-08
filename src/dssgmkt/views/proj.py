@@ -179,6 +179,7 @@ def add_project_common_context(request, project, page_tab, context):
     context['page_tab'] = page_tab
     if not request.user.is_anonymous:
         context['user_is_following_project'] = ProjectService.user_is_project_follower(request.user, project)
+        context['first_open_task'] = ProjectTaskService.get_open_project_tasks_summary(request.user, project).first()
     return context
 
 def add_project_task_common_context(request, project_task, page_tab, context):
@@ -546,6 +547,11 @@ class ProjectTaskApply(PermissionRequiredMixin, CreateView):
         project_task = get_project_task(self.request, self.kwargs['proj_pk'], self.kwargs['task_pk'])
         project = get_project(self.request, self.kwargs['proj_pk'])
         context['breadcrumb'] = project_breadcrumb(project, ('Apply to volunteer', None))
+        context['open_tasks'] = ProjectTaskService.get_open_project_tasks_summary(self.request.user, project_task.project)
+        task_application_status = ProjectTaskService.get_user_task_application_status(self.request.user, self.kwargs['proj_pk'], self.kwargs['task_pk'])
+        context['application_status'] = task_application_status
+        context['task_volunteers'] = ProjectTaskService.get_task_volunteers(self.request.user, self.kwargs['task_pk'])
+        context['task_staff'] = ProjectTaskService.get_task_staff(self.request.user, self.kwargs['task_pk'])
         add_project_task_common_context(self.request, project_task, 'info', context)
         return context
 
@@ -680,6 +686,7 @@ class ProjectEdit(PermissionRequiredMixin, UpdateView):
 
 @permission_required('project.task_requirements_view', raise_exception=True, fn=objectgetter(Project, 'proj_pk'))
 def project_task_requirements_edit_view(request, proj_pk, task_pk):
+    print(request)
     task = get_project_task(request, proj_pk, task_pk)
     project = get_project(request, proj_pk)
     if request.method == 'POST':
@@ -688,7 +695,8 @@ def project_task_requirements_edit_view(request, proj_pk, task_pk):
             return redirect('dssgmkt:proj_task', proj_pk=proj_pk, task_pk=task_pk)
         except KeyError:
             raise Http404
-        except ValueError:
+        except ValueError as v:
+            print(str(v))
             pass
     elif request.method == 'GET':
         pass

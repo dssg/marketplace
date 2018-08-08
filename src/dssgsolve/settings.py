@@ -180,8 +180,11 @@ if file_storage_option == 's3':
     DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
     STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
-    AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')
-    AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')
+    AWS_QUERYSTRING_AUTH = False
+    AWS_LOCATION = 'static'
+
+    AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID', default=None)
+    AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY', default=None)
     AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME')
     AWS_S3_REGION_NAME = config('AWS_S3_REGION_NAME', default=None)
 
@@ -209,11 +212,11 @@ if DEBUG:
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
-    # EMAIL_HOST = config('EMAIL_HOST')
-    # EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
-    # EMAIL_HOST_USER = config('EMAIL_HOST_USER')
-    # EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
-    # EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
+    EMAIL_HOST = config('EMAIL_HOST')
+    EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
+    EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
+    EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+    EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 
 
 if DEBUG:
@@ -276,3 +279,5 @@ MESSAGE_TAGS = {
 
 RECAPTCHA_SITE_KEY = config('RECAPTCHA_SITE_KEY', default=None)
 RECAPTCHA_SECRET_KEY = config('RECAPTCHA_SECRET_KEY', default=None)
+
+AUTOMATICALLY_ACCEPT_VOLUNTEERS = config('AUTOMATICALLY_ACCEPT_VOLUNTEERS', default=False)

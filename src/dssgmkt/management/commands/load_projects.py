@@ -10,7 +10,7 @@ from dssgmkt.domain.user import UserService
 from dssgmkt.models.proj import Project
 
 class Command(BaseCommand):
-    help = '''Loads a list of projects from a csv file.\n
+    help = '''Loads a list of projects from a csv file.
 
 The fields org_pk and user_pk represent the IDs of the organization that will
 own the project and the user that will be assigned as first administrator of

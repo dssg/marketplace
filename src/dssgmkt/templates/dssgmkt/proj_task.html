@@ -110,10 +110,11 @@
           <div class="card">
             <div class="card-header"><i class="fas fa-magic"></i> Skill requirements</div>
             <div class="card-body">
-              {% for task_requirement in project_task.projecttaskrequirement_set.all %}
-                {% if not forloop.first %}, {% endif %}
-                <span>{% include 'dssgmkt/components/skill_level_display.html' with object=task_requirement %}</span>
-              {% endfor %}
+              {% if project_task.projecttaskrequirement_set.all %}
+                {% include 'dssgmkt/components/requirements_display.html' with task_requirements=project_task.projecttaskrequirement_set.all compact_display=True %}
+              {% else %}
+                No requirements listed.
+              {% endif %}
             </div>
           </div>
           <div class="card">

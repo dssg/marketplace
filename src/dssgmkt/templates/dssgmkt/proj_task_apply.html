@@ -4,39 +4,140 @@
 
   {% load markdown_deux_tags %}
 
-  <form id="projtaskapply">
-    <h4 class="section-header">Apply to volunteer</h4>
-    <p>Thank you for your interest in this project! Please fill out this form so the
-      project owners can review your application and your volunteering background.</p>
-
-    {{ project_task.description|markdown }}
-
-    {% csrf_token %}
-    {% include 'dssgmkt/components/standard_form_fields.html' %}
-
-    {% if project.developer_agreement %}
-      <h5 class="section-header">Volunteer agreement</h4>
-      <p>By applying to this volunteer posiiton you agree to the below terms of this project:</p>
-      <p>{{ project.developer_agreement|markdown }}<p>
-    {% endif %}
-
-    <div class="form-row">
-      <div class="col-lg-9 offset-lg-3">
-        <button type="submit"
-                form="projtaskapply"
-                formaction="{% url 'dssgmkt:proj_task_apply' project.id project_task.id %}"
-                formmethod="post"
-                class="btn btn-success mr-3">
-          <i class="material-icons" style="vertical-align: middle">build</i>
-          Apply to volunteer
-        </button>
-        <a class="btn btn-outline-primary" href="{% url 'dssgmkt:proj_info' project.id %}">
-          <i class="material-icons" style="vertical-align: middle">close</i>
-          Cancel
-        </a>
-      </div>
+  <div class="row">
+  {% if open_tasks %}
+  <div class="col-lg-3 section-header">
+    <div class="card flex-column">
+      <div class="card-header">Open tasks</div>
+      <ul class="list-group list-group-flush">
+      {% for task in open_tasks %}
+          <a class="d-flex list-group-item list-group-item-action {% if task == project_task %}active{% endif %}"
+             href="{% url 'dssgmkt:proj_task_apply' project.id task.id %}">
+             <span class="mr-auto">
+               {% include 'dssgmkt/components/task_type_display.html' with project_task=task compact_display=True %}
+               {{ task.name }}
+             </span>
+           </a>
+      {% endfor %}
+      </ul>
     </div>
-  </form>
+  </div>
+  {% endif %}
 
+  {% if open_tasks %}
+  <div class="col-lg-9">
+  {% else %}
+  <div class="col-lg-12">
+  {% endif %}
+    <form id="projtaskapply">
+      <h4 class="section-header">Apply to volunteer for {{ project_task.name }}</h4>
+      <p>Thank you for your interest in this project! Please fill out this form so the
+        project owners can review your application and your volunteering background.</p>
+
+      {{ project_task.description|markdown }}
+
+
+      <div class="card-deck section-header">
+        <div class="card">
+          <div class="card-header"><i class="far fa-calendar-alt"></i> Schedule</div>
+          <div class="card-body">
+            <div>Start: {{ project_task.estimated_start_date }}</div>
+            <div>End: {{ project_task.estimated_end_date }}</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><i class="fas fa-user-cog"></i> Current volunteers</div>
+          <div class="card-body">
+            {% for volunteer in task_volunteers %}
+              <div>
+                {% include 'dssgmkt/components/user_display.html' with user=volunteer %}
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><i class="fas fa-people-carry"></i> Support staff</div>
+          <div class="card-body">
+            {% if task_staff %}
+              {% for staff in task_staff %}
+                <div>{% include 'dssgmkt/components/user_display.html' with user=staff %}</div>
+              {% endfor %}
+            {% else %}
+              No staff assigned to this task.
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      {% if project_task.projecttaskrequirement_set.all %}
+        <div class="card-deck section-header">
+          <div class="card">
+            <div class="card-header"><i class="fas fa-magic"></i> Skill requirements</div>
+            <div class="card-body">
+              {% include 'dssgmkt/components/requirements_display.html' with task_requirements=project_task.projecttaskrequirement_set.all header_skill_text='Required skill' %}
+            </div>
+          </div>
+        </div>
+      {% endif %}
+      
+      <div class="section-header"></div>
+      {% csrf_token %}
+      {% include 'dssgmkt/components/standard_form_fields.html' %}
+
+      {% if project.developer_agreement %}
+        <h5 class="section-header">Volunteer agreement</h4>
+        <p>By applying to this volunteer position you agree to the below terms of this project:</p>
+        <p>{{ project.developer_agreement|markdown }}<p>
+      {% endif %}
+
+      <div class="form-row">
+        <div class="col-lg-9 offset-lg-3">
+          {% if not project_task.accepting_volunteers %}
+            <button class="btn btn-disabled disabled mr-3">
+              <i class="material-icons" style="vertical-align: middle">hourglass_empty</i>
+              Task not currently accepting volunteers
+            </button>
+          {% elif application_status.already_applied %}
+            <button class="btn btn-disabled disabled mr-3">
+              <i class="material-icons" style="vertical-align: middle">check</i>
+              You have already applied to this task
+            </button>
+          {% elif application_status.already_volunteer %}
+            <button class="btn btn-disabled disabled mr-3">
+              <i class="material-icons" style="vertical-align: middle">check</i>
+              You are already a volunteer of this task
+            </button>
+          {% elif user.volunteerprofile %}
+            {% if user.volunteerprofile.is_accepted %}
+              <button type="submit"
+                      form="projtaskapply"
+                      formaction="{% url 'dssgmkt:proj_task_apply' project.id project_task.id %}"
+                      formmethod="post"
+                      class="btn btn-success mr-3">
+                <i class="material-icons" style="vertical-align: middle">build</i>
+                Apply to volunteer
+              </button>
+            {% else %}
+              <button class="btn btn-disabled disabled mr-3">
+                <i class="material-icons" style="vertical-align: middle">not_interested</i>
+                Wait until approved as volunteer
+              </button>
+            {% endif %}
+          {% else %}
+            <button class="btn btn-disabled disabled mr-3">
+              <i class="material-icons" style="vertical-align: middle">not_interested</i>
+              Create a volunteer profile first
+            </button>
+          {% endif %}
+
+          <a class="btn btn-outline-primary" href="{% url 'dssgmkt:proj_info' project.id %}">
+            <i class="material-icons" style="vertical-align: middle">close</i>
+            Cancel
+          </a>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
 
 {% endblock %}

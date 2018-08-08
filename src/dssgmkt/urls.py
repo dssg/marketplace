@@ -7,7 +7,7 @@ app_name = 'dssgmkt'
 urlpatterns = [
     path('', user.home_view, name='home'),
     path('about/', common.about_view, name='about'),
-
+    path('resources/', common.resources_view, name='resources'),
 
     path('org/', org.organization_list_view, name='org_list'),
     path('org/create', org.OrganizationCreateView.as_view(), name='org_create'),

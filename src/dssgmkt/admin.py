@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import org, proj, user
+from .models import org, proj, user, news
 
 # from .models import Skill, Organization, Project, ProjectLog, ProjectFollower, ProjectTask, \
 # ProjectTaskReview, ProjectTaskRequirement, VolunteerApplication, User, VolunteerProfile, \
@@ -31,3 +31,4 @@ admin.site.register(org.OrganizationMembershipRequest)
 admin.site.register(org.OrganizationRole)
 admin.site.register(proj.ProjectRole)
 admin.site.register(proj.ProjectTaskRole)
+admin.site.register(news.NewsPiece)

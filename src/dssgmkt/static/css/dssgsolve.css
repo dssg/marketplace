@@ -165,17 +165,17 @@ fieldset legend {
 
 .badge-basic {
   /* color: #cec654 */
-  color: #f2953e;
+  color: #ffb666;
 }
 
 .badge-advanced {
   /* color: #59b5d6 */
-  color: #8d9196;
+  color: #afb9c6;
 }
 
 .badge-master {
   /* color: #6e1ca0 */
-  color: #d6be0c;
+  color: #ffe20c;
 }
 
 .volunteer-highlight .title {
@@ -190,6 +190,31 @@ fieldset legend {
 
 .volunteer-highlight .blockquote-footer {
 
+}
+
+
+.skills-header {
+  /* font-weight: bold; */
+  text-transform: uppercase;
+}
+
+.requirement-editor-control {
+  pointer-events: all;
+  opacity: 0;
+  cursor: pointer;
+}
+.requirement-editor-control-active {
+  opacity: 1;
+}
+.requirement-editor-control:hover {
+  opacity: 0.5;
+}
+
+
+
+.card-header {
+  background-color: #517293;
+  color: white;
 }
 
 .ui-datepicker {
