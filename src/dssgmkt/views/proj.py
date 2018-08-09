@@ -709,7 +709,7 @@ def project_task_requirements_edit_view(request, proj_pk, task_pk):
                                                             edit_task_requirements_link(project, task, include_link=False)),
                             'system_skills': get_project_task_requirements(request, proj_pk, task_pk),
                             'skill_levels': UserService.get_skill_levels(),
-                            'importance_levels': ProjectTaskService.get_project_taks_requirement_importance_levels(),
+                            'importance_levels': ProjectTaskService.get_project_task_requirement_importance_levels(),
                         }))
 
 @permission_required('project.task_staff_view', raise_exception=True, fn=objectgetter(Project, 'proj_pk'))

@@ -2,13 +2,13 @@ from django.test import TestCase
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.models import AnonymousUser
 
-from dssgmkt.models.common import ReviewStatus
+from dssgmkt.models.common import ReviewStatus, SkillLevel, Score
 from dssgmkt.models.proj import (
     ProjectRole, ProjRole, TaskType, VolunteerApplication, ProjectScope,
     TaskStatus, ProjectComment, ProjectTaskRole, ProjectTaskReview,
-    ProjectStatus,
+    ProjectStatus, TaskRequirementImportance, ProjectTaskRequirement,
 )
-from dssgmkt.models.user import SignupCodeType, SignupCode
+from dssgmkt.models.user import SignupCodeType, SignupCode, Skill
 from dssgmkt.domain.user import UserService
 from dssgmkt.domain.org import OrganizationService
 from dssgmkt.domain.proj import ProjectService, ProjectTaskService
@@ -29,6 +29,9 @@ class ProjectTestCase(TestCase):
     proj_mgmt_user = None
     organization = None
     project = None
+    scoping_task = None
+    project_management_task = None
+    domain_work_task = None
 
     def setUp(self):
         code = SignupCode()
@@ -131,9 +134,6 @@ class ProjectTestCase(TestCase):
         # volunteer application. Each task gets a different user so we can test
         # their permissions appropriately later.
         tasks = ProjectTaskService.get_all_tasks(self.owner_user, self.project)
-        scoping_task = None
-        project_management_task = None
-        domain_work_task = None
         volunteer_applications = []
         for task in tasks:
             ProjectTaskService.publish_project_task(self.owner_user, self.project.id, task.id, task)
@@ -142,13 +142,13 @@ class ProjectTestCase(TestCase):
             application.volunteer_application_letter = "This is the letter."
             application.task = task
             if task.type == TaskType.SCOPING_TASK:
-                scoping_task = task
+                self.scoping_task = task
                 application.volunteer = self.scoping_user
             elif task.type == TaskType.PROJECT_MANAGEMENT_TASK:
-                project_management_task = task
+                self.project_management_task = task
                 application.volunteer = self.proj_mgmt_user
             elif task.type == TaskType.DOMAIN_WORK_TASK:
-                domain_work_task = task
+                self.domain_work_task = task
                 application.volunteer = self.volunteer_user
             ProjectTaskService.apply_to_volunteer(application.volunteer, self.project.id, task.id, application)
             self.assertEqual(list(ProjectService.get_user_projects_with_pending_volunteer_requests(self.owner_user)), [self.project])
@@ -359,15 +359,6 @@ class ProjectTestCase(TestCase):
 
 
 
-# ProjectService.get_project_changes(request_user, proj)
-# ProjectService.add_project_change(request_user, proj, type, target_type, target_id, description)
-
-
-# ProjectService.finish_project(request_user, projid, project)
-# ProjectService.get_user_projects_with_pending_task_requests(request_user)
-
-
-
     def test_task_operations(self):
         self.create_standard_project_structure()
         all_users = self.get_all_users()
@@ -379,6 +370,8 @@ class ProjectTestCase(TestCase):
             task = ProjectTaskService.create_default_task(self.scoping_user, self.project.id)
             self.assertTrue(task.stage == TaskStatus.DRAFT)
             self.assertTrue(task.accepting_volunteers == False)
+            self.assertEqual(set(ProjectTaskService.get_open_tasks(self.owner_user, self.project.id)),
+                set([self.scoping_task, self.project_management_task, self.domain_work_task]))
 
         with self.subTest(stage='Edit task'):
             task.name = 'New edited task'
@@ -415,6 +408,11 @@ class ProjectTestCase(TestCase):
             ProjectTaskService.toggle_task_accepting_volunteers(self.owner_user, self.project.id, task.id)
             self.assertTrue(initial_accepting_volunteers == ProjectTaskService.get_project_task(self.owner_user, self.project.id, task.id).accepting_volunteers)
 
+
+        with self.subTest(stage='Get task volunteers with no volunteers'):
+            self.assertFalse(ProjectTaskService.task_has_volunteers(self.owner_user, task.id))
+            self.assertEqual(list(ProjectTaskService.get_task_volunteers(self.owner_user, task.id)), [])
+
         with self.subTest(stage='Apply to task'):
             ProjectTaskService.apply_to_volunteer(self.volunteer_applicant_user, self.project.id, task.id, application)
 
@@ -429,11 +427,16 @@ class ProjectTestCase(TestCase):
             self.assertEqual(open_applications, [application])
             test_permission_denied_operation(self, [AnonymousUser(), self.staff_user, self.volunteer_user],
                 lambda x: ProjectTaskService.get_volunteer_application(x, self.project.id, task.id, application.id))
+            self.assertEqual(set(ProjectTaskService.get_volunteer_open_task_applications(self.volunteer_applicant_user, self.project.id)), set([application]))
 
             viewers = [self.owner_user, self.scoping_user, self.proj_mgmt_user, self.volunteer_applicant_user]
             with self.subTest(stage='Volunteer application viewers'):
                 test_users_group_inclusion(self, all_users, viewers, lambda x: ProjectTaskService.user_can_view_volunteer_application(x, application))
 
+
+        with self.subTest(stage='Get task volunteers with applications'):
+            self.assertFalse(ProjectTaskService.task_has_volunteers(self.owner_user, task.id))
+            self.assertEqual(list(ProjectTaskService.get_task_volunteers(self.owner_user, task.id)), [])
 
         with self.subTest(stage='Reject volunteer application'):
             test_permission_denied_operation(self, [AnonymousUser(), self.staff_user, self.volunteer_user, self.volunteer_applicant_user],
@@ -456,6 +459,9 @@ class ProjectTestCase(TestCase):
             self.assertEqual(saved_application.status, ReviewStatus.ACCEPTED)
             self.assertTrue(ProjectTaskService.user_is_task_volunteer(self.volunteer_applicant_user, task))
 
+        with self.subTest(stage='Get task volunteers'):
+            self.assertTrue(ProjectTaskService.task_has_volunteers(self.owner_user, task.id))
+            self.assertEqual(list(ProjectTaskService.get_task_volunteers(self.owner_user, task.id)), [self.volunteer_applicant_user])
 
         with self.subTest(stage='Prevent applying to task without volunteer profile'):
             with self.assertRaisesMessage(PermissionDenied, ''):
@@ -492,6 +498,39 @@ class ProjectTestCase(TestCase):
             test_users_group_inclusion(self, all_users, [self.owner_user, self.scoping_user, self.proj_mgmt_user],
                 lambda x: ProjectTaskService.user_can_review_task(x, task))
 
+        with self.subTest(stage='Projects with pending reviews'):
+            for user in [self.owner_user, self.scoping_user, self.proj_mgmt_user]:
+                with self.subTest(user=user):
+                    self.assertEqual(set(ProjectService.get_user_projects_with_pending_task_requests(user)), set([self.project]))
+            for user in [AnonymousUser(), self.volunteer_user, self.volunteer_applicant_user]:
+                with self.subTest(user=user):
+                    self.assertEqual(set(ProjectService.get_user_projects_with_pending_task_requests(user)), set([]))
+
+        with self.subTest(stage='Task getters 1'):
+            self.assertEqual(task, ProjectTaskService.get_project_task(self.owner_user, self.project.id, task.id))
+            test_permission_denied_operation(self, [AnonymousUser(), self.volunteer_user],
+                lambda x: ProjectTaskService.get_all_tasks(x, self.project))
+            self.assertEqual(set(self.project.projecttask_set.all()), set(ProjectTaskService.get_all_tasks(self.owner_user, self.project)))
+
+            self.assertEqual(set(ProjectTaskService.get_public_tasks(self.owner_user, self.project.id)),
+                set([self.scoping_task, self.project_management_task, self.domain_work_task, task]))
+            self.assertEqual(set(ProjectTaskService.get_project_tasks_summary(self.owner_user, self.project.id)),
+                set([self.scoping_task, self.project_management_task, self.domain_work_task, task]))
+            self.assertEqual(set(ProjectTaskService.get_non_finished_tasks(self.owner_user, self.project.id)),
+                set([self.scoping_task, self.project_management_task, self.domain_work_task, task]))
+
+            test_permission_denied_operation(self, [AnonymousUser(), self.volunteer_user, self.staff_user, self.proj_mgmt_user, self.scoping_user, self.owner_user],
+                lambda x: ProjectTaskService.get_volunteer_current_tasks(x, self.volunteer_applicant_user, self.project.id))
+            self.assertEqual(set(ProjectTaskService.get_volunteer_current_tasks(self.volunteer_applicant_user, self.volunteer_applicant_user, self.project.id)),
+                set([task]))
+            self.assertEqual(set(ProjectTaskService.get_volunteer_all_project_tasks(self.volunteer_applicant_user, self.volunteer_applicant_user, self.project)),
+                set([task]))
+            self.assertEqual(set(ProjectTaskService.get_volunteer_all_tasks(self.owner_user, self.volunteer_applicant_user)),
+                set([task]))
+            self.assertEqual(set(ProjectTaskService.get_user_in_progress_tasks(self.volunteer_applicant_user)),
+                set([task]))
+
+
         with self.subTest(stage='Reject task review'):
             task_review = ProjectTaskService.get_task_reviews(self.owner_user, task)[0]
             test_permission_denied_operation(self, [AnonymousUser(), self.volunteer_user, self.staff_user, self.volunteer_applicant_user],
@@ -507,9 +546,12 @@ class ProjectTestCase(TestCase):
             ProjectTaskService.mark_task_as_completed(self.volunteer_applicant_user, self.project.id, task.id, task_review)
             test_permission_denied_operation(self, [AnonymousUser(), self.volunteer_user, self.staff_user, self.volunteer_applicant_user],
                 lambda x: ProjectTaskService.accept_task_review(x, self.project.id, task.id, task_review))
+            self.assertEqual(len(self.volunteer_applicant_user.userbadge_set.all()), 1)
+            task_review.review_score = Score.FIVE_STARS
             ProjectTaskService.accept_task_review(self.owner_user, self.project.id, task.id, task_review)
             self.assertEqual(ProjectTaskService.get_project_task_review(self.owner_user, self.project.id, task.id, task_review.id).review_result, ReviewStatus.ACCEPTED)
             self.assertEqual(ProjectTaskService.get_project_task(self.owner_user, self.project.id, task.id).stage, TaskStatus.COMPLETED)
+            self.assertEqual(len(self.volunteer_applicant_user.userbadge_set.all()), 3)
 
         with self.subTest(stage='Pin task review'):
             task_reviews = ProjectTaskService.get_task_reviews(self.owner_user, task)
@@ -530,94 +572,140 @@ class ProjectTestCase(TestCase):
                 ProjectTaskService.cancel_volunteering(self.volunteer_applicant_user, self.project.id, task.id, role)
 
 
-        task = ProjectTaskService.create_default_task(self.scoping_user, self.project.id)
-        task.name = 'New edited task'
-        task.type = TaskType.DOMAIN_WORK_TASK
-        ProjectTaskService.save_task(self.owner_user, self.project.id, task.id, task)
-        ProjectTaskService.publish_project_task(self.owner_user, self.project.id, task.id, task)
-        ProjectTaskService.toggle_task_accepting_volunteers(self.owner_user, self.project.id, task.id)
+        task2 = ProjectTaskService.create_default_task(self.scoping_user, self.project.id)
+        task2.name = 'New edited task'
+        task2.type = TaskType.DOMAIN_WORK_TASK
+        ProjectTaskService.save_task(self.owner_user, self.project.id, task2.id, task2)
+        ProjectTaskService.publish_project_task(self.owner_user, self.project.id, task2.id, task2)
+        ProjectTaskService.toggle_task_accepting_volunteers(self.owner_user, self.project.id, task2.id)
         application = VolunteerApplication()
         application.volunteer_application_letter = "This is the letter."
-        application.task = task
+        application.task = task2
         application.volunteer = self.volunteer_applicant_user
-        ProjectTaskService.apply_to_volunteer(self.volunteer_applicant_user, self.project.id, task.id, application)
-        ProjectTaskService.accept_volunteer(self.scoping_user, self.project.id, task.id, application)
+        ProjectTaskService.apply_to_volunteer(self.volunteer_applicant_user, self.project.id, task2.id, application)
+        ProjectTaskService.accept_volunteer(self.scoping_user, self.project.id, task2.id, application)
+
+
+        with self.subTest(stage='Task getters 2'):
+            self.assertEqual(task2, ProjectTaskService.get_project_task(self.owner_user, self.project.id, task2.id))
+            test_permission_denied_operation(self, [AnonymousUser(), self.volunteer_user],
+                lambda x: ProjectTaskService.get_all_tasks(x, self.project))
+            self.assertEqual(set(self.project.projecttask_set.all()), set(ProjectTaskService.get_all_tasks(self.owner_user, self.project)))
+
+            self.assertEqual(set(ProjectTaskService.get_public_tasks(self.owner_user, self.project.id)),
+                set([self.scoping_task, self.project_management_task, self.domain_work_task, task, task2]))
+            self.assertEqual(set(ProjectTaskService.get_project_tasks_summary(self.owner_user, self.project.id)),
+                set([self.scoping_task, self.project_management_task, self.domain_work_task, task, task2]))
+            self.assertEqual(set(ProjectTaskService.get_non_finished_tasks(self.owner_user, self.project.id)),
+                set([self.scoping_task, self.project_management_task, self.domain_work_task, task2]))
+
+            test_permission_denied_operation(self, [AnonymousUser(), self.volunteer_user, self.staff_user, self.proj_mgmt_user, self.scoping_user, self.owner_user],
+                lambda x: ProjectTaskService.get_volunteer_current_tasks(x, self.volunteer_applicant_user, self.project.id))
+            self.assertEqual(set(ProjectTaskService.get_volunteer_current_tasks(self.volunteer_applicant_user, self.volunteer_applicant_user, self.project.id)),
+                set([task2]))
+            self.assertEqual(set(ProjectTaskService.get_volunteer_all_project_tasks(self.volunteer_applicant_user, self.volunteer_applicant_user, self.project)),
+                set([task, task2]))
+            self.assertEqual(set(ProjectTaskService.get_volunteer_all_tasks(self.owner_user, self.volunteer_applicant_user)),
+                set([task, task2]))
+            self.assertEqual(set(ProjectTaskService.get_user_in_progress_tasks(self.volunteer_applicant_user)),
+                set([task2]))
 
         with self.subTest(stage='Cancel volunteering'):
-            role = ProjectTaskService.get_own_project_task_role(self.volunteer_applicant_user, self.project.id, task.id)
+            role = ProjectTaskService.get_own_project_task_role(self.volunteer_applicant_user, self.project.id, task2.id)
             test_permission_denied_operation(self, [AnonymousUser(), self.volunteer_user, self.staff_user, self.proj_mgmt_user, self.scoping_user, self.owner_user],
-                lambda x: ProjectTaskService.cancel_volunteering(x, self.project.id, task.id, role))
-            ProjectTaskService.cancel_volunteering(self.volunteer_applicant_user, self.project.id, task.id, role)
-            self.assertFalse(ProjectTaskService.user_is_task_volunteer(self.volunteer_applicant_user, task))
+                lambda x: ProjectTaskService.cancel_volunteering(x, self.project.id, task2.id, role))
+            ProjectTaskService.cancel_volunteering(self.volunteer_applicant_user, self.project.id, task2.id, role)
+            self.assertFalse(ProjectTaskService.user_is_task_volunteer(self.volunteer_applicant_user, task2))
             with self.assertRaisesMessage(ProjectTaskRole.DoesNotExist, ''):
-                ProjectTaskService.get_own_project_task_role(self.volunteer_applicant_user, self.project.id, task.id)
+                ProjectTaskService.get_own_project_task_role(self.volunteer_applicant_user, self.project.id, task2.id)
 
         with self.subTest(stage='Delete task'):
             test_permission_denied_operation(self, [AnonymousUser(), self.volunteer_user, self.staff_user, self.proj_mgmt_user],
-                lambda x: ProjectTaskService.delete_task(x, self.project.id, task))
-            task = ProjectTaskService.create_default_task(self.scoping_user, self.project.id)
-            ProjectTaskService.delete_task(self.owner_user, self.project.id, task)
-            task = ProjectTaskService.create_default_task(self.scoping_user, self.project.id)
-            ProjectTaskService.delete_task(self.scoping_user, self.project.id, task)
+                lambda x: ProjectTaskService.delete_task(x, self.project.id, task2))
+            task2 = ProjectTaskService.create_default_task(self.scoping_user, self.project.id)
+            ProjectTaskService.delete_task(self.owner_user, self.project.id, task2)
+            task2 = ProjectTaskService.create_default_task(self.scoping_user, self.project.id)
+            ProjectTaskService.delete_task(self.scoping_user, self.project.id, task2)
+
+        with self.subTest(stage='Task staff'):
+            self.assertEqual(set(ProjectTaskService.get_task_staff(self.owner_user, task.id)), set([]))
+            self.assertEqual(ProjectTaskService.get_project_task_staff_for_editing(self.owner_user, self.project.id, task.id),
+                [{'user': self.owner_user, 'assigned': None}, {'user': self.staff_user, 'assigned': None}])
+            post_object = {str(self.owner_user.id): False, str(self.staff_user.id): True}
+            test_permission_denied_operation(self, [AnonymousUser(), self.volunteer_user, self.staff_user, self.proj_mgmt_user, self.scoping_user, self.volunteer_applicant_user],
+                lambda x: ProjectTaskService.set_task_staff(x, self.project.id, task.id, post_object))
+            ProjectTaskService.set_task_staff(self.owner_user, self.project.id, task.id, post_object)
+            self.assertEqual(set(ProjectTaskService.get_task_staff(self.owner_user, task.id)), set([self.staff_user]))
+            self.assertEqual(ProjectTaskService.get_project_task_staff_for_editing(self.owner_user, self.project.id, task.id),
+                [{'user': self.owner_user, 'assigned': None}, {'user': self.staff_user, 'assigned': True}])
 
 
-    def test_task_operations(self):
+        with self.subTest(stage='Task roles'):
+            staff_user_role = ProjectTaskRole.objects.get(user=self.staff_user, task=task)
+            volunteer_user_role = ProjectTaskRole.objects.get(user=self.volunteer_applicant_user, task=task)
+
+            self.assertEqual(staff_user_role, ProjectTaskService.get_project_task_role(self.owner_user, self.project.id, task.id, staff_user_role.id))
+            self.assertEqual(volunteer_user_role, ProjectTaskService.get_project_task_role(self.owner_user, self.project.id, task.id, volunteer_user_role.id))
+            self.assertEqual(staff_user_role, ProjectTaskService.get_own_project_task_role(self.staff_user, self.project.id, task.id))
+            self.assertEqual(volunteer_user_role, ProjectTaskService.get_own_project_task_role(self.volunteer_applicant_user, self.project.id, task.id))
+
+            volunteer_user_role.task = self.domain_work_task
+            test_permission_denied_operation(self, [AnonymousUser(), self.volunteer_user, self.staff_user, self.volunteer_applicant_user],
+                lambda x: ProjectTaskService.save_project_task_role(x, self.project.id, task.id, volunteer_user_role))
+            ProjectTaskService.save_project_task_role(self.owner_user, self.project.id, task.id, volunteer_user_role)
+            self.assertFalse(ProjectTaskService.user_is_task_volunteer(self.volunteer_applicant_user, task))
+            self.assertTrue(ProjectTaskService.user_is_task_volunteer(self.volunteer_applicant_user, self.domain_work_task))
+            self.assertTrue(ProjectTaskService.user_is_task_volunteer(self.volunteer_user, self.domain_work_task))
+            self.assertEqual(len(ProjectTaskService.get_task_volunteers(self.owner_user, self.domain_work_task.id)), 2)
+
+            test_permission_denied_operation(self, [AnonymousUser(), self.volunteer_user, self.staff_user, self.volunteer_applicant_user],
+                lambda x: ProjectTaskService.delete_project_task_role(x, self.project.id, task.id, volunteer_user_role))
+            ProjectTaskService.delete_project_task_role(self.owner_user, self.project.id, self.domain_work_task.id, volunteer_user_role)
+            self.assertFalse(ProjectTaskService.user_is_task_volunteer(self.volunteer_applicant_user, task))
+            self.assertFalse(ProjectTaskService.user_is_task_volunteer(self.volunteer_applicant_user, self.domain_work_task))
+            self.assertTrue(ProjectTaskService.user_is_task_volunteer(self.volunteer_user, self.domain_work_task))
+            self.assertEqual(len(ProjectTaskService.get_task_volunteers(self.owner_user, self.domain_work_task.id)), 1)
+
+        with self.subTest(stage='Task requirements'):
+            skill1 = Skill()
+            skill1.area = "Area 1"
+            skill1.name = "Skill 1"
+            skill1.save()
+            skill2 = Skill()
+            skill2.area = "Area 2"
+            skill2.name = "Skill 2"
+            skill2.save()
+            self.assertEqual(ProjectTaskService.get_project_task_requirements(self.owner_user, self.project.id, task.id),
+                {skill1.area: [{'system_skill': skill1, 'task_requirement': None}],
+                 skill2.area: [{'system_skill': skill2, 'task_requirement': None}]})
+            for level in [SkillLevel.BEGINNER, SkillLevel.INTERMEDIATE, SkillLevel.EXPERT]:
+                for importance in [TaskRequirementImportance.NICE_TO_HAVE, TaskRequirementImportance.IMPORTANT, TaskRequirementImportance.REQUIRED]:
+                    with self.subTest(level=level, importance=importance):
+                        post_object = {str(skill1.id): level, "i" + str(skill1.id): importance,
+                                       str(skill2.id): -1}
+                        test_permission_denied_operation(self, [AnonymousUser(), self.volunteer_user, self.staff_user, self.proj_mgmt_user],
+                            lambda x: ProjectTaskService.set_task_requirements(x, self.project.id, task.id, post_object))
+                        ProjectTaskService.set_task_requirements(self.owner_user, self.project.id, task.id, post_object)
+                        new_requirements = ProjectTaskService.get_project_task_requirements(self.owner_user, self.project.id, task.id)
+                        saved_task_requirement = ProjectTaskRequirement.objects.get(task=task, skill=skill1)
+                        self.assertEqual(saved_task_requirement.level, level)
+                        self.assertEqual(saved_task_requirement.importance, importance)
+                        self.assertEqual(new_requirements,
+                            {skill1.area: [{'system_skill': skill1, 'task_requirement': saved_task_requirement}],
+                             skill2.area: [{'system_skill': skill2, 'task_requirement': None}]})
+
+    def test_project_status(self):
         self.create_standard_project_structure()
         all_users = self.get_all_users()
         self.assertEqual(ProjectService.get_project(self.owner_user, self.project.id).status, ProjectStatus.DESIGN)
         # TODO check the project status gets automatically modified by completing tasks
-#
-# check the all the paths within ProjectTaskService.save_task_internal(request_user, projid, taskid, project_task) ??
-#
-#
+        # ProjectService.finish_project(request_user, projid, project)
 
-#
-#
-# ProjectTaskService.apply_to_volunteer(request_user, projid, taskid, task_application_request)
-# ProjectTaskService.get_volunteer_application(request_user, projid, taskid, volunteer_application_pk)
-# ProjectTaskService.save_volunteer_application(request_user, projid, taskid, volunteer_application) ??
-# ProjectTaskService.accept_volunteer(request_user, projid, taskid, volunteer_application)
-# ProjectTaskService.reject_volunteer(request_user, projid, taskid, volunteer_application)
-#
+# TODO check that notifications are generated correctly on every action
 
 
+# TODO Pending methods of ProjectService with no tests yet:
+# ProjectService.get_project_changes(request_user, proj)
+# ProjectService.add_project_change(request_user, proj, type, target_type, target_id, description)
 
-#
-# ProjectTaskService.mark_task_as_completed(request_user, projid, taskid, project_task_review)
-# ProjectTaskService.get_project_task_review(request_user, projid, taskid, reviewid)
-# ProjectTaskService.save_task_review(request_user, projid, taskid, task_review) ??
-# ProjectTaskService.update_user_badge(request_user, badge_type, badge_tier, badge_name) ??
-# ProjectTaskService.update_user_task_count(request_user) ??
-# ProjectTaskService.update_user_review_score(request_user) ??
-# ProjectTaskService.update_user_work_speed(request_user) ??
-
-
-# ProjectTaskService.get_project_task(request_user, projid, taskid)
-# ProjectTaskService.get_all_tasks(request_user, proj)
-# ProjectTaskService.get_open_tasks(request_user, proj)
-# ProjectTaskService.get_public_tasks(request_user, proj)
-# ProjectTaskService.get_project_tasks_summary(request_user, proj)
-# ProjectTaskService.get_non_finished_tasks(request_user, proj)
-# ProjectTaskService.get_volunteer_current_tasks(request_user, volunteer, projid)
-# ProjectTaskService.get_volunteer_task_applications(request_user, projid)
-# ProjectTaskService.get_volunteer_all_tasks(request_user, target_user)
-# ProjectTaskService.get_volunteer_all_project_tasks(request_user, target_user, project)
-# ProjectTaskService.get_user_in_progress_tasks(request_user)
-#
-#
-# ProjectTaskService.task_has_volunteers(request_user, taskid)
-# ProjectTaskService.get_task_volunteers(request_user, taskid)
-#
-# ProjectTaskService.get_task_staff(request_user, taskid)
-# ProjectTaskService.get_project_task_staff_for_editing(request_user, projid, taskid)
-# ProjectTaskService.set_task_staff(request_user, projid, taskid, post_object)
-#
-#
-# ProjectTaskService.get_project_taks_requirement_importance_levels()
-# ProjectTaskService.get_project_task_requirements(request_user, projid, taskid)
-# ProjectTaskService.set_task_requirements(request_user, projid, taskid, post_object)
-#
-# ProjectTaskService.get_project_task_role(request_user, projid, taskid, roleid)
-# ProjectTaskService.get_own_project_task_role(request_user, projid, taskid)
-# ProjectTaskService.save_project_task_role(request_user, projid, taskid, project_task_role)
-# ProjectTaskService.delete_project_task_role(request_user, projid, taskid, project_task_role)
+# TODO check that all the paths within ProjectTaskService.save_task_internal are covered by tests

@@ -616,15 +616,20 @@ class ProjectService():
 
     @staticmethod
     def get_user_projects_with_pending_task_requests(request_user):
-        return Project.objects.filter(projectrole__user=request_user,
-                                      projectrole__role=ProjRole.OWNER,
-                                      projecttask__projecttaskreview__review_result=ReviewStatus.NEW
-                        ).union(Project.objects.filter(
-                            projecttask__projecttaskrole__user=request_user,
-                            projecttask__stage__in=[TaskStatus.STARTED, TaskStatus.WAITING_REVIEW],
-                            projecttask__type__in=[TaskType.SCOPING_TASK, TaskType.PROJECT_MANAGEMENT_TASK],
-                            projecttask__projecttaskreview__review_result=ReviewStatus.NEW
-                        )).distinct()
+        if request_user.is_authenticated:
+            return Project.objects.filter(projectrole__user=request_user,
+                                          projectrole__role=ProjRole.OWNER,
+                                          projecttask__projecttaskreview__review_result=ReviewStatus.NEW
+                            ).union(Project.objects.filter(
+                                        projecttask__projecttaskrole__user=request_user,
+                                        projecttask__projecttaskrole__role=TaskRole.VOLUNTEER,
+                                        projecttask__stage__in=[TaskStatus.STARTED, TaskStatus.WAITING_REVIEW],
+                                        projecttask__type__in=[TaskType.SCOPING_TASK, TaskType.PROJECT_MANAGEMENT_TASK],
+                                    ).filter(
+                                        projecttask__projecttaskreview__review_result=ReviewStatus.NEW,
+                            )).distinct()
+        else:
+            return []
 
     @staticmethod
     def get_user_projects_in_draft_status(request_user):
@@ -691,7 +696,7 @@ class ProjectTaskService():
                                           stage__in=[TaskStatus.STARTED, TaskStatus.WAITING_REVIEW])
 
     @staticmethod
-    def get_volunteer_task_applications(request_user, projid):
+    def get_volunteer_open_task_applications(request_user, projid):
         base_query = VolunteerApplication.objects.filter(status=ReviewStatus.NEW, volunteer=request_user)
         if projid:
             base_query = base_query.filter(task__project=projid)
@@ -1410,7 +1415,7 @@ class ProjectTaskService():
                                           message)
 
     @staticmethod
-    def get_project_taks_requirement_importance_levels():
+    def get_project_task_requirement_importance_levels():
         return TaskRequirementImportance.get_choices()
 
     @staticmethod
@@ -1432,9 +1437,9 @@ class ProjectTaskService():
     @staticmethod
     def set_task_staff(request_user, projid, taskid, post_object):
         project_task = ProjectTask.objects.get(pk=taskid)
-        project = project_task.project
+        project = Project.objects.get(pk=projid)
         validate_consistent_keys(project_task, (['project', 'id'], projid))
-        ensure_user_has_permission(request_user, project_task.project, 'project.task_staff_edit')
+        ensure_user_has_permission(request_user, project, 'project.task_staff_edit')
         task_staff_list = ProjectTaskRole.objects.filter(task__id=taskid, role=TaskRole.SUPPORT_STAFF)
         task_staff_dict = {}
         for staff_role in task_staff_list:
