@@ -29,9 +29,6 @@ class ProjectTestCase(TestCase):
     proj_mgmt_user = None
     organization = None
     project = None
-    scoping_task = None
-    project_management_task = None
-    domain_work_task = None
 
     def setUp(self):
         code = SignupCode()
@@ -129,6 +126,9 @@ class ProjectTestCase(TestCase):
             lambda x: ProjectService.add_staff_member(x, self.project.id, staff_user_role))
         ProjectService.add_staff_member(self.owner_user, self.project.id, staff_user_role)
 
+        scoping_task = None
+        project_management_task = None
+        domain_work_task = None
         # For each task of the project, we 1) make it public, 2) allow volunteers
         # to apply, 3) apply to it with a volunteer user, and 4) accept the
         # volunteer application. Each task gets a different user so we can test
@@ -142,13 +142,13 @@ class ProjectTestCase(TestCase):
             application.volunteer_application_letter = "This is the letter."
             application.task = task
             if task.type == TaskType.SCOPING_TASK:
-                self.scoping_task = task
+                scoping_task = task
                 application.volunteer = self.scoping_user
             elif task.type == TaskType.PROJECT_MANAGEMENT_TASK:
-                self.project_management_task = task
+                project_management_task = task
                 application.volunteer = self.proj_mgmt_user
             elif task.type == TaskType.DOMAIN_WORK_TASK:
-                self.domain_work_task = task
+                domain_work_task = task
                 application.volunteer = self.volunteer_user
             ProjectTaskService.apply_to_volunteer(application.volunteer, self.project.id, task.id, application)
             self.assertEqual(list(ProjectService.get_user_projects_with_pending_volunteer_requests(self.owner_user)), [self.project])
@@ -156,6 +156,7 @@ class ProjectTestCase(TestCase):
             self.assertEqual(list(ProjectService.get_user_projects_with_pending_volunteer_requests(self.owner_user)), [])
             volunteer_applications.append(application)
         self.assertEqual(set(ProjectService.get_all_volunteer_applications(self.owner_user, self.project.id)), set(volunteer_applications))
+        return (scoping_task, project_management_task, domain_work_task)
 
     def get_all_users(self):
         return [self.owner_user, self.staff_user, self.scoping_user, self.proj_mgmt_user, self.volunteer_user, self.volunteer_applicant_user]
@@ -360,7 +361,7 @@ class ProjectTestCase(TestCase):
 
 
     def test_task_operations(self):
-        self.create_standard_project_structure()
+        scoping_task, project_management_task, domain_work_task = self.create_standard_project_structure()
         all_users = self.get_all_users()
 
         task = None
@@ -371,7 +372,7 @@ class ProjectTestCase(TestCase):
             self.assertTrue(task.stage == TaskStatus.DRAFT)
             self.assertTrue(task.accepting_volunteers == False)
             self.assertEqual(set(ProjectTaskService.get_open_tasks(self.owner_user, self.project.id)),
-                set([self.scoping_task, self.project_management_task, self.domain_work_task]))
+                set([scoping_task, project_management_task, domain_work_task]))
 
         with self.subTest(stage='Edit task'):
             task.name = 'New edited task'
@@ -513,11 +514,11 @@ class ProjectTestCase(TestCase):
             self.assertEqual(set(self.project.projecttask_set.all()), set(ProjectTaskService.get_all_tasks(self.owner_user, self.project)))
 
             self.assertEqual(set(ProjectTaskService.get_public_tasks(self.owner_user, self.project.id)),
-                set([self.scoping_task, self.project_management_task, self.domain_work_task, task]))
+                set([scoping_task, project_management_task, domain_work_task, task]))
             self.assertEqual(set(ProjectTaskService.get_project_tasks_summary(self.owner_user, self.project.id)),
-                set([self.scoping_task, self.project_management_task, self.domain_work_task, task]))
+                set([scoping_task, project_management_task, domain_work_task, task]))
             self.assertEqual(set(ProjectTaskService.get_non_finished_tasks(self.owner_user, self.project.id)),
-                set([self.scoping_task, self.project_management_task, self.domain_work_task, task]))
+                set([scoping_task, project_management_task, domain_work_task, task]))
 
             test_permission_denied_operation(self, [AnonymousUser(), self.volunteer_user, self.staff_user, self.proj_mgmt_user, self.scoping_user, self.owner_user],
                 lambda x: ProjectTaskService.get_volunteer_current_tasks(x, self.volunteer_applicant_user, self.project.id))
@@ -593,11 +594,11 @@ class ProjectTestCase(TestCase):
             self.assertEqual(set(self.project.projecttask_set.all()), set(ProjectTaskService.get_all_tasks(self.owner_user, self.project)))
 
             self.assertEqual(set(ProjectTaskService.get_public_tasks(self.owner_user, self.project.id)),
-                set([self.scoping_task, self.project_management_task, self.domain_work_task, task, task2]))
+                set([scoping_task, project_management_task, domain_work_task, task, task2]))
             self.assertEqual(set(ProjectTaskService.get_project_tasks_summary(self.owner_user, self.project.id)),
-                set([self.scoping_task, self.project_management_task, self.domain_work_task, task, task2]))
+                set([scoping_task, project_management_task, domain_work_task, task, task2]))
             self.assertEqual(set(ProjectTaskService.get_non_finished_tasks(self.owner_user, self.project.id)),
-                set([self.scoping_task, self.project_management_task, self.domain_work_task, task2]))
+                set([scoping_task, project_management_task, domain_work_task, task2]))
 
             test_permission_denied_operation(self, [AnonymousUser(), self.volunteer_user, self.staff_user, self.proj_mgmt_user, self.scoping_user, self.owner_user],
                 lambda x: ProjectTaskService.get_volunteer_current_tasks(x, self.volunteer_applicant_user, self.project.id))
@@ -649,22 +650,22 @@ class ProjectTestCase(TestCase):
             self.assertEqual(staff_user_role, ProjectTaskService.get_own_project_task_role(self.staff_user, self.project.id, task.id))
             self.assertEqual(volunteer_user_role, ProjectTaskService.get_own_project_task_role(self.volunteer_applicant_user, self.project.id, task.id))
 
-            volunteer_user_role.task = self.domain_work_task
+            volunteer_user_role.task = domain_work_task
             test_permission_denied_operation(self, [AnonymousUser(), self.volunteer_user, self.staff_user, self.volunteer_applicant_user],
                 lambda x: ProjectTaskService.save_project_task_role(x, self.project.id, task.id, volunteer_user_role))
             ProjectTaskService.save_project_task_role(self.owner_user, self.project.id, task.id, volunteer_user_role)
             self.assertFalse(ProjectTaskService.user_is_task_volunteer(self.volunteer_applicant_user, task))
-            self.assertTrue(ProjectTaskService.user_is_task_volunteer(self.volunteer_applicant_user, self.domain_work_task))
-            self.assertTrue(ProjectTaskService.user_is_task_volunteer(self.volunteer_user, self.domain_work_task))
-            self.assertEqual(len(ProjectTaskService.get_task_volunteers(self.owner_user, self.domain_work_task.id)), 2)
+            self.assertTrue(ProjectTaskService.user_is_task_volunteer(self.volunteer_applicant_user, domain_work_task))
+            self.assertTrue(ProjectTaskService.user_is_task_volunteer(self.volunteer_user, domain_work_task))
+            self.assertEqual(len(ProjectTaskService.get_task_volunteers(self.owner_user, domain_work_task.id)), 2)
 
             test_permission_denied_operation(self, [AnonymousUser(), self.volunteer_user, self.staff_user, self.volunteer_applicant_user],
                 lambda x: ProjectTaskService.delete_project_task_role(x, self.project.id, task.id, volunteer_user_role))
-            ProjectTaskService.delete_project_task_role(self.owner_user, self.project.id, self.domain_work_task.id, volunteer_user_role)
+            ProjectTaskService.delete_project_task_role(self.owner_user, self.project.id, domain_work_task.id, volunteer_user_role)
             self.assertFalse(ProjectTaskService.user_is_task_volunteer(self.volunteer_applicant_user, task))
-            self.assertFalse(ProjectTaskService.user_is_task_volunteer(self.volunteer_applicant_user, self.domain_work_task))
-            self.assertTrue(ProjectTaskService.user_is_task_volunteer(self.volunteer_user, self.domain_work_task))
-            self.assertEqual(len(ProjectTaskService.get_task_volunteers(self.owner_user, self.domain_work_task.id)), 1)
+            self.assertFalse(ProjectTaskService.user_is_task_volunteer(self.volunteer_applicant_user, domain_work_task))
+            self.assertTrue(ProjectTaskService.user_is_task_volunteer(self.volunteer_user, domain_work_task))
+            self.assertEqual(len(ProjectTaskService.get_task_volunteers(self.owner_user, domain_work_task.id)), 1)
 
         with self.subTest(stage='Task requirements'):
             skill1 = Skill()
