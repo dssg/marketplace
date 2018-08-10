@@ -11,24 +11,26 @@
 {% load markdown_deux_tags %}
 
 <div class="marketing-header">
-  <div class="row">
-     <div class="col-lg-4 offset-lg-1 pl-5">
-      <img src="{% static 'img/front_page_hero.png' %}" class="img-fluid"></img>
+  <div class="px-2 px-lg-0">
+     <div class="row">
+       <div class="col-lg-4 offset-lg-1 pl-5 d-none d-lg-block">
+        <img src="{% static 'img/front_page_hero.png' %}" class="img-fluid"></img>
+       </div>
+       <div class="col-lg-7">
+        <h1 class="text-success">Projects that matter</h1>
+        <h1 class="text-white">Work that matters</h1>
+        <h2 class="text-success">Data Science for Social Good.</h2>
+       </div>
      </div>
-     <div class="col-lg-7">
-      <h1 class="text-success">Projects that matter</h1>
-      <h1 class="text-white">Work that matters</h1>
-      <h2 class="text-success">Data Science for Social Good.</h2>
-     </div>
-     <div class="col-lg-12 row mt-5 action-links">
-       <div class="col-lg-4 offset-lg-2 d-flex">
+     <div class="col-lg-12 row no-gutters mt-5 action-links">
+       <div class="col-lg-4 offset-lg-2 mt-2 d-flex mr-lg-2">
          <a class="btn btn-lg btn-warning text-primary flex-grow-1 pt-3" href="{% url 'dssgmkt:signup_form' 'organization' %}">
            <h2>
              Post a project
            </h2>
          </a>
        </div>
-       <div class="col-lg-4 d-flex">
+       <div class="col-lg-4 d-flex mt-2 ml-lg-2">
          <a class="btn btn-lg btn-warning text-primary flex-grow-1 pt-3" href="{% url 'dssgmkt:signup_form' 'volunteer' %}">
            <h2>
              Start volunteering
@@ -54,7 +56,7 @@
       collaboratively</p>
    </div>
   </div>
-   <div class="col-lg-2">
+   <div class="col-lg-2 d-none d-lg-block">
     <img src="{% static 'img/front_page_dssg.png' %}" class="img-fluid"></img>
    </div>
   </div>
@@ -125,7 +127,8 @@
      <div class="card-footer">
       <div class="d-flex mt-2 mb-2">
         <a class="btn btn-warning text-primary flex-grow-1" href="{% url 'dssgmkt:signup_form' 'volunteer' %}">
-            Ready to help? Sign up now
+            <span class="d-none d-lg-block">Ready to help? Sign up now</span>
+            <span class="d-block d-lg-none">Sign up now</span>
         </a>
       </div>
      </div>

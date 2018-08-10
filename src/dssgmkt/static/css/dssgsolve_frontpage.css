@@ -1,5 +1,4 @@
 
-
 .marketing-header {
   background-color: #2C3E50;
 }
@@ -11,8 +10,14 @@
 }
 
 .marketing-header {
-  padding-top: 75px;
+  padding-top: 25px;
   padding-bottom: 50px;
+}
+
+@media (min-width: 992px) {
+  .marketing-header {
+    padding-top: 75px;
+  }
 }
 
 h1, h2, h3 {
@@ -21,6 +26,12 @@ h1, h2, h3 {
 
 .marketing-header h1 {
   text-transform: uppercase;
+}
+
+@media (max-width: 992px){
+  .marketing-header h1, .marketing-header h2 {
+    text-align: center;
+  }
 }
 
 .marketing-header h2 {
