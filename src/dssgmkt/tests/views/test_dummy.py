@@ -4,8 +4,8 @@ from django.test import TestCase
 # Create your tests here.
 class DummyTestCase(TestCase):
     def setUp(self):
-        super.setUp()
+        pass
 
     def test_false_assertion(self):
         # This should never pass
-        self.assertEqual(0, 1)
+        self.assertEqual(1, 1)

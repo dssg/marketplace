@@ -143,9 +143,9 @@ def project_list_view(request):
             search_config['project_status'] = request.POST.getlist('projectstatus')
             for f in request.POST.getlist('projectstatus'):
                 checked_project_fields[f] = True
-        projects =  ProjectService.get_all_projects(request.user, search_config)
+        projects =  ProjectService.get_all_public_projects(request.user, search_config)
     elif request.method == 'GET':
-        projects =  ProjectService.get_all_projects(request.user)
+        projects =  ProjectService.get_all_public_projects(request.user)
 
     if projects:
         projects_page = paginate(request, projects, page_size=15)
@@ -455,7 +455,7 @@ class ProjectTaskReviewForm(ModelForm):
         fields = ['review_score', 'public_reviewer_comments', 'private_reviewer_notes']
 
 
-@permission_required('project.task_review_view', raise_exception=True, fn=objectgetter(Project, 'proj_pk'))
+@permission_required('project.task_review_view', raise_exception=True, fn=objectgetter(ProjectTaskReview, 'review_pk'))
 def process_task_review_request_view(request, proj_pk, task_pk, review_pk, action=None):
     project_task_review = get_project_task_review(request, proj_pk, task_pk, review_pk)
     if request.method == 'POST':
@@ -709,7 +709,7 @@ def project_task_requirements_edit_view(request, proj_pk, task_pk):
                                                             edit_task_requirements_link(project, task, include_link=False)),
                             'system_skills': get_project_task_requirements(request, proj_pk, task_pk),
                             'skill_levels': UserService.get_skill_levels(),
-                            'importance_levels': ProjectTaskService.get_project_taks_requirement_importance_levels(),
+                            'importance_levels': ProjectTaskService.get_project_task_requirement_importance_levels(),
                         }))
 
 @permission_required('project.task_staff_view', raise_exception=True, fn=objectgetter(Project, 'proj_pk'))

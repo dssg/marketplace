@@ -85,10 +85,10 @@
     </div>
 
 
-    {% if userprofile.pinnedtaskreview_set.all %}
+    {% if pinned_reviews %}
       <h4>Volunteer highlights</h4>
       <div class="row">
-        {% for pinned_review in userprofile.pinnedtaskreview_set.all %}
+        {% for pinned_review in pinned_reviews %}
           <div class="col-lg-6 volunteer-highlight pr-5 pl-5">
             <blockquote class="blockquote">
               <div class="title text-muted d-flex">

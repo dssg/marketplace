@@ -1,5 +1,6 @@
 from django.db import IntegrityError, transaction
 from django.utils import timezone
+from django.core.exceptions import PermissionDenied
 from datetime import date
 
 from ..models.proj import (
@@ -30,7 +31,7 @@ class ProjectService():
         return Project.objects.filter(pk=projid).annotate(follower_count=Count('projectfollower')).first()
 
     @staticmethod
-    def get_all_projects(request_user, search_config=None):
+    def get_all_public_projects(request_user, search_config=None):
         # We could also add the projects that are non-public but that also belong
         # to the organizations that the user is member of. Should that be added
         # or should users access those projects through the page of their org?
@@ -133,6 +134,7 @@ class ProjectService():
     @staticmethod
     def is_project_visible_by_user(user, project):
         if project.status == ProjectStatus.DRAFT:
+            # TODO Maybe add the project staff here.
             return ProjectService.user_is_project_owner(user, project)
         return True
 
@@ -614,15 +616,20 @@ class ProjectService():
 
     @staticmethod
     def get_user_projects_with_pending_task_requests(request_user):
-        return Project.objects.filter(projectrole__user=request_user,
-                                      projectrole__role=ProjRole.OWNER,
-                                      projecttask__projecttaskreview__review_result=ReviewStatus.NEW
-                        ).union(Project.objects.filter(
-                            projecttask__projecttaskrole__user=request_user,
-                            projecttask__stage__in=[TaskStatus.STARTED, TaskStatus.WAITING_REVIEW],
-                            projecttask__type__in=[TaskType.SCOPING_TASK, TaskType.PROJECT_MANAGEMENT_TASK],
-                            projecttask__projecttaskreview__review_result=ReviewStatus.NEW
-                        )).distinct()
+        if request_user.is_authenticated:
+            return Project.objects.filter(projectrole__user=request_user,
+                                          projectrole__role=ProjRole.OWNER,
+                                          projecttask__projecttaskreview__review_result=ReviewStatus.NEW
+                            ).union(Project.objects.filter(
+                                        projecttask__projecttaskrole__user=request_user,
+                                        projecttask__projecttaskrole__role=TaskRole.VOLUNTEER,
+                                        projecttask__stage__in=[TaskStatus.STARTED, TaskStatus.WAITING_REVIEW],
+                                        projecttask__type__in=[TaskType.SCOPING_TASK, TaskType.PROJECT_MANAGEMENT_TASK],
+                                    ).filter(
+                                        projecttask__projecttaskreview__review_result=ReviewStatus.NEW,
+                            )).distinct()
+        else:
+            return []
 
     @staticmethod
     def get_user_projects_in_draft_status(request_user):
@@ -689,7 +696,7 @@ class ProjectTaskService():
                                           stage__in=[TaskStatus.STARTED, TaskStatus.WAITING_REVIEW])
 
     @staticmethod
-    def get_volunteer_task_applications(request_user, projid):
+    def get_volunteer_open_task_applications(request_user, projid):
         base_query = VolunteerApplication.objects.filter(status=ReviewStatus.NEW, volunteer=request_user)
         if projid:
             base_query = base_query.filter(task__project=projid)
@@ -706,6 +713,14 @@ class ProjectTaskService():
     @staticmethod
     def user_is_task_volunteer(user, task):
         return user.is_authenticated and ProjectTaskRole.objects.filter(user=user, role=TaskRole.VOLUNTEER, task=task).exists()
+
+    @staticmethod
+    def user_can_view_task_review(user, task_review):
+        return user.is_authenticated and (ProjectService.user_is_project_member(user, task_review.task.project) or ProjectTaskService.user_belongs_to_task_review(user, task_review))
+
+    @staticmethod
+    def user_can_view_all_task_reviews(user, task):
+        return user.is_authenticated and (ProjectService.user_is_project_member(user, task.project) or ProjectTaskService.user_is_task_volunteer(user, task))
 
     @staticmethod
     def user_can_view_volunteer_application(user, volunteer_application):
@@ -967,8 +982,8 @@ class ProjectTaskService():
     @staticmethod
     def get_project_task_review(request_user, projid, taskid, reviewid):
         project = Project.objects.get(pk=projid)
-        ensure_user_has_permission(request_user, project, 'project.task_review_view')
         task_review = ProjectTaskReview.objects.get(pk=reviewid)
+        ensure_user_has_permission(request_user, task_review, 'project.task_review_view')
         validate_consistent_keys(task_review, 'Task review not found in that project', (['task', 'id'], taskid), (['task', 'project', 'id'], projid))
         return task_review
 
@@ -1207,6 +1222,8 @@ class ProjectTaskService():
         ensure_user_has_permission(request_user, project_task_role.task, 'project.volunteer_task_cancel')
         if project_task_role.user != request_user:
             raise ValueError('Role does not match current user')
+        elif project_task_role.task.stage in [TaskStatus.DRAFT, TaskStatus.NOT_STARTED, TaskStatus.COMPLETED]:
+            raise ValueError('Only tasks in progress and/or QA can be cancelled by the volunteer')
         else:
             project_task = project_task_role.task
             with transaction.atomic():
@@ -1237,12 +1254,15 @@ class ProjectTaskService():
 
     @staticmethod
     def apply_to_volunteer(request_user, projid, taskid, task_application_request):
+        # TODO check that the task is not in draft stage
+        # TODO check that the user does not have a NEW status application already
         project_task = ProjectTask.objects.get(pk=taskid, project__id=projid)
         validate_consistent_keys(project_task, 'Task not found in that project', (['project', 'id'], projid))
         ensure_user_has_permission(request_user, None, 'project.task_apply')
         if ProjectTaskService.user_is_task_volunteer(request_user, project_task):
             raise ValueError('User is already a volunteer of this task')
-        if not VolunteerProfile.objects.filter(user=request_user).exists(): # We cannot call UserService.user_has_volunteer_profile because a circular dependency
+        # TODO remove this check because it is checked by the permissions of the method
+        if not VolunteerProfile.objects.filter(user=request_user).exists(): # We cannot call UserService.user_has_volunteer_profile because a circular dependency # TODO split userService and ProjectService in two services each, one for queries, one for operations
             raise ValueError('User is not a volunteer')
         task_application_request.status = ReviewStatus.NEW
         task_application_request.task = project_task
@@ -1335,6 +1355,8 @@ class ProjectTaskService():
     @staticmethod
     def accept_volunteer(request_user, projid, taskid, volunteer_application):
         validate_consistent_keys(volunteer_application, (['task', 'id'], taskid), (['task', 'project', 'id'], projid))
+        if request_user.is_anonymous:
+            raise PermissionDenied()
         if volunteer_application.status != ReviewStatus.NEW:
             raise ValueError('Volunteer application review was already completed')
         volunteer_application.status = ReviewStatus.ACCEPTED
@@ -1364,6 +1386,8 @@ class ProjectTaskService():
     @staticmethod
     def reject_volunteer(request_user, projid, taskid, volunteer_application):
         validate_consistent_keys(volunteer_application, (['task', 'id'], taskid), (['task', 'project', 'id'], projid))
+        if request_user.is_anonymous:
+            raise PermissionDenied()
         if volunteer_application.status != ReviewStatus.NEW:
             raise ValueError('Volunteer application review was already completed')
         volunteer_application.status = ReviewStatus.REJECTED
@@ -1391,7 +1415,7 @@ class ProjectTaskService():
                                           message)
 
     @staticmethod
-    def get_project_taks_requirement_importance_levels():
+    def get_project_task_requirement_importance_levels():
         return TaskRequirementImportance.get_choices()
 
     @staticmethod
@@ -1413,9 +1437,9 @@ class ProjectTaskService():
     @staticmethod
     def set_task_staff(request_user, projid, taskid, post_object):
         project_task = ProjectTask.objects.get(pk=taskid)
-        project = project_task.project
+        project = Project.objects.get(pk=projid)
         validate_consistent_keys(project_task, (['project', 'id'], projid))
-        ensure_user_has_permission(request_user, project_task.project, 'project.task_staff_edit')
+        ensure_user_has_permission(request_user, project, 'project.task_staff_edit')
         task_staff_list = ProjectTaskRole.objects.filter(task__id=taskid, role=TaskRole.SUPPORT_STAFF)
         task_staff_dict = {}
         for staff_role in task_staff_list:
@@ -1621,6 +1645,7 @@ class ProjectTaskService():
 
     @staticmethod
     def get_task_reviews(request_user, project_task, expand_pinned=False):
+        ensure_user_has_permission(request_user, project_task, 'project.all_task_reviews_view')
         base_query = ProjectTaskReview.objects.filter(task=project_task.id)
         if expand_pinned:
             base_query = base_query.annotate(pinnedreview=Count('pinnedtaskreview', fiter=Q(user=request_user)))
@@ -1628,7 +1653,7 @@ class ProjectTaskService():
 
     @staticmethod
     def user_belongs_to_task_review(request_user, task_review):
-        return ProjectTaskRole.objects.filter(user=request_user, task__projecttaskreview=task_review).exists()
+        return request_user.is_authenticated and ProjectTaskRole.objects.filter(user=request_user, task__projecttaskreview=task_review).exists()
 
     @staticmethod
     def toggle_pinned_task_review(request_user, projid, taskid, task_reviewid):
@@ -1647,6 +1672,9 @@ class ProjectTaskService():
         else:
             raise KeyError('Task review not found')
 
+    @staticmethod
+    def get_pinned_task_reviews(request_user, target_user):
+        return PinnedTaskReview.objects.filter(user=target_user)
 
     @staticmethod
     def publish_project_task(request_user, projid, taskid, project_task):

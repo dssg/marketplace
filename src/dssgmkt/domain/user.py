@@ -28,7 +28,7 @@ class UserService():
         return User.objects.get(pk=userid)
 
     @staticmethod
-    def get_all_volunteer_profiles(request_user, search_config=None):
+    def get_all_approved_volunteer_profiles(request_user, search_config=None):
         base_query = VolunteerProfile.objects.filter(volunteer_status=ReviewStatus.ACCEPTED)
         if search_config:
             if 'username' in search_config:
@@ -176,16 +176,16 @@ class UserService():
 
 
     @staticmethod
-    def save_volunteer_profile(request_user, volunteer_pk, volunteer_profile):
-        validate_consistent_keys(volunteer_profile, ('id', volunteer_pk))
+    def save_volunteer_profile(request_user, volunteer_profile_pk, volunteer_profile):
+        validate_consistent_keys(volunteer_profile, ('id', volunteer_profile_pk))
         ensure_user_has_permission(request_user, volunteer_profile.user, 'user.is_same_user')
         volunteer_profile.is_edited = True
         volunteer_profile.save()
 
     @staticmethod
-    def accept_volunteer_profile(request_user, volunteer_pk):
+    def accept_volunteer_profile(request_user, volunteer_profile_pk):
         ensure_user_has_permission(request_user, request_user, 'volunteer.new_user_review')
-        volunteer_profile = VolunteerProfile.objects.get(pk=volunteer_pk)
+        volunteer_profile = VolunteerProfile.objects.get(pk=volunteer_profile_pk)
         if volunteer_profile:
             volunteer_profile.volunteer_status = ReviewStatus.ACCEPTED
             volunteer_profile.is_edited = True
@@ -199,9 +199,9 @@ class UserService():
             raise KeyError("Volunteer profile not found.")
 
     @staticmethod
-    def reject_volunteer_profile(request_user, volunteer_pk):
+    def reject_volunteer_profile(request_user, volunteer_profile_pk):
         ensure_user_has_permission(request_user, request_user, 'volunteer.new_user_review')
-        volunteer_profile = VolunteerProfile.objects.get(pk=volunteer_pk)
+        volunteer_profile = VolunteerProfile.objects.get(pk=volunteer_profile_pk)
         if volunteer_profile:
             volunteer_profile.volunteer_status = ReviewStatus.REJECTED
             volunteer_profile.is_edited = True

@@ -104,9 +104,9 @@ def volunteer_list_view(request):
         #     search_config['project_status'] = request.POST.getlist('projectstatus')
         #     for f in request.POST.getlist('projectstatus'):
         #         checked_project_fields[f] = True
-        volunteers =  UserService.get_all_volunteer_profiles(request.user, search_config)
+        volunteers =  UserService.get_all_approved_volunteer_profiles(request.user, search_config)
     elif request.method == 'GET':
-        volunteers =  UserService.get_all_volunteer_profiles(request.user)
+        volunteers =  UserService.get_all_approved_volunteer_profiles(request.user)
 
     if volunteers:
         volunteers_page = paginate(request, volunteers, page_size=15)
@@ -142,7 +142,7 @@ class UserHomeView(generic.ListView): ## This is a listview because it is actual
             notification.url = get_url_for_notification(notification.source, notification.target_id)
         context['todos'] = UserService.get_user_todos(self.request.user, self.request.user)
         context['my_tasks'] = ProjectTaskService.get_user_in_progress_tasks(self.request.user)
-        context['my_task_applications'] = ProjectTaskService.get_volunteer_task_applications(self.request.user, None)
+        context['my_task_applications'] = ProjectTaskService.get_volunteer_open_task_applications(self.request.user, None)
         context['user_is_volunteer'] = UserService.user_has_volunteer_profile(self.request.user)
         context['user_is_any_organization_member'] = OrganizationService.user_is_any_organization_member(self.request.user)
         organizations = OrganizationService.get_organizations_with_user_create_project_permission(self.request.user)
@@ -201,7 +201,7 @@ class UserProfileView(generic.DetailView):
 
         project_tasks = ProjectTaskService.get_volunteer_all_tasks(self.request.user, self.object)
         context['project_tasks'] = paginate(self.request, project_tasks, request_key='project_tasks_page', page_size=15)
-
+        context['pinned_reviews'] = ProjectTaskService.get_pinned_task_reviews(self.request.user, self.object)
         return context
 
 class UserProfileEdit(PermissionRequiredMixin, UpdateView):
