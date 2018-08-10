@@ -113,9 +113,10 @@ class ProjectTestCase(TestCase):
         self.assertEqual(ProjectService.get_featured_project(), self.project)
         self.assertEqual(list(ProjectService.get_user_projects_in_draft_status(self.owner_user)), [])
 
-    def create_standard_project_structure(self):
+    def create_standard_project_structure(self, publish_project=True, accept_volunteers=True):
         OrganizationService.create_project(self.owner_user, self.organization.id, self.project)
-        ProjectService.publish_project(self.owner_user, self.project.id, self.project)
+        if publish_project:
+            ProjectService.publish_project(self.owner_user, self.project.id, self.project)
         staff_user_role = ProjectRole()
         staff_user_role.user = self.staff_user
         staff_user_role.project = self.project
@@ -152,8 +153,9 @@ class ProjectTestCase(TestCase):
                 application.volunteer = self.volunteer_user
             ProjectTaskService.apply_to_volunteer(application.volunteer, self.project.id, task.id, application)
             self.assertEqual(list(ProjectService.get_user_projects_with_pending_volunteer_requests(self.owner_user)), [self.project])
-            ProjectTaskService.accept_volunteer(self.owner_user, self.project.id, task.id, application)
-            self.assertEqual(list(ProjectService.get_user_projects_with_pending_volunteer_requests(self.owner_user)), [])
+            if accept_volunteers:
+                ProjectTaskService.accept_volunteer(self.owner_user, self.project.id, task.id, application)
+                self.assertEqual(list(ProjectService.get_user_projects_with_pending_volunteer_requests(self.owner_user)), [])
             volunteer_applications.append(application)
         self.assertEqual(set(ProjectService.get_all_volunteer_applications(self.owner_user, self.project.id)), set(volunteer_applications))
         return (scoping_task, project_management_task, domain_work_task)
@@ -696,17 +698,58 @@ class ProjectTestCase(TestCase):
                              skill2.area: [{'system_skill': skill2, 'task_requirement': None}]})
 
     def test_project_status(self):
-        self.create_standard_project_structure()
+        scoping_task, project_management_task, domain_work_task = self.create_standard_project_structure(False, False)
+        self.assertEqual(len(ProjectService.get_project_changes(self.owner_user, self.project)), 6)
+
         all_users = self.get_all_users()
+        self.assertEqual(ProjectService.get_project(self.owner_user, self.project.id).status, ProjectStatus.DRAFT)
+        ProjectService.publish_project(self.owner_user, self.project.id, self.project)
+        self.assertEqual(ProjectService.get_project(self.owner_user, self.project.id).status, ProjectStatus.NEW)
+        self.assertEqual(len(ProjectService.get_project_changes(self.owner_user, self.project)), 7)
+
+        scoping_application = scoping_task.volunteerapplication_set.first()
+        ProjectTaskService.accept_volunteer(self.owner_user, self.project.id, scoping_task.id, scoping_application)
         self.assertEqual(ProjectService.get_project(self.owner_user, self.project.id).status, ProjectStatus.DESIGN)
-        # TODO check the project status gets automatically modified by completing tasks
-        # ProjectService.finish_project(request_user, projid, project)
+        self.assertEqual(len(ProjectService.get_project_changes(self.owner_user, self.project)), 9)
+        task_review = ProjectTaskReview()
+        task_review.volunteer_comment = "Completed."
+        task_review.volunteer_effort_hours = 1
+        ProjectTaskService.mark_task_as_completed(self.scoping_user, self.project.id, scoping_task.id, task_review)
+        self.assertEqual(len(ProjectService.get_project_changes(self.owner_user, self.project)), 11)
+        ProjectTaskService.accept_task_review(self.owner_user, self.project.id, scoping_task.id, task_review)
+        self.assertEqual(ProjectService.get_project(self.owner_user, self.project.id).status, ProjectStatus.WAITING_STAFF)
+        self.assertEqual(len(ProjectService.get_project_changes(self.owner_user, self.project)), 13)
+
+        proj_mgm_application = project_management_task.volunteerapplication_set.first()
+        ProjectTaskService.accept_volunteer(self.owner_user, self.project.id, project_management_task.id, proj_mgm_application)
+        self.assertEqual(len(ProjectService.get_project_changes(self.owner_user, self.project)), 14)
+        domain_work_application = domain_work_task.volunteerapplication_set.first()
+        ProjectTaskService.accept_volunteer(self.owner_user, self.project.id, domain_work_task.id, domain_work_application)
+        self.assertEqual(ProjectService.get_project(self.owner_user, self.project.id).status, ProjectStatus.IN_PROGRESS)
+        self.assertEqual(len(ProjectService.get_project_changes(self.owner_user, self.project)), 16)
+
+        task_review = ProjectTaskReview()
+        task_review.volunteer_comment = "Completed."
+        task_review.volunteer_effort_hours = 1
+        ProjectTaskService.mark_task_as_completed(self.proj_mgmt_user, self.project.id, project_management_task.id, task_review)
+        self.assertEqual(len(ProjectService.get_project_changes(self.owner_user, self.project)), 17)
+        ProjectTaskService.accept_task_review(self.owner_user, self.project.id, project_management_task.id, task_review)
+        self.assertEqual(len(ProjectService.get_project_changes(self.owner_user, self.project)), 18)
+        task_review = ProjectTaskReview()
+        task_review.volunteer_comment = "Completed."
+        task_review.volunteer_effort_hours = 1
+        ProjectTaskService.mark_task_as_completed(self.volunteer_user, self.project.id, domain_work_task.id, task_review)
+        self.assertEqual(len(ProjectService.get_project_changes(self.owner_user, self.project)), 19)
+        ProjectTaskService.accept_task_review(self.owner_user, self.project.id, domain_work_task.id, task_review)
+        self.assertEqual(ProjectService.get_project(self.owner_user, self.project.id).status, ProjectStatus.WAITING_REVIEW)
+        self.assertEqual(len(ProjectService.get_project_changes(self.owner_user, self.project)), 21)
+
+        test_permission_denied_operation(self, [AnonymousUser(), self.volunteer_user, self.staff_user, self.proj_mgmt_user, self.scoping_user, self.volunteer_applicant_user],
+            lambda x: ProjectService.finish_project(x, self.project.id, self.project))
+        ProjectService.finish_project(self.owner_user, self.project.id, ProjectService.get_project(self.owner_user, self.project.id))
+        self.assertEqual(ProjectService.get_project(self.owner_user, self.project.id).status, ProjectStatus.COMPLETED)
+        self.assertEqual(len(ProjectService.get_project_changes(self.owner_user, self.project)), 22)
 
 # TODO check that notifications are generated correctly on every action
-
-
-# TODO Pending methods of ProjectService with no tests yet:
-# ProjectService.get_project_changes(request_user, proj)
-# ProjectService.add_project_change(request_user, proj, type, target_type, target_id, description)
 
 # TODO check that all the paths within ProjectTaskService.save_task_internal are covered by tests
