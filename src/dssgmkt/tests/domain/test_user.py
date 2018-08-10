@@ -2,247 +2,205 @@ from django.test import TestCase
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.models import AnonymousUser
 
-from dssgmkt.models.common import ReviewStatus
-from dssgmkt.models.user import User, UserType
+from dssgmkt.models.common import ReviewStatus, SkillLevel
+from dssgmkt.models.user import (
+    SignupCodeType, SignupCode, User, UserType, Skill, VolunteerSkill, )
 from dssgmkt.domain.user import UserService
 
+from dssgmkt.tests.domain.common import (
+    example_organization_user, example_staff_user, example_volunteer_user,
+    example_organization, example_project,
+    test_users_group_inclusion, test_permission_denied_operation,
+)
+import datetime
+
 class UserTestCase(TestCase):
-    organization_user = None
     dssg_staff_user = None
     volunteer_user = None
 
+    code_repeated_1 = None
+    code_repeated_2 = None
+
     def setUp(self):
-        self.organization_user = User()
-        self.organization_user.username = "OrgUser"
-        self.organization_user.first_name = "Organization"
-        self.organization_user.last_name = "User"
-        UserService.create_user(None, self.organization_user, 'organization', None)
+        code_volunteer = SignupCode()
+        code_volunteer.name = "AUTOMATICVOLUNTEER"
+        code_volunteer.type = SignupCodeType.VOLUNTEER_AUTOMATIC_ACCEPT
+        code_volunteer.save()
 
-        self.dssg_staff_user = User()
-        self.dssg_staff_user.username = "DSSGStaff"
-        self.dssg_staff_user.first_name = "Staff"
-        self.dssg_staff_user.last_name = "DSSG"
-        UserService.create_user(None, self.staff_user, 'organization', None)
-        self.dssg_staff_user.initial_type = UserType.DSSG_STAFF
-        UserService.save_user(self.dssg_staff_user, self.dssg_staff_user.id, self.dssg_staff_user)
+        code_dssg = SignupCode()
+        code_dssg.name = "MAKEDSSG"
+        code_dssg.type = SignupCodeType.MAKE_DSSG_STAFF
+        code_dssg.save()
 
-        self.volunteer_user = User()
-        self.volunteer_user.username = "VolUser"
-        self.volunteer_user.first_name = "Volunteer"
-        self.volunteer_user.last_name = "User"
-        self.volunteer_user.email = "volunteer@email.com"
-        UserService.create_user(None, self.volunteer_user, 'volunteer', None)
-    # 
-    # def test_create_organization(self):
-    #     all_organizations = OrganizationService.get_all_organizations(self.organization_user)
-    #     self.assertFalse(all_organizations.exists())
-    #
-    #     with self.assertRaisesMessage(PermissionDenied, ''):
-    #         OrganizationService.create_organization(AnonymousUser(), self.organization)
-    #
-    #     with self.assertRaisesMessage(PermissionDenied, ''):
-    #         OrganizationService.create_organization(self.volunteer_user, self.organization)
-    #
-    #     OrganizationService.create_organization(self.organization_user, self.organization)
-    #     all_organizations = OrganizationService.get_all_organizations(self.organization_user)
-    #     saved_organization = OrganizationService.get_organization(self.organization_user, self.organization.id)
-    #     self.assertEqual(len(all_organizations), 1)
-    #     self.assertEqual(all_organizations.first().name, self.organization.name)
-    #     self.assertEqual(all_organizations.first(), saved_organization)
-    #     self.assertEqual(
-    #         list(OrganizationService.get_all_organizations(AnonymousUser())),
-    #         list(OrganizationService.get_all_organizations(self.organization_user)),
-    #     )
-    #     self.assertEqual(
-    #         saved_organization,
-    #         OrganizationService.get_organization(AnonymousUser(), self.organization.id),
-    #     )
-    #
-    # def test_get_featured_organization(self):
-    #     OrganizationService.create_organization(self.organization_user, self.organization)
-    #     self.assertEqual(OrganizationService.get_featured_organization(), self.organization)
-    #
-    # def test_edit_organization(self):
-    #     OrganizationService.create_organization(self.organization_user, self.organization)
-    #     self.organization.name = "EDITED Organization A"
-    #     self.organization.short_summary = "EDITED A short description of the org"
-    #     self.organization.description = "EDITED A long form description of the organization"
-    #     self.organization.website_url = "http://exampleorg.com/EDITED"
-    #     self.organization.phone_number = "(111)111-EDITED"
-    #     self.organization.email_address = "EDITEDemail@org.org"
-    #     self.organization.street_address = "EDITED 1 One Street"
-    #     self.organization.city = "EDITED OrgCity"
-    #     self.organization.state = "EDITED OrgState"
-    #     self.organization.zipcode = "EDITED11111"
-    #     self.organization.budget = Budget.B50MP
-    #     self.organization.years_operation = YearsInOperation.Y25
-    #     self.organization.main_cause = SocialCause.HEALTH
-    #     self.organization.organization_scope = GeographicalScope.COUNTRY
-    #     with self.assertRaisesMessage(PermissionDenied, ''):
-    #         OrganizationService.save_organization_info(AnonymousUser(), self.organization.id, self.organization)
-    #
-    #     with self.assertRaisesMessage(PermissionDenied, ''):
-    #         OrganizationService.save_organization_info(self.volunteer_user, self.organization.id, self.organization)
-    #
-    #     OrganizationService.add_staff_member_by_id(self.organization_user, self.organization.id, self.staff_user.id, None)
-    #     with self.assertRaisesMessage(PermissionDenied, ''):
-    #         OrganizationService.save_organization_info(self.staff_user, self.organization.id, self.organization)
-    #
-    #     OrganizationService.save_organization_info(self.organization_user, self.organization.id, self.organization)
-    #     self.assertEqual(self.organization, OrganizationService.get_organization(self.organization_user, self.organization.id))
-    #
-    #
-    # def test_filter_organization(self):
-    #     OrganizationService.create_organization(self.organization_user, self.organization)
-    #     org_result_list = [self.organization]
-    #     self.assertEqual(list(OrganizationService.get_all_organizations(self.organization_user, {'name': 'ORGAN'})), org_result_list)
-    #     self.assertEqual(list(OrganizationService.get_all_organizations(self.organization_user, {'name': 'no match'})), [])
-    #     self.assertEqual(list(OrganizationService.get_all_organizations(self.organization_user, {'name': ' A'})), org_result_list)
-    #     self.assertEqual(list(OrganizationService.get_all_organizations(self.organization_user, {'social_cause': 'education'})), org_result_list)
-    #     self.assertEqual(list(OrganizationService.get_all_organizations(self.organization_user, {'social_cause': ['education', 'health']})), org_result_list)
-    #     self.assertEqual(list(OrganizationService.get_all_organizations(self.organization_user, {'social_cause': ['health']})), [])
-    #     self.assertEqual(list(OrganizationService.get_all_organizations(self.organization_user, {'project_status': 'new'})), [])
-    #     self.assertEqual(list(OrganizationService.get_all_organizations(self.organization_user, {'project_status': ['new', 'completed']})), [])
-    #
-    # def test_create_duplicate_organization(self):
-    #     with self.assertRaisesMessage(ValueError, 'An organization with this name already exists.'):
-    #         OrganizationService.create_organization(self.organization_user, self.organization)
-    #         OrganizationService.create_organization(self.organization_user, self.organization)
-    #
-    # def test_organization_roles(self):
-    #     OrganizationService.create_organization(self.organization_user, self.organization)
-    #     self.assertTrue(OrganizationService.user_is_organization_admin(self.organization_user, self.organization))
-    #     self.assertTrue(OrganizationService.user_is_organization_member(self.organization_user, self.organization))
-    #     self.assertFalse(OrganizationService.user_is_organization_staff(self.organization_user, self.organization))
-    #     self.assertTrue(OrganizationService.user_is_any_organization_member(self.organization_user))
-    #
-    #     self.assertFalse(OrganizationService.user_is_organization_admin(self.volunteer_user, self.organization))
-    #     self.assertFalse(OrganizationService.user_is_organization_member(self.volunteer_user, self.organization))
-    #     self.assertFalse(OrganizationService.user_is_organization_staff(self.volunteer_user, self.organization))
-    #     self.assertFalse(OrganizationService.user_is_any_organization_member(self.volunteer_user))
-    #
-    #     with self.assertRaisesMessage(PermissionDenied, ''):
-    #         OrganizationService.add_staff_member_by_id(AnonymousUser(), self.organization.id, self.staff_user.id, None)
-    #     with self.assertRaisesMessage(PermissionDenied, ''):
-    #         OrganizationService.add_staff_member_by_id(self.staff_user, self.organization.id, self.staff_user.id, None)
-    #     OrganizationService.add_staff_member_by_id(self.organization_user, self.organization.id, self.staff_user.id, None)
-    #
-    #     self.assertFalse(OrganizationService.user_is_organization_admin(self.staff_user, self.organization))
-    #     self.assertTrue(OrganizationService.user_is_organization_member(self.staff_user, self.organization))
-    #     self.assertTrue(OrganizationService.user_is_organization_staff(self.staff_user, self.organization))
-    #     self.assertTrue(OrganizationService.user_is_any_organization_member(self.staff_user))
-    #
-    #     organization_staff_roles = OrganizationService.get_organization_staff(self.organization_user, self.organization)
-    #     org_admin_user_role = OrganizationService.get_organization_role(self.organization_user, self.organization.id, self.organization_user.id)
-    #     org_staff_user_role = OrganizationService.get_organization_role(self.organization_user, self.organization.id, self.staff_user.id)
-    #     self.assertEqual(list(organization_staff_roles), [
-    #         org_admin_user_role,
-    #         org_staff_user_role,
-    #     ])
-    #     self.assertEqual(org_admin_user_role, OrganizationService.get_organization_role_by_pk(self.organization_user, self.organization.id, org_admin_user_role.id))
-    #     self.assertEqual(org_staff_user_role, OrganizationService.get_organization_role_by_pk(self.organization_user, self.organization.id, org_staff_user_role.id))
-    #
-    #     organization_members = OrganizationService.get_organization_members(self.organization_user, self.organization)
-    #     self.assertEqual(set(organization_members), set([self.organization_user, self.staff_user]))
-    #
-    #     organization_admins = OrganizationService.get_organization_admins(self.organization_user, self.organization)
-    #     self.assertEqual(set(organization_admins), set([self.organization_user]))
-    #
-    #     volunteer_user_match = {
-    #         'id': self.volunteer_user.id,
-    #         'first_name': self.volunteer_user.first_name,
-    #         'last_name': self.volunteer_user.last_name,
-    #         'username': self.volunteer_user.username,
-    #     }
-    #     self.assertEqual(list(OrganizationService.get_all_users_not_organization_members(self.organization.id)), [volunteer_user_match])
-    #     self.assertEqual(list(OrganizationService.get_all_users_not_organization_members(self.organization.id, "olu")), [volunteer_user_match])
-    #     self.assertEqual(list(OrganizationService.get_all_users_not_organization_members(self.organization.id, "volunteer")), [volunteer_user_match])
-    #     self.assertEqual(list(OrganizationService.get_all_users_not_organization_members(self.organization.id, "use")), [volunteer_user_match])
-    #     self.assertEqual(list(OrganizationService.get_all_users_not_organization_members(self.organization.id, "eer@ema")), [volunteer_user_match])
-    #     self.assertEqual(list(OrganizationService.get_all_users_not_organization_members(self.organization.id, "bad_match")), [])
-    #
-    #     with self.assertRaisesMessage(PermissionDenied, ''):
-    #         OrganizationService.leave_organization(AnonymousUser(), self.organization.id, org_staff_user_role)
-    #     with self.assertRaisesMessage(PermissionDenied, ''):
-    #         OrganizationService.leave_organization(self.volunteer_user, self.organization.id, org_staff_user_role)
-    #     with self.assertRaisesMessage(PermissionDenied, ''):
-    #         OrganizationService.leave_organization(self.organization_user, self.organization.id, org_staff_user_role)
-    #     OrganizationService.leave_organization(self.staff_user, self.organization.id, org_staff_user_role)
-    #     self.assertFalse(OrganizationService.user_is_organization_admin(self.staff_user, self.organization))
-    #     self.assertFalse(OrganizationService.user_is_organization_member(self.staff_user, self.organization))
-    #     self.assertFalse(OrganizationService.user_is_organization_staff(self.staff_user, self.organization))
-    #     self.assertFalse(OrganizationService.user_is_any_organization_member(self.staff_user))
-    #     with self.assertRaisesMessage(OrganizationRole.DoesNotExist, 'OrganizationRole matching query does not exist.'):
-    #         OrganizationService.get_organization_role(self.organization_user, self.organization.id, self.staff_user.id)
-    #
-    #     with self.assertRaisesMessage(PermissionDenied, ''):
-    #         OrganizationService.add_staff_member(AnonymousUser(), self.organization.id, org_staff_user_role)
-    #     with self.assertRaisesMessage(PermissionDenied, ''):
-    #         OrganizationService.add_staff_member(self.staff_user, self.organization.id, org_staff_user_role)
-    #     OrganizationService.add_staff_member(self.organization_user, self.organization.id, org_staff_user_role)
-    #     org_staff_user_role.role = OrgRole.ADMINISTRATOR
-    #     with self.assertRaisesMessage(PermissionDenied, ''):
-    #         OrganizationService.save_organization_role(AnonymousUser(), self.organization.id, org_staff_user_role)
-    #     with self.assertRaisesMessage(PermissionDenied, ''):
-    #         OrganizationService.save_organization_role(self.volunteer_user, self.organization.id, org_staff_user_role)
-    #     with self.assertRaisesMessage(PermissionDenied, ''):
-    #         OrganizationService.save_organization_role(self.staff_user, self.organization.id, org_staff_user_role)
-    #     OrganizationService.save_organization_role(self.organization_user, self.organization.id, org_staff_user_role)
-    #     self.assertTrue(OrganizationService.user_is_organization_admin(self.staff_user, self.organization))
-    #
-    #     with self.assertRaisesMessage(PermissionDenied, ''):
-    #         OrganizationService.delete_organization_role(AnonymousUser(), self.organization.id, org_staff_user_role)
-    #     with self.assertRaisesMessage(PermissionDenied, ''):
-    #         OrganizationService.delete_organization_role(self.volunteer_user, self.organization.id, org_staff_user_role)
-    #     OrganizationService.delete_organization_role(self.organization_user, self.organization.id, org_staff_user_role)
-    #     self.assertFalse(OrganizationService.user_is_organization_admin(self.staff_user, self.organization))
-    #     self.assertFalse(OrganizationService.user_is_organization_member(self.staff_user, self.organization))
-    #
-    # def test_create_duplicate_role(self):
-    #     OrganizationService.create_organization(self.organization_user, self.organization)
-    #     OrganizationService.add_staff_member_by_id(self.organization_user, self.organization.id, self.staff_user.id, None)
-    #     with self.assertRaisesMessage(ValueError, ''):
-    #         OrganizationService.add_staff_member_by_id(self.organization_user, self.organization.id, self.staff_user.id, None)
-    #
-    # def test_organization_membership_requests(self):
-    #     OrganizationService.create_organization(self.organization_user, self.organization)
-    #     self.assertEqual(list(OrganizationService.get_membership_requests(self.organization_user, self.organization)), [])
-    #     self.assertEqual(list(OrganizationService.get_user_organizations_with_pending_requests(self.organization_user)), [])
-    #
-    #     membership_request = OrganizationMembershipRequest()
-    #     membership_request.user = self.staff_user
-    #     membership_request.role = OrgRole.STAFF
-    #     with self.assertRaisesMessage(ValueError, ''):
-    #         OrganizationService.create_membership_request(self.staff_user, AnonymousUser(), self.organization.id, membership_request)
-    #     OrganizationService.create_membership_request(self.staff_user, self.staff_user, self.organization.id, membership_request)
-    #     self.assertEqual(list(OrganizationService.get_membership_requests(self.organization_user, self.organization)), [membership_request])
-    #     self.assertEqual(list(OrganizationService.get_user_organizations_with_pending_requests(self.organization_user)), [self.organization])
-    #
-    #
-    #     with self.assertRaisesMessage(PermissionDenied, ''):
-    #         OrganizationService.accept_membership_request(AnonymousUser(), self.organization.id, membership_request)
-    #     with self.assertRaisesMessage(PermissionDenied, ''):
-    #         OrganizationService.accept_membership_request(self.volunteer_user, self.organization.id, membership_request)
-    #     OrganizationService.accept_membership_request(self.organization_user, self.organization.id, membership_request)
-    #     self.assertEqual(OrganizationService.get_organization_membership_request(
-    #         self.organization_user,
-    #         self.organization.id,
-    #         membership_request.id
-    #     ).status, ReviewStatus.ACCEPTED)
-    #     self.assertEqual(list(OrganizationService.get_user_organizations_with_pending_requests(self.organization_user)), [])
-    #     self.assertTrue(OrganizationService.user_is_organization_staff(self.staff_user, self.organization))
-    #
-    #     membership_request = OrganizationMembershipRequest()
-    #     # We make sure the user is automatically replaced later with the right one
-    #     membership_request.user = self.staff_user
-    #     membership_request.role = OrgRole.STAFF
-    #     OrganizationService.create_membership_request(self.organization_user, self.volunteer_user, self.organization.id, membership_request)
-    #     with self.assertRaisesMessage(PermissionDenied, ''):
-    #         OrganizationService.reject_membership_request(AnonymousUser(), self.organization.id, membership_request)
-    #     with self.assertRaisesMessage(PermissionDenied, ''):
-    #         OrganizationService.reject_membership_request(self.volunteer_user, self.organization.id, membership_request)
-    #     with self.assertRaisesMessage(PermissionDenied, ''):
-    #         OrganizationService.reject_membership_request(self.staff_user, self.organization.id, membership_request)
-    #     OrganizationService.reject_membership_request(self.organization_user, self.organization.id, membership_request)
-    #     self.assertEqual(list(OrganizationService.get_user_organizations_with_pending_requests(self.organization_user)), [])
-    #     self.assertFalse(OrganizationService.user_is_organization_member(self.volunteer_user, self.organization))
+        code_expiring = SignupCode()
+        code_expiring.name = "EXPIREDCODE"
+        code_expiring.type = SignupCodeType.VOLUNTEER_AUTOMATIC_ACCEPT
+        code_expiring.expiration_date = datetime.date(2000, 1, 1)
+        code_expiring.save()
+
+        code_restricted = SignupCode()
+        code_restricted.name = "SINGLEUSECODE"
+        code_restricted.type = SignupCodeType.VOLUNTEER_AUTOMATIC_ACCEPT
+        code_restricted.max_uses = 1
+        code_restricted.save()
+
+        self.code_repeated_1 = SignupCode()
+        self.code_repeated_1.name = "MULTIPLECODES"
+        self.code_repeated_1.type = SignupCodeType.VOLUNTEER_AUTOMATIC_ACCEPT
+        self.code_repeated_1.save()
+
+        self.code_repeated_2 = SignupCode()
+        self.code_repeated_2.name = "MULTIPLECODES"
+        self.code_repeated_2.type = SignupCodeType.MAKE_DSSG_STAFF
+        self.code_repeated_2.save()
+
+        dssg_user = User()
+        dssg_user.username = "DSSGUser"
+        dssg_user.first_name = "DSSG"
+        dssg_user.last_name = "Staff"
+        dssg_user.special_code = "MAKEDSSG"
+        UserService.create_user(None, dssg_user, 'organization', None)
+        self.dssg_staff_user = dssg_user
+
+    def test_organization_user(self):
+        organization_user = User()
+        organization_user.username = "OrgUser"
+        organization_user.first_name = "Organization"
+        organization_user.last_name = "User"
+        UserService.create_user(None, organization_user, 'organization', None)
+        self.assertEqual(UserService.get_user(organization_user, organization_user.id), organization_user)
+
+        self.assertFalse(UserService.user_is_dssg_staff(organization_user, organization_user))
+        self.assertTrue(UserService.user_is_organization_creator(organization_user))
+        self.assertFalse(UserService.user_has_skills(organization_user))
+        self.assertFalse(UserService.user_has_volunteer_profile(organization_user))
+        self.assertFalse(UserService.user_has_approved_volunteer_profile(organization_user))
+
+        organization_user.first_name = "Organization edited"
+        UserService.save_user(organization_user, organization_user.id, organization_user)
+        self.assertEqual(UserService.get_user(organization_user, organization_user.id), organization_user)
+
+    def test_dssg_user(self):
+        dssg_user = User()
+        dssg_user.username = "DSSGUser"
+        dssg_user.first_name = "DSSG"
+        dssg_user.last_name = "Staff"
+        dssg_user.special_code = "MAKEDSSG"
+        UserService.create_user(None, dssg_user, 'organization', None)
+        self.assertEqual(UserService.get_user(dssg_user, dssg_user.id), dssg_user)
+
+        self.assertTrue(UserService.user_is_dssg_staff(dssg_user, dssg_user))
+        self.assertFalse(UserService.user_is_organization_creator(dssg_user))
+        self.assertFalse(UserService.user_has_skills(dssg_user))
+        self.assertFalse(UserService.user_has_volunteer_profile(dssg_user))
+        self.assertFalse(UserService.user_has_approved_volunteer_profile(dssg_user))
+
+        UserService.create_volunteer_profile(dssg_user, volunteer_user.id)
+        self.assertTrue(UserService.user_has_volunteer_profile(dssg_user))
+        self.assertFalse(UserService.user_has_approved_volunteer_profile(dssg_user))
+
+    def test_dssg_user(self):
+        volunteer_user = User()
+        volunteer_user.username = "VolUser"
+        volunteer_user.first_name = "Volunteer"
+        volunteer_user.last_name = "User"
+        volunteer_user.email = "volunteer@email.com"
+        UserService.create_user(None, volunteer_user, 'volunteer', None)
+
+        self.assertFalse(UserService.user_is_dssg_staff(volunteer_user, volunteer_user))
+        self.assertFalse(UserService.user_is_organization_creator(volunteer_user))
+        self.assertFalse(UserService.user_has_skills(volunteer_user))
+        self.assertTrue(UserService.user_has_volunteer_profile(volunteer_user))
+        self.assertFalse(UserService.user_has_approved_volunteer_profile(volunteer_user))
+
+        self.assertFalse(volunteer_user.volunteerprofile.is_edited)
+        volunteer_user.volunteerprofile.cover_letter = "ABC"
+        UserService.save_volunteer_profile(volunteer_user, volunteer_user.id, volunteer_user.volunteerprofile)
+        self.assertTrue(volunteer_user.volunteerprofile.is_edited)
+        self.assertFalse(UserService.user_has_approved_volunteer_profile(volunteer_user))
+
+        self.assertEqual(set(UserService.get_pending_volunteer_profiles(self.dssg_staff_user)),
+            set([volunteer_user.volunteerprofile]))
+
+
+        UserService.accept_volunteer_profile(self.dssg_staff_user, volunteer_user.volunteerprofile.id)
+        self.assertTrue(volunteer_user.volunteerprofile.is_edited)
+        self.assertTrue(UserService.user_has_approved_volunteer_profile(volunteer_user))
+
+        volunteer_user2 = User()
+        volunteer_user2.username = "VolUser2"
+        volunteer_user2.first_name = "Volunteer2"
+        volunteer_user2.last_name = "User2"
+        volunteer_user2.email = "volunteer2@email.com"
+        UserService.create_user(None, volunteer_user2, 'volunteer', None)
+        UserService.reject_volunteer_profile(self.dssg_staff_user, volunteer_user2.volunteerprofile.id)
+        self.assertFalse(UserService.user_has_approved_volunteer_profile(volunteer_user2))
+
+        volunteer_user3 = User()
+        volunteer_user3.username = "VolUser3"
+        volunteer_user3.first_name = "Volunteer3"
+        volunteer_user3.last_name = "User3"
+        volunteer_user3.email = "volunteer3@email.com"
+        volunteer_user3.special_code = "AUTOMATICVOLUNTEER"
+        UserService.create_user(None, volunteer_user3, 'volunteer', None)
+        self.assertTrue(UserService.user_has_approved_volunteer_profile(volunteer_user3))
+
+        self.assertEqual(set(UserService.get_all_approved_volunteer_profiles(AnonymousUser())),
+            set([volunteer_user.volunteerprofile, volunteer_user3.volunteerprofile]))
+
+    def test_skills(self):
+        volunteer_user = User()
+        volunteer_user.username = "VolUser3"
+        volunteer_user.first_name = "Volunteer3"
+        volunteer_user.last_name = "User3"
+        volunteer_user.email = "volunteer3@email.com"
+        volunteer_user.special_code = "AUTOMATICVOLUNTEER"
+        UserService.create_user(None, volunteer_user, 'volunteer', None)
+
+        skill1 = Skill()
+        skill1.area = "Area 1"
+        skill1.name = "Skill 1"
+        skill1.save()
+        skill2 = Skill()
+        skill2.area = "Area 2"
+        skill2.name = "Skill 2"
+        skill2.save()
+        self.assertEqual(UserService.get_volunteer_skills(volunteer_user, volunteer_user.id),
+            {skill1.area: [{'system_skill': skill1, 'volunteer_skill': None}],
+             skill2.area: [{'system_skill': skill2, 'volunteer_skill': None}]})
+        for level1 in [-1, SkillLevel.BEGINNER, SkillLevel.INTERMEDIATE, SkillLevel.EXPERT]:
+            for level2 in [-1, SkillLevel.BEGINNER, SkillLevel.INTERMEDIATE, SkillLevel.EXPERT]:
+                with self.subTest(level1=level1, level2=level2):
+                    post_object = {str(skill1.id): level1, str(skill2.id): level2}
+                    UserService.set_volunteer_skills(volunteer_user, volunteer_user.id, post_object)
+                    new_skills = UserService.get_volunteer_skills(volunteer_user, volunteer_user.id)
+                    skill1_skill = VolunteerSkill.objects.filter(user=volunteer_user, skill=skill1).first()
+                    skill2_skill = VolunteerSkill.objects.filter(user=volunteer_user, skill=skill2).first()
+                    self.assertEqual(new_skills,
+                        {skill1.area: [{'system_skill': skill1, 'volunteer_skill': skill1_skill}],
+                         skill2.area: [{'system_skill': skill2, 'volunteer_skill': skill2_skill}]})
+
+    def test_signup_codes(self):
+        volunteer_user = User()
+        volunteer_user.username = "VolUser3"
+        volunteer_user.first_name = "Volunteer3"
+        volunteer_user.last_name = "User3"
+        volunteer_user.email = "volunteer3@email.com"
+        volunteer_user.special_code = "EXPIREDCODE"
+
+        self.assertFalse(UserService.has_valid_special_signup_code(volunteer_user, SignupCodeType.VOLUNTEER_AUTOMATIC_ACCEPT))
+
+        volunteer_user.special_code = "SINGLEUSECODE"
+        self.assertTrue(UserService.has_valid_special_signup_code(volunteer_user, SignupCodeType.VOLUNTEER_AUTOMATIC_ACCEPT))
+
+        UserService.use_signup_code("SINGLEUSECODE", SignupCodeType.VOLUNTEER_AUTOMATIC_ACCEPT)
+        self.assertFalse(UserService.has_valid_special_signup_code(volunteer_user, SignupCodeType.VOLUNTEER_AUTOMATIC_ACCEPT))
+
+        self.assertEqual(set(UserService.get_signup_codes_by_text("MULTIPLECODES")),
+            set([self.code_repeated_1, self.code_repeated_2]))
+
+# TODO test these methods:
+# UserService.get_user_todos(request_user, user)
+# UserService.get_volunteer_leaderboards(request_user)
+# UserService.get_featured_volunteer()
+# UserService.verify_captcha(captcha_response)

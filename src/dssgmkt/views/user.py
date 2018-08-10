@@ -104,9 +104,9 @@ def volunteer_list_view(request):
         #     search_config['project_status'] = request.POST.getlist('projectstatus')
         #     for f in request.POST.getlist('projectstatus'):
         #         checked_project_fields[f] = True
-        volunteers =  UserService.get_all_volunteer_profiles(request.user, search_config)
+        volunteers =  UserService.get_all_approved_volunteer_profiles(request.user, search_config)
     elif request.method == 'GET':
-        volunteers =  UserService.get_all_volunteer_profiles(request.user)
+        volunteers =  UserService.get_all_approved_volunteer_profiles(request.user)
 
     if volunteers:
         volunteers_page = paginate(request, volunteers, page_size=15)
