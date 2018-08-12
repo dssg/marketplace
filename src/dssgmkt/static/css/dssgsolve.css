@@ -48,10 +48,20 @@ body {
 
 .main-page-container {
   padding-top: 50px;
-  padding-bottom: 50px;
-  margin-bottom: 50px;
+  padding-bottom: 20px;
   background-color: white;
-  min-height: 100vh;
+  min-height: calc(100vh - 200px);
+}
+
+@media (max-width: 992px) {
+  .main-page-container {
+    padding-top: 20px;
+  }
+}
+
+.footer {
+  background-color: #ABCF38;
+  color: white;
 }
 
 .btn i {
@@ -186,10 +196,6 @@ fieldset legend {
 .volunteer-highlight .text {
   font-style: italic;
   font-size: 0.8em;
-}
-
-.volunteer-highlight .blockquote-footer {
-
 }
 
 
