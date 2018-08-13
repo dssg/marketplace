@@ -62,24 +62,26 @@
 
 
       {% if volunteer_list %}
-        <table class="table table-hover section-header">
-          <thead>
-            <tr>
-                <th>User</th>
-                {# <th>Email address</th> #}
-                <th>Member since</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for volunteer in volunteer_list %}
+        <div class="table-responsive">
+          <table class="table table-hover section-header">
+            <thead>
               <tr>
-                  <td>{% include 'dssgmkt/components/user_display.html' with user=volunteer.user hide_username=True %}</td>
-                  {# <td><a href="{% url 'dssgmkt:user_profile' volunteer.user.id %}">{{ volunteer.user.email }}</a></td> #}
-                  <td>{{ volunteer.user.date_joined }}</td>
+                  <th>User</th>
+                  {# <th>Email address</th> #}
+                  <th>Member since</th>
               </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {% for volunteer in volunteer_list %}
+                <tr>
+                    <td>{% include 'dssgmkt/components/user_display.html' with user=volunteer.user hide_username=True %}</td>
+                    {# <td><a href="{% url 'dssgmkt:user_profile' volunteer.user.id %}">{{ volunteer.user.email }}</a></td> #}
+                    <td>{{ volunteer.user.date_joined }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
         {% url 'dssgmkt:volunteer_list' as volunteer_list_url %}
         {% include 'dssgmkt/components/pagination.html' with baseurl=volunteer_list_url page_obj=volunteer_list %}
 

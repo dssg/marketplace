@@ -54,32 +54,34 @@
     <div class="col-lg-9">
 
       {% if proj_list %}
-        <table class="table table-hover">
-          <thead>
-            <tr>
-                <th>Project name</th>
-                <th>Organization name</th>
-                <th>Summary</th>
-                <th>Status</th>
-                <th>Social impact area</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for project in proj_list %}
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
               <tr>
-                  <td><a href="{% url 'dssgmkt:proj_info' project.id %}">{{ project.name }}</a></td>
-                  <td><a href="{% url 'dssgmkt:org_info' project.organization.id %}">{{ project.organization.name }}</a></td>
-                  <td>{{ project.short_summary }}</td>
-                  <td>
-                    {% include 'dssgmkt/components/project_status_display.html' %}
-                  </td>
-                  <td>
-                    {% include 'dssgmkt/components/social_cause_display.html' with object=project social_cause=project.get_project_cause_display %}
-                  </td>
+                  <th>Project name</th>
+                  <th>Organization name</th>
+                  <th>Summary</th>
+                  <th>Status</th>
+                  <th>Social impact area</th>
               </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {% for project in proj_list %}
+                <tr>
+                    <td><a href="{% url 'dssgmkt:proj_info' project.id %}">{{ project.name }}</a></td>
+                    <td><a href="{% url 'dssgmkt:org_info' project.organization.id %}">{{ project.organization.name }}</a></td>
+                    <td>{{ project.short_summary }}</td>
+                    <td>
+                      {% include 'dssgmkt/components/project_status_display.html' %}
+                    </td>
+                    <td>
+                      {% include 'dssgmkt/components/social_cause_display.html' with object=project social_cause=project.get_project_cause_display %}
+                    </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
         {% url 'dssgmkt:proj_list' as proj_list_url %}
         {% include 'dssgmkt/components/pagination.html' with baseurl=proj_list_url page_obj=proj_list %}
 

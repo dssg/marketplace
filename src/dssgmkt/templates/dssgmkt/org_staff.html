@@ -4,44 +4,46 @@
 
   <h4 class="section-header">Staff members</h4>
   {% if organization_staff %}
-    <table class="table table-hover">
-      <thead>
-        <tr>
-            <th>Full name</th>
-            {# <th>Email address</th> #}
-            <th>Role</th>
-            <th>Member since</th>
-            {% if user_is_administrator %}
-            <th></th>
-            <th></th>
-            {% endif %}
-        </tr>
-      </thead>
-      <tbody>
-        {% for staff in organization_staff %}
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead>
           <tr>
-              <td>{% include 'dssgmkt/components/user_display.html' with user=staff.user %}</td>
-              {# <td><a href="{% url 'dssgmkt:user_profile' staff.user.id %}">{{ staff.user.email }}</a></td> #}
-              <td>{{ staff.get_role_display }}</td>
-              <td>{{ staff.creation_date }}</td>
+              <th>Full name</th>
+              {# <th>Email address</th> #}
+              <th>Role</th>
+              <th>Member since</th>
               {% if user_is_administrator %}
-              <td>
-                <a href="{% url 'dssgmkt:org_staff_edit' staff.organization.id staff.id %}">
-                  <i class="material-icons md-12" style="vertical-align: middle">edit</i>
-                  Edit
-                </a>
-              </td>
-              <td>
-                <a class="text-danger" href="{% url 'dssgmkt:org_staff_remove' staff.organization.id staff.id %}">
-                  <i class="material-icons" style="vertical-align: middle">remove_circle</i>
-                  Remove
-                </a>
-              </td>
+              <th></th>
+              <th></th>
               {% endif %}
           </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {% for staff in organization_staff %}
+            <tr>
+                <td>{% include 'dssgmkt/components/user_display.html' with user=staff.user %}</td>
+                {# <td><a href="{% url 'dssgmkt:user_profile' staff.user.id %}">{{ staff.user.email }}</a></td> #}
+                <td>{{ staff.get_role_display }}</td>
+                <td>{{ staff.creation_date }}</td>
+                {% if user_is_administrator %}
+                <td>
+                  <a href="{% url 'dssgmkt:org_staff_edit' staff.organization.id staff.id %}">
+                    <i class="material-icons md-12" style="vertical-align: middle">edit</i>
+                    Edit
+                  </a>
+                </td>
+                <td>
+                  <a class="text-danger" href="{% url 'dssgmkt:org_staff_remove' staff.organization.id staff.id %}">
+                    <i class="material-icons" style="vertical-align: middle">remove_circle</i>
+                    Remove
+                  </a>
+                </td>
+                {% endif %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
     {% url 'dssgmkt:org_staff' as org_staff_url %}
     {% include 'dssgmkt/components/pagination.html' with baseurl=org_staff_url page_obj=organization_staff pagename='staff_page' %}
   {% else %}
@@ -153,50 +155,52 @@
 
   <h4 class="section-header">Organization membership requests</h4>
   {% if organization_requests %}
-    <table class="table table-hover">
-      <thead>
-        <tr>
-            <th>Full name</th>
-            {# <th>Email address</th> #}
-            <th>Request date</th>
-            <th>Status</th>
-            <th>Resolution date</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for request in organization_requests %}
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead>
           <tr>
-              <td>{% include 'dssgmkt/components/user_display.html' with user=request.user %}</td>
-              {# <td><a href="{% url 'dssgmkt:user_profile' request.user.id %}">{{ request.user.email }}</a></td> #}
-              <td>{{ request.request_date }}</td>
-              <td>
-                <a href="{% url 'dssgmkt:org_staff_request_review' organization.id request.id %}"
-                   class="{% if request.is_accepted %}
-                             text-success
-                           {% elif request.is_rejected %}
-                             text-danger
-                           {% elif request.is_new %}
-                             text-info
-                           {% endif %}">
-                  <i class="material-icons" style="vertical-align: middle">
-                    {% if request.is_accepted %}
-                      check
-                    {% elif request.is_rejected %}
-                      block
-                    {% elif request.is_new %}
-                      edit
-                    {% endif %}
-                </i>
-                  {{ request.get_status_display }}
-                </a>
-              </td>
-              <td>{% if not request.is_new %}
-                    {{ request.resolution_date|default_if_none:"" }}
-                  {% endif %}</td>
+              <th>Full name</th>
+              {# <th>Email address</th> #}
+              <th>Request date</th>
+              <th>Status</th>
+              <th>Resolution date</th>
           </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {% for request in organization_requests %}
+            <tr>
+                <td>{% include 'dssgmkt/components/user_display.html' with user=request.user %}</td>
+                {# <td><a href="{% url 'dssgmkt:user_profile' request.user.id %}">{{ request.user.email }}</a></td> #}
+                <td>{{ request.request_date }}</td>
+                <td>
+                  <a href="{% url 'dssgmkt:org_staff_request_review' organization.id request.id %}"
+                     class="{% if request.is_accepted %}
+                               text-success
+                             {% elif request.is_rejected %}
+                               text-danger
+                             {% elif request.is_new %}
+                               text-info
+                             {% endif %}">
+                    <i class="material-icons" style="vertical-align: middle">
+                      {% if request.is_accepted %}
+                        check
+                      {% elif request.is_rejected %}
+                        block
+                      {% elif request.is_new %}
+                        edit
+                      {% endif %}
+                  </i>
+                    {{ request.get_status_display }}
+                  </a>
+                </td>
+                <td>{% if not request.is_new %}
+                      {{ request.resolution_date|default_if_none:"" }}
+                    {% endif %}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
     {% url 'dssgmkt:org_staff' as org_staff_url %}
     {% include 'dssgmkt/components/pagination.html' with baseurl=org_staff_url page_obj=organization_requests pagename='requests_page' %}
   {% else %}

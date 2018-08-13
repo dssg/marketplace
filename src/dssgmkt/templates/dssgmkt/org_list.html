@@ -50,26 +50,28 @@
     </div>
     <div class="col-lg-9">
       {% if org_list %}
-        <table class="table table-hover">
-          <thead>
-            <tr>
-                <th>Organization name</th>
-                <th>Description</th>
-                <th>Social impact area</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for organization in org_list %}
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
               <tr>
-                  <td><a href="{% url 'dssgmkt:org_info' organization.id %}">{{ organization.name }}</a></td>
-                  <td>{{ organization.short_summary }}</img></td>
-                  <td>
-                    {% include 'dssgmkt/components/social_cause_display.html' with object=organization social_cause=organization.get_main_cause_display %}
-                  </td>
+                  <th>Organization name</th>
+                  <th>Description</th>
+                  <th>Social impact area</th>
               </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {% for organization in org_list %}
+                <tr>
+                    <td><a href="{% url 'dssgmkt:org_info' organization.id %}">{{ organization.name }}</a></td>
+                    <td>{{ organization.short_summary }}</img></td>
+                    <td>
+                      {% include 'dssgmkt/components/social_cause_display.html' with object=organization social_cause=organization.get_main_cause_display %}
+                    </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
 
         {% url 'dssgmkt:org_list' as org_list_url %}
         {% include 'dssgmkt/components/pagination.html' with baseurl=org_list_url page_obj=org_list %}
