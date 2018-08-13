@@ -1,14 +1,14 @@
 
 <div class="col-lg-12 p-3">
   <div class="status-component col-lg-12 border-light mt-3 mb-3">
-    <div class="status-row col-lg-12 border-top rounded-right rounded-left {% if not project.is_completed_status %}border-right{% endif %}">
+    <div class="status-row row no-gutters col-lg-12 border-top rounded-right rounded-left {% if not project.is_completed_status %}border-right{% endif %}">
       {% if project.is_draft_status %}
         <span class="status status-active bg-danger border-bottom rounded-left">
             <i class="fas fa-drafting-compass"></i>
             <span>Draft</span>
           </span>
       {% endif %}
-      <span class="status {% if project.is_new_status %}status-active{% endif %} border-bottom {% if not project.is_draft_status %}rounded-left{% endif %}">
+      <span class="colg-md-1 status {% if project.is_new_status %}status-active{% endif %} border-bottom {% if not project.is_draft_status %}rounded-left{% endif %}">
         {% if project.is_draft_status %}
           {% include 'dssgmkt/components/status_chevron.html' %}
         {% endif %}
@@ -18,7 +18,7 @@
           New
         </span>
       </span>
-      <span class="status {% if project.is_design_status %}status-active{% endif %} border-bottom">
+      <span class="colg-md-2 status {% if project.is_design_status %}status-active{% endif %} border-bottom">
         {% include 'dssgmkt/components/status_chevron.html' %}
         <span>
           <i class="completed-icon material-icons" style="vertical-align: middle">check</i>
@@ -26,7 +26,7 @@
           Scoping
         </span>
       </span>
-      <span class="status {% if project.is_waiting_design_approval_status %}status-active{% endif %} border-bottom">
+      <span class="colg-md-2 status {% if project.is_waiting_design_approval_status %}status-active{% endif %} border-bottom">
         {% include 'dssgmkt/components/status_chevron.html' %}
         <span>
           <i class="completed-icon material-icons" style="vertical-align: middle">check</i>
@@ -34,7 +34,7 @@
           Scoping QA
         </span>
       </span>
-      <span class="status {% if project.is_waiting_staff_status %}status-active{% endif %} border-bottom">
+      <span class="colg-md-2 status {% if project.is_waiting_staff_status %}status-active{% endif %} border-bottom">
         {% include 'dssgmkt/components/status_chevron.html' %}
         <span>
           <i class="completed-icon material-icons" style="vertical-align: middle">check</i>
@@ -42,7 +42,7 @@
           Staffing
         </span>
       </span>
-      <span class="status {% if project.is_in_progress_status %}status-active{% endif %} border-bottom">
+      <span class="colg-md-2 status {% if project.is_in_progress_status %}status-active{% endif %} border-bottom">
         {% include 'dssgmkt/components/status_chevron.html' %}
         <span>
           <i class="completed-icon material-icons" style="vertical-align: middle">check</i>
@@ -50,7 +50,7 @@
           In progress
         </span>
       </span>
-      <span class="status {% if project.is_waiting_review_status %}status-active{% endif %} border-bottom">
+      <span class="colg-md-2 status {% if project.is_waiting_review_status %}status-active{% endif %} border-bottom">
         {% include 'dssgmkt/components/status_chevron.html' %}
         <span>
           <i class="completed-icon material-icons" style="vertical-align: middle">check</i>
@@ -59,7 +59,7 @@
         </span>
       </span>
       {% if project.is_expired_status %}
-        <span class="status status-active bg-danger border-bottom">
+        <span class="colg-md-2 status status-active bg-danger border-bottom">
           {% include 'dssgmkt/components/status_chevron.html' %}
           <span>
             <i class="material-icons" style="vertical-align: middle">check</i>
@@ -68,7 +68,7 @@
           </span>
         </span>
       {% else %}
-        <span class="status {% if project.is_completed_status %}status-active bg-success{% endif %} border-bottom rounded-right ">
+        <span class="colg-md-2 status {% if project.is_completed_status %}status-active bg-success{% endif %} border-bottom rounded-right ">
           {% include 'dssgmkt/components/status_chevron.html' %}
           <span>
             <i class="material-icons final" style="vertical-align: middle">done_all</i>
