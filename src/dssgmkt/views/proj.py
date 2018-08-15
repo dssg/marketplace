@@ -335,7 +335,7 @@ def project_scope_view(request, proj_pk, scope_pk=None):
 class EditProjectScopeForm(ModelForm):
     class Meta:
         model = ProjectScope
-        fields = ['version_notes', 'scope', 'project_impact', 'scoping_process', 'available_staff', 'available_data']
+        fields = ['version_notes', 'scope_goals', 'scope_interventions', 'scope_available_data', 'scope_analysis', 'scope_validation_methodology', 'scope_implementation',]
 
 @permission_required('project.scope_edit', raise_exception=True, fn=objectgetter(Project, 'proj_pk'))
 def project_edit_scope_view(request, proj_pk, scope_pk):
@@ -654,9 +654,12 @@ class ProjectTaskEdit(PermissionRequiredMixin, UpdateView):
 
 class ProjectEdit(PermissionRequiredMixin, UpdateView):
     model = Project
-    fields = ['name', 'short_summary', 'motivation','solution_description', 'challenges', 'banner_image_file', 'project_cause',
-            'developer_agreement', 'intended_start_date',
-            'intended_end_date', 'deliverables_description', 'deliverable_github_url', 'deliverable_management_url', 'deliverable_documentation_url',
+    fields = ['name', 'short_summary',
+            'motivation', 'solution_description', 'project_impact', 'stakeholders', 'available_staff',
+            'banner_image_file', 'project_cause',
+            'developer_agreement', 'intended_start_date', 'intended_end_date',
+            'deliverables_description', 'deliverable_github_url',
+            'deliverable_management_url', 'deliverable_documentation_url',
             'deliverable_reports_url', 'status']
     template_name = 'dssgmkt/proj_info_edit.html'
     pk_url_kwarg = 'proj_pk'
@@ -1127,10 +1130,15 @@ def toggle_task_accepting_volunteers_view(request, proj_pk, task_pk):
 class CreateProjectForm(ModelForm):
     class Meta:
         model = Project
-        fields = ['name', 'project_cause', 'short_summary', 'motivation',
-                    'solution_description', 'challenges', 'banner_image_file',
-                    'developer_agreement', 'project_impact', 'scoping_process',
-                    'available_staff', 'available_data', 'intended_start_date',
+        fields = ['name', 'project_cause', 'short_summary',
+                    'motivation', 'solution_description', 'project_impact', 'stakeholders', 'available_staff',
+
+                    'banner_image_file', 'developer_agreement',
+
+                    'scope_goals', 'scope_interventions', 'scope_available_data',
+                    'scope_analysis', 'scope_validation_methodology', 'scope_implementation',
+
+                    'intended_start_date',
                     'intended_end_date', 'deliverables_description', 'deliverable_github_url',
                     'deliverable_management_url', 'deliverable_documentation_url',
                     'deliverable_reports_url',]

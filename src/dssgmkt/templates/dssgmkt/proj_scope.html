@@ -22,26 +22,35 @@
     </div>
   </div>
 
-  {{ current_scope.scope|markdown }}
 
-  {% if current_scope.project_impact %}
-    <h5 class="section-header">Project impact</h5>
-    {{ current_scope.project_impact|markdown }}
+  {% if current_scope.scope_goals %}
+    <h5 class="section-header">Project goal(s)</h5>
+    {{ current_scope.scope_goals|markdown }}
   {% endif %}
 
-  {% if current_scope.scoping_process %}
-    <h5 class="section-header">Scoping process</h5>
-    {{ current_scope.scoping_process|markdown }}
+  {% if current_scope.scope_interventions %}
+    <h5 class="section-header">Interventions and Actions</h5>
+    {{ current_scope.scope_interventions|markdown }}
   {% endif %}
 
-  {% if current_scope.available_staff %}
-    <h5 class="section-header">Available staff</h5>
-    {{ current_scope.available_staff|markdown }}
+  {% if current_scope.scope_available_data %}
+    <h5 class="section-header">Data</h5>
+    {{ current_scope.scope_available_data|markdown }}
   {% endif %}
 
-  {% if current_scope.available_data %}
-    <h5 class="section-header">Available data</h5>
-    {{ current_scope.available_data|markdown }}
+  {% if current_scope.scope_analysis %}
+    <h5 class="section-header">Analysis Needed</h5>
+    {{ current_scope.scope_analysis|markdown }}
+  {% endif %}
+
+  {% if current_scope.scope_validation_methodology %}
+    <h5 class="section-header">Validation Methodology</h5>
+    {{ current_scope.scope_validation_methodology|markdown }}
+  {% endif %}
+  
+  {% if current_scope.scope_implementation %}
+    <h5 class="section-header">Implementation</h5>
+    {{ current_scope.scope_implementation|markdown }}
   {% endif %}
 
   <h4 class="section-header">Scope version notes</h4>

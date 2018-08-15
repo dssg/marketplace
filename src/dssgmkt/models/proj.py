@@ -47,27 +47,43 @@ class Project(models.Model):
         help_text="Write a short description of the project that will be used throughout the site when needing a compact description.",
         max_length=1000,
     )
+    #============
     motivation = models.TextField(
-        verbose_name="Context/motivation/goals",
-        help_text="Explain what is the context in which the project is needed, what is the motivation behind the project, and what are the goals of the project",
+        verbose_name="Background and motivation",
+        help_text="Explain what is the context in which the project is needed and what is the motivation behind the project.",
         max_length=5000,
         blank=True,
         null=True,
     )
     solution_description = models.TextField(
-        verbose_name="Proposed solution",
-        help_text="Describe what is the solution to the problem that will be build/created/deployed during this project.",
+        verbose_name="Project description",
+        help_text="Give a general description of the project.",
         max_length=5000,
         blank=True,
         null=True,
     )
-    challenges = models.TextField(
-        verbose_name="Main challenges",
-        help_text="List the main challenges that you foresee in the project implementation. Remember to frame them so volunteers understand that this is an exciting project.",
+    project_impact = models.TextField(
+        verbose_name="Intended impact",
+        help_text="How critical is this project for your organization? How you're solving this problem today? What's the impact if this project is completed successfully?",
         max_length=5000,
         blank=True,
         null=True,
     )
+    stakeholders = models.TextField(
+        verbose_name="Internal stakeholders",
+        help_text="List the main stakeholders of the project within your organization.",
+        max_length=5000,
+        blank=True,
+        null=True,
+    )
+    available_staff = models.TextField(
+        verbose_name="Internal people available during the project",
+        help_text="List the organization's staff that can be available throughout the project to support the volunteers and ensure the project gets completed successfully.",
+        max_length=5000,
+        blank=True,
+        null=True,
+    )
+    #============
     banner_image_url = models.URLField(
         verbose_name="Project main image",
         help_text="A descriptive image identifying the project, it can be a project logo, an image representing the problem you want to solve, etc.",
@@ -90,34 +106,51 @@ class Project(models.Model):
         choices=SocialCause.get_choices(),
         default=SocialCause.EDUCATION,
     )
-    project_impact = models.TextField(
-        verbose_name="Project impact",
-        help_text="How critical is this project for your organization? How you're solving this problem today? What's the impact if this project is completed successfully?",
+    # ==========================
+
+    scope_goals = models.TextField(
+        verbose_name="Scope: project goal(s)",
+        help_text="Describe the goals and subgoals that the success of the project will be measured against.",
         max_length=5000,
         blank=True,
         null=True,
     )
-    scoping_process = models.TextField(
-        verbose_name="Scoping process",
-        help_text="Describe the internal process for scoping and implementing this project (Who are the stakeholders, what discussions have already happened, etc.)",
+    scope_interventions = models.TextField(
+        verbose_name="Scope: interventions and actions",
+        help_text="List the interventions and actions that are available for this project.",
         max_length=5000,
         blank=True,
         null=True,
     )
-    available_staff = models.TextField(
-        verbose_name="Available staff",
-        help_text="Who from your organization would be available to provide assistance (approximately 1-3 hours per week) throughout the summer? (Technical staff, subject matter experts, etc.)",
-        max_length=5000,
-        blank=True,
-        null=True,
-    )
-    available_data = models.TextField(
-        verbose_name="Available data",
+    scope_available_data = models.TextField(
+        verbose_name="Scope: data",
         help_text="Describe the data available to use for this project. (Size, variables, completeness, availability, privacy, etc.)",
         max_length=5000,
         blank=True,
         null=True,
     )
+    scope_analysis = models.TextField(
+        verbose_name="Scope: analysis needed",
+        help_text="What analysis needs to be done on the available data to achieve the stated goals?",
+        max_length=5000,
+        blank=True,
+        null=True,
+    )
+    scope_validation_methodology = models.TextField(
+        verbose_name="Scope: validation methodology",
+        help_text="Describe the validation methodology or methodologies that will be used to measure the success of the project.",
+        max_length=5000,
+        blank=True,
+        null=True,
+    )
+    scope_implementation = models.TextField(
+        verbose_name="Scope: implementation",
+        help_text="What is the implementation plan after the project is finished? How will it be used by the end users? What is the time frame for production deployment?",
+        max_length=5000,
+        blank=True,
+        null=True,
+    )
+    # ============================
     developer_agreement = models.TextField(
         verbose_name="Volunteer agreement",
         help_text="If you add an agreement, every volunteer that applies to the project will have to agree with those terms and conditions during their application process.",
@@ -270,41 +303,50 @@ class Project(models.Model):
         return self.project_cause == SocialCause.OTHER
 
 class ProjectScope(models.Model):
-    scope = models.TextField(
-        verbose_name="Project scope",
-        help_text="The detailed scope of the project.",
+    # ==========================
+    scope_goals = models.TextField(
+        verbose_name="Project goal(s)",
+        help_text="Describe the goals and subgoals that the success of the project will be measured against.",
         max_length=5000,
         blank=True,
         null=True,
     )
-    project_impact = models.TextField(
-        verbose_name="Project impact",
-        help_text="How critical is this project for your organization? How you're solving this problem today? What's the impact if this project is completed successfully?",
+    scope_interventions = models.TextField(
+        verbose_name="Interventions and actions",
+        help_text="List the interventions and actions that are available for this project.",
         max_length=5000,
         blank=True,
         null=True,
     )
-    scoping_process = models.TextField(
-        verbose_name="Scoping process",
-        help_text="Describe the internal process for scoping and implementing this project (Who are the stakeholders, what discussions have already happened, etc.)",
-        max_length=5000,
-        blank=True,
-        null=True,
-    )
-    available_staff = models.TextField(
-        verbose_name="Available staff",
-        help_text="Who from your organization would be available to provide assistance (approximately 1-3 hours per week) throughout the summer? (Technical staff, subject matter experts, etc.)",
-        max_length=5000,
-        blank=True,
-        null=True,
-    )
-    available_data = models.TextField(
-        verbose_name="Available data",
+    scope_available_data = models.TextField(
+        verbose_name="Data",
         help_text="Describe the data available to use for this project. (Size, variables, completeness, availability, privacy, etc.)",
         max_length=5000,
         blank=True,
         null=True,
     )
+    scope_analysis = models.TextField(
+        verbose_name="Analysis needed",
+        help_text="What analysis needs to be done on the available data to achieve the stated goals?",
+        max_length=5000,
+        blank=True,
+        null=True,
+    )
+    scope_validation_methodology = models.TextField(
+        verbose_name="Validation methodology",
+        help_text="Describe the validation methodology or methodologies that will be used to measure the success of the project.",
+        max_length=5000,
+        blank=True,
+        null=True,
+    )
+    scope_implementation = models.TextField(
+        verbose_name="Implementation",
+        help_text="What is the implementation plan after the project is finished? How will it be used by the end users? What is the time frame for production deployment?",
+        max_length=5000,
+        blank=True,
+        null=True,
+    )
+    # =========================
     version_notes = models.TextField(
         verbose_name="New version notes",
         help_text="Type the reason the scope is being modified and describe the changes made.",

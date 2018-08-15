@@ -251,11 +251,13 @@ class ProjectService():
 
             # Create project scope
             project_scope = ProjectScope()
-            project_scope.project = project
-            project_scope.project_impact = project.project_impact
-            project_scope.scoping_process = project.scoping_process
-            project_scope.available_staff = project.available_staff
-            project_scope.available_data = project.available_data
+            project_scope.project = project            
+            project_scope.scope_goals = project.scope_goals
+            project_scope.scope_interventions = project.scope_interventions
+            project_scope.scope_available_data = project.scope_available_data
+            project_scope.scope_analysis = project.scope_analysis
+            project_scope.scope_validation_methodology = project.scope_validation_methodology
+            project_scope.scope_implementation = project.scope_implementation
             project_scope.author = request_user
             project_scope.version_notes = "Initial scope at project creation time."
             project_scope.save()
