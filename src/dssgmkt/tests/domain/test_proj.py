@@ -300,11 +300,12 @@ class ProjectTestCase(TestCase):
             self.assertEqual(len(all_scopes), 1)
 
         new_scope = ProjectScope()
-        new_scope.scope = "New scope."
-        new_scope.project_impact = "New project impact."
-        new_scope.scoping_process = "New scoping process."
-        new_scope.available_staff = "New available staff."
-        new_scope.available_data = "New available data."
+        new_scope.scope_goals = 'New goals'
+        new_scope.scope_interventions = 'New interventions'
+        new_scope.scope_available_data = 'New data'
+        new_scope.scope_analysis = 'New analysis'
+        new_scope.scope_validation_methodology = 'New validation methodology'
+        new_scope.scope_implementation = 'New implementation plan'
         new_scope.version_notes = "New version notes."
         new_scope.project = self.project
         new_scope.author = self.owner_user

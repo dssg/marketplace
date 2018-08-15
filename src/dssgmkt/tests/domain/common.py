@@ -51,15 +51,23 @@ def example_project():
     project = Project()
     project.name = 'Demo project 1'
     project.short_summary = 'A very short summary of the project'
-    project.motivation = 'The motivation of the project is to make the world better.'
-    project.solution_description = 'The solution is easy: just do it.'
-    project.challenges = 'This project faces the following challenges.'
+
+    project.motivation = 'The project motivation'
+    project.solution_description = 'The project description'
+    project.project_impact = 'The project impact'
+    project.stakeholders = 'The project stakeholders'
+    project.available_staff = 'The available staff'
+
     project.banner_image_url = 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/1_Pangong_lake.jpg/320px-1_Pangong_lake.jpg'
     project.project_cause = SocialCause.ENERGY
-    project.project_impact = 'The project impact is massive.'
-    project.scoping_process = 'This was the scoping process so far.'
-    project.available_staff = 'The available staff is this.'
-    project.available_data = 'The available data is this.'
+
+    project.scope_goals = 'The project goals'
+    project.scope_interventions = 'The project interventions'
+    project.scope_available_data = 'The available data'
+    project.scope_analysis = 'The project analysis'
+    project.scope_validation_methodology = 'The validation methodology'
+    project.scope_implementation = 'The implementation plan'
+
     project.developer_agreement = 'By clicking accept you agree that the data and work will belong to the organization.'
     project.intended_start_date = timezone.now()
     project.intended_end_date = timezone.now()
