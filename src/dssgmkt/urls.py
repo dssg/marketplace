@@ -84,6 +84,7 @@ urlpatterns = [
 
     path('volunteers/', user.volunteer_list_view, name='volunteer_list'),
     path('user/', user.my_user_profile_view, name='my_user_profile'),
+    path('user/dashboard/', user.UserHomeView.as_view(), name='user_dashboard'),
     path('user/<int:user_pk>', user.UserProfileView.as_view(), name='user_profile'),
     path('user/<int:user_pk>/edit', user.UserProfileEdit.as_view(), name='user_profile_edit'),
     path('user/<int:user_pk>/volunteercreate', user.create_volunteer_profile_view, name='user_volunteer_profile_create'),

@@ -126,11 +126,12 @@ def volunteer_list_view(request):
                         })
 
 
-class UserHomeView(generic.ListView): ## This is a listview because it is actually showing the list of user notifications
+class UserHomeView(PermissionRequiredMixin, generic.ListView): ## This is a listview because it is actually showing the list of user notifications
     model = UserNotification
     template_name = 'dssgmkt/home_user.html'
     context_object_name = 'notification_list'
     paginate_by = 10
+    permission_required = 'user.is_authenticated'
 
     def get_queryset(self):
         return UserNotification.objects.filter(user=self.request.user).order_by('-notification_date')
@@ -162,23 +163,23 @@ class UserHomeView(generic.ListView): ## This is a listview because it is actual
         return response
 
 def home_view(request):
-    if request.user.is_authenticated:
-        return UserHomeView.as_view()(request)
+    # if request.user.is_authenticated:
+    #     return UserHomeView.as_view()(request)
+    # else:
+    featured_volunteer = UserService.get_featured_volunteer()
+    if featured_volunteer:
+        featured_volunteer_skills = featured_volunteer.user.volunteerskill_set.filter(level=SkillLevel.EXPERT)
+        featured_volunteer_skill_names = [volunteer_skill.skill.name for volunteer_skill in featured_volunteer_skills]
     else:
-        featured_volunteer = UserService.get_featured_volunteer()
-        if featured_volunteer:
-            featured_volunteer_skills = featured_volunteer.user.volunteerskill_set.filter(level=SkillLevel.EXPERT)
-            featured_volunteer_skill_names = [volunteer_skill.skill.name for volunteer_skill in featured_volunteer_skills]
-        else:
-            featured_volunteer_skill_names = None
-        return render(request, 'dssgmkt/home_anonymous.html',
-            {
-                'featured_project': ProjectService.get_featured_project(),
-                'featured_organization': OrganizationService.get_featured_organization(),
-                'featured_volunteer': featured_volunteer,
-                'featured_volunteer_skills': featured_volunteer_skill_names,
-                'news': NewsService.get_latest_news(request.user),
-            })
+        featured_volunteer_skill_names = None
+    return render(request, 'dssgmkt/home_anonymous.html',
+        {
+            'featured_project': ProjectService.get_featured_project(),
+            'featured_organization': OrganizationService.get_featured_organization(),
+            'featured_volunteer': featured_volunteer,
+            'featured_volunteer_skills': featured_volunteer_skill_names,
+            'news': NewsService.get_latest_news(request.user),
+        })
 
 
 def my_user_profile_view(request):

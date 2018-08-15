@@ -251,7 +251,7 @@ class ProjectService():
 
             # Create project scope
             project_scope = ProjectScope()
-            project_scope.project = project            
+            project_scope.project = project
             project_scope.scope_goals = project.scope_goals
             project_scope.scope_interventions = project.scope_interventions
             project_scope.scope_available_data = project.scope_available_data
@@ -380,6 +380,7 @@ class ProjectService():
         validate_consistent_keys(project, ('id', projid))
         ensure_user_has_permission(request_user, project, 'project.publish')
         if project.status == ProjectStatus.DRAFT:
+            # TODO ensure all the project description fields are filled out, or else raise an error
             project.status = ProjectStatus.NEW
             # When is the start date of a project? When it's published, when
             # volunteers start scoping the project, or when volunteers start
@@ -863,6 +864,7 @@ class ProjectTaskService():
             ensure_user_has_permission(request_user, project_task, 'project.volunteer_task_finish')
             if not project_task.stage == TaskStatus.STARTED:
                 raise ValueError('Cannot mark a task as completed if it is not in started state')
+            # TODO if the task is a scoping task, verify that all the fields in the project scope are filled out, or else raise an error
             with transaction.atomic():
                 project_task_review.task = project_task
                 project_task_review.volunteer = request_user
