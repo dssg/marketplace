@@ -148,10 +148,10 @@ class Build(Local):
         yield command[ROOT_PATH]
 
         if args.push:
-            yield from self['push'].prepare(args)
+            yield from self['push'].delegate()
 
         if args.deploy:
-            yield from self['deploy'].prepare(args, parser)
+            yield from self['deploy'].delegate()
 
     @localmethod('-l', '--login', action='store_true', help="log in to AWS ECR")
     def push(self, args):
@@ -163,8 +163,7 @@ class Build(Local):
                 '--no-include-email',
                 '--region', 'us-west-2',
             ]
-            if args.show_commands or not args.execute_commands:
-                print('>', login_command)
+            self.print_command(login_command)
             if args.execute_commands:
                 full_command = login_command()
                 (executable, *arguments) = full_command.split()
@@ -213,6 +212,8 @@ class Build(Local):
                 envvar='ECS_SERVICE_NAME',
                 description="name of the service to update",
             )
+            # Note: This override only works when command is called
+            # outright, not when delegated:
             parser.add_argument(
                 '--no-quiet',
                 action='store_true',
@@ -237,7 +238,7 @@ class Build(Local):
                 '--service', args.service,
             ]
 
-            if getattr(args, 'report', True) and stdout is not None:
+            if args.report and stdout is not None:
                 try:
                     result = json.loads(stdout)
 
