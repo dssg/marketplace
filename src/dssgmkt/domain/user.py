@@ -111,7 +111,7 @@ class UserService():
     @staticmethod
     def get_signup_codes_by_text(code_name):
         if code_name:
-            return SignupCode.objects.filter(name=code_name) \
+            return SignupCode.objects.filter(name__iexact=code_name) \
                                     .filter(Q(current_uses__lt=F('max_uses')) | Q(max_uses__isnull=True)) \
                                     .filter(Q(expiration_date__gt=timezone.now()) | Q(expiration_date__isnull=True))
         else:

@@ -192,6 +192,12 @@ class UserTestCase(TestCase):
 
         volunteer_user.special_code = "SINGLEUSECODE"
         self.assertTrue(UserService.has_valid_special_signup_code(volunteer_user, SignupCodeType.VOLUNTEER_AUTOMATIC_ACCEPT))
+        
+        volunteer_user.special_code = "singleusecode"
+        self.assertTrue(UserService.has_valid_special_signup_code(volunteer_user, SignupCodeType.VOLUNTEER_AUTOMATIC_ACCEPT))
+
+        volunteer_user.special_code = "SingleUseCode"
+        self.assertTrue(UserService.has_valid_special_signup_code(volunteer_user, SignupCodeType.VOLUNTEER_AUTOMATIC_ACCEPT))
 
         UserService.use_signup_code("SINGLEUSECODE", SignupCodeType.VOLUNTEER_AUTOMATIC_ACCEPT)
         self.assertFalse(UserService.has_valid_special_signup_code(volunteer_user, SignupCodeType.VOLUNTEER_AUTOMATIC_ACCEPT))
