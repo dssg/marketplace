@@ -24,14 +24,16 @@
      </div>
      <div class="col-lg-12 row no-gutters mt-5 action-links">
        <div class="col-lg-4 offset-lg-2 mt-2 d-flex mr-lg-2">
-         <a class="btn btn-lg btn-warning text-primary flex-grow-1 pt-3" href="{% url 'dssgmkt:signup_form' 'organization' %}">
-           <h2>
-             Post a project
-           </h2>
-         </a>
+         {% if not user.is_authenticated or user_is_any_organization_member %}
+           <a class="btn btn-lg btn-warning text-primary flex-grow-1 pt-3" href="{% if user_is_any_organization_member %}{% url 'dssgmkt:proj_create_org_select' %}{% else %}{% url 'dssgmkt:signup_form' 'organization' %}{% endif %}">
+             <h2>
+               Post a project
+             </h2>
+           </a>
+         {% endif %}
        </div>
        <div class="col-lg-4 d-flex mt-2 ml-lg-2">
-         <a class="btn btn-lg btn-warning text-primary flex-grow-1 pt-3" href="{% url 'dssgmkt:signup_form' 'volunteer' %}">
+         <a class="btn btn-lg btn-warning text-primary flex-grow-1 pt-3" href="{% if user.is_authenticated %}{% url 'dssgmkt:proj_list' %}{% else %}{% url 'dssgmkt:signup_form' 'volunteer' %}{% endif %}">
            <h2>
              Start volunteering
            </h2>
