@@ -1,8 +1,11 @@
 import datetime
 import enum
+import itertools
 import json
 import os
+import re
 import sys
+import time
 from argparse import _StoreAction, REMAINDER
 from pathlib import Path
 
@@ -12,6 +15,25 @@ from terminaltables import AsciiTable
 
 ROOT_PATH = Path(__file__).parent.resolve()
 SRC_PATH = ROOT_PATH / 'src'
+
+
+def spincycle(chars='|/–\\', file=sys.stdout, wait=1):
+    """A generator which writes a "spinner" to file, cycling through
+    the given characters, with the given wait between writes.
+
+    The last written character is yielded to the iterator, such that a
+    polling procedure may be executed with the given wait, while the
+    file (stdout) is updated.
+
+    """
+    for char in itertools.cycle(chars):
+        file.write(char)
+        file.flush()
+
+        yield char
+
+        time.sleep(wait)
+        file.write('\b')
 
 
 def store_env_override(option_strings,
@@ -24,6 +46,23 @@ def store_env_override(option_strings,
                        description=None,
                        help=None,
                        metavar=None):
+    """Construct an argparse action which stores the value of a command
+    line option to override a corresponding value in the process
+    environment.
+
+    If the environment variable is not empty, then no override is
+    required. If the environment variable is empty, then the "option"
+    is required.
+
+    In the case of a default value which is a *transformation* of the
+    single environment variable, this default may be provided as a
+    callable, (*e.g.* as a lambda function).
+
+    Rather than have to fully explain the relationship of this
+    environment-backed option, help text may be generated from a
+    provided description.
+
+    """
     if envvar == '':
         raise ValueError("unsupported environment variable name", envvar)
 
@@ -67,15 +106,11 @@ def store_env_override(option_strings,
     )
 
 
-class Marketplace(LocalRoot):
-    """marketplace app management"""
-
-
-@Marketplace.register
-class Build(Local):
-    """build app container image"""
+class ContainerRegistryMixin:
 
     def __init__(self, parser):
+        super().__init__(parser)
+
         parser.add_argument(
             '--repository-uri',
             action=store_env_override,
@@ -88,6 +123,19 @@ class Build(Local):
             envvar='IMAGE_REPOSITORY_NAME',
             description='image repository name',
         )
+
+
+class Marketplace(LocalRoot):
+    """marketplace app management"""
+
+
+@Marketplace.register
+class Build(ContainerRegistryMixin, Local):
+    """build app container image"""
+
+    def __init__(self, parser):
+        super().__init__(parser)
+
         parser.add_argument(
             '-n', '--name',
             action=store_env_override,
@@ -178,6 +226,10 @@ class Build(Local):
     class Deploy(Local):
         """deploy the latest image container to the cluster service"""
 
+        TASK_START_PATTERN = re.compile(r'\(service (?P<service_name>[\w-]+)\) '
+                                        r'has started (?P<number_tasks>\d+) '
+                                        r'tasks: \(task (?P<task_id>[\w-]+)\)\.')
+
         class UpdateServiceColumns(str, enum.Enum):
 
             id = 'ID'
@@ -212,6 +264,18 @@ class Build(Local):
                 envvar='ECS_SERVICE_NAME',
                 description="name of the service to update",
             )
+
+            parser.add_argument(
+                '--static',
+                action='store_true',
+                help="collect and deploy static assets upon deployment",
+            )
+            parser.add_argument(
+                '--migrate',
+                action='store_true',
+                help="migrate the database upon deployment",
+            )
+
             # Note: This override only works when command is called
             # outright, not when delegated:
             parser.add_argument(
@@ -229,8 +293,26 @@ class Build(Local):
                 help="do not print deployment result",
             )
 
-        def prepare(self, args, parser):
-            (_retcode, stdout, _stderr) = yield self.local['aws'][
+        def prepare(self, args, parser, local):
+            last_event = None
+            if args.static or args.migrate:
+                # AWS CLI and ECS CLI provide no great way of tying deployments
+                # to containers and instances, which makes this quite annoying.
+                #
+                # Retrieve a baseline event:
+                (_retcode, stdout, _stderr) = yield local['aws'][
+                    'ecs',
+                    'describe-services',
+                    '--cluster', args.cluster,
+                    '--services', args.service,
+                ]
+                if stdout is not None:
+                    result = json.loads(stdout)
+                    (service,) = result['services']
+                    last_event = service['events'][0]
+
+            # update service (deploy)
+            (_retcode, stdout, _stderr) = yield local['aws'][
                 'ecs',
                 'update-service',
                 '--force-new-deployment',
@@ -238,6 +320,7 @@ class Build(Local):
                 '--service', args.service,
             ]
 
+            # report on deployments
             if args.report and stdout is not None:
                 try:
                     result = json.loads(stdout)
@@ -258,6 +341,85 @@ class Build(Local):
                 else:
                     table = AsciiTable(data, title=f"{service_name} deployments")
                     print(table.table)
+
+            # post-deployment actions
+            if last_event:
+                # there are post-deployment actions and this is not a dry run
+                #
+                # poll event stream to discover newly-started task reflecting
+                # deployed version
+                for _cycle in spincycle():
+                    (_retcode, stdout, _stderr) = yield local['aws'][
+                        'ecs',
+                        'describe-services',
+                        '--cluster', args.cluster,
+                        '--services', args.service,
+                    ]
+                    result = json.loads(stdout)
+                    (service,) = result['services']
+                    events = tuple(itertools.takewhile(
+                        lambda event: event['id'] != last_event['id'],
+                        service['events']
+                    ))
+                    for event in reversed(events):
+                        task_start_match = self.TASK_START_PATTERN.match(event['message'])
+                        if task_start_match:
+                            task_id = task_start_match.group('task_id')
+                            break
+                    else:
+                        # no match -- skip cycle
+                        continue
+
+                    # match found -- break loop
+                    break
+
+                # trace task to its EC2 instance
+                # (AWS CLI you are terrible)
+                (_retcode, stdout, _stderr) = yield local['aws'][
+                    'ecs',
+                    'describe-tasks',
+                    '--cluster', args.cluster,
+                    '--tasks', task_id,
+                ]
+                result = json.loads(stdout)
+                (task,) = result['tasks']
+
+                (_retcode, stdout, _stderr) = yield local['aws'][
+                    'ecs',
+                    'describe-container-instances',
+                    '--cluster', args.cluster,
+                    '--container-instances', task['containerInstanceArn'],
+                ]
+                result = json.loads(stdout)
+                (container_instance,) = result['containerInstances']
+
+                (_retcode, stdout, _stderr) = yield local['aws'][
+                    'ec2',
+                    'describe-instances',
+                    '--instance-ids', container_instance['ec2InstanceId'],
+                ]
+                result = json.loads(stdout)
+                (ec2_reservation,) = result['Reservations']
+                (ec2_instance,) = ec2_reservation['Instances']
+
+                # TODO: actually migrate and/or collecstatic on this machine
+                public_ip = ec2_instance['PublicIpAddress']
+                ssh = local['ssh'][public_ip]
+                base_cmd = (
+                    ssh['docker ps --filter name=marketplace --format "{{.Names}}"'] |
+                    local['tail']['-1'] |
+                    local['xargs'][
+                        '-I', '{}',
+                        ssh,
+                        'docker exec -u webapp', '{}',
+                    ]
+                )
+
+                if args.migrate:
+                    yield base_cmd['./manage.py', 'migrate']
+
+                if args.static:
+                    yield base_cmd['./manage.py', 'collectstatic', '--no-input']
 
 
 @Marketplace.register
