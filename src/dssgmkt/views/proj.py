@@ -1180,11 +1180,15 @@ class ProjectCreateView(PermissionRequiredMixin, CreateView):
         return get_organization(self.request, self.kwargs['org_pk'])
 
 def project_create_select_organization_view(request):
-    return render(request, 'dssgmkt/proj_create_org_select.html',
-                        {
-                            'breadcrumb': [home_link(), ('Select organization', None)],
-                            'user_organizations': OrganizationService.get_organizations_with_user_create_project_permission(request.user),
-                        })
+    organizations = OrganizationService.get_organizations_with_user_create_project_permission(request.user)
+    if len(organizations) == 1:
+        return HttpResponseRedirect(reverse('dssgmkt:proj_create', args=[organizations[0].id]))
+    else:
+        return render(request, 'dssgmkt/proj_create_org_select.html',
+                            {
+                                'breadcrumb': [home_link(), ('Select organization', None)],
+                                'user_organizations': organizations,
+                            })
 
 
 def pin_task_review_view(request, proj_pk, task_pk, review_pk):

@@ -174,7 +174,7 @@ def home_view(request):
         featured_volunteer_skill_names = None
     return render(request, 'dssgmkt/home_anonymous.html',
         {
-            'user_is_any_organization_member': OrganizationService.user_is_any_organization_member(request.user),
+            'user_is_any_organization_member': OrganizationService.user_can_create_projects(request.user),
             'featured_project': ProjectService.get_featured_project(),
             'featured_organization': OrganizationService.get_featured_organization(),
             'featured_volunteer': featured_volunteer,
