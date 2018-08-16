@@ -30,3 +30,12 @@
 #
 # export IMAGE_REPOSITORY_NAME=
 # export IMAGE_REPOSITORY_URI=XYZ.dkr.ecr.us-west-2.amazonaws.com
+
+# SSH
+#
+# In order to access the EC2 servers that make up the cluster, for
+# example for the purpose of post-deployment tasks, the default SSH
+# command may be overridden, such that it will succeed against CLI-
+# discovered public IPs.
+#
+# export ECS_SSH="ssh -i $HOME/.ssh/my-key.pem -l ec2-user"
