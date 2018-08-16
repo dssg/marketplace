@@ -51,8 +51,8 @@ def store_env_override(option_strings,
     environment.
 
     If the environment variable is not empty, then no override is
-    required. If the environment variable is empty, then the "option"
-    is required.
+    required. If the environment variable is empty, and no default is
+    provided, then the "option" is required.
 
     In the case of a default value which is a *transformation* of the
     single environment variable, this default may be provided as a
@@ -68,12 +68,12 @@ def store_env_override(option_strings,
 
     envvalue = os.getenv(envvar)
 
-    if default is None:
-        default_value = envvalue
-    elif callable(default):
+    if callable(default):
         default_value = default(envvalue)
+    elif envvalue:
+        default_value = envvalue
     else:
-        raise TypeError("unsupported default -- expected callable or None")
+        default_value = default
 
     if description and help:
         raise ValueError(
@@ -276,6 +276,15 @@ class Build(ContainerRegistryMixin, Local):
                 help="migrate the database upon deployment",
             )
 
+            parser.add_argument(
+                '--ssh',
+                action=store_env_override,
+                default='ssh',
+                envvar='ECS_SSH',
+                metavar='COMMAND',
+                description='ssh command through which to execute post-deployment tasks',
+            )
+
             # Note: This override only works when command is called
             # outright, not when delegated:
             parser.add_argument(
@@ -348,7 +357,8 @@ class Build(ContainerRegistryMixin, Local):
                 #
                 # poll event stream to discover newly-started task reflecting
                 # deployed version
-                for _cycle in spincycle():
+                spinner = spincycle(['']) if args.show_commands else spincycle()
+                for _cycle in spinner:
                     (_retcode, stdout, _stderr) = yield local['aws'][
                         'ecs',
                         'describe-services',
@@ -403,22 +413,30 @@ class Build(ContainerRegistryMixin, Local):
                 (ec2_instance,) = ec2_reservation['Instances']
                 public_ip = ec2_instance['PublicIpAddress']
 
-                ssh = local['ssh'][public_ip]
-                base_cmd = (
-                    ssh['docker ps --filter name=marketplace --format "{{.Names}}"'] |
-                    local['tail']['-1'] |
-                    local['xargs'][
-                        '-I', '{}',
-                        ssh,
-                        'docker exec -u webapp', '{}',
-                    ]
-                )
+                (ssh_exec, *ssh_args) = args.ssh.split()
+                ssh = local[ssh_exec].bound_command(*ssh_args)[public_ip]
+
+                image_path = '/'.join((args.repository_uri, args.repository_name))
+                (_retcode, stdout, _stderr) = yield ssh['docker'][
+                    'ps',
+                    '--filter', f'ancestor={image_path}',
+                    '--format', '"{{.Names}}"',
+                ]
+                (container_name,) = stdout.splitlines()
+
+                container = ssh['docker']['exec', '-u', 'webapp', container_name]
 
                 if args.migrate:
-                    yield base_cmd['./manage.py', 'migrate']
+                    yield (
+                        local.FG(retcode=None),
+                        container['./manage.py', 'migrate']
+                    )
 
                 if args.static:
-                    yield base_cmd['./manage.py', 'collectstatic', '--no-input']
+                    yield (
+                        local.FG(retcode=None),
+                        container['./manage.py', 'collectstatic', '--no-input', '-v', '1']
+                    )
 
 
 @Marketplace.register
