@@ -401,9 +401,8 @@ class Build(ContainerRegistryMixin, Local):
                 result = json.loads(stdout)
                 (ec2_reservation,) = result['Reservations']
                 (ec2_instance,) = ec2_reservation['Instances']
-
-                # TODO: actually migrate and/or collecstatic on this machine
                 public_ip = ec2_instance['PublicIpAddress']
+
                 ssh = local['ssh'][public_ip]
                 base_cmd = (
                     ssh['docker ps --filter name=marketplace --format "{{.Names}}"'] |
