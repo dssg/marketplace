@@ -28,6 +28,9 @@ from dssgmkt.domain.notifications import NotificationService
 from dssgmkt.domain.news import NewsService
 
 
+def dashboard_link(include_link=True):
+    return ('Dashboard', reverse_lazy('dssgmkt:user_dashboard') if include_link else None)
+
 def users_link(include_link=True):
     return ('Users', reverse_lazy('dssgmkt:volunteer_list') if include_link else None)
 
@@ -138,7 +141,7 @@ class UserHomeView(PermissionRequiredMixin, generic.ListView): ## This is a list
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['breadcrumb'] = build_breadcrumb([home_link(include_link=False)])
+        context['breadcrumb'] = build_breadcrumb([home_link(), dashboard_link(include_link=False)])
         for notification in context['notification_list']:
             notification.url = get_url_for_notification(notification.source, notification.target_id)
         context['todos'] = UserService.get_user_todos(self.request.user, self.request.user)
@@ -336,7 +339,7 @@ def signup(request, user_type=None):
                 user = authenticate(username=username, password=raw_password)
                 login(request, user)
                 messages.info(request, 'Welcome to DSSG Solve! Your account was created successfully.')
-                return redirect('dssgmkt:home')
+                return redirect('dssgmkt:user_dashboard')
             except KeyError as k:
                 form.add_error(None, str(k))
             except ValueError as v:
