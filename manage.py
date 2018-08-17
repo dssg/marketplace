@@ -381,6 +381,7 @@ class Build(ContainerRegistryMixin, Local):
                         continue
 
                     # match found -- break loop
+                    print('\b')
                     break
 
                 # trace task to its EC2 instance
@@ -417,12 +418,20 @@ class Build(ContainerRegistryMixin, Local):
                 ssh = local[ssh_exec].bound_command(*ssh_args)[public_ip]
 
                 image_path = '/'.join((args.repository_uri, args.repository_name))
-                (_retcode, stdout, _stderr) = yield ssh['docker'][
-                    'ps',
-                    '--filter', f'ancestor={image_path}',
-                    '--format', '"{{.Names}}"',
-                ]
-                (container_name,) = stdout.splitlines()
+                for _cycle in spinner:
+                    # FIXME: We've seen it not here tho it should be: investigate
+                    (_retcode, stdout, _stderr) = yield ssh['docker'][
+                        'ps',
+                        '--filter', f'ancestor={image_path}',
+                        '--format', '"{{.Names}}"',
+                    ]
+                    try:
+                        (container_name,) = stdout.splitlines()
+                    except ValueError:
+                        continue
+                    else:
+                        print('\b')
+                        break
 
                 container = ssh['docker']['exec', '-u', 'webapp', container_name]
 
