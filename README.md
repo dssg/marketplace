@@ -10,7 +10,7 @@ To quickly bootstrap your development environment, having cloned the repository,
 
     ./develop
 
-A wizard will initialize a local application configuration file (`.env`), and suggest set-up steps and optionally execute these, for example:
+This wizard will initialize a local application configuration file (`.env`), and suggest set-up steps and optionally execute these, for example:
 
     (install) begin
 
@@ -134,7 +134,7 @@ Either flag `--static` or `--migrate` instructs the `deploy` command, after prom
 
 (**Note**: This wait can be significant, ~ 5 minutes. Moreover, this procedure is relatively fragile, and sensitive to, *e.g.*, overlapped deployments.)
 
-Like other `build` subcommands, `deploy` may be rolled up into the `build` command:
+Like other build subcommands, `deploy` may be rolled up into the build command:
 
     manage build [-p/--push] [-d/--deploy]
 
