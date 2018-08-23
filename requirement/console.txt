@@ -1,3 +1,4 @@
 # argcmdr==0.5.0
 https://github.com/dssg/argcmdr/archive/jsl/delegation.zip
+awscli==1.15.84
 terminaltables==3.1.0

@@ -45,12 +45,20 @@ INSTALL_URL=https://raw.githubusercontent.com/dssg/install-cli/$INSTALL_VERSION/
 
 # pyenv
 
+pyenv_bin="${PYENV_ROOT:-$HOME/.pyenv}/bin"
+
 exists_pyenv() {
-  icli::check_command pyenv
+  [ -d "$pyenv_bin" ]
 }
 
 install_pyenv() {
   curl -#L https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer | bash
+
+  # bootstrap for subsequent commands
+  export PATH="$pyenv_bin:$PATH"
+
+  eval "$(pyenv init -)"
+  eval "$(pyenv virtualenv-init -)"
 }
 
 require pyenv \
@@ -112,10 +120,11 @@ ECSCLI_URL=https://s3.amazonaws.com/amazon-ecs-cli/ecs-cli-linux-amd64-latest
 ECSCLI_MD5="$ECSCLI_URL.md5"
 
 exists_ecscli() {
-  icli::check_command ecs
+  [ -f $ECSCLI_PATH ]
 }
 
 install_ecscli() {
+  mkdir -p $(dirname $ECSCLI_PATH)
   curl -#L -o $ECSCLI_PATH $ECSCLI_URL
   echo "$(curl -s $ECSCLI_MD5) $ECSCLI_PATH" | md5sum -c -
 }
@@ -126,6 +135,10 @@ require ecs-cli \
   --fail-prefix="not found ($ECSCLI_PATH)"
 
 [ -x $ECSCLI_PATH ] || chmod u+x $ECSCLI_PATH
+
+icli::set_context ecs-cli
+icli::check_command ecs || icli::message "${T_FRED}ensure that $(dirname $ECSCLI_PATH) is on your PATH"
+icli::unset_context
 
 # env
 
