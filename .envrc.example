@@ -1,0 +1,41 @@
+# The following environment variables are (optionally) used in
+# management of the marketplace project.
+#
+# These may be set in the environment ad-hoc, by a shell profile, per-
+# command or, as suggested by this file, via the .envrc file supported
+# by direnv.
+
+# AWS credentials
+#
+# manage invokes in turn the aws cli, authentication for which must be
+# set in the environment, either via AWS_ACCESS_KEY_ID and
+# AWS_SECRET_ACCESS_KEY, or via AWS_PROFILE
+#
+# export AWS_PROFILE=
+
+# AWS ECS
+#
+# The Web app container is deployed to an ECS cluster service, either
+# named upon invocation of the deployment command or set in the
+# environment.
+#
+# export ECS_CLUSTER_NAME=
+# export ECS_SERVICE_NAME=
+
+# AWS ECR
+#
+# The Web app container image is built for and pushed to a Docker
+# registry (ECR), either named upon invocation of the build command or
+# set in the environment.
+#
+# export IMAGE_REPOSITORY_NAME=
+# export IMAGE_REPOSITORY_URI=XYZ.dkr.ecr.us-west-2.amazonaws.com
+
+# SSH
+#
+# In order to access the EC2 servers that make up the cluster, for
+# example for the purpose of post-deployment tasks, the default SSH
+# command may be overridden, such that it will succeed against CLI-
+# discovered public IPs.
+#
+# export ECS_SSH="ssh -i $HOME/.ssh/my-key.pem -l ec2-user"
