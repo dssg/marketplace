@@ -10,7 +10,7 @@ To quickly bootstrap your development environment, having cloned the repository,
 
     ./develop
 
-A wizard will initialize a local configuration file (`.env`), and suggest set-up steps and optionally execute these, for example:
+A wizard will initialize a local application configuration file (`.env`), and suggest set-up steps and optionally execute these, for example:
 
     (install) begin
 
@@ -106,6 +106,8 @@ The image repository name and base URI may be specified every time as arguments 
 
 Some deployment commands moreover require Amazon Web Services (AWS) credentials, which must be set in the environment – either the pair, `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`, or simply `AWS_PROFILE`.
 
+For a full accounting of environment variables relevant to deployment, consult [.envrc.example](.envrc.example).
+
 ### Push to repository
 
 The latest deployment image may be pushed to the image repository via the build sub-command `push`:
@@ -124,4 +126,16 @@ In order to push an image to the repository, you must have created an authentica
 
 ### Image promotion
 
-TODO
+To promote the latest pushed image to production, *i.e.* to deploy, invoke the build sub-command `deploy`:
+
+    manage build deploy [--static] [--migrate]
+
+Either flag `--static` or `--migrate` instructs the `deploy` command, after promoting the latest image, to **wait** for at least one Web server to start a container based on this image; and, subsequently, to instruct this container, via SSH, to execute either the `collectstatic` command, the `migrate` command, or both.
+
+(**Note**: This wait can be significant, ~ 5 minutes. Moreover, this procedure is relatively fragile, and sensitive to, *e.g.*, overlapped deployments.)
+
+Like other `build` subcommands, `deploy` may be rolled up into the `build` command:
+
+    manage build [-p/--push] [-d/--deploy]
+
+However, in this form, no deploy-specific options may be passed, (such as `--migrate`).
