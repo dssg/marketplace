@@ -42,20 +42,20 @@ class User(AbstractUser):
         default=UserType.VOLUNTEER,
     )
     skype_name = models.CharField(
-        verbose_name="Skype user name",
+        verbose_name="Skype user name (Optional)",
         max_length=50,
         blank=True,
         null=True,
     )
     phone_number = models.CharField(
-        verbose_name="Phone number",
+        verbose_name="Phone number (Optional)",
         # validators=[PHONE_REGEX],
         max_length=17,
         blank=True,
         null=True,
     )
     special_code = models.CharField(
-        verbose_name="Special signup code",
+        verbose_name="Special signup code (Optional)",
         help_text="Do you have a signup code from the person or organization that referred you to this site? These codes may unlock special features, so do not forget to use one if you have it.",
         max_length=20,
         blank=True,
@@ -240,14 +240,14 @@ class VolunteerProfile(models.Model):
     )
     github_url = models.URLField(
         verbose_name="Github URL",
-        help_text="Add a link to your Github profile if you want to share code with potential projects so they can review your skills.",
+        help_text="Add a link to your Github profile to help us review your programming skills.",
         max_length=200,
         blank=True,
         null=True,
     )
     linkedin_url = models.URLField(
         verbose_name="LinkedIn URL",
-        help_text="Add a link to your LinkedIn profile to show potential projects your professional background and experience.",
+        help_text="Add a link to your LinkedIn profile to show potential projects or your professional background and experience.",
         max_length=200,
         blank=True,
         null=True,
