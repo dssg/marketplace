@@ -537,6 +537,15 @@ class Develop(Local):
             self.exec(**kwargs)[args.cmd or 'bash'],
         )
 
+    @localmethod
+    def restart(self):
+        """restart the web server"""
+        yield self.exec(user=None, interactive=False, tty=False)[
+            'supervisorctl',
+            'restart',
+            'webapp',
+        ]
+
     @localmethod('mcmd', metavar='command', help="django management command")
     @localmethod('remainder', metavar='command arguments', nargs=REMAINDER)
     def djmanage(self, args):
