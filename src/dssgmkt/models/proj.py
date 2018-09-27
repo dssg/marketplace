@@ -1,7 +1,7 @@
 from django.db import models
 from django_countries.fields import CountryField
 
-from dssgsolve import settings
+from project import settings
 
 from .common import (
     SocialCause, ReviewStatus, Score,

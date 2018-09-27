@@ -3,7 +3,7 @@ from django_countries.fields import CountryField
 from django.utils.safestring import mark_safe
 
 
-from dssgsolve import settings
+from project import settings
 
 from .common import SocialCause, ReviewStatus, OrgRole, validate_image_size
 
