@@ -1,9 +1,7 @@
+from django.conf import settings
 from django.db import models
 from django_countries.fields import CountryField
 from django.utils.safestring import mark_safe
-
-
-from project import settings
 
 from .common import SocialCause, ReviewStatus, OrgRole, validate_image_size
 

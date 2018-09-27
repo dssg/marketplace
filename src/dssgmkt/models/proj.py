@@ -1,7 +1,6 @@
+from django.conf import settings
 from django.db import models
 from django_countries.fields import CountryField
-
-from project import settings
 
 from .common import (
     SocialCause, ReviewStatus, Score,
