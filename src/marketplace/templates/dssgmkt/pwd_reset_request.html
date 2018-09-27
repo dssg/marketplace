@@ -16,14 +16,14 @@
         <div class="col-lg-9 offset-lg-3">
           <button type="submit"
                   form="pwdreset"
-                  formaction="{% url 'dssgmkt:pwd_reset_request' %}"
+                  formaction="{% url 'marketplace:pwd_reset_request' %}"
                   formmethod="post"
                   class="btn btn-success mr-3">
             <i class="material-icons" style="vertical-align: middle">arrow_forward</i>
             Request password reset link
           </button>
           <a class="btn btn-outline-primary"
-             href="{% url 'dssgmkt:login' %}">
+             href="{% url 'marketplace:login' %}">
             Cancel
           </a>
         </div>

@@ -1,7 +1,7 @@
 from rules import add_perm, predicate
 
-from dssgmkt.domain.proj import ProjectService, ProjectTaskService
-from dssgmkt.domain.user import UserService
+from marketplace.domain.proj import ProjectService, ProjectTaskService
+from marketplace.domain.user import UserService
 
 
 add_perm('project.view', ProjectService.is_project_visible_by_user)

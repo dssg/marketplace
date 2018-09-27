@@ -13,13 +13,13 @@
       <div class="col-lg-9 offset-lg-3">
         <button type="submit"
                 form="editproj"
-                formaction="{% url 'dssgmkt:proj_info_edit' project.id %}"
+                formaction="{% url 'marketplace:proj_info_edit' project.id %}"
                 formmethod="post"
                 class="btn btn-success mr-3">
           <i class="material-icons" style="vertical-align: middle">save</i>
           Save
         </button>
-        <a class="btn btn-outline-primary" href="{% url 'dssgmkt:proj_info' project.id %}">
+        <a class="btn btn-outline-primary" href="{% url 'marketplace:proj_info' project.id %}">
           <i class="material-icons" style="vertical-align: middle">close</i>
           Cancel
         </a>

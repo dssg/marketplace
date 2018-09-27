@@ -23,46 +23,48 @@ from ..models.proj import (
 )
 from .common import build_breadcrumb, home_link, paginate, generic_getter
 from .org import organizations_link, organization_link, get_organization, add_organization_common_context
-from dssgmkt.domain.proj import ProjectService, ProjectTaskService
-from dssgmkt.domain.common import get_social_causes
-from dssgmkt.domain.org import OrganizationService
-from dssgmkt.domain.user import UserService
+
+from marketplace.domain.proj import ProjectService, ProjectTaskService
+from marketplace.domain.common import get_social_causes
+from marketplace.domain.org import OrganizationService
+from marketplace.domain.user import UserService
+
 
 def projects_link(include_link=True):
-    return ('Projects', reverse('dssgmkt:proj_list') if include_link else None)
+    return ('Projects', reverse('marketplace:proj_list') if include_link else None)
 
 def project_link(project, include_link=True):
-    return (project.name, reverse('dssgmkt:proj_info', args=[project.id]) if include_link else None)
+    return (project.name, reverse('marketplace:proj_info', args=[project.id]) if include_link else None)
 
 def staff_link(project, include_link=True):
-    return ('Staff', reverse('dssgmkt:proj_staff', args=[project.id]) if include_link else None)
+    return ('Staff', reverse('marketplace:proj_staff', args=[project.id]) if include_link else None)
 
 def volunteers_link(project, include_link=True):
-    return ('Volunteers', reverse('dssgmkt:proj_volunteers', args=[project.id]) if include_link else None)
+    return ('Volunteers', reverse('marketplace:proj_volunteers', args=[project.id]) if include_link else None)
 
 def volunteer_instructions_link(project, include_link=True):
-    return ('My tasks', reverse('dssgmkt:proj_instructions', args=[project.id]) if include_link else None)
+    return ('My tasks', reverse('marketplace:proj_instructions', args=[project.id]) if include_link else None)
 
 def volunteer_instructions_task_link(project_task, include_link=True):
-    return (project_task.name, reverse('dssgmkt:proj_instructions_task', args=[project_task.project.id, project_task.id]) if include_link else None)
+    return (project_task.name, reverse('marketplace:proj_instructions_task', args=[project_task.project.id, project_task.id]) if include_link else None)
 
 def tasks_link(project, include_link=True):
-    return ('Tasks', reverse('dssgmkt:proj_task_list', args=[project.id]) if include_link else None)
+    return ('Tasks', reverse('marketplace:proj_task_list', args=[project.id]) if include_link else None)
 
 def task_link(project_task, include_link=True):
-    return (project_task.name, reverse('dssgmkt:proj_task', args=[project_task.project.id, project_task.id]) if include_link else None)
+    return (project_task.name, reverse('marketplace:proj_task', args=[project_task.project.id, project_task.id]) if include_link else None)
 
 def edit_task_requirements_link(project, task, include_link=True):
-    return ('Edit requirements', reverse('dssgmkt:proj_task_requirements_edit', args=[project.id, task.id]) if include_link else None)
+    return ('Edit requirements', reverse('marketplace:proj_task_requirements_edit', args=[project.id, task.id]) if include_link else None)
 
 def edit_task_staff_link(project, task, include_link=True):
-    return ('Edit staff', reverse('dssgmkt:proj_task_staff_edit', args=[project.id, task.id]) if include_link else None)
+    return ('Edit staff', reverse('marketplace:proj_task_staff_edit', args=[project.id, task.id]) if include_link else None)
 
 def discussion_index_link(project, include_link=True):
-    return ('Discussion', reverse('dssgmkt:proj_discussion', args=[project.id]) if include_link else None)
+    return ('Discussion', reverse('marketplace:proj_discussion', args=[project.id]) if include_link else None)
 
 def publish_task_link(project, task, include_link=True):
-    return ('Publish task', reverse('dssgmkt:proj_task_publish', args=[project.id, task.id]) if include_link else None)
+    return ('Publish task', reverse('marketplace:proj_task_publish', args=[project.id, task.id]) if include_link else None)
 
 def project_breadcrumb(project, *items):
     breadcrumb_items = [home_link(),
@@ -247,7 +249,7 @@ def project_comment_channel_index_view(request, proj_pk):
         project = get_project(request, proj_pk)
         discussion_channels = ProjectService.get_project_channels(request.user, project)
         if discussion_channels:
-            return redirect('dssgmkt:proj_discussion', proj_pk=proj_pk, channel_pk=discussion_channels[0].id)
+            return redirect('marketplace:proj_discussion', proj_pk=proj_pk, channel_pk=discussion_channels[0].id)
         else:
             return render(request, 'dssgmkt/proj_discussion_channels.html',
                         add_project_common_context(
@@ -267,7 +269,7 @@ def project_channel_comments_view(request, proj_pk, channel_pk):
             try:
                 ProjectService.add_project_comment(request.user, proj_pk, channel_pk, project_comment)
                 messages.info(request, 'Comment added successfuly')
-                return redirect('dssgmkt:proj_discussion', proj_pk=proj_pk, channel_pk=channel_pk)
+                return redirect('marketplace:proj_discussion', proj_pk=proj_pk, channel_pk=channel_pk)
             except KeyError:
                 raise Http404
             except ValueError:
@@ -349,7 +351,7 @@ def project_edit_scope_view(request, proj_pk, scope_pk):
             try:
                 ProjectService.update_project_scope(request.user, proj_pk, project_scope)
                 messages.info(request, 'Project scope edited successfully.')
-                return redirect('dssgmkt:proj_scope', proj_pk=proj_pk)
+                return redirect('marketplace:proj_scope', proj_pk=proj_pk)
             except ValueError as v:
                 form.add_error(None, str(v))
             except KeyError:
@@ -359,7 +361,7 @@ def project_edit_scope_view(request, proj_pk, scope_pk):
     return render(request, 'dssgmkt/proj_scope_edit.html',
                     add_project_common_context(request, project, 'scope',
                         {
-                            'breadcrumb': project_breadcrumb(project, ('Scope', reverse('dssgmkt:proj_scope',  args=[proj_pk])), ('Edit', None)),
+                            'breadcrumb': project_breadcrumb(project, ('Scope', reverse('marketplace:proj_scope',  args=[proj_pk])), ('Edit', None)),
                             'project_scope': project_scope,
                             'form': form
                         }))
@@ -385,7 +387,7 @@ class ProjectVolunteerInstructionsView(PermissionRequiredMixin, generic.ListView
     def get(self, *args, **kwargs):
         tasks = self.get_queryset()
         if tasks:
-            return HttpResponseRedirect(reverse('dssgmkt:proj_instructions_task', args=[self.kwargs['proj_pk'], tasks[0].id]))
+            return HttpResponseRedirect(reverse('marketplace:proj_instructions_task', args=[self.kwargs['proj_pk'], tasks[0].id]))
         return super(ProjectVolunteerInstructionsView, self).get(*args, **kwargs)
 
     def get_permission_object(self):
@@ -427,7 +429,7 @@ class ProjectTaskReviewCreate(PermissionRequiredMixin, CreateView):
     raise_exception = True
 
     def get_success_url(self):
-        return reverse('dssgmkt:proj_instructions_task', args=[self.kwargs['proj_pk'], self.kwargs['task_pk']])
+        return reverse('marketplace:proj_instructions_task', args=[self.kwargs['proj_pk'], self.kwargs['task_pk']])
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -470,7 +472,7 @@ def process_task_review_request_view(request, proj_pk, task_pk, review_pk, actio
                 else:
                     ProjectTaskService.reject_task_review(request.user, proj_pk, task_pk, project_task_review)
                     messages.warning(request, 'Task rejected as completed and reopened.')
-                return redirect('dssgmkt:proj_task', proj_pk=proj_pk, task_pk=task_pk)
+                return redirect('marketplace:proj_task', proj_pk=proj_pk, task_pk=task_pk)
             except KeyError:
                 raise Http404
     elif request.method == 'GET':
@@ -503,7 +505,7 @@ class ProjectTaskCancel(PermissionRequiredMixin, DeleteView):
         return get_own_project_task_role(self.request, self.kwargs['proj_pk'], self.kwargs['task_pk'])
 
     def get_success_url(self):
-        return reverse('dssgmkt:proj_instructions', args=[self.object.task.project.id])
+        return reverse('marketplace:proj_instructions', args=[self.object.task.project.id])
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -541,7 +543,7 @@ class ProjectTaskApply(PermissionRequiredMixin, CreateView):
     raise_exception = True
 
     def get_success_url(self):
-        return reverse('dssgmkt:proj_info', args=[self.kwargs['proj_pk']])
+        return reverse('marketplace:proj_info', args=[self.kwargs['proj_pk']])
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -591,7 +593,7 @@ class ProjectTaskIndex(PermissionRequiredMixin, generic.ListView):
     def get(self, *args, **kwargs):
         tasks = self.get_queryset()
         if tasks:
-            return HttpResponseRedirect(reverse('dssgmkt:proj_task', args=[self.kwargs['proj_pk'], tasks[0].id]))
+            return HttpResponseRedirect(reverse('marketplace:proj_task', args=[self.kwargs['proj_pk'], tasks[0].id]))
         return super(ProjectTaskIndex, self).get(*args, **kwargs)
 
     def get_permission_object(self):
@@ -629,7 +631,7 @@ class ProjectTaskEdit(PermissionRequiredMixin, UpdateView):
     raise_exception = True
 
     def get_success_url(self):
-        return reverse('dssgmkt:proj_task', args=[self.kwargs['proj_pk'], self.kwargs['task_pk']])
+        return reverse('marketplace:proj_task', args=[self.kwargs['proj_pk'], self.kwargs['task_pk']])
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -669,7 +671,7 @@ class ProjectEdit(PermissionRequiredMixin, UpdateView):
     raise_exception = True
 
     def get_success_url(self):
-        return reverse('dssgmkt:proj_info', args=[self.kwargs['proj_pk']])
+        return reverse('marketplace:proj_info', args=[self.kwargs['proj_pk']])
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -705,7 +707,7 @@ def project_task_requirements_edit_view(request, proj_pk, task_pk):
     if request.method == 'POST':
         try:
             ProjectTaskService.set_task_requirements(request.user, proj_pk, task_pk, request.POST)
-            return redirect('dssgmkt:proj_task', proj_pk=proj_pk, task_pk=task_pk)
+            return redirect('marketplace:proj_task', proj_pk=proj_pk, task_pk=task_pk)
         except KeyError:
             raise Http404
         except ValueError as v:
@@ -732,7 +734,7 @@ def project_task_staff_edit_view(request, proj_pk, task_pk):
     if request.method == 'POST':
         try:
             ProjectTaskService.set_task_staff(request.user, proj_pk, task_pk, request.POST)
-            return redirect('dssgmkt:proj_task', proj_pk=proj_pk, task_pk=task_pk)
+            return redirect('marketplace:proj_task', proj_pk=proj_pk, task_pk=task_pk)
         except KeyError:
             raise Http404
         except ValueError:
@@ -757,7 +759,7 @@ class ProjectTaskRemove(PermissionRequiredMixin, DeleteView):
     raise_exception = True
 
     def get_success_url(self):
-        return reverse('dssgmkt:proj_task_list', args=[self.kwargs['proj_pk']])
+        return reverse('marketplace:proj_task_list', args=[self.kwargs['proj_pk']])
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -793,7 +795,7 @@ def create_default_project_task(request, proj_pk):
         raise Http404
     elif request.method == 'POST':
         new_task = ProjectTaskService.create_default_task(request.user, proj_pk)
-        return redirect('dssgmkt:proj_task_edit', proj_pk=proj_pk, task_pk=new_task.id)
+        return redirect('marketplace:proj_task_edit', proj_pk=proj_pk, task_pk=new_task.id)
 
 
 class CreateProjectRoleForm(ModelForm):
@@ -816,7 +818,7 @@ def project_staff_view(request, proj_pk):
             try:
                 ProjectService.add_staff_member(request.user, proj_pk, project_role)
                 messages.info(request, 'Staff member added successfully.')
-                return redirect('dssgmkt:proj_staff', proj_pk=proj_pk)
+                return redirect('marketplace:proj_staff', proj_pk=proj_pk)
             except KeyError:
                 raise Http404
             except ValueError:
@@ -864,7 +866,7 @@ class ProjectRoleEdit(PermissionRequiredMixin, SuccessMessageMixin, UpdateView):
     raise_exception = True
 
     def get_success_url(self):
-        return reverse('dssgmkt:proj_staff', args=[self.object.project.id])
+        return reverse('marketplace:proj_staff', args=[self.object.project.id])
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -908,7 +910,7 @@ def project_role_delete_view(request, proj_pk, role_pk):
             try:
                 ProjectService.delete_project_role(request.user, proj_pk, project_role)
                 messages.info(request, 'Staff member removed successfully.')
-                return redirect('dssgmkt:proj_staff', proj_pk=proj_pk)
+                return redirect('marketplace:proj_staff', proj_pk=proj_pk)
             except KeyError:
                 raise Http404
             except ValueError as err:
@@ -951,7 +953,7 @@ class ProjectTaskRoleEdit(PermissionRequiredMixin, SuccessMessageMixin, UpdateVi
         return kwargs
 
     def get_success_url(self):
-        return reverse('dssgmkt:proj_volunteers', args=[self.object.task.project.id])
+        return reverse('marketplace:proj_volunteers', args=[self.object.task.project.id])
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -988,7 +990,7 @@ class ProjectTaskRoleRemove(PermissionRequiredMixin, DeleteView):
         return get_project_task_role(self.request, self.kwargs['proj_pk'], self.kwargs['task_pk'], self.kwargs['task_role_pk'])
 
     def get_success_url(self):
-        return reverse('dssgmkt:proj_volunteers', args=[self.object.task.project.id])
+        return reverse('marketplace:proj_volunteers', args=[self.object.task.project.id])
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -1035,7 +1037,7 @@ def volunteer_application_view(request, proj_pk, task_pk, volunteer_application_
                 else:
                     ProjectTaskService.reject_volunteer(request.user, proj_pk, task_pk, volunteer_application)
                     messages.info(request, 'Volunteer application rejected.')
-                return redirect('dssgmkt:proj_volunteers', proj_pk=proj_pk)
+                return redirect('marketplace:proj_volunteers', proj_pk=proj_pk)
             except KeyError:
                 raise Http404
     elif request.method == 'GET':
@@ -1066,10 +1068,10 @@ def follow_project_view(request, proj_pk):
     elif request.method == 'POST':
         try:
             ProjectService.toggle_follower(request.user, proj_pk)
-            return redirect('dssgmkt:proj_info', proj_pk=proj_pk)
+            return redirect('marketplace:proj_info', proj_pk=proj_pk)
         except KeyError:
             messages.error(request, 'There was an error while processing your request.')
-            return redirect('dssgmkt:proj_info', proj_pk=proj_pk)
+            return redirect('marketplace:proj_info', proj_pk=proj_pk)
 
 
 @permission_required('project.publish', raise_exception=True, fn=objectgetter(Project, 'proj_pk'))
@@ -1078,10 +1080,10 @@ def publish_project_view(request, proj_pk):
     if request.method == 'POST':
         try:
             ProjectService.publish_project(request.user, proj_pk, project)
-            return redirect('dssgmkt:proj_info', proj_pk=proj_pk)
+            return redirect('marketplace:proj_info', proj_pk=proj_pk)
         except KeyError:
             messages.error(request, 'There was an error while processing your request.')
-            return redirect('dssgmkt:proj_info', proj_pk=proj_pk)
+            return redirect('marketplace:proj_info', proj_pk=proj_pk)
     elif request.method == 'GET':
         pass
     if project:
@@ -1104,10 +1106,10 @@ def finish_project_view(request, proj_pk):
     if request.method == 'POST':
         try:
             ProjectService.finish_project(request.user, proj_pk, project)
-            return redirect('dssgmkt:proj_info', proj_pk=proj_pk)
+            return redirect('marketplace:proj_info', proj_pk=proj_pk)
         except KeyError:
             messages.error(request, 'There was an error while processing your request.')
-            return redirect('dssgmkt:proj_info', proj_pk=proj_pk)
+            return redirect('marketplace:proj_info', proj_pk=proj_pk)
     elif request.method == 'GET':
         pass
     if project:
@@ -1130,10 +1132,10 @@ def toggle_task_accepting_volunteers_view(request, proj_pk, task_pk):
     elif request.method == 'POST':
         try:
             ProjectTaskService.toggle_task_accepting_volunteers(request.user, proj_pk, task_pk)
-            return redirect('dssgmkt:proj_task', proj_pk=proj_pk, task_pk=task_pk)
+            return redirect('marketplace:proj_task', proj_pk=proj_pk, task_pk=task_pk)
         except KeyError:
             messages.error(request, 'There was an error while processing your request.')
-            return redirect('dssgmkt:proj_task', proj_pk=proj_pk, task_pk=task_pk)
+            return redirect('marketplace:proj_task', proj_pk=proj_pk, task_pk=task_pk)
 
 
 
@@ -1161,7 +1163,7 @@ class ProjectCreateView(PermissionRequiredMixin, CreateView):
     raise_exception = True
 
     def get_success_url(self):
-        return reverse('dssgmkt:proj_info', args=[self.object.pk])
+        return reverse('marketplace:proj_info', args=[self.object.pk])
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -1200,7 +1202,7 @@ class ProjectCreateView(PermissionRequiredMixin, CreateView):
 def project_create_select_organization_view(request):
     organizations = OrganizationService.get_organizations_with_user_create_project_permission(request.user)
     if len(organizations) == 1:
-        return HttpResponseRedirect(reverse('dssgmkt:proj_create', args=[organizations[0].id]))
+        return HttpResponseRedirect(reverse('marketplace:proj_create', args=[organizations[0].id]))
     else:
         return render(request, 'dssgmkt/proj_create_org_select.html',
                             {
@@ -1213,10 +1215,10 @@ def pin_task_review_view(request, proj_pk, task_pk, review_pk):
     if request.method == 'GET':
         try:
             ProjectTaskService.toggle_pinned_task_review(request.user, proj_pk, task_pk, review_pk)
-            return redirect('dssgmkt:proj_instructions_task', proj_pk=proj_pk, task_pk=task_pk)
+            return redirect('marketplace:proj_instructions_task', proj_pk=proj_pk, task_pk=task_pk)
         except KeyError:
             messages.error(request, 'There was an error while processing your request.')
-            return redirect('dssgmkt:proj_instructions_task', proj_pk=proj_pk, task_pk=task_pk)
+            return redirect('marketplace:proj_instructions_task', proj_pk=proj_pk, task_pk=task_pk)
 
 
 @permission_required('project.task_edit', raise_exception=True, fn=objectgetter(Project, 'proj_pk'))
@@ -1226,10 +1228,10 @@ def publish_project_task_view(request, proj_pk, task_pk):
     if request.method == 'POST':
         try:
             ProjectTaskService.publish_project_task(request.user, proj_pk, task_pk, project_task)
-            return redirect('dssgmkt:proj_task', proj_pk=proj_pk, task_pk=task_pk)
+            return redirect('marketplace:proj_task', proj_pk=proj_pk, task_pk=task_pk)
         except KeyError:
             messages.error(request, 'There was an error while processing your request.')
-            return redirect('dssgmkt:proj_task', proj_pk=proj_pk, task_pk=task_pk)
+            return redirect('marketplace:proj_task', proj_pk=proj_pk, task_pk=task_pk)
     elif request.method == 'GET':
         pass
     if project_task:

@@ -1,10 +1,10 @@
 from django.utils import timezone
 from django.core.exceptions import PermissionDenied
 
-from dssgmkt.models.common import ReviewStatus, SocialCause
-from dssgmkt.models.user import User
-from dssgmkt.models.proj import Project
-from dssgmkt.models.org import Organization, Budget, YearsInOperation, GeographicalScope
+from marketplace.models.common import ReviewStatus, SocialCause
+from marketplace.models.user import User
+from marketplace.models.proj import Project
+from marketplace.models.org import Organization, Budget, YearsInOperation, GeographicalScope
 
 
 def example_organization_user():

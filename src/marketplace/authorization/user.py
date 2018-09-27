@@ -1,8 +1,8 @@
 from rules import add_perm, predicate
 from rules.predicates import is_authenticated
 
-from dssgmkt.models.user import User
-from dssgmkt.domain.user import UserService
+from marketplace.models.user import User
+from marketplace.domain.user import UserService
 
 
 add_perm('user.is_authenticated', is_authenticated)

@@ -8,7 +8,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('dssgmkt', '0026_auto_20180712_1308'),
+        ('marketplace', '0026_auto_20180712_1308'),
     ]
 
     operations = [
@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
                 ('creation_date', models.DateTimeField(auto_now_add=True, verbose_name='Creation date')),
                 ('is_current', models.BooleanField(help_text='Specifies if this is the latest scope of the project.', verbose_name='Is current?')),
                 ('author', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
-                ('project', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='dssgmkt.Project')),
+                ('project', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='marketplace.Project')),
             ],
         ),
     ]

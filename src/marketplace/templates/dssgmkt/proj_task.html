@@ -25,17 +25,17 @@
           <div class="col-lg-4">
             {% if user_is_task_editor and not project_task.is_completed %}
               <a class="btn btn-success col-lg-12 mb-1"
-                 href="{% url 'dssgmkt:proj_task_edit' project.id project_task.id %}">
+                 href="{% url 'marketplace:proj_task_edit' project.id project_task.id %}">
                 <i class="material-icons" style="vertical-align: middle">edit</i>
                 Edit task info
               </a>
               <a class="btn btn-success col-lg-12 mb-1"
-                 href="{% url 'dssgmkt:proj_task_requirements_edit' project.id project_task.id %}">
+                 href="{% url 'marketplace:proj_task_requirements_edit' project.id project_task.id %}">
                 <i class="fas fa-magic"></i>
                 Edit task requirements
               </a>
               <a class="btn btn-success col-lg-12 mb-1"
-                 href="{% url 'dssgmkt:proj_task_staff_edit' project.id project_task.id %}">
+                 href="{% url 'marketplace:proj_task_staff_edit' project.id project_task.id %}">
                 <i class="fas fa-people-carry"></i>
                 Edit task staff
               </a>
@@ -43,7 +43,7 @@
                 {% csrf_token %}
                 <button type="submit"
                         form="togglevolunteers"
-                        formaction="{% url 'dssgmkt:proj_task_toggle_volunteers' project.id project_task.id %}"
+                        formaction="{% url 'marketplace:proj_task_toggle_volunteers' project.id project_task.id %}"
                         formmethod="post"
                         class="btn btn-success col-lg-12 mb-1">
                   {% if project_task.accepting_volunteers %}
@@ -56,13 +56,13 @@
                 </button>
               </form>
               <a class="btn btn-success col-lg-12 mb-1"
-                 href="{% url 'dssgmkt:proj_task_remove' project.id project_task.id %}">
+                 href="{% url 'marketplace:proj_task_remove' project.id project_task.id %}">
                 <i class="material-icons" style="vertical-align: middle">remove_circle</i>
                 Delete task
               </a>
               {% if project_task.is_draft %}
                 <a class="btn btn-success col-lg-12 mb-1"
-                   href="{% url 'dssgmkt:proj_task_publish' project.id project_task.id %}">
+                   href="{% url 'marketplace:proj_task_publish' project.id project_task.id %}">
                   <i class="material-icons" style="vertical-align: middle">publish</i>
                   Publish task
                 </a>
@@ -159,7 +159,7 @@
                   <td>{{ task_review.review_request_date }}</td>
 
                   <td>
-                    <a href="{% url 'dssgmkt:proj_task_review' project.id project_task.id task_review.id %}"
+                    <a href="{% url 'marketplace:proj_task_review' project.id project_task.id task_review.id %}"
                        class="{% if task_review.is_accepted %}
                                  text-success
                                {% elif task_review.is_rejected %}

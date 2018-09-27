@@ -1,7 +1,7 @@
 from rules import add_perm, predicate
 
-from dssgmkt.domain.org import OrganizationService
-from dssgmkt.domain.user import UserService
+from marketplace.domain.org import OrganizationService
+from marketplace.domain.user import UserService
 
 @predicate
 def is_organization_creator(user, org=None):

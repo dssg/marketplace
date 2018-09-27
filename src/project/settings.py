@@ -62,7 +62,7 @@ if file_storage_option not in file_storage_options:
 
 INSTALLED_APPS = [
     'django_countries',
-    'dssgmkt.apps.DssgmktConfig',
+    'marketplace.apps.MarketplaceConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -148,11 +148,11 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
 )
 
-AUTH_USER_MODEL = 'dssgmkt.User'
+AUTH_USER_MODEL = 'marketplace.User'
 
-LOGIN_REDIRECT_URL = 'dssgmkt:home'
+LOGIN_REDIRECT_URL = 'marketplace:home'
 
-LOGIN_URL = 'dssgmkt:login'
+LOGIN_URL = 'marketplace:login'
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.0/topics/i18n/
@@ -258,7 +258,7 @@ LOGGING = {
             'level': config('DJANGO_DB_LOG_LEVEL', default='WARN'),
             'propagate': False,
         },
-        'dssgmkt': {
+        'marketplace': {
             'handlers': ['console', 'logfile'],
             'level': config('DSSG_LOG_LEVEL', default='WARN'),
         },

@@ -11,13 +11,13 @@
       <div class="form-row">
         <button type="submit"
                 form="orgmembershiprequest"
-                formaction="{% url 'dssgmkt:org_staff_request' organization.id %}"
+                formaction="{% url 'marketplace:org_staff_request' organization.id %}"
                 formmethod="post"
                 class="btn btn-success mr-3">
             <i class="material-icons" style="vertical-align: middle">person_add</i>
             Request organization membership
         </button>
-        <a class="btn btn-outline-primary" href="{% url 'dssgmkt:org_info' organization.id %}">
+        <a class="btn btn-outline-primary" href="{% url 'marketplace:org_info' organization.id %}">
           <i class="material-icons" style="vertical-align: middle">close</i>
           Cancel
         </a>

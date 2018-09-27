@@ -8,7 +8,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('dssgmkt', '0016_auto_20180627_1310'),
+        ('marketplace', '0016_auto_20180627_1310'),
     ]
 
     operations = [
@@ -30,7 +30,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='volunteerskill',
             name='skill',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='dssgmkt.Skill', verbose_name='Skill'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='marketplace.Skill', verbose_name='Skill'),
         ),
         migrations.AlterField(
             model_name='volunteerskill',

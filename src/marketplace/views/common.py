@@ -19,7 +19,7 @@ def resources_view(request):
     return render(request, 'dssgmkt/resources.html')
 
 def home_link(include_link=True):
-    return ('Home', reverse_lazy('dssgmkt:home') if include_link else None)
+    return ('Home', reverse_lazy('marketplace:home') if include_link else None)
 
 def build_breadcrumb(elements):
     # return [val for pair in zip_longest(elements, repeat((' > ', None), len(elements) - 1)) for val in pair if val is not None]

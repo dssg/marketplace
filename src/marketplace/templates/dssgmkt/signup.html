@@ -46,14 +46,14 @@
         <div class="col-lg-6 offset-lg-6">
           <button type="submit"
                   form="signup"
-                  formaction="{% url 'dssgmkt:signup_form' user_type %}"
+                  formaction="{% url 'marketplace:signup_form' user_type %}"
                   formmethod="post"
                   class="btn btn-success mr-3">
             <i class="material-icons" style="vertical-align: middle">arrow_forward</i>
             Sign up
           </button>
           <a class="btn btn-outline-primary"
-             href="{% url 'dssgmkt:home' %}">
+             href="{% url 'marketplace:home' %}">
              <i class="material-icons" style="vertical-align: middle">close</i>
              Cancel
           </a>
@@ -61,7 +61,7 @@
       </div>
       <div class="form-row mt-3">
         <div class="col-lg-6 offset-lg-6">
-          <a href="{% url 'dssgmkt:login' %}">Already have an account? Log in instead.</a>
+          <a href="{% url 'marketplace:login' %}">Already have an account? Log in instead.</a>
         </div>
       </div>
 

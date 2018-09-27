@@ -8,7 +8,7 @@ from django.utils import timezone
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('dssgmkt', '0044_volunteerprofile_is_edited'),
+        ('marketplace', '0044_volunteerprofile_is_edited'),
     ]
 
     operations = [

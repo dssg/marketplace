@@ -8,7 +8,7 @@
   {% if project_tasks %}
     {% for task in project_tasks %}
         <a class="d-flex list-group-item list-group-item-action {% if task == project_task %}active{% endif %}"
-           href="{% url 'dssgmkt:proj_task' project.id task.id %}">
+           href="{% url 'marketplace:proj_task' project.id task.id %}">
            <span class="mr-auto">
              {% include 'dssgmkt/components/task_type_display.html' with project_task=task compact_display=True %}
              {{ task.name }}
@@ -34,7 +34,7 @@
         {% csrf_token %}
         <button type="submit"
                 form="addtask"
-                formaction="{% url 'dssgmkt:proj_task_add' project.id %}"
+                formaction="{% url 'marketplace:proj_task_add' project.id %}"
                 formmethod="post"
                 class="btn btn-success col-lg-12">
             <i class="material-icons" style="vertical-align: middle">add_circle</i>

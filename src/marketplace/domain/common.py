@@ -1,6 +1,7 @@
-from dssgmkt.models.common import SocialCause, TaskType
-from dssgmkt.models.proj import ProjectStatus
-from dssgmkt.models.user import BadgeType
+from marketplace.models.common import SocialCause, TaskType
+from marketplace.models.proj import ProjectStatus
+from marketplace.models.user import BadgeType
+
 
 def get_field_value(object, path):
     if isinstance(path, str):
@@ -10,6 +11,7 @@ def get_field_value(object, path):
     else:
         first, *rest = path
         return get_field_value(getattr(object, first), rest)
+
 
 def validate_consistent_keys(object, error_message='Detected primary key inconsistency', *items):
     for (field_path, field_value) in items:

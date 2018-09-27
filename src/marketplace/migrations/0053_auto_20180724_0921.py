@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('dssgmkt', '0052_projectdiscussionchannel_related_task'),
+        ('marketplace', '0052_projectdiscussionchannel_related_task'),
     ]
 
     operations = [

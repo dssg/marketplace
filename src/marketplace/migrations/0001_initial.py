@@ -83,7 +83,7 @@ class Migration(migrations.Migration):
                 ('private_reviewer_notes', models.CharField(blank=True, max_length=5000, null=True)),
                 ('request_date', models.DateTimeField(auto_now_add=True)),
                 ('resolution_date', models.DateTimeField(blank=True, null=True)),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='dssgmkt.Organization')),
+                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='marketplace.Organization')),
                 ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
         ),
@@ -92,7 +92,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('role', models.IntegerField(choices=[(0, 'Administrator'), (1, 'Staff')], default=1)),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='dssgmkt.Organization')),
+                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='marketplace.Organization')),
                 ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
         ),
@@ -123,14 +123,14 @@ class Migration(migrations.Migration):
                 ('deliverable_reports_url', models.URLField(blank=True, null=True)),
                 ('creation_date', models.DateTimeField(auto_now_add=True)),
                 ('last_modified_date', models.DateTimeField(auto_now=True)),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='dssgmkt.Organization')),
+                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='marketplace.Organization')),
             ],
         ),
         migrations.CreateModel(
             name='ProjectFollower',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('project', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='dssgmkt.Project')),
+                ('project', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='marketplace.Project')),
                 ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
         ),
@@ -143,7 +143,7 @@ class Migration(migrations.Migration):
                 ('change_description', models.CharField(max_length=1000)),
                 ('change_date', models.DateTimeField(auto_now_add=True)),
                 ('author', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
-                ('project', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='dssgmkt.Project')),
+                ('project', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='marketplace.Project')),
             ],
         ),
         migrations.CreateModel(
@@ -151,7 +151,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('role', models.IntegerField(choices=[(0, 'Owner'), (1, 'Staff')], default=1)),
-                ('project', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='dssgmkt.Project')),
+                ('project', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='marketplace.Project')),
                 ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
         ),
@@ -177,7 +177,7 @@ class Migration(migrations.Migration):
                 ('task_deliverables_url', models.URLField(blank=True, null=True)),
                 ('creation_date', models.DateTimeField(auto_now_add=True)),
                 ('last_modified_date', models.DateTimeField(auto_now=True)),
-                ('project', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='dssgmkt.Project')),
+                ('project', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='marketplace.Project')),
             ],
         ),
         migrations.CreateModel(
@@ -198,7 +198,7 @@ class Migration(migrations.Migration):
                 ('review_request_date', models.DateTimeField(auto_now_add=True)),
                 ('review_date', models.DateTimeField(blank=True, null=True)),
                 ('review_result', models.CharField(choices=[('NEW', 'Not reviewed'), ('ACC', 'Accepted'), ('REJ', 'Rejected')], default='NEW', max_length=3)),
-                ('task', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='dssgmkt.ProjectTask')),
+                ('task', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='marketplace.ProjectTask')),
             ],
         ),
         migrations.CreateModel(
@@ -206,7 +206,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('role', models.IntegerField(choices=[(0, 'Volunteer')], default=0)),
-                ('task', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='dssgmkt.ProjectTask')),
+                ('task', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='marketplace.ProjectTask')),
                 ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
         ),
@@ -228,7 +228,7 @@ class Migration(migrations.Migration):
                 ('volunteer_application_letter', models.CharField(max_length=5000)),
                 ('public_reviewer_comments', models.CharField(blank=True, max_length=5000, null=True)),
                 ('private_reviewer_notes', models.CharField(blank=True, max_length=5000, null=True)),
-                ('task', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='dssgmkt.ProjectTask')),
+                ('task', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='marketplace.ProjectTask')),
                 ('volunteer', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
         ),
@@ -255,18 +255,18 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('level', models.IntegerField(choices=[(0, 'Beginner'), (1, 'Intermediate'), (2, 'Expert')], default=0)),
-                ('skill', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='dssgmkt.Skill')),
+                ('skill', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='marketplace.Skill')),
                 ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
         ),
         migrations.AddField(
             model_name='projecttaskrequirement',
             name='skill',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='dssgmkt.Skill'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='marketplace.Skill'),
         ),
         migrations.AddField(
             model_name='projecttaskrequirement',
             name='task',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='dssgmkt.ProjectTask'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='marketplace.ProjectTask'),
         ),
     ]

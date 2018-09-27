@@ -14,7 +14,7 @@
       {% has_perm 'project.scope_edit' user project as perm_scope_edit %}
       {% if current_scope and showing_current_scope and perm_scope_edit and not project.is_completed_status and not project.is_expired_status %}
         <a class="btn btn-success col-lg-12 mb-1"
-           href="{% url 'dssgmkt:proj_scope_edit' project.id current_scope.id %}">
+           href="{% url 'marketplace:proj_scope_edit' project.id current_scope.id %}">
           <i class="material-icons" style="vertical-align: middle">edit</i>
           Edit project scope
         </a>
@@ -59,12 +59,12 @@
       <li class="list-group-item {% if current_scope and scope.creation_date > current_scope.creation_date %}bg-light{% endif %}">
         <div class="row">
           <div class="col-lg-3">
-            <div class="text-right"><a href="{% url 'dssgmkt:user_profile' scope.author.id %}">{{ scope.author }}</a></div>
+            <div class="text-right"><a href="{% url 'marketplace:user_profile' scope.author.id %}">{{ scope.author }}</a></div>
             <div class="text-right text-muted">{{ scope.creation_date }}</div>
           </div>
           <div class="col-lg-1">
             {% if scope != current_scope %}
-              <a href="{% url 'dssgmkt:proj_scope_previous' project.id scope.id %}">View</a>
+              <a href="{% url 'marketplace:proj_scope_previous' project.id scope.id %}">View</a>
             {% else %}
               Showing
             {% endif %}
@@ -77,7 +77,7 @@
     {% endfor %}
   </ul>
 
-  {% url 'dssgmkt:proj_scope' as proj_scope_url %}
+  {% url 'marketplace:proj_scope' as proj_scope_url %}
   {% include 'dssgmkt/components/pagination.html' with baseurl=proj_scope_url page_obj=project_scopes %}
 
 {% endblock %}

@@ -38,14 +38,14 @@
 
     <div class="col-lg-4">
       {% if not project_task.is_completed %}
-        <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'dssgmkt:proj_task_cancel' project.id project_task.id %}">
+        <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'marketplace:proj_task_cancel' project.id project_task.id %}">
           <i class="material-icons" style="vertical-align: middle">clear</i>
           Cancel this volunteer work
         </a>
       {% endif %}
 
       {% if project_task.is_in_progress %}
-        <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'dssgmkt:proj_task_finish' project.id project_task.id %}">
+        <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'marketplace:proj_task_finish' project.id project_task.id %}">
           <i class="material-icons" style="vertical-align: middle">check_circle</i>
           Mark this task as completed
         </a>
@@ -148,7 +148,7 @@
             </td>
 
             <td>{% if task_review.is_accepted %}
-                  <a href="{% url 'dssgmkt:proj_instructions_task_review_pin' project.id project_task.id task_review.id %}">
+                  <a href="{% url 'marketplace:proj_instructions_task_review_pin' project.id project_task.id task_review.id %}">
                     {% if task_review.pinnedreview %}
                       Unpin review
                     {% else %}

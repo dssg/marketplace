@@ -6,7 +6,7 @@
 
     <h4 class="section-header">Mark work as done</h4>
 
-    <p>Task:<a href="{% url 'dssgmkt:proj_instructions' project.id %}">{{ project_task.name }}</a></p>
+    <p>Task:<a href="{% url 'marketplace:proj_instructions' project.id %}">{{ project_task.name }}</a></p>
 
     <p>Remember to put all the results of your work in the appropriate sites
        designed for the task:</p>
@@ -31,13 +31,13 @@
         <div class="col-lg-9 offset-lg-3">
           <button type="submit"
                   form="completetask"
-                  formaction="{% url 'dssgmkt:proj_task_finish' project.id project_task.id %}"
+                  formaction="{% url 'marketplace:proj_task_finish' project.id project_task.id %}"
                   formmethod="post"
                   class="btn btn-success mr-3">
             <i class="material-icons" style="vertical-align: middle">check</i>
             Mark work as done
           </button>
-          <a class="btn btn-outline-primary" href="{% url 'dssgmkt:proj_instructions_task' project.id project_task.id %}">
+          <a class="btn btn-outline-primary" href="{% url 'marketplace:proj_instructions_task' project.id project_task.id %}">
             <i class="material-icons" style="vertical-align: middle">close</i>
             Cancel
           </a>

@@ -2,13 +2,13 @@ from django.test import TestCase
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.models import AnonymousUser
 
-from dssgmkt.models.common import ReviewStatus
-from dssgmkt.models.user import User, UserType
-from dssgmkt.models.org import Organization, OrganizationRole, OrganizationSocialCause, Budget, YearsInOperation, SocialCause, GeographicalScope, OrganizationMembershipRequest, OrgRole
-from dssgmkt.domain.user import UserService
-from dssgmkt.domain.org import OrganizationService
+from marketplace.models.common import ReviewStatus
+from marketplace.models.user import User, UserType
+from marketplace.models.org import Organization, OrganizationRole, OrganizationSocialCause, Budget, YearsInOperation, SocialCause, GeographicalScope, OrganizationMembershipRequest, OrgRole
+from marketplace.domain.user import UserService
+from marketplace.domain.org import OrganizationService
 
-from dssgmkt.tests.domain.common import (
+from marketplace.tests.domain.common import (
     example_organization_user, example_staff_user, example_volunteer_user,
     example_organization,
     test_users_group_inclusion, test_permission_denied_operation,

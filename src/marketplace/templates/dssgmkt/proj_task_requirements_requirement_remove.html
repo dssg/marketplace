@@ -13,14 +13,14 @@
       <div class="col-lg-9 offset-lg-3">
         <button type="submit"
                 form="removerequirement"
-                formaction="{% url 'dssgmkt:proj_task_requirements_requirement_remove' project.id project_task.id task_requirement.id %}"
+                formaction="{% url 'marketplace:proj_task_requirements_requirement_remove' project.id project_task.id task_requirement.id %}"
                 formmethod="post"
                 class="btn btn-danger mr-3">
           <i class="material-icons" style="vertical-align: middle">remove_circle</i>
             Yes, remove this requirement
         </button>
         <a class="btn btn-outline-primary"
-           href="{% url 'dssgmkt:proj_task_requirements_edit' project.id project_task.id %}">
+           href="{% url 'marketplace:proj_task_requirements_edit' project.id project_task.id %}">
           <i class="material-icons" style="vertical-align: middle">close</i>
           No, keep this requirement
         </a>

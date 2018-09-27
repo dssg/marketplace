@@ -1,6 +1,6 @@
 import logging
 
-from dssgmkt.models.news import NewsPiece
+from marketplace.models.news import NewsPiece
 
 
 LOG = logging.getLogger(__name__)

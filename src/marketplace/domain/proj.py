@@ -19,7 +19,7 @@ from django.db.models import Case, When, Count, Q, Subquery, Avg, F
 
 from .common import validate_consistent_keys, social_cause_view_model_translation, project_status_view_model_translation
 from .notifications import NotificationService
-from dssgmkt.authorization.common import ensure_user_has_permission
+from marketplace.authorization.common import ensure_user_has_permission
 
 def filter_public_projects(query_set):
     return query_set.exclude(status=ProjectStatus.DRAFT) \

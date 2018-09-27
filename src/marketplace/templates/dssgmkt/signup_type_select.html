@@ -23,7 +23,7 @@
             <p><p>After signing up, you will be able to join an existing organization and/or create your own.</p></p>
             <p><p>Don't worry, you can still volunteer if you join the site as an organization member.</p></p>
           </li>
-          <a class="list-group-item list-group-item-action bg-success text-white" href="{% url 'dssgmkt:signup_form' 'organization' %}">
+          <a class="list-group-item list-group-item-action bg-success text-white" href="{% url 'marketplace:signup_form' 'organization' %}">
            Sign up as an organization member
           </a>
         </ul>
@@ -46,7 +46,7 @@
            <button
               type="submit"
               form="preferences"
-              formaction="{% url 'dssgmkt:signup_form' 'volunteer' %}"
+              formaction="{% url 'marketplace:signup_form' 'volunteer' %}"
               formmethod="get"
               class="list-group-item list-group-item-action bg-success text-white">
              Sign up as a volunteer
@@ -57,7 +57,7 @@
     </div>
 
     <div class="section-header">
-      <a class="btn btn-outline-primary" href="{% url 'dssgmkt:home' %}">
+      <a class="btn btn-outline-primary" href="{% url 'marketplace:home' %}">
         <i class="material-icons" style="vertical-align: middle">close</i>
         Cancel
       </a>

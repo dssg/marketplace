@@ -46,7 +46,7 @@
     {% endfor %}
   </ul>
 
-  {% url 'dssgmkt:proj_log' as proj_log_url %}
+  {% url 'marketplace:proj_log' as proj_log_url %}
   {% include 'dssgmkt/components/pagination.html' with baseurl=proj_log_url %}
 
 {% endblock %}

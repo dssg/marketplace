@@ -2,18 +2,18 @@ from django.test import TestCase
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.models import AnonymousUser
 
-from dssgmkt.models.common import ReviewStatus, SkillLevel, Score, TaskType
-from dssgmkt.models.proj import (
+from marketplace.models.common import ReviewStatus, SkillLevel, Score, TaskType
+from marketplace.models.proj import (
     ProjectRole, ProjRole, VolunteerApplication, ProjectScope,
     TaskStatus, ProjectComment, ProjectTaskRole, ProjectTaskReview,
     ProjectStatus, TaskRequirementImportance, ProjectTaskRequirement,
 )
-from dssgmkt.models.user import SignupCodeType, SignupCode, Skill
-from dssgmkt.domain.user import UserService
-from dssgmkt.domain.org import OrganizationService
-from dssgmkt.domain.proj import ProjectService, ProjectTaskService
+from marketplace.models.user import SignupCodeType, SignupCode, Skill
+from marketplace.domain.user import UserService
+from marketplace.domain.org import OrganizationService
+from marketplace.domain.proj import ProjectService, ProjectTaskService
 
-from dssgmkt.tests.domain.common import (
+from marketplace.tests.domain.common import (
     example_organization_user, example_staff_user, example_volunteer_user,
     example_organization, example_project,
     test_users_group_inclusion, test_permission_denied_operation,

@@ -4,10 +4,10 @@ from argparse import RawTextHelpFormatter
 from csv import DictReader
 import os
 
-from dssgmkt.domain.org import OrganizationService
-from dssgmkt.domain.proj import ProjectService
-from dssgmkt.domain.user import UserService
-from dssgmkt.models.proj import Project
+from marketplace.domain.org import OrganizationService
+from marketplace.domain.proj import ProjectService
+from marketplace.domain.user import UserService
+from marketplace.models.proj import Project
 
 class Command(BaseCommand):
     help = '''Loads a list of projects from a csv file.
@@ -52,8 +52,8 @@ The 'project_cause' field must be set to one of:
         super(Command, self).add_arguments(parser)
         parser.formatter_class = RawTextHelpFormatter
         parser.add_argument(
-            '--file', dest='file_path', default=os.path.join(settings.BASE_DIR,'dssgmkt','data','sample_projects.csv'),
-            help='Specifies the CSV file to load project data from. If not provided, the command will load sample projects fom dssgmkt/data/sample_projects.csv',
+            '--file', dest='file_path', default=os.path.join(settings.BASE_DIR,'marketplace','data','sample_projects.csv'),
+            help='Specifies the CSV file to load project data from. If not provided, the command will load sample projects fom marketplace/data/sample_projects.csv',
         )
 
     def handle(self, *args, **options):
@@ -86,7 +86,7 @@ The 'project_cause' field must be set to one of:
                 new_project.scope_available_data = row['scope_available_data']
                 new_project.scope_analysis = row['scope_analysis']
                 new_project.scope_validation_methodology = row['scope_validation_methodology']
-                new_project.scope_implementation = row['scope_implementation']                
+                new_project.scope_implementation = row['scope_implementation']
                 new_project.developer_agreement = row['developer_agreement']
                 new_project.intended_start_date = row['intended_start_date']
                 new_project.intended_end_date =  row['intended_end_date']

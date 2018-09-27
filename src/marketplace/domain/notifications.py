@@ -4,7 +4,7 @@ from smtplib import SMTPException
 from django.conf import settings
 from django.core.mail import send_mail
 
-from dssgmkt.models.user import UserNotification
+from marketplace.models.user import UserNotification
 
 
 LOG = logging.getLogger(__name__)

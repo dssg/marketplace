@@ -26,13 +26,13 @@
         <div class="col-lg-9 offset-lg-3">
           <button type="submit"
                   form="login"
-                  formaction="{% url 'dssgmkt:login' %}"
+                  formaction="{% url 'marketplace:login' %}"
                   formmethod="post"
                   class="btn btn-success mr-3">
             <i class="material-icons" style="vertical-align: middle">arrow_forward</i>
             Log in
           </button>
-          <a href="{% url 'dssgmkt:pwd_reset_request' %}">Forgot your password?</a>
+          <a href="{% url 'marketplace:pwd_reset_request' %}">Forgot your password?</a>
         </div>
       </div>
     </form>

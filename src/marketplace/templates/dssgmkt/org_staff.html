@@ -22,18 +22,18 @@
           {% for staff in organization_staff %}
             <tr>
                 <td>{% include 'dssgmkt/components/user_display.html' with user=staff.user %}</td>
-                {# <td><a href="{% url 'dssgmkt:user_profile' staff.user.id %}">{{ staff.user.email }}</a></td> #}
+                {# <td><a href="{% url 'marketplace:user_profile' staff.user.id %}">{{ staff.user.email }}</a></td> #}
                 <td>{{ staff.get_role_display }}</td>
                 <td>{{ staff.creation_date }}</td>
                 {% if user_is_administrator %}
                 <td>
-                  <a href="{% url 'dssgmkt:org_staff_edit' staff.organization.id staff.id %}">
+                  <a href="{% url 'marketplace:org_staff_edit' staff.organization.id staff.id %}">
                     <i class="material-icons md-12" style="vertical-align: middle">edit</i>
                     Edit
                   </a>
                 </td>
                 <td>
-                  <a class="text-danger" href="{% url 'dssgmkt:org_staff_remove' staff.organization.id staff.id %}">
+                  <a class="text-danger" href="{% url 'marketplace:org_staff_remove' staff.organization.id staff.id %}">
                     <i class="material-icons" style="vertical-align: middle">remove_circle</i>
                     Remove
                   </a>
@@ -44,7 +44,7 @@
         </tbody>
       </table>
     </div>
-    {% url 'dssgmkt:org_staff' as org_staff_url %}
+    {% url 'marketplace:org_staff' as org_staff_url %}
     {% include 'dssgmkt/components/pagination.html' with baseurl=org_staff_url page_obj=organization_staff pagename='staff_page' %}
   {% else %}
     <p>No staff found.</p>
@@ -72,7 +72,7 @@
           <div>
             <button type="submit"
                     form="addstaff"
-                    formaction="{% url 'dssgmkt:org_staff' organization.id %}"
+                    formaction="{% url 'marketplace:org_staff' organization.id %}"
                     formmethod="post"
                     class="btn btn-success">
               <i class="material-icons" style="vertical-align: middle">add_circle</i>
@@ -139,7 +139,7 @@
         <div>
           <button type="submit"
                   form="addstaffajax"
-                  formaction="{% url 'dssgmkt:org_staff_add' organization.id %}"
+                  formaction="{% url 'marketplace:org_staff_add' organization.id %}"
                   formmethod="post"
                   class="btn btn-success">
             <i class="material-icons" style="vertical-align: middle">add_circle</i>
@@ -170,10 +170,10 @@
           {% for request in organization_requests %}
             <tr>
                 <td>{% include 'dssgmkt/components/user_display.html' with user=request.user %}</td>
-                {# <td><a href="{% url 'dssgmkt:user_profile' request.user.id %}">{{ request.user.email }}</a></td> #}
+                {# <td><a href="{% url 'marketplace:user_profile' request.user.id %}">{{ request.user.email }}</a></td> #}
                 <td>{{ request.request_date }}</td>
                 <td>
-                  <a href="{% url 'dssgmkt:org_staff_request_review' organization.id request.id %}"
+                  <a href="{% url 'marketplace:org_staff_request_review' organization.id request.id %}"
                      class="{% if request.is_accepted %}
                                text-success
                              {% elif request.is_rejected %}
@@ -201,7 +201,7 @@
         </tbody>
       </table>
     </div>
-    {% url 'dssgmkt:org_staff' as org_staff_url %}
+    {% url 'marketplace:org_staff' as org_staff_url %}
     {% include 'dssgmkt/components/pagination.html' with baseurl=org_staff_url page_obj=organization_requests pagename='requests_page' %}
   {% else %}
     <p>No requests found.</p>

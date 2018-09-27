@@ -12,13 +12,13 @@
       <div class="col-lg-9 offset-lg-3">
         <button type="submit"
                 form="publishproject"
-                formaction="{% url 'dssgmkt:proj_publish' project.id %}"
+                formaction="{% url 'marketplace:proj_publish' project.id %}"
                 formmethod="post"
                 class="btn btn-success mr-3">
           <i class="material-icons" style="vertical-align: middle">publish</i>
           Yes, publish this project
         </button>
-        <a class="btn btn-outline-primary" href="{% url 'dssgmkt:proj_info' project.id %}">
+        <a class="btn btn-outline-primary" href="{% url 'marketplace:proj_info' project.id %}">
           <i class="material-icons" style="vertical-align: middle">close</i>
           No, keep this project as a draft
         </a>

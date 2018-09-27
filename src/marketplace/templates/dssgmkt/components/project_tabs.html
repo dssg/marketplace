@@ -6,7 +6,7 @@
       {% if page_tab == 'info' %}
         <span class="nav-link active">Information</span>
       {% else %}
-          <a class="nav-link" href="{% url 'dssgmkt:proj_info' project.id %}">Information</a>
+          <a class="nav-link" href="{% url 'marketplace:proj_info' project.id %}">Information</a>
       {% endif %}
     </li>
 
@@ -14,7 +14,7 @@
       {% if page_tab == 'scope' %}
         <span class="nav-link active">Scope</span>
       {% else %}
-          <a class="nav-link" href="{% url 'dssgmkt:proj_scope' project.id %}">Scope</a>
+          <a class="nav-link" href="{% url 'marketplace:proj_scope' project.id %}">Scope</a>
       {% endif %}
     </li>
 
@@ -22,7 +22,7 @@
     {% if page_tab == 'discussion' %}
       <span class="nav-link active">Discussion</span>
     {% else %}
-      <a class="nav-link" href="{% url 'dssgmkt:proj_discussion' project.id %}">Discussion</a>
+      <a class="nav-link" href="{% url 'marketplace:proj_discussion' project.id %}">Discussion</a>
     {% endif %}
   </li>
 
@@ -31,7 +31,7 @@
       {% if page_tab == 'deliverables' %}
         <span class="nav-link active">Results</span>
       {% else %}
-        <a class="nav-link" href="{% url 'dssgmkt:proj_deliverables' project.id %}">Results</a>
+        <a class="nav-link" href="{% url 'marketplace:proj_deliverables' project.id %}">Results</a>
       {% endif %}
     </li>
   {% endif %}
@@ -42,7 +42,7 @@
       {% if page_tab == 'tasklist' %}
         <span class="nav-link active">Tasks</span>
       {% else %}
-        <a class="nav-link" href="{% url 'dssgmkt:proj_task_list' project.id %}">Tasks</a>
+        <a class="nav-link" href="{% url 'marketplace:proj_task_list' project.id %}">Tasks</a>
       {% endif %}
     </li>
   {% endif %}
@@ -53,7 +53,7 @@
       {% if page_tab == 'log' %}
         <span class="nav-link active">Changelog</span>
       {% else %}
-        <a class="nav-link" href="{% url 'dssgmkt:proj_log' project.id %}">Changelog</a>
+        <a class="nav-link" href="{% url 'marketplace:proj_log' project.id %}">Changelog</a>
       {% endif %}
     </li>
   {% endif %}
@@ -64,7 +64,7 @@
       {% if page_tab == 'staff' %}
         <span class="nav-link active">Staff</span>
       {% else %}
-        <a class="nav-link" href="{% url 'dssgmkt:proj_staff' project.id %}">Staff</a>
+        <a class="nav-link" href="{% url 'marketplace:proj_staff' project.id %}">Staff</a>
       {% endif %}
     </li>
   {% endif %}
@@ -75,7 +75,7 @@
       {% if page_tab == 'volunteers' %}
         <span class="nav-link active">Volunteers</span>
       {% else %}
-        <a class="nav-link" href="{% url 'dssgmkt:proj_volunteers' project.id %}">Volunteers</a>
+        <a class="nav-link" href="{% url 'marketplace:proj_volunteers' project.id %}">Volunteers</a>
       {% endif %}
     </li>
   {% endif %}
@@ -86,7 +86,7 @@
       {% if page_tab == 'instructions' %}
         <span class="nav-link active">My tasks</span>
       {% else %}
-        <a class="nav-link" href="{% url 'dssgmkt:proj_instructions' project.id %}">My tasks</a>
+        <a class="nav-link" href="{% url 'marketplace:proj_instructions' project.id %}">My tasks</a>
       {% endif %}
     </li>
   {% endif %}

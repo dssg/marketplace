@@ -6,7 +6,7 @@
     {% if page_tab == 'info' %}
       <span class="nav-link active">Organization information</span>
     {% else %}
-        <a class="nav-link" href="{% url 'dssgmkt:org_info' organization.id %}">Organization information</a>
+        <a class="nav-link" href="{% url 'marketplace:org_info' organization.id %}">Organization information</a>
     {% endif %}
   </li>
 
@@ -17,7 +17,7 @@
       {% if page_tab == 'staff' %}
         <span class="nav-link active">Staff</span>
       {% else %}
-          <a class="nav-link" href="{% url 'dssgmkt:org_staff' organization.id %}">Staff</a>
+          <a class="nav-link" href="{% url 'marketplace:org_staff' organization.id %}">Staff</a>
       {% endif %}
     </li>
 

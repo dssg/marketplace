@@ -20,7 +20,7 @@ from .proj import ProjectService, ProjectTaskService
 from .notifications import NotificationService
 import requests
 
-from dssgmkt.authorization.common import ensure_user_has_permission
+from marketplace.authorization.common import ensure_user_has_permission
 
 class UserService():
     @staticmethod

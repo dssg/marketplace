@@ -10,7 +10,7 @@ import django_countries.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('dssgmkt', '0008_auto_20180614_1508'),
+        ('marketplace', '0008_auto_20180614_1508'),
     ]
 
     operations = [
@@ -82,7 +82,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='organizationmembershiprequest',
             name='organization',
-            field=models.ForeignKey(help_text='Organization to which the user is applying to be member of', on_delete=django.db.models.deletion.CASCADE, to='dssgmkt.Organization', verbose_name='Organization'),
+            field=models.ForeignKey(help_text='Organization to which the user is applying to be member of', on_delete=django.db.models.deletion.CASCADE, to='marketplace.Organization', verbose_name='Organization'),
         ),
         migrations.AlterField(
             model_name='organizationmembershiprequest',
@@ -122,7 +122,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='organizationrole',
             name='organization',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='dssgmkt.Organization', verbose_name='Organization'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='marketplace.Organization', verbose_name='Organization'),
         ),
         migrations.AlterField(
             model_name='organizationrole',
@@ -222,7 +222,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='project',
             name='organization',
-            field=models.ForeignKey(help_text='Organization that owns this project.', on_delete=django.db.models.deletion.CASCADE, to='dssgmkt.Organization', verbose_name='Organization'),
+            field=models.ForeignKey(help_text='Organization that owns this project.', on_delete=django.db.models.deletion.CASCADE, to='marketplace.Organization', verbose_name='Organization'),
         ),
         migrations.AlterField(
             model_name='project',
@@ -257,7 +257,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='projectrole',
             name='project',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='dssgmkt.Project', verbose_name='Project'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='marketplace.Project', verbose_name='Project'),
         ),
         migrations.AlterField(
             model_name='projectrole',
@@ -332,7 +332,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='projecttask',
             name='project',
-            field=models.ForeignKey(help_text='The project this task belongs to.', on_delete=django.db.models.deletion.CASCADE, to='dssgmkt.Project', verbose_name='Project'),
+            field=models.ForeignKey(help_text='The project this task belongs to.', on_delete=django.db.models.deletion.CASCADE, to='marketplace.Project', verbose_name='Project'),
         ),
         migrations.AlterField(
             model_name='projecttask',
@@ -367,12 +367,12 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='projecttaskrequirement',
             name='skill',
-            field=models.ForeignKey(help_text='Specific skill requirement.', on_delete=django.db.models.deletion.CASCADE, to='dssgmkt.Skill', verbose_name='Skill'),
+            field=models.ForeignKey(help_text='Specific skill requirement.', on_delete=django.db.models.deletion.CASCADE, to='marketplace.Skill', verbose_name='Skill'),
         ),
         migrations.AlterField(
             model_name='projecttaskrequirement',
             name='task',
-            field=models.ForeignKey(help_text='Project task this requirement applies to.', on_delete=django.db.models.deletion.CASCADE, to='dssgmkt.ProjectTask', verbose_name='Task'),
+            field=models.ForeignKey(help_text='Project task this requirement applies to.', on_delete=django.db.models.deletion.CASCADE, to='marketplace.ProjectTask', verbose_name='Task'),
         ),
         migrations.AlterField(
             model_name='projecttaskreview',
@@ -397,7 +397,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='projecttaskreview',
             name='task',
-            field=models.ForeignKey(help_text='Project task this review is related to.', on_delete=django.db.models.deletion.CASCADE, to='dssgmkt.ProjectTask', verbose_name='Task'),
+            field=models.ForeignKey(help_text='Project task this review is related to.', on_delete=django.db.models.deletion.CASCADE, to='marketplace.ProjectTask', verbose_name='Task'),
         ),
         migrations.AlterField(
             model_name='projecttaskreview',
@@ -417,7 +417,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='projecttaskrole',
             name='task',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='dssgmkt.ProjectTask', verbose_name='Task'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='marketplace.ProjectTask', verbose_name='Task'),
         ),
         migrations.AlterField(
             model_name='projecttaskrole',
@@ -472,7 +472,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='volunteerapplication',
             name='task',
-            field=models.ForeignKey(help_text='The project task this application is related to.', on_delete=django.db.models.deletion.CASCADE, to='dssgmkt.ProjectTask', verbose_name='Task'),
+            field=models.ForeignKey(help_text='The project task this application is related to.', on_delete=django.db.models.deletion.CASCADE, to='marketplace.ProjectTask', verbose_name='Task'),
         ),
         migrations.AlterField(
             model_name='volunteerapplication',
@@ -552,7 +552,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='volunteerskill',
             name='skill',
-            field=models.ForeignKey(help_text='Type your phone number in the format +999999999999999', on_delete=django.db.models.deletion.CASCADE, to='dssgmkt.Skill', verbose_name='Phone number'),
+            field=models.ForeignKey(help_text='Type your phone number in the format +999999999999999', on_delete=django.db.models.deletion.CASCADE, to='marketplace.Skill', verbose_name='Phone number'),
         ),
         migrations.AlterField(
             model_name='volunteerskill',

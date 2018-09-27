@@ -12,11 +12,11 @@ from rules.contrib.views import (
 from ..models.user import VolunteerProfile
 from .common import build_breadcrumb, home_link, paginate
 
-from dssgmkt.domain.user import UserService
+from marketplace.domain.user import UserService
 
 
 def admin_link(include_link=True):
-    return ('Admin', reverse_lazy('dssgmkt:admin_home') if include_link else None)
+    return ('Admin', reverse_lazy('marketplace:admin_home') if include_link else None)
 
 
 class AdminHomeView(PermissionRequiredMixin, generic.ListView):
@@ -53,7 +53,7 @@ def review_volunteer_profile_view(request, volunteer_pk, action):
                 UserService.accept_volunteer_profile(request.user, volunteer_pk)
             else:
                 UserService.reject_volunteer_profile(request.user, volunteer_pk)
-            return redirect('dssgmkt:admin_home')
+            return redirect('marketplace:admin_home')
         except KeyError as k:
             messages.error(request, str(k))
-            return redirect('dssgmkt:admin_home')
+            return redirect('marketplace:admin_home')

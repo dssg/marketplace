@@ -8,7 +8,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('dssgmkt', '0014_auto_20180625_1414'),
+        ('marketplace', '0014_auto_20180625_1414'),
     ]
 
     operations = [
@@ -19,7 +19,7 @@ class Migration(migrations.Migration):
                 ('comment', models.TextField(max_length=5000)),
                 ('comment_date', models.DateTimeField(auto_now_add=True)),
                 ('author', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
-                ('project', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='dssgmkt.Project')),
+                ('project', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='marketplace.Project')),
             ],
         ),
     ]

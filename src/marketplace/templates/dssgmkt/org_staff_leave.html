@@ -13,13 +13,13 @@
         <div class="col-lg-9 offset-lg-3">
           <button type="submit"
                   form="leaveorg"
-                  formaction="{% url 'dssgmkt:org_staff_leave' organization.id %}"
+                  formaction="{% url 'marketplace:org_staff_leave' organization.id %}"
                   formmethod="post"
                   class="btn btn-danger mr-3">
             <i class="material-icons" style="vertical-align: middle">meeting_room</i>
             Yes, leave organization
           </button>
-          <a class="btn btn-outline-primary" href="{% url 'dssgmkt:org_info' organization.id %}">
+          <a class="btn btn-outline-primary" href="{% url 'marketplace:org_info' organization.id %}">
             <i class="material-icons" style="vertical-align: middle">close</i>
             No, stay in the organization
           </a>

@@ -4,7 +4,7 @@ from csv import DictReader
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
-from dssgmkt.models.user import Skill
+from marketplace.models.user import Skill
 
 
 class Command(BaseCommand):
@@ -12,7 +12,7 @@ class Command(BaseCommand):
     help = 'Loads the initial skill data in the database'
 
     def handle(self, **options):
-        path = os.path.join(settings.BASE_DIR, 'dssgmkt', 'data', 'skills.csv')
+        path = os.path.join(settings.BASE_DIR, 'marketplace', 'data', 'skills.csv')
         self.stdout.write('Loading skills file {0}'.format(path))
 
         with open(path) as csvfile:

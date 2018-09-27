@@ -7,13 +7,13 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('dssgmkt', '0051_auto_20180723_2048'),
+        ('marketplace', '0051_auto_20180723_2048'),
     ]
 
     operations = [
         migrations.AddField(
             model_name='projectdiscussionchannel',
             name='related_task',
-            field=models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='dssgmkt.ProjectTask'),
+            field=models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='marketplace.ProjectTask'),
         ),
     ]

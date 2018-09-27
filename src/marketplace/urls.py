@@ -3,7 +3,7 @@ from django.urls import path, reverse_lazy
 
 from .views import common, org, proj, user, admin
 
-app_name = 'dssgmkt'
+app_name = 'marketplace'
 urlpatterns = [
     path('', user.home_view, name='home'),
     path('about/', common.about_view, name='about'),
@@ -70,15 +70,15 @@ urlpatterns = [
     path('signup/select', user.select_user_type_view, name='signup_type_select'),
     path('signup/do/<str:user_type>', user.signup, name='signup_form'),
     path('user/pwdchange', auth_views.PasswordChangeView.as_view(template_name='dssgmkt/user_pwd_change.html',
-                                                                 success_url=reverse_lazy('dssgmkt:my_user_profile'),
+                                                                 success_url=reverse_lazy('marketplace:my_user_profile'),
                                                                  extra_context={'breadcrumb':user.change_password_breadcrumb()}),name='user_pwd_change'),
     path('pwd/resetrequest', auth_views.PasswordResetView.as_view(template_name='dssgmkt/pwd_reset_request.html',
-                                                                 success_url=reverse_lazy('dssgmkt:pwd_reset_request_done'),
+                                                                 success_url=reverse_lazy('marketplace:pwd_reset_request_done'),
                                                                  email_template_name='dssgmkt/password_reset_email.html',
                                                                  subject_template_name='dssgmkt/password_reset_email_subject.html'), name='pwd_reset_request'),
     path('pwd/resetrequest/done', auth_views.PasswordResetDoneView.as_view(template_name='dssgmkt/pwd_reset_request_done.html'), name='pwd_reset_request_done'),
     path('pwd/reset/<str:uidb64>/<str:token>', auth_views.PasswordResetConfirmView.as_view(template_name='dssgmkt/pwd_reset.html',
-                                                                                            success_url=reverse_lazy('dssgmkt:pwd_reset_complete')), name='pwd_reset'),
+                                                                                            success_url=reverse_lazy('marketplace:pwd_reset_complete')), name='pwd_reset'),
     path('pwd/reset/done', auth_views.PasswordResetCompleteView.as_view(template_name='dssgmkt/pwd_reset_complete.html'), name='pwd_reset_complete'),
 
 

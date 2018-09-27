@@ -39,13 +39,13 @@
         <button type="submit"
                 form="projlist"
                 formmethod="post"
-                formaction="{% url 'dssgmkt:proj_list' %}"
+                formaction="{% url 'marketplace:proj_list' %}"
                 class="btn btn-success col-lg-12 mt-3">
           <i class="material-icons" style="vertical-align: middle">filter_list</i>
           Apply filters
         </button>
         <a class="btn btn-outline-primary col-lg-12 mt-3"
-           href="{% url 'dssgmkt:proj_list' %}">
+           href="{% url 'marketplace:proj_list' %}">
            <i class="material-icons" style="vertical-align: middle">close</i>
            Clear filters
         </a>
@@ -68,8 +68,8 @@
             <tbody>
               {% for project in proj_list %}
                 <tr>
-                    <td><a href="{% url 'dssgmkt:proj_info' project.id %}">{{ project.name }}</a></td>
-                    <td><a href="{% url 'dssgmkt:org_info' project.organization.id %}">{{ project.organization.name }}</a></td>
+                    <td><a href="{% url 'marketplace:proj_info' project.id %}">{{ project.name }}</a></td>
+                    <td><a href="{% url 'marketplace:org_info' project.organization.id %}">{{ project.organization.name }}</a></td>
                     <td>{{ project.short_summary }}</td>
                     <td>
                       {% include 'dssgmkt/components/project_status_display.html' %}
@@ -84,7 +84,7 @@
             </tbody>
           </table>
         </div>
-        {% url 'dssgmkt:proj_list' as proj_list_url %}
+        {% url 'marketplace:proj_list' as proj_list_url %}
         {% include 'dssgmkt/components/pagination.html' with baseurl=proj_list_url page_obj=proj_list %}
 
       {% else %}
@@ -93,12 +93,12 @@
 
       {% if user_is_any_organization_member %}
         {% if single_org_membership %}
-          <a class="btn btn-success col-lg-6 offset-lg-3 mt-5 mb-1" role="button" href="{% url 'dssgmkt:proj_create' single_org_membership.id %}">
+          <a class="btn btn-success col-lg-6 offset-lg-3 mt-5 mb-1" role="button" href="{% url 'marketplace:proj_create' single_org_membership.id %}">
             <i class="material-icons" style="vertical-align: middle">business_center</i>
             Create a new project
           </a>
         {% elif organization_memberships %}
-          <a class="btn btn-success col-lg-6 offset-lg-3 mt-5 mb-1" role="button" href="{% url 'dssgmkt:proj_create_org_select' %}">
+          <a class="btn btn-success col-lg-6 offset-lg-3 mt-5 mb-1" role="button" href="{% url 'marketplace:proj_create_org_select' %}">
             <i class="material-icons" style="vertical-align: middle">business_center</i>
             Create a new project
           </a>

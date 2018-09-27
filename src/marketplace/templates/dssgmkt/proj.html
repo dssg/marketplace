@@ -5,7 +5,7 @@
   <div class="row">
     <div class="col-lg-9">
       <h1>{{ project.name }}</h1>
-      <h4><a href="{% url 'dssgmkt:org_info' project.organization.id %}">{{ project.organization.name }}</a></h4>
+      <h4><a href="{% url 'marketplace:org_info' project.organization.id %}">{{ project.organization.name }}</a></h4>
       <p>{{ project.follower_count }} followers.</p>
       <p>{{ project.short_summary }}</p>
       {% if project.is_demo %}
@@ -30,7 +30,7 @@
     <div class="col-lg-12 section-header">
       {% if user.volunteerprofile and user.volunteerprofile.is_accepted and first_open_task %}
         <a class="btn btn-success col-lg-6 offset-lg-3 mb-1 "
-           href="{% url 'dssgmkt:proj_task_apply' project.id first_open_task.id %}">
+           href="{% url 'marketplace:proj_task_apply' project.id first_open_task.id %}">
           <i class="material-icons" style="vertical-align: middle">how_to_vote</i>
           Apply to volunteer
         </a>

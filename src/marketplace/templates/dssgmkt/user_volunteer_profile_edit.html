@@ -13,14 +13,14 @@
       <div class="col-lg-9 offset-lg-3">
         <button type="submit"
                 form="edituservolunteerprofile"
-                formaction="{% url 'dssgmkt:user_volunteer_profile_edit' volunteerprofile.user.id volunteerprofile.id %}"
+                formaction="{% url 'marketplace:user_volunteer_profile_edit' volunteerprofile.user.id volunteerprofile.id %}"
                 formmethod="post"
                 class="btn btn-success mr-3">
           <i class="material-icons" style="vertical-align: middle">save</i>
           Save
         </button>
         <a class="btn btn-outline-primary"
-           href="{% url 'dssgmkt:user_profile' volunteerprofile.user.id %}">
+           href="{% url 'marketplace:user_profile' volunteerprofile.user.id %}">
           <i class="material-icons" style="vertical-align: middle">close</i>
           Cancel
         </a>

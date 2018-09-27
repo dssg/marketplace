@@ -16,7 +16,7 @@ from .proj import ProjectService
 
 from .common import validate_consistent_keys, social_cause_view_model_translation, project_status_view_model_translation
 
-from dssgmkt.authorization.common import ensure_user_has_permission
+from marketplace.authorization.common import ensure_user_has_permission
 
 
 class OrganizationService():

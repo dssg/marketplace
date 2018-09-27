@@ -19,24 +19,24 @@ from ..models.common import ReviewStatus, OrgRole
 from ..models.org import (
     Organization, OrganizationMembershipRequest, OrganizationRole,
 )
-from dssgmkt.domain.org import OrganizationService
-from dssgmkt.domain.common import get_social_causes
+from marketplace.domain.org import OrganizationService
+from marketplace.domain.common import get_social_causes
 from .common import build_breadcrumb, home_link, paginate, generic_getter
 
 
 logger = logging.getLogger(__name__)
 
 def organizations_link(include_link=True):
-    return ('Organizations', reverse('dssgmkt:org_list') if include_link else None)
+    return ('Organizations', reverse('marketplace:org_list') if include_link else None)
 
 def organization_link(organization, include_link=True):
-    return (organization.name, reverse('dssgmkt:org_info', args=[organization.id]) if include_link else None)
+    return (organization.name, reverse('marketplace:org_info', args=[organization.id]) if include_link else None)
 
 def organization_staff_link(organization, include_link=True):
-    return ('Staff', reverse('dssgmkt:org_staff', args=[organization.id]) if include_link else None)
+    return ('Staff', reverse('marketplace:org_staff', args=[organization.id]) if include_link else None)
 
 def organization_membership_request_link(membership_request, include_link=True):
-    return ('Membership request', reverse('dssgmkt:org_staff_request_review',
+    return ('Membership request', reverse('marketplace:org_staff_request_review',
                                             args=[membership_request.organization.id, membership_request.id ]) if include_link else None)
 
 def organization_breadcrumb(organization, *items):
@@ -139,7 +139,7 @@ class OrganizationEdit(PermissionRequiredMixin, UpdateView):
     raise_exception = True
 
     def get_success_url(self):
-        return reverse('dssgmkt:org_info', args=[self.kwargs['org_pk']])
+        return reverse('marketplace:org_info', args=[self.kwargs['org_pk']])
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -181,7 +181,7 @@ def organization_staff_view(request, org_pk):
             try:
                 OrganizationService.add_staff_member(request.user, org_pk, organization_role)
                 messages.info(request, 'Staff member added successfully.')
-                return redirect('dssgmkt:org_staff', org_pk=org_pk)
+                return redirect('marketplace:org_staff', org_pk=org_pk)
             except KeyError:
                 raise Http404
             except ValueError:
@@ -219,7 +219,7 @@ def add_organization_staff_view(request, org_pk):
             try:
                 OrganizationService.add_staff_member_by_id(request.user, org_pk, userid, role)
                 messages.info(request, 'Staff member added successfully.')
-                return redirect('dssgmkt:org_staff', org_pk=org_pk)
+                return redirect('marketplace:org_staff', org_pk=org_pk)
             except ValueError as v:
                 form_errors.append(str(v))
             except KeyError as k:
@@ -255,7 +255,7 @@ class OrganizationMembershipRequestCreate(CreateView):
     template_name = 'dssgmkt/org_staff_request.html'
 
     def get_success_url(self):
-        return reverse('dssgmkt:org_info', args=[self.kwargs['org_pk']])
+        return reverse('marketplace:org_info', args=[self.kwargs['org_pk']])
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -295,7 +295,7 @@ def process_organization_membership_request_view(request, org_pk, request_pk, ac
                 else:
                     OrganizationService.reject_membership_request(request.user, org_pk, membership_request)
                     messages.info(request, 'Membership request rejected.')
-                return redirect('dssgmkt:org_staff', org_pk=org_pk)
+                return redirect('marketplace:org_staff', org_pk=org_pk)
             except KeyError:
                 raise Http404
     elif request.method == 'GET':
@@ -324,7 +324,7 @@ class OrganizationRoleEdit(PermissionRequiredMixin, UpdateView):
     raise_exception = True
 
     def get_success_url(self):
-        return reverse('dssgmkt:org_staff', args=[self.object.organization.id])
+        return reverse('marketplace:org_staff', args=[self.object.organization.id])
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -361,7 +361,7 @@ class OrganizationLeave(PermissionRequiredMixin, DeleteView):
         return get_organization_role(self.request, self.kwargs['org_pk'], self.request.user.id)
 
     def get_success_url(self):
-        return reverse('dssgmkt:org_info', args=[self.object.organization.id])
+        return reverse('marketplace:org_info', args=[self.object.organization.id])
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -401,7 +401,7 @@ def organization_role_delete_view(request, org_pk, role_pk):
             try:
                 OrganizationService.delete_organization_role(request.user, org_pk, organization_role)
                 messages.info(request, 'Staff member removed successfully.')
-                return redirect('dssgmkt:org_staff', org_pk=org_pk)
+                return redirect('marketplace:org_staff', org_pk=org_pk)
             except KeyError:
                 raise Http404
             except ValueError as err:
@@ -437,7 +437,7 @@ class OrganizationCreateView(PermissionRequiredMixin, CreateView):
     raise_exception = True
 
     def get_success_url(self):
-        return reverse('dssgmkt:org_info', args=[self.object.pk])
+        return reverse('marketplace:org_info', args=[self.object.pk])
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

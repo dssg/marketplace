@@ -1,5 +1,6 @@
 from django.apps import AppConfig
 
 
-class DssgmktConfig(AppConfig):
-    name = 'dssgmkt'
+class MarketplaceConfig(AppConfig):
+
+    name = 'marketplace'

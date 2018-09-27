@@ -25,7 +25,7 @@
      <div class="col-lg-12 row no-gutters mt-5 action-links">
        <div class="col-lg-4 offset-lg-2 mt-2 d-flex mr-lg-2">
          {% if not user.is_authenticated or user_is_any_organization_member %}
-           <a class="btn btn-lg btn-warning text-primary flex-grow-1 pt-3" href="{% if user_is_any_organization_member %}{% url 'dssgmkt:proj_create_org_select' %}{% else %}{% url 'dssgmkt:signup_form' 'organization' %}{% endif %}">
+           <a class="btn btn-lg btn-warning text-primary flex-grow-1 pt-3" href="{% if user_is_any_organization_member %}{% url 'marketplace:proj_create_org_select' %}{% else %}{% url 'marketplace:signup_form' 'organization' %}{% endif %}">
              <h2>
                Post a project
              </h2>
@@ -33,7 +33,7 @@
          {% endif %}
        </div>
        <div class="col-lg-4 d-flex mt-2 ml-lg-2">
-         <a class="btn btn-lg btn-warning text-primary flex-grow-1 pt-3" href="{% if user.is_authenticated %}{% url 'dssgmkt:proj_list' %}{% else %}{% url 'dssgmkt:signup_form' 'volunteer' %}{% endif %}">
+         <a class="btn btn-lg btn-warning text-primary flex-grow-1 pt-3" href="{% if user.is_authenticated %}{% url 'marketplace:proj_list' %}{% else %}{% url 'marketplace:signup_form' 'volunteer' %}{% endif %}">
            <h2>
              Start volunteering
            </h2>
@@ -105,7 +105,7 @@
      </div>
      <div class="card-footer">
       <div class="d-flex mt-2 mb-2">
-        <a class="btn btn-warning text-primary flex-grow-1" href="{% url 'dssgmkt:signup_form' 'organization' %}">
+        <a class="btn btn-warning text-primary flex-grow-1" href="{% url 'marketplace:signup_form' 'organization' %}">
             Post a project now
         </a>
       </div>
@@ -127,7 +127,7 @@
      </div>
      <div class="card-footer">
       <div class="d-flex mt-2 mb-2">
-        <a class="btn btn-warning text-primary flex-grow-1" href="{% url 'dssgmkt:signup_form' 'volunteer' %}">
+        <a class="btn btn-warning text-primary flex-grow-1" href="{% url 'marketplace:signup_form' 'volunteer' %}">
             <span class="d-none d-lg-block">Ready to help? Sign up now</span>
             <span class="d-block d-lg-none">Sign up now</span>
         </a>
@@ -146,12 +146,12 @@
      <ul class="list-group list-group-flush">
       <li class="list-group-item">
         <p>Projects our volunteers are working on.</p>
-        <p><a href="{% url 'dssgmkt:proj_list' %}">Browse projects</a></p>
+        <p><a href="{% url 'marketplace:proj_list' %}">Browse projects</a></p>
       </li>
       <li class="list-group-item featured d-flex flex-column">
        <h5 class="text-muted">Featured project</h5>
        {% if featured_project %}
-         <a class="itemlink" href="{% url 'dssgmkt:proj_info' featured_project.id %}">
+         <a class="itemlink" href="{% url 'marketplace:proj_info' featured_project.id %}">
            <h4>{{ featured_project.name }}</h4>
            {% if featured_project.banner_image_file %}
             <img src="{{ featured_project.banner_image_file.url }}" class="img-fluid" alt=""></img>
@@ -170,12 +170,12 @@
      <ul class="list-group list-group-flush">
       <li class="list-group-item">
         <p>Organizations working on social good.</p>
-        <p><a href="{% url 'dssgmkt:org_list' %}">Browse organizations</a></p>
+        <p><a href="{% url 'marketplace:org_list' %}">Browse organizations</a></p>
       </li>
       <li class="list-group-item featured d-flex flex-column">
        <h5 class="text-muted">Featured organization</h5>
        {% if featured_organization %}
-         <a class="itemlink" href="{% url 'dssgmkt:org_info' featured_organization.id %}">
+         <a class="itemlink" href="{% url 'marketplace:org_info' featured_organization.id %}">
            <h4>{{ featured_organization.name }}</h4>
            <div class="last">
              {% if featured_organization.logo_file %}
@@ -194,12 +194,12 @@
      <ul class="list-group list-group-flush">
       <li class="list-group-item">
         <p>Volunteers that make our projects a reality.</p>
-        <p><a href="{% url 'dssgmkt:volunteer_list' %}">Browse volunteers</a></p>
+        <p><a href="{% url 'marketplace:volunteer_list' %}">Browse volunteers</a></p>
       </li>
       <li class="list-group-item featured d-flex flex-column">
        <h5 class="text-muted">Featured volunteer</h5>
        {% if featured_volunteer %}
-         <a class="itemlink" href="{% url 'dssgmkt:user_profile' featured_volunteer.user.id %}">
+         <a class="itemlink" href="{% url 'marketplace:user_profile' featured_volunteer.user.id %}">
            <h4>{% include 'dssgmkt/components/user_display.html' with user=featured_volunteer.user hide_anchor=True %}</h4>
            <div class="last">Member since {{ featured_volunteer.user.date_joined }} </div>
            <div class="last">Volunteer in {{ featured_volunteer.taskcount }} tasks</div>

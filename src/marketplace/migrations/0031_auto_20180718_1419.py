@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('dssgmkt', '0030_auto_20180713_1556'),
+        ('marketplace', '0030_auto_20180713_1556'),
     ]
 
     operations = [
@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.TextField(help_text='Descriptive name that identifies the discussion channel within the project.', max_length=100, verbose_name='Name')),
-                ('project', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='dssgmkt.Project')),
+                ('project', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='marketplace.Project')),
             ],
         ),
         migrations.RemoveField(
@@ -26,7 +26,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='projectcomment',
             name='channel',
-            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.CASCADE, to='dssgmkt.ProjectDiscussionChannel'),
+            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.CASCADE, to='marketplace.ProjectDiscussionChannel'),
             preserve_default=False,
         ),
     ]

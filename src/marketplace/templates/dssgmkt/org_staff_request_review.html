@@ -12,7 +12,7 @@
       application and accept or reject it.</p>
 
       <p>User: {% include 'dssgmkt/components/user_display.html' with user=organizationmembershiprequest.user %}</p>
-      {% comment %} <p>Email addres:<a href="{% url 'dssgmkt:user_profile' organizationmembershiprequest.user.id %}">
+      {% comment %} <p>Email addres:<a href="{% url 'marketplace:user_profile' organizationmembershiprequest.user.id %}">
         {{ organizationmembershiprequest.user.email }}</a></p> {% endcomment %}
       <p>Request date: {{ organizationmembershiprequest.request_date }} </p>
     </div>
@@ -32,7 +32,7 @@
               <div class="col-lg-9 offset-lg-3">
                 <button type="submit"
                         form="orgmembershiprequestreview"
-                        formaction="{% url 'dssgmkt:org_staff_request_review_do' organization.id organizationmembershiprequest.id 'accept' %}"
+                        formaction="{% url 'marketplace:org_staff_request_review_do' organization.id organizationmembershiprequest.id 'accept' %}"
                         formmethod="post"
                         class="btn btn-success mr-3">
                   <i class="material-icons" style="vertical-align: middle">check</i>
@@ -41,14 +41,14 @@
 
                 <button type="submit"
                         form="orgmembershiprequestreview"
-                        formaction="{% url 'dssgmkt:org_staff_request_review_do' organization.id organizationmembershiprequest.id 'reject' %}"
+                        formaction="{% url 'marketplace:org_staff_request_review_do' organization.id organizationmembershiprequest.id 'reject' %}"
                         formmethod="post"
                         class="btn btn-danger mr-3">
                   <i class="material-icons" style="vertical-align: middle">block</i>
                   Reject membership request
                 </button>
 
-                <a class="btn btn-outline-primary" href="{% url 'dssgmkt:org_staff' organization.id %}">
+                <a class="btn btn-outline-primary" href="{% url 'marketplace:org_staff' organization.id %}">
                   <i class="material-icons" style="vertical-align: middle">close</i>
                   Cancel
                 </a>
@@ -90,7 +90,7 @@
     {% if user_is_member and organizationmembershiprequest.private_reviewer_notes %}
       <p>Private reviewer's notes: {{ organizationmembershiprequest.private_reviewer_notes|markdown }}</p>
     {% endif %}
-    <a href="{% url 'dssgmkt:org_staff' organization.id %}">Back</a>
+    <a href="{% url 'marketplace:org_staff' organization.id %}">Back</a>
 
   {% endif %}
 

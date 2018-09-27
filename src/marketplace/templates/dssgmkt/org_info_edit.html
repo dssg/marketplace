@@ -14,14 +14,14 @@
       <div class="col-lg-9 offset-lg-3">
         <button type="submit"
                 form="editorg"
-                formaction="{% url 'dssgmkt:org_info_edit' organization.id %}"
+                formaction="{% url 'marketplace:org_info_edit' organization.id %}"
                 formmethod="post"
                 class="btn btn-success mr-3">
           <i class="material-icons" style="vertical-align: middle">save</i>
           Save
         </button>
         <a class="btn btn-outline-primary"
-           href="{% url 'dssgmkt:org_info' organization.id %}">
+           href="{% url 'marketplace:org_info' organization.id %}">
            <i class="material-icons" style="vertical-align: middle">close</i>
            Cancel
         </a>

@@ -28,12 +28,12 @@
           {% for volunteer in volunteers %}
             <tr>
                 <td>{% include 'dssgmkt/components/user_display.html' with user=volunteer.user %}</td>
-                {# <td><a href="{% url 'dssgmkt:user_profile' volunteer.user.id %}">{{ volunteer.user.email }}</a></td> #}
+                {# <td><a href="{% url 'marketplace:user_profile' volunteer.user.id %}">{{ volunteer.user.email }}</a></td> #}
                 <td>{{ volunteer.task.name }}</td>
                 <td>{% if volunteer.task.is_completed %}<span class="text-muted">Completed</span>{% else %}Active{% endif %}</td>
                 <td>
                   {% if perm_volunteers_edit and not volunteer.task.is_completed %}
-                      <a href="{% url 'dssgmkt:proj_volunteer_edit' volunteer.task.project.id volunteer.task.id volunteer.id %}">
+                      <a href="{% url 'marketplace:proj_volunteer_edit' volunteer.task.project.id volunteer.task.id volunteer.id %}">
                         <i class="material-icons md-12" style="vertical-align: middle">swap_horiz</i>
                         Change task
                       </a>
@@ -41,7 +41,7 @@
                 </td>
                 <td>
                   {% if perm_volunteers_remove and not volunteer.task.is_completed %}
-                      <a class="text-danger" href="{% url 'dssgmkt:proj_volunteer_remove' volunteer.task.project.id volunteer.task.id volunteer.id %}">
+                      <a class="text-danger" href="{% url 'marketplace:proj_volunteer_remove' volunteer.task.project.id volunteer.task.id volunteer.id %}">
                         <i class="material-icons" style="vertical-align: middle">remove_circle</i>
                         Remove
                       </a>
@@ -52,7 +52,7 @@
         </tbody>
       </table>
     </div>
-    {% url 'dssgmkt:proj_staff' as proj_staff_url %}
+    {% url 'marketplace:proj_staff' as proj_staff_url %}
     {% include 'dssgmkt/components/pagination.html' with baseurl=proj_staff_url page_obj=volunteers pagename='volunteers_page' %}
   {% else %}
     <p>No active volunteers in the project.</p>
@@ -77,11 +77,11 @@
           {% for application in volunteer_applications %}
             <tr>
                 <td>{% include 'dssgmkt/components/user_display.html' with user=application.volunteer %}</td>
-                {# <td><a href="{% url 'dssgmkt:user_profile' application.volunteer.id %}">{{ application.volunteer.email }}</a></td> #}
+                {# <td><a href="{% url 'marketplace:user_profile' application.volunteer.id %}">{{ application.volunteer.email }}</a></td> #}
                 <td>{{ application.task.name }}</td>
                 <td>{{ application.application_date }}</td>
                 <td>
-                  <a href="{% url 'dssgmkt:proj_volunteer_application_review' project.id application.task.id application.id %}"
+                  <a href="{% url 'marketplace:proj_volunteer_application_review' project.id application.task.id application.id %}"
                      class="{% if application.is_accepted %}
                                text-success
                              {% elif application.is_rejected %}
@@ -107,7 +107,7 @@
         </tbody>
       </table>
     </div>
-    {% url 'dssgmkt:proj_staff' as proj_staff_url %}
+    {% url 'marketplace:proj_staff' as proj_staff_url %}
     {% include 'dssgmkt/components/pagination.html' with baseurl=proj_staff_url page_obj=volunteer_applications pagename='applications_page' %}
   {% else %}
     <p>No applications found.</p>

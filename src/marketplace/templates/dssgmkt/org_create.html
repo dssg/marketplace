@@ -17,13 +17,13 @@
         <div class="col-lg-9 offset-lg-3">
           <button type="submit"
                   form="createorganization"
-                  formaction="{% url 'dssgmkt:org_create' %}"
+                  formaction="{% url 'marketplace:org_create' %}"
                   formmethod="post"
                   class="btn btn-success mr-3">
             <i class="material-icons" style="vertical-align: middle">check</i>
             Create organization
           </button>
-          <a class="btn btn-outline-primary" href="{% url 'dssgmkt:org_list' %}">
+          <a class="btn btn-outline-primary" href="{% url 'marketplace:org_list' %}">
             <i class="material-icons" style="vertical-align: middle">close</i>
             Cancel
           </a>

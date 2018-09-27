@@ -1,4 +1,4 @@
-{% if not hide_anchor %}<a href="{% url 'dssgmkt:user_profile' user.id %}">{% endif %}
+{% if not hide_anchor %}<a href="{% url 'marketplace:user_profile' user.id %}">{% endif %}
   {{ user.first_name }}
   {{ user.last_name }}
   {% if not hide_username %}

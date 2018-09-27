@@ -24,7 +24,7 @@
               <tbody>
                 {% for project in projects %}
                   <tr>
-                      <td><a href="{% url 'dssgmkt:proj_info' project.id %}">{{ project.name }}</a></td>
+                      <td><a href="{% url 'marketplace:proj_info' project.id %}">{{ project.name }}</a></td>
                       <td>{{ project.short_summary }}</td>
                       <td>
                         {% include 'dssgmkt/components/project_status_display.html' %}
@@ -37,7 +37,7 @@
               </tbody>
             </table>
           </div>
-          {% url 'dssgmkt:org_info' as org_info_url %}
+          {% url 'marketplace:org_info' as org_info_url %}
           {% include 'dssgmkt/components/pagination.html' with baseurl=org_info_url page_obj=projects pagename='projects_page' %}
         {% else %}
           This organization has not posted any project yet.
@@ -50,7 +50,7 @@
     <div class="col-lg-4">
       {% has_perm 'organization.information_edit' user organization as perm_org_edit %}
       {% if perm_org_edit %}
-        <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'dssgmkt:org_info_edit' organization.id %}">
+        <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'marketplace:org_info_edit' organization.id %}">
           <i class="material-icons" style="vertical-align: middle">edit</i>
           Edit organization information
         </a>
@@ -58,14 +58,14 @@
 
       {% has_perm 'organization.project_create' user organization as perm_proj_create %}
       {% if perm_proj_create %}
-        <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'dssgmkt:proj_create' organization.id %}">
+        <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'marketplace:proj_create' organization.id %}">
           <i class="material-icons" style="vertical-align: middle">add_circle</i>
           Create new project
         </a>
       {% endif %}
 
       {% if user_is_member %}
-        <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'dssgmkt:org_staff_leave' organization.id %}">
+        <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'marketplace:org_staff_leave' organization.id %}">
           <i class="material-icons" style="vertical-align: middle">meeting_room</i>
           Leave organization
         </a>
@@ -75,7 +75,7 @@
           Membership requested
         </a>
       {% else %}
-        <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'dssgmkt:org_staff_request' organization.id %}">
+        <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'marketplace:org_staff_request' organization.id %}">
           <i class="material-icons" style="vertical-align: middle">person_add</i>
           Request membership
         </a>

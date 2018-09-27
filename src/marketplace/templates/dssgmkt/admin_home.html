@@ -31,7 +31,7 @@
 
                             <button type="submit"
                                     form="orgmembershiprequestreview"
-                                    formaction="{% url 'dssgmkt:admin_volunteer_review' profile.id 'accept' %}"
+                                    formaction="{% url 'marketplace:admin_volunteer_review' profile.id 'accept' %}"
                                     formmethod="post"
                                     class="btn btn-success mr-3">
                               <i class="material-icons" style="vertical-align: middle">check</i>
@@ -40,7 +40,7 @@
 
                             <button type="submit"
                                     form="orgmembershiprequestreview"
-                                    formaction="{% url 'dssgmkt:admin_volunteer_review' profile.id 'reject' %}"
+                                    formaction="{% url 'marketplace:admin_volunteer_review' profile.id 'reject' %}"
                                     formmethod="post"
                                     class="btn btn-danger mr-3">
                               <i class="material-icons" style="vertical-align: middle">block</i>
@@ -53,7 +53,7 @@
           </tbody>
         </table>
       </div>
-      {% url 'dssgmkt:admin_home' as admin_home_url %}
+      {% url 'marketplace:admin_home' as admin_home_url %}
       {% include 'dssgmkt/components/pagination.html' with baseurl=admin_home_url %}
     {% else %}
       No pending profiles at this time.

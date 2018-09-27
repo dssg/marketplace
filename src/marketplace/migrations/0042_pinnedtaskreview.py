@@ -8,7 +8,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('dssgmkt', '0041_auto_20180720_1531'),
+        ('marketplace', '0041_auto_20180720_1531'),
     ]
 
     operations = [
@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
             name='PinnedTaskReview',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('task_review', models.ForeignKey(help_text='Project task review this pinned review is holding.', on_delete=django.db.models.deletion.CASCADE, to='dssgmkt.ProjectTaskReview', verbose_name='Task review')),
+                ('task_review', models.ForeignKey(help_text='Project task review this pinned review is holding.', on_delete=django.db.models.deletion.CASCADE, to='marketplace.ProjectTaskReview', verbose_name='Task review')),
                 ('user', models.ForeignKey(help_text='The volunteer pinning the review.', on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL, verbose_name='Volunteer')),
             ],
         ),

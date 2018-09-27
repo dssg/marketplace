@@ -20,7 +20,7 @@ from django.conf import settings
 from django.views.static import serve
 
 urlpatterns = [
-    path('', include('dssgmkt.urls')),
+    path('', include('marketplace.urls')),
     path('admin/', admin.site.urls),
 
     url(r'^media/(?P<path>.*)$', serve, {

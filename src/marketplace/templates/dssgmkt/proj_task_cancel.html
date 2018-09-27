@@ -14,13 +14,13 @@
       <div class="col-lg-9 offset-lg-3">
         <button type="submit"
                 form="canceltask"
-                formaction="{% url 'dssgmkt:proj_task_cancel' project.id project_task.id %}"
+                formaction="{% url 'marketplace:proj_task_cancel' project.id project_task.id %}"
                 formmethod="post"
                 class="btn btn-danger mr-3">
           <i class="material-icons" style="vertical-align: middle">block</i>
           Yes, stop working on this project
         </button>
-        <a class="btn btn-outline-primary" href="{% url 'dssgmkt:proj_instructions_task' project.id project_task.id %}">
+        <a class="btn btn-outline-primary" href="{% url 'marketplace:proj_instructions_task' project.id project_task.id %}">
           <i class="material-icons" style="vertical-align: middle">close</i>
           No, keep working on this project
         </a>

@@ -24,7 +24,7 @@
           {% csrf_token %}
           <button type="submit"
                   form="followproject"
-                  formaction="{% url 'dssgmkt:proj_follow' project.id %}"
+                  formaction="{% url 'marketplace:proj_follow' project.id %}"
                   formmethod="post"
                   class="btn btn-success col-lg-12 mb-1">
             {% if user_is_following_project %}
@@ -41,7 +41,7 @@
       {% has_perm 'project.publish' user project as perm_publish %}
       {% if perm_publish and project.is_draft_status %}
         <a class="btn btn-success col-lg-12 mb-1"
-           href="{% url 'dssgmkt:proj_publish' project.id %}">
+           href="{% url 'marketplace:proj_publish' project.id %}">
           <i class="material-icons" style="vertical-align: middle">publish</i>
           Publish project
         </a>
@@ -50,7 +50,7 @@
       {% has_perm 'project.approve_as_completed' user project as perm_approve %}
       {% if perm_approve and project.is_waiting_review_status %}
         <a class="btn btn-success col-lg-12 mb-1"
-           href="{% url 'dssgmkt:proj_finish' project.id %}">
+           href="{% url 'marketplace:proj_finish' project.id %}">
           <i class="material-icons" style="vertical-align: middle">done_all</i>
           Finish project
         </a>
@@ -59,7 +59,7 @@
       {% has_perm 'project.information_edit' user project as perm_information_edit %}
       {% if perm_information_edit %}
         <a class="btn btn-success col-lg-12 mb-1"
-           href="{% url 'dssgmkt:proj_info_edit' project.id %}">
+           href="{% url 'marketplace:proj_info_edit' project.id %}">
           <i class="material-icons" style="vertical-align: middle">edit</i>
           Edit project information
         </a>
@@ -145,7 +145,7 @@
                       {% else %}
                         {% if user.volunteerprofile %}
                           {% if user.volunteerprofile.is_accepted %}
-                            <a class="list-group-item list-group-item-action bg-success text-white" href="{% url 'dssgmkt:proj_task_apply' project.id project_task.id %}">
+                            <a class="list-group-item list-group-item-action bg-success text-white" href="{% url 'marketplace:proj_task_apply' project.id project_task.id %}">
                               <i class="material-icons" style="vertical-align: middle">how_to_vote</i>
                               Apply to volunteer
                             </a>

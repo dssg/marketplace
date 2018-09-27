@@ -30,7 +30,7 @@
               <div class="col-lg-9 offset-lg-3">
                 <button type="submit"
                         form="volunteerapplicationreview"
-                        formaction="{% url 'dssgmkt:proj_volunteer_application_review_do' project.id volunteerapplication.task.id volunteerapplication.id 'accept' %}"
+                        formaction="{% url 'marketplace:proj_volunteer_application_review_do' project.id volunteerapplication.task.id volunteerapplication.id 'accept' %}"
                         formmethod="post"
                         class="btn btn-success mr-3">
                   <i class="material-icons" style="vertical-align: middle">check</i>
@@ -38,13 +38,13 @@
                 </button>
                 <button type="submit"
                         form="volunteerapplicationreview"
-                        formaction="{% url 'dssgmkt:proj_volunteer_application_review_do' project.id volunteerapplication.task.id volunteerapplication.id 'reject' %}"
+                        formaction="{% url 'marketplace:proj_volunteer_application_review_do' project.id volunteerapplication.task.id volunteerapplication.id 'reject' %}"
                         formmethod="post"
                         class="btn btn-danger mr-3">
                   <i class="material-icons" style="vertical-align: middle">block</i>
                   Reject volunteer application
                 </button>
-                <a class="btn btn-outline-primary" href="{% url 'dssgmkt:proj_volunteers' project.id %}">
+                <a class="btn btn-outline-primary" href="{% url 'marketplace:proj_volunteers' project.id %}">
                   <i class="material-icons" style="vertical-align: middle">close</i>
                   Cancel
                 </a>

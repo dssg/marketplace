@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('dssgmkt', '0059_user_profile_image_file'),
+        ('marketplace', '0059_user_profile_image_file'),
     ]
 
     operations = [

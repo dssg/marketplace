@@ -21,27 +21,27 @@ from ..models.proj import Project, ProjectStatus, ProjectTask, VolunteerApplicat
 from ..models.user import Skill, SkillLevel, User, VolunteerProfile, VolunteerSkill, UserNotification, NotificationSource
 from .common import build_breadcrumb, home_link, paginate
 
-from dssgmkt.domain.user import UserService
-from dssgmkt.domain.proj import ProjectService, ProjectTaskService
-from dssgmkt.domain.org import OrganizationService
-from dssgmkt.domain.notifications import NotificationService
-from dssgmkt.domain.news import NewsService
+from marketplace.domain.user import UserService
+from marketplace.domain.proj import ProjectService, ProjectTaskService
+from marketplace.domain.org import OrganizationService
+from marketplace.domain.notifications import NotificationService
+from marketplace.domain.news import NewsService
 
 
 def dashboard_link(include_link=True):
-    return ('Dashboard', reverse_lazy('dssgmkt:user_dashboard') if include_link else None)
+    return ('Dashboard', reverse_lazy('marketplace:user_dashboard') if include_link else None)
 
 def users_link(include_link=True):
-    return ('Users', reverse_lazy('dssgmkt:volunteer_list') if include_link else None)
+    return ('Users', reverse_lazy('marketplace:volunteer_list') if include_link else None)
 
 def volunteers_link(include_link=True):
-    return ('Volunteers', reverse_lazy('dssgmkt:volunteer_list') if include_link else None)
+    return ('Volunteers', reverse_lazy('marketplace:volunteer_list') if include_link else None)
 
 def my_profile_link(user_pk, include_link=True):
-    return ("My profile" , reverse('dssgmkt:user_profile', args=[user_pk]) if include_link else None)
+    return ("My profile" , reverse('marketplace:user_profile', args=[user_pk]) if include_link else None)
 
 def edit_my_skills_link(user_pk, include_link=True):
-    return ("Edit my skills" , reverse('dssgmkt:user_profile_skills_edit', args=[user_pk]) if include_link else None)
+    return ("Edit my skills" , reverse('marketplace:user_profile_skills_edit', args=[user_pk]) if include_link else None)
 
 def edit_my_preferences_link(user_pk, include_link=True):
     return ("Edit my interests" , reverse('dssgmkt:user_preferences_edit', args=[user_pk]) if include_link else None)
@@ -49,12 +49,12 @@ def edit_my_preferences_link(user_pk, include_link=True):
 def change_password_breadcrumb():
     return build_breadcrumb([home_link(),
                              users_link(),
-                             ('My profile', reverse_lazy('dssgmkt:my_user_profile')),
+                             ('My profile', reverse_lazy('marketplace:my_user_profile')),
                              ('Change password', None)])
 
 def logout_view(request):
     logout(request)
-    return HttpResponseRedirect(reverse('dssgmkt:home'))
+    return HttpResponseRedirect(reverse('marketplace:home'))
 
 def get_or_none(classmodel, **kwargs):
     try:
@@ -70,23 +70,23 @@ def get_url_for_notification(source_type, source_id):
         elif source_type == NotificationSource.ORGANIZATION:
             organization = get_or_none(Organization, pk=source_id)
             if organization:
-                url = reverse('dssgmkt:org_info', args=[source_id])
+                url = reverse('marketplace:org_info', args=[source_id])
         elif source_type == NotificationSource.PROJECT:
             project = get_or_none(Project, pk=source_id)
             if project:
-                url = reverse('dssgmkt:proj_info', args=[source_id])
+                url = reverse('marketplace:proj_info', args=[source_id])
         elif source_type == NotificationSource.TASK:
             project_task = get_or_none(ProjectTask, pk=source_id)
             if project_task:
-                url = reverse('dssgmkt:proj_info', args=[project_task.project.id])
+                url = reverse('marketplace:proj_info', args=[project_task.project.id])
         elif source_type == NotificationSource.VOLUNTEER_APPLICATION:
             volunteer_application = get_or_none(VolunteerApplication, pk=source_id)
             if volunteer_application:
-                url = reverse('dssgmkt:proj_volunteer_application_review', args=[volunteer_application.task.project.id, volunteer_application.task.id, source_id])
+                url = reverse('marketplace:proj_volunteer_application_review', args=[volunteer_application.task.project.id, volunteer_application.task.id, source_id])
         elif source_type == NotificationSource.ORGANIZATION_MEMBERSHIP_REQUEST:
             membership_request = get_or_none(OrganizationMembershipRequest,pk=source_id)
             if membership_request:
-                url = reverse('dssgmkt:org_staff_request_review', args=[membership_request.organization.id, source_id])
+                url = reverse('marketplace:org_staff_request_review', args=[membership_request.organization.id, source_id])
     return url
 
 def volunteer_list_view(request):
@@ -190,7 +190,7 @@ def home_view(request):
 
 
 def my_user_profile_view(request):
-    return HttpResponseRedirect(reverse('dssgmkt:user_profile', args=[request.user.id]))
+    return HttpResponseRedirect(reverse('marketplace:user_profile', args=[request.user.id]))
 
 class UserProfileView(generic.DetailView):
     model = User
@@ -221,7 +221,7 @@ class UserProfileEdit(PermissionRequiredMixin, UpdateView):
     raise_exception = True
 
     def get_success_url(self):
-        return reverse('dssgmkt:user_profile', args=[self.kwargs['user_pk']])
+        return reverse('marketplace:user_profile', args=[self.kwargs['user_pk']])
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -252,7 +252,7 @@ class VolunteerProfileEdit(PermissionRequiredMixin, UpdateView):
     raise_exception = True
 
     def get_success_url(self):
-        return reverse('dssgmkt:user_profile', args=[self.kwargs['user_pk']])
+        return reverse('marketplace:user_profile', args=[self.kwargs['user_pk']])
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -315,7 +315,7 @@ def user_profile_skills_edit_view(request, user_pk):
     if request.method == 'POST':
         try:
             UserService.set_volunteer_skills(request.user, user_pk, request.POST)
-            return redirect('dssgmkt:user_profile', user_pk=user_pk)
+            return redirect('marketplace:user_profile', user_pk=user_pk)
         except KeyError:
             raise Http404
         except ValueError:
@@ -340,10 +340,10 @@ def create_volunteer_profile_view(request, user_pk):
     elif request.method == 'POST':
         try:
             volunteer_profile = UserService.create_volunteer_profile(request.user, user_pk)
-            return redirect('dssgmkt:user_volunteer_profile_edit', user_pk=user_pk, volunteer_pk=volunteer_profile.id)
+            return redirect('marketplace:user_volunteer_profile_edit', user_pk=user_pk, volunteer_pk=volunteer_profile.id)
         except KeyError:
             messages.error(request, 'There was an error while processing your request.')
-            return redirect('dssgmkt:user_profile', user_pk=user_pk)
+            return redirect('marketplace:user_profile', user_pk=user_pk)
 
 
 def select_user_type_view(request):
@@ -374,7 +374,7 @@ def signup(request, user_type=None):
                 user = authenticate(username=username, password=raw_password)
                 login(request, user)
                 messages.info(request, 'Welcome to DSSG Solve! Your account was created successfully.')
-                return redirect('dssgmkt:user_dashboard')
+                return redirect('marketplace:user_dashboard')
             except KeyError as k:
                 form.add_error(None, str(k))
             except ValueError as v:

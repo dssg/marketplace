@@ -12,13 +12,13 @@
       <div class="col-lg-9 offset-lg-3">
         <button type="submit"
                 form="edittaskvolunteer"
-                formaction="{% url 'dssgmkt:proj_volunteer_edit' projecttaskrole.task.project.id projecttaskrole.task.id projecttaskrole.id %}"
+                formaction="{% url 'marketplace:proj_volunteer_edit' projecttaskrole.task.project.id projecttaskrole.task.id projecttaskrole.id %}"
                 formmethod="post"
                 class="btn btn-success mr-3">
           <i class="material-icons" style="vertical-align: middle">save</i>
           Save
         </button>
-        <a class="btn btn-outline-primary" href="{% url 'dssgmkt:proj_volunteers' project.id %}">
+        <a class="btn btn-outline-primary" href="{% url 'marketplace:proj_volunteers' project.id %}">
           <i class="material-icons" style="vertical-align: middle">close</i>
           Cancel
         </a>

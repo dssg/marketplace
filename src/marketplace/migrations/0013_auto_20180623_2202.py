@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('dssgmkt', '0012_usernotification_target_url'),
+        ('marketplace', '0012_usernotification_target_url'),
     ]
 
     operations = [

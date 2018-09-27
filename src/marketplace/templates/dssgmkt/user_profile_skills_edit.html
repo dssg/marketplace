@@ -102,14 +102,14 @@
       <div class="col-lg-9 offset-lg-3">
         <button type="submit"
                 form="skillsform"
-                formaction="{% url 'dssgmkt:user_profile_skills_edit' user.id %}"
+                formaction="{% url 'marketplace:user_profile_skills_edit' user.id %}"
                 formmethod="post"
                 class="btn btn-success mr-3">
           <i class="material-icons" style="vertical-align: middle">save</i>
           Save my skills
         </button>
         <a class="btn btn-outline-primary"
-           href="{% url 'dssgmkt:user_profile' user.id %}">
+           href="{% url 'marketplace:user_profile' user.id %}">
            <i class="material-icons" style="vertical-align: middle">close</i>
            Cancel
         </a>

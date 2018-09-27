@@ -26,28 +26,28 @@
         {% endif %}
         {% if user == userprofile %}
           <a class="btn btn-success col-lg-12 mb-1"
-             href="{% url 'dssgmkt:user_profile_edit' userprofile.id %}">
+             href="{% url 'marketplace:user_profile_edit' userprofile.id %}">
              <i class="material-icons" style="vertical-align: middle">account_circle</i>
             Edit my basic information
           </a>
           <a class="btn btn-success col-lg-12 mb-1"
-             href="{% url 'dssgmkt:user_pwd_change' %}">
+             href="{% url 'marketplace:user_pwd_change' %}">
              <i class="material-icons" style="vertical-align: middle">lock_open</i>
             Change my password
           </a>
           {% if userprofile.volunteerprofile %}
             <a class="btn btn-success col-lg-12 mb-1"
-               href="{% url 'dssgmkt:user_volunteer_profile_edit' userprofile.id userprofile.volunteerprofile.id %}">
+               href="{% url 'marketplace:user_volunteer_profile_edit' userprofile.id userprofile.volunteerprofile.id %}">
                <i class="material-icons" style="vertical-align: middle">build</i>
               Edit my volunteer profile
             </a>
             <a class="btn btn-success col-lg-12 mb-1"
-               href="{% url 'dssgmkt:user_preferences_edit' userprofile.id %}">
+               href="{% url 'marketplace:user_preferences_edit' userprofile.id %}">
                <i class="material-icons" style="vertical-align: middle">tune</i>
               Edit my interests
             </a>
             <a class="btn btn-success col-lg-12 mb-1"
-               href="{% url 'dssgmkt:user_profile_skills_edit' user.id %}">
+               href="{% url 'marketplace:user_profile_skills_edit' user.id %}">
                <i class="material-icons" style="vertical-align: middle">donut_small</i>
               Edit my skills
             </a>
@@ -57,7 +57,7 @@
               {{ form.as_p }}
               <button type="submit"
                       form="addvolunteerprofile"
-                      formaction="{% url 'dssgmkt:user_volunteer_profile_create' user.id %}"
+                      formaction="{% url 'marketplace:user_volunteer_profile_create' user.id %}"
                       formmethod="post"
                       class="btn btn-success col-lg-12 mb-1">
                 <i class="material-icons" style="vertical-align: middle">person_add</i>
@@ -124,7 +124,7 @@
         <div class="card-body">
           {% if userprofile.organizationrole_set.all %}
             {% for organizationrole in userprofile.organizationrole_set.all %}
-                <div><a href="{% url 'dssgmkt:org_info' organizationrole.organization.id %}">{{ organizationrole.organization.name }}</a>
+                <div><a href="{% url 'marketplace:org_info' organizationrole.organization.id %}">{{ organizationrole.organization.name }}</a>
                     ({{ organizationrole.get_role_display }})
                 </div>
             {% endfor %}
@@ -226,8 +226,8 @@
               <tbody>
                 {% for project_task in project_tasks %}
                   <tr>
-                      <td><a href="{% url 'dssgmkt:proj_info' project_task.project.id %}">{{ project_task.project.name }}</a></td>
-                      <td><a href="{% url 'dssgmkt:org_info' project_task.project.organization.id %}">{{ project_task.project.organization.name }}</a></td>
+                      <td><a href="{% url 'marketplace:proj_info' project_task.project.id %}">{{ project_task.project.name }}</a></td>
+                      <td><a href="{% url 'marketplace:org_info' project_task.project.organization.id %}">{{ project_task.project.organization.name }}</a></td>
                       <td>
                         {% include 'dssgmkt/components/social_cause_display.html' with object=project_task.project social_cause=project_task.project.get_project_cause_display %}
                       </td>
@@ -243,7 +243,7 @@
                 {% endfor %}
               </tbody>
             </table>
-            {% url 'dssgmkt:user_profile' as user_profile_url %}
+            {% url 'marketplace:user_profile' as user_profile_url %}
             {% include 'dssgmkt/components/pagination.html' with baseurl=user_profile_url page_obj=project_tasks pagename='project_tasks_page' %}
           </div>
         </div>

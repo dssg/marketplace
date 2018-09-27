@@ -8,7 +8,7 @@
     <div class="col-lg-5 no-gutters">
       <div class="col-lg-12">
         {% if user_is_volunteer %}
-          <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'dssgmkt:proj_list' %}">
+          <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'marketplace:proj_list' %}">
             <i class="material-icons" style="vertical-align: middle">search</i>
             Search for projects
           </a>
@@ -18,7 +18,7 @@
             {{ form.as_p }}
             <button type="submit"
                     form="addvolunteerprofile"
-                    formaction="{% url 'dssgmkt:user_volunteer_profile_create' user.id %}"
+                    formaction="{% url 'marketplace:user_volunteer_profile_create' user.id %}"
                     formmethod="post"
                     class="btn btn-success col-lg-12 mb-1">
               <i class="material-icons" style="vertical-align: middle">person_add</i>
@@ -29,23 +29,23 @@
         {% has_perm 'organization.create' user None as perm_org_create %}
         {% if user_is_any_organization_member %}
           {% if single_org_membership %}
-            <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'dssgmkt:proj_create' single_org_membership.id %}">
+            <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'marketplace:proj_create' single_org_membership.id %}">
               <i class="material-icons" style="vertical-align: middle">business_center</i>
               Create a new project
             </a>
           {% elif organization_memberships %}
-            <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'dssgmkt:proj_create_org_select' %}">
+            <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'marketplace:proj_create_org_select' %}">
               <i class="material-icons" style="vertical-align: middle">business_center</i>
               Create a new project
             </a>
           {% endif %}
         {% elif perm_org_create %}
-          <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'dssgmkt:org_create' %}">
+          <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'marketplace:org_create' %}">
             <i class="material-icons" style="vertical-align: middle">business</i>
             Create new organization
           </a>
         {% endif %}
-        <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'dssgmkt:org_list' %}">
+        <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'marketplace:org_list' %}">
           <i class="material-icons" style="vertical-align: middle">business</i>
           Search for organizations to join
         </a>
@@ -79,7 +79,7 @@
         {% endif %}
         {% if my_tasks %}
           {% for project_task in my_tasks %}
-            <a href="{% url 'dssgmkt:proj_instructions_task' project_task.project.id project_task.id %}">
+            <a href="{% url 'marketplace:proj_instructions_task' project_task.project.id project_task.id %}">
               <div class="alert alert-info">
                 {{ project_task.project.name }}:
                 {% include 'dssgmkt/components/task_type_display.html' with compact_display=True %}
@@ -95,7 +95,7 @@
         <div class="col-lg-12">
           <h3 class="section-header">My volunteer applications</h3>
           {% for task_application in my_task_applications %}
-            <a href="{% url 'dssgmkt:proj_info' task_application.task.project.id %}">
+            <a href="{% url 'marketplace:proj_info' task_application.task.project.id %}">
               <div class="alert alert-info">
                 {{ task_application.task.project.name }}:
                 {% include 'dssgmkt/components/task_type_display.html' with project_task=task_application.task compact_display=True %}
@@ -176,7 +176,7 @@
 
 
 
-      {% url 'dssgmkt:home' as home_url %}
+      {% url 'marketplace:home' as home_url %}
       {% include 'dssgmkt/components/pagination.html' with baseurl=home_url %}
 
     {% endif %}

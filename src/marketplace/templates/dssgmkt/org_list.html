@@ -36,13 +36,13 @@
         <button type="submit"
                 form="orglist"
                 formmethod="post"
-                formaction="{% url 'dssgmkt:org_list' %}"
+                formaction="{% url 'marketplace:org_list' %}"
                 class="btn btn-success col-lg-12 mt-3">
           <i class="material-icons" style="vertical-align: middle">filter_list</i>
           Apply filters
         </button>
         <a class="btn btn-outline-primary col-lg-12 mt-3"
-           href="{% url 'dssgmkt:org_list' %}">
+           href="{% url 'marketplace:org_list' %}">
            <i class="material-icons" style="vertical-align: middle">close</i>
            Clear filters
         </a>
@@ -62,7 +62,7 @@
             <tbody>
               {% for organization in org_list %}
                 <tr>
-                    <td><a href="{% url 'dssgmkt:org_info' organization.id %}">{{ organization.name }}</a></td>
+                    <td><a href="{% url 'marketplace:org_info' organization.id %}">{{ organization.name }}</a></td>
                     <td>{{ organization.short_summary }}</img></td>
                     <td>
                       {% for sc in organization.organizationsocialcause_set.all %}
@@ -75,7 +75,7 @@
           </table>
         </div>
 
-        {% url 'dssgmkt:org_list' as org_list_url %}
+        {% url 'marketplace:org_list' as org_list_url %}
         {% include 'dssgmkt/components/pagination.html' with baseurl=org_list_url page_obj=org_list %}
 
 
@@ -85,7 +85,7 @@
 
       {% has_perm 'organization.create' user None as perm_org_create %}
       {% if perm_org_create %}
-        <a class="btn btn-success col-lg-6 offset-lg-3 mt-5 mb-1" role="button" href="{% url 'dssgmkt:org_create' %}">
+        <a class="btn btn-success col-lg-6 offset-lg-3 mt-5 mb-1" role="button" href="{% url 'marketplace:org_create' %}">
           <i class="material-icons" style="vertical-align: middle">add_circle</i>
           Create new organization
         </a>
