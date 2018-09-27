@@ -21,7 +21,7 @@
       {% endif %}
       <span class="status {% if task.is_not_started %}status-active{% endif %} border-bottom rounded-left">
         {% if task.is_draft %}
-          {% include 'dssgmkt/components/status_chevron.html' %}
+          {% include 'marketplace/components/status_chevron.html' %}
         {% endif %}
         <span>
           {% if not task.is_draft %}
@@ -32,7 +32,7 @@
         </span>
       </span>
       <span class="status {% if task.is_in_progress %}status-active{% endif %} border-bottom">
-        {% include 'dssgmkt/components/status_chevron.html' %}
+        {% include 'marketplace/components/status_chevron.html' %}
         <span>
           {% if not task.is_draft %}
             <i class="completed-icon material-icons" style="vertical-align: middle">check</i>
@@ -42,7 +42,7 @@
         </span>
       </span>
       <span class="status {% if task.is_pending_review %}status-active{% endif %} border-bottom">
-        {% include 'dssgmkt/components/status_chevron.html' %}
+        {% include 'marketplace/components/status_chevron.html' %}
         <span>
           {% if not task.is_draft %}
             <i class="completed-icon material-icons" style="vertical-align: middle">check</i>
@@ -52,7 +52,7 @@
         </span>
       </span>
       <span class="status {% if task.is_completed %}status-active bg-success{% endif %} border-bottom rounded-right border-right">
-        {% include 'dssgmkt/components/status_chevron.html' %}
+        {% include 'marketplace/components/status_chevron.html' %}
         <span>
           {% if not task.is_draft %}
             <i class="material-icons final" style="vertical-align: middle">done_all</i>

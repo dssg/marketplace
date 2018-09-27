@@ -1,4 +1,4 @@
-{% extends 'dssgmkt/base.html' %}
+{% extends 'marketplace/base.html' %}
 
 {% block pagecontents %}
 
@@ -6,7 +6,7 @@
   <form id="edituservolunteerprofile">
     <h4 class="section-header">Edit my volunteer profile</h4>
     {% csrf_token %}
-    {% include 'dssgmkt/components/standard_form_fields.html' %}
+    {% include 'marketplace/components/standard_form_fields.html' %}
 
 
     <div class="form-row">

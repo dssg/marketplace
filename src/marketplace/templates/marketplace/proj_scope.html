@@ -1,4 +1,4 @@
-{% extends "dssgmkt/proj.html" %}
+{% extends "marketplace/proj.html" %}
 
 {% block tabcontents %}
 
@@ -78,6 +78,6 @@
   </ul>
 
   {% url 'marketplace:proj_scope' as proj_scope_url %}
-  {% include 'dssgmkt/components/pagination.html' with baseurl=proj_scope_url page_obj=project_scopes %}
+  {% include 'marketplace/components/pagination.html' with baseurl=proj_scope_url page_obj=project_scopes %}
 
 {% endblock %}

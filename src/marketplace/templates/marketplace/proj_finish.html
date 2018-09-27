@@ -1,4 +1,4 @@
-{% extends 'dssgmkt/proj.html' %}
+{% extends 'marketplace/proj.html' %}
 
 {% block tabcontents %}
 
@@ -6,7 +6,7 @@
     <h4 class="section-header">Finish project</h4>
     <p>Are you sure you want to finish this project? This will make the project completed and no more volunteering work will be allowed in it.</p>
     {% csrf_token %}
-    {% include 'dssgmkt/components/standard_form_fields.html' %}
+    {% include 'marketplace/components/standard_form_fields.html' %}
 
     <div class="form-row">
       <div class="col-lg-9 offset-lg-3">

@@ -1,4 +1,4 @@
-{% extends 'dssgmkt/proj.html' %}
+{% extends 'marketplace/proj.html' %}
 
 {% block tabcontents %}
   {% load markdown_deux_tags %}
@@ -6,7 +6,7 @@
   <h4 class="section-header">Volunteer application</h4>
   <p>This person has applied to volunteer in your project.</p>
 
-  <p>User:{% include 'dssgmkt/components/user_display.html' with user=volunteerapplication.volunteer %}</p>
+  <p>User:{% include 'marketplace/components/user_display.html' with user=volunteerapplication.volunteer %}</p>
   {# <p>Email addres:<a href="">{{ volunteerapplication.volunteer.email }}</a></p> #}
   <p>Application date: {{ volunteerapplication.application_date }} </p>
   <p>Task: {{ volunteerapplication.task.name }}</p>
@@ -24,7 +24,7 @@
           <form id="volunteerapplicationreview">
             {% csrf_token %}
 
-            {% include 'dssgmkt/components/standard_form_fields.html' %}
+            {% include 'marketplace/components/standard_form_fields.html' %}
 
             <div class="form-row">
               <div class="col-lg-9 offset-lg-3">
@@ -77,7 +77,7 @@
               </span>
     </p>
     <p>Resolution date: {{ volunteerapplication.resolution_date }}</p>
-    <p>Reviewer: {% include 'dssgmkt/components/user_display.html' with user=volunteerapplication.reviewer %}</p>
+    <p>Reviewer: {% include 'marketplace/components/user_display.html' with user=volunteerapplication.reviewer %}</p>
     <p>Reviewer's comments: {{ volunteerapplication.public_reviewer_comments|markdown }}</p>
     {% if not user_is_applicant %}
       <p>Private reviewer's notes: {{ volunteerapplication.private_reviewer_notes|markdown }}</p>

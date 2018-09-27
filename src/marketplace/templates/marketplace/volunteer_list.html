@@ -1,4 +1,4 @@
-{% extends 'dssgmkt/base.html' %}
+{% extends 'marketplace/base.html' %}
 
 {% block pagecontents %}
 
@@ -9,12 +9,12 @@
             <div class="card">
               <div class="card-header">
                 {% if board.badge %}
-                  {% include 'dssgmkt/components/user_badge.html' with badge=board.badge compact_display=True %}
+                  {% include 'marketplace/components/user_badge.html' with badge=board.badge compact_display=True %}
                 {% endif %}
                 {{ board.title }}</div>
               <div class="card-body">
                 {% for user in board.data %}
-                  <div>{% include 'dssgmkt/components/user_display.html' with user=user %}</div>
+                  <div>{% include 'marketplace/components/user_display.html' with user=user %}</div>
                 {% endfor %}
               </div>
             </div>
@@ -37,10 +37,10 @@
 
         <fieldset name="badges">
           <legend>Awards</legend>
-          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='awards' field_value='review_score' field_text='Great reviews' is_checked=checked_awards_fields.review_score %}
-          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='awards' field_value='number_of_projects' field_text='Number of tasks completed' is_checked=checked_awards_fields.number_of_projects %}
-          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='awards' field_value='fast_work' field_text='Meets deadlines' is_checked=checked_awards_fields.fast_work %}
-          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='awards' field_value='early_user' field_text='Early user' is_checked=checked_awards_fields.early_user %}
+          {% include 'marketplace/components/filter_checkbox.html' with field_name='awards' field_value='review_score' field_text='Great reviews' is_checked=checked_awards_fields.review_score %}
+          {% include 'marketplace/components/filter_checkbox.html' with field_name='awards' field_value='number_of_projects' field_text='Number of tasks completed' is_checked=checked_awards_fields.number_of_projects %}
+          {% include 'marketplace/components/filter_checkbox.html' with field_name='awards' field_value='fast_work' field_text='Meets deadlines' is_checked=checked_awards_fields.fast_work %}
+          {% include 'marketplace/components/filter_checkbox.html' with field_name='awards' field_value='early_user' field_text='Early user' is_checked=checked_awards_fields.early_user %}
         </fieldset>
 
         <button type="submit"
@@ -74,7 +74,7 @@
             <tbody>
               {% for volunteer in volunteer_list %}
                 <tr>
-                    <td>{% include 'dssgmkt/components/user_display.html' with user=volunteer.user hide_username=True %}</td>
+                    <td>{% include 'marketplace/components/user_display.html' with user=volunteer.user hide_username=True %}</td>
                     {# <td><a href="{% url 'marketplace:user_profile' volunteer.user.id %}">{{ volunteer.user.email }}</a></td> #}
                     <td>{{ volunteer.user.date_joined }}</td>
                 </tr>
@@ -83,7 +83,7 @@
           </table>
         </div>
         {% url 'marketplace:volunteer_list' as volunteer_list_url %}
-        {% include 'dssgmkt/components/pagination.html' with baseurl=volunteer_list_url page_obj=volunteer_list %}
+        {% include 'marketplace/components/pagination.html' with baseurl=volunteer_list_url page_obj=volunteer_list %}
 
       {% else %}
         <p>No volunteers found.</p>

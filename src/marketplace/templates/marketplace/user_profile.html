@@ -1,4 +1,4 @@
-{% extends 'dssgmkt/base.html' %}
+{% extends 'marketplace/base.html' %}
 
 {% block pagecontents %}
   {% load markdown_deux_tags %}
@@ -9,7 +9,7 @@
         {% if user == userprofile %}
           <h4>My profile</h4>
         {% else %}
-          <h4>{% include 'dssgmkt/components/user_display.html' with user=userprofile %}</h4>
+          <h4>{% include 'marketplace/components/user_display.html' with user=userprofile %}</h4>
         {% endif %}
       </div>
     </div>
@@ -98,10 +98,10 @@
             <blockquote class="blockquote">
               <div class="title text-muted d-flex">
                 <span class="flex-grow-1">Project {{ pinned_review.task_review.task.project.name }}: {{ pinned_review.task_review.task.name }}</span>
-                <span>Score: {% include 'dssgmkt/components/review_score_display.html' with review=pinned_review.task_review score_display=pinned_review.task_review.get_review_score_display %}</span>
+                <span>Score: {% include 'marketplace/components/review_score_display.html' with review=pinned_review.task_review score_display=pinned_review.task_review.get_review_score_display %}</span>
               </div>
               <div class="mb-0 text">{{ pinned_review.task_review.public_reviewer_comments|markdown }}</div>
-              <footer class="blockquote-footer">{% include 'dssgmkt/components/user_display.html' with user=pinned_review.task_review.reviewer %}</footer>
+              <footer class="blockquote-footer">{% include 'marketplace/components/user_display.html' with user=pinned_review.task_review.reviewer %}</footer>
             </blockquote>
           </div>
         {% endfor %}
@@ -140,7 +140,7 @@
             {% if userprofile.userbadge_set.exists %}
               {% for badge in userprofile.userbadge_set.all %}
                   <div>
-                    {% include 'dssgmkt/components/user_badge.html' with badge=badge compact_display=False %}
+                    {% include 'marketplace/components/user_badge.html' with badge=badge compact_display=False %}
                   </div>
               {% endfor %}
             {% else %}
@@ -197,7 +197,7 @@
           <div class="card-header">Skills</div>
           <div class="card-body">
           {% if userprofile.volunteerskill_set.all %}
-            {% include 'dssgmkt/components/requirements_display.html' with task_requirements=userprofile.volunteerskill_set.all extra_wide_display=True %}
+            {% include 'marketplace/components/requirements_display.html' with task_requirements=userprofile.volunteerskill_set.all extra_wide_display=True %}
           {% else %}
               <p>No skills listed.</p>
           {% endif %}
@@ -229,22 +229,22 @@
                       <td><a href="{% url 'marketplace:proj_info' project_task.project.id %}">{{ project_task.project.name }}</a></td>
                       <td><a href="{% url 'marketplace:org_info' project_task.project.organization.id %}">{{ project_task.project.organization.name }}</a></td>
                       <td>
-                        {% include 'dssgmkt/components/social_cause_display.html' with object=project_task.project social_cause=project_task.project.get_project_cause_display %}
+                        {% include 'marketplace/components/social_cause_display.html' with object=project_task.project social_cause=project_task.project.get_project_cause_display %}
                       </td>
                       <td>{{ project_task.project.short_summary }}</td>
                       <td>
-                        {% include 'dssgmkt/components/task_type_display.html' with compact_display=True %}
+                        {% include 'marketplace/components/task_type_display.html' with compact_display=True %}
                         {{ project_task.name }}
                       </td>
                       <td>
-                        {% include 'dssgmkt/components/task_stage_display.html' %}
+                        {% include 'marketplace/components/task_stage_display.html' %}
                       </td>
                   </tr>
                 {% endfor %}
               </tbody>
             </table>
             {% url 'marketplace:user_profile' as user_profile_url %}
-            {% include 'dssgmkt/components/pagination.html' with baseurl=user_profile_url page_obj=project_tasks pagename='project_tasks_page' %}
+            {% include 'marketplace/components/pagination.html' with baseurl=user_profile_url page_obj=project_tasks pagename='project_tasks_page' %}
           </div>
         </div>
 

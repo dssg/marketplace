@@ -1,4 +1,4 @@
-{% extends 'dssgmkt/proj.html' %}
+{% extends 'marketplace/proj.html' %}
 
 {% block tabcontents %}
 
@@ -26,7 +26,7 @@
         <tbody>
           {% for staff in project_staff %}
             <tr>
-                <td>{% include 'dssgmkt/components/user_display.html' with user=staff.user %}</td>
+                <td>{% include 'marketplace/components/user_display.html' with user=staff.user %}</td>
                 {# <td><a href="{% url 'marketplace:user_profile' staff.user.id %}">{{ staff.user.email }}</a></td> #}
                 <td>{{ staff.get_role_display }}</td>
                 {% if perm_staff_edit %}
@@ -51,7 +51,7 @@
       </table>
     </div>
     {% url 'marketplace:proj_staff' as proj_staff_url %}
-    {% include 'dssgmkt/components/pagination.html' with baseurl=proj_staff_url page_obj=project_staff pagename='staff_page' %}
+    {% include 'marketplace/components/pagination.html' with baseurl=proj_staff_url page_obj=project_staff pagename='staff_page' %}
   {% else %}
     <p>No staff found.</p>
   {% endif %}
@@ -60,7 +60,7 @@
     <h4 class="section-header">Add staff member</h4>
     <form id="addstaff" class="form-inline">
       {% csrf_token %}
-      {% include 'dssgmkt/components/inline_form_fields.html' with form=add_staff_form %}
+      {% include 'marketplace/components/inline_form_fields.html' with form=add_staff_form %}
 
       <div class="form-group col-lg-3">
         <div>

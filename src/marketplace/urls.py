@@ -66,20 +66,20 @@ urlpatterns = [
 
 
     path('logout/', user.logout_view, name='logout'),
-    path('login/', auth_views.LoginView.as_view(template_name='dssgmkt/login.html'), name='login'),
+    path('login/', auth_views.LoginView.as_view(template_name='marketplace/login.html'), name='login'),
     path('signup/select', user.select_user_type_view, name='signup_type_select'),
     path('signup/do/<str:user_type>', user.signup, name='signup_form'),
-    path('user/pwdchange', auth_views.PasswordChangeView.as_view(template_name='dssgmkt/user_pwd_change.html',
+    path('user/pwdchange', auth_views.PasswordChangeView.as_view(template_name='marketplace/user_pwd_change.html',
                                                                  success_url=reverse_lazy('marketplace:my_user_profile'),
                                                                  extra_context={'breadcrumb':user.change_password_breadcrumb()}),name='user_pwd_change'),
-    path('pwd/resetrequest', auth_views.PasswordResetView.as_view(template_name='dssgmkt/pwd_reset_request.html',
+    path('pwd/resetrequest', auth_views.PasswordResetView.as_view(template_name='marketplace/pwd_reset_request.html',
                                                                  success_url=reverse_lazy('marketplace:pwd_reset_request_done'),
-                                                                 email_template_name='dssgmkt/password_reset_email.html',
-                                                                 subject_template_name='dssgmkt/password_reset_email_subject.html'), name='pwd_reset_request'),
-    path('pwd/resetrequest/done', auth_views.PasswordResetDoneView.as_view(template_name='dssgmkt/pwd_reset_request_done.html'), name='pwd_reset_request_done'),
-    path('pwd/reset/<str:uidb64>/<str:token>', auth_views.PasswordResetConfirmView.as_view(template_name='dssgmkt/pwd_reset.html',
+                                                                 email_template_name='marketplace/password_reset_email.html',
+                                                                 subject_template_name='marketplace/password_reset_email_subject.html'), name='pwd_reset_request'),
+    path('pwd/resetrequest/done', auth_views.PasswordResetDoneView.as_view(template_name='marketplace/pwd_reset_request_done.html'), name='pwd_reset_request_done'),
+    path('pwd/reset/<str:uidb64>/<str:token>', auth_views.PasswordResetConfirmView.as_view(template_name='marketplace/pwd_reset.html',
                                                                                             success_url=reverse_lazy('marketplace:pwd_reset_complete')), name='pwd_reset'),
-    path('pwd/reset/done', auth_views.PasswordResetCompleteView.as_view(template_name='dssgmkt/pwd_reset_complete.html'), name='pwd_reset_complete'),
+    path('pwd/reset/done', auth_views.PasswordResetCompleteView.as_view(template_name='marketplace/pwd_reset_complete.html'), name='pwd_reset_complete'),
 
 
     path('volunteers/', user.volunteer_list_view, name='volunteer_list'),

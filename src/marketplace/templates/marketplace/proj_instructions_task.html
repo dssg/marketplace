@@ -1,4 +1,4 @@
-{% extends "dssgmkt/proj_volunteer_task_base.html" %}
+{% extends "marketplace/proj_volunteer_task_base.html" %}
 
 {% block taskcontents %}
 
@@ -9,10 +9,10 @@
   <div class="row mb-5 section-header">
     <div class="col-lg-8">
         <span class="text-muted">
-          {% include 'dssgmkt/components/task_type_display.html' %}
+          {% include 'marketplace/components/task_type_display.html' %}
         </span>
         <h4>{{ project_task.name }}</h4>
-          {% include 'dssgmkt/components/task_status.html' with task=project_task %}
+          {% include 'marketplace/components/task_status.html' with task=project_task %}
 
       <p>{{ project_task.description|markdown }}</p>
       <p>{{ project_task.onboarding_instructions|markdown }}</p>
@@ -70,7 +70,7 @@
         <div class="card-body">
           {% for volunteer in task_volunteers %}
             <div>
-              {% include 'dssgmkt/components/user_display.html' with user=volunteer %}
+              {% include 'marketplace/components/user_display.html' with user=volunteer %}
             </div>
           {% endfor %}
         </div>
@@ -81,7 +81,7 @@
         <div class="card-body">
           {% if task_staff %}
             {% for staff in task_staff %}
-              <div>{% include 'dssgmkt/components/user_display.html' with user=staff %}</div>
+              <div>{% include 'marketplace/components/user_display.html' with user=staff %}</div>
             {% endfor %}
           {% else %}
             No staff assigned to this task.

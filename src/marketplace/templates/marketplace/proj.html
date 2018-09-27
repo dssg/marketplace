@@ -1,4 +1,4 @@
-{% extends 'dssgmkt/base.html' %}
+{% extends 'marketplace/base.html' %}
 
 {% block pagecontents %}
 
@@ -23,7 +23,7 @@
 
     <div class="col-lg-12 mt-3">
       {% for sc in project.projectsocialcause_set.all %}
-        <span class="mr-4">{% include 'dssgmkt/components/social_cause_display.html' with object=sc social_cause=sc.get_social_cause_display %}</span>
+        <span class="mr-4">{% include 'marketplace/components/social_cause_display.html' with object=sc social_cause=sc.get_social_cause_display %}</span>
       {% endfor %}
     </div>
 
@@ -36,10 +36,10 @@
         </a>
       {% endif %}
     </div>
-    {% include 'dssgmkt/components/project_status.html' %}
+    {% include 'marketplace/components/project_status.html' %}
   </div>
 
-  {% include 'dssgmkt/components/project_tabs.html' %}
+  {% include 'marketplace/components/project_tabs.html' %}
 
   {% block tabcontents %}
   {% endblock %}

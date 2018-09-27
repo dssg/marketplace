@@ -1,4 +1,4 @@
-{% extends 'dssgmkt/org.html' %}
+{% extends 'marketplace/org.html' %}
 
 {% block tabcontents %}
 
@@ -7,8 +7,8 @@
     <h4 class="section-header">Edit organization</h4>
     <p>Tell us more about the organization you represent.</p>
     {% csrf_token %}
-    {% include 'dssgmkt/components/standard_form_fields.html' %}
-    {% include 'dssgmkt/components/social_cause_edit_row.html' with label_text='Choose the social causes this organization works towards.' %}
+    {% include 'marketplace/components/standard_form_fields.html' %}
+    {% include 'marketplace/components/social_cause_edit_row.html' with label_text='Choose the social causes this organization works towards.' %}
 
     <div class="form-row">
       <div class="col-lg-9 offset-lg-3">

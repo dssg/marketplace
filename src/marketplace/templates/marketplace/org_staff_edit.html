@@ -1,13 +1,13 @@
-{% extends 'dssgmkt/org.html' %}
+{% extends 'marketplace/org.html' %}
 
 {% block tabcontents %}
 
   <form id="editstaff">
     <h4 class="section-header">Edit staff member</h4>
-    <p>User: {% include 'dssgmkt/components/user_display.html' with user=organizationrole.user %}</p>
+    <p>User: {% include 'marketplace/components/user_display.html' with user=organizationrole.user %}</p>
     {# <p>Email: {{ organizationrole.user.email }}</p> #}
     {% csrf_token %}
-    {% include 'dssgmkt/components/standard_form_fields.html' %}
+    {% include 'marketplace/components/standard_form_fields.html' %}
 
     <div class="form-row">
       <div class="col-lg-9 offset-lg-3">

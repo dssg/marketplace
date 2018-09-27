@@ -1,4 +1,4 @@
-{% extends "dssgmkt/proj_task_base.html" %}
+{% extends "marketplace/proj_task_base.html" %}
 
 {% block taskcontents %}
 
@@ -28,7 +28,7 @@
         <div class="col-lg-12">
           <form id="taskreview">
             {% csrf_token %}
-            {% include 'dssgmkt/components/standard_form_fields.html' %}
+            {% include 'marketplace/components/standard_form_fields.html' %}
 
 
             <div class="form-row">
@@ -80,9 +80,9 @@
                                 </i>
                                 {{ task_review.get_review_result_display }}
                             </span></p>
-    <p>Score: {% include 'dssgmkt/components/review_score_display.html' with review=task_review score_display=task_review.get_review_score_display %}</p>
+    <p>Score: {% include 'marketplace/components/review_score_display.html' with review=task_review score_display=task_review.get_review_score_display %}</p>
     <p>Resolution date: {{ task_review.review_date }}</p>
-    <p>Reviewer: {% include 'dssgmkt/components/user_display.html' with user=task_review.reviewer %}</p>
+    <p>Reviewer: {% include 'marketplace/components/user_display.html' with user=task_review.reviewer %}</p>
     {% if task_review.public_reviewer_comments %}
       <p>Reviewer's comments: {{ task_review.public_reviewer_comments|markdown }}</p>
     {% endif %}

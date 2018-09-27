@@ -21,7 +21,7 @@ def admin_link(include_link=True):
 
 class AdminHomeView(PermissionRequiredMixin, generic.ListView):
     model = VolunteerProfile
-    template_name = 'dssgmkt/admin_home.html'
+    template_name = 'marketplace/admin_home.html'
     context_object_name = 'volunteer_profiles'
     paginate_by = 30
     permission_required = 'volunteer.new_user_review'

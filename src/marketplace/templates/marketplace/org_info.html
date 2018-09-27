@@ -1,4 +1,4 @@
-{% extends 'dssgmkt/org.html' %}
+{% extends 'marketplace/org.html' %}
 
 {% block tabcontents %}
   {% load rules %}
@@ -27,10 +27,10 @@
                       <td><a href="{% url 'marketplace:proj_info' project.id %}">{{ project.name }}</a></td>
                       <td>{{ project.short_summary }}</td>
                       <td>
-                        {% include 'dssgmkt/components/project_status_display.html' %}
+                        {% include 'marketplace/components/project_status_display.html' %}
                       </td>
                       <td>
-                        {% include 'dssgmkt/components/social_cause_display.html' with object=project social_cause=project.get_project_cause_display %}
+                        {% include 'marketplace/components/social_cause_display.html' with object=project social_cause=project.get_project_cause_display %}
                       </td>
                   </tr>
                 {% endfor %}
@@ -38,7 +38,7 @@
             </table>
           </div>
           {% url 'marketplace:org_info' as org_info_url %}
-          {% include 'dssgmkt/components/pagination.html' with baseurl=org_info_url page_obj=projects pagename='projects_page' %}
+          {% include 'marketplace/components/pagination.html' with baseurl=org_info_url page_obj=projects pagename='projects_page' %}
         {% else %}
           This organization has not posted any project yet.
         {% endif %}

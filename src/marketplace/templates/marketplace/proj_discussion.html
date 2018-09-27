@@ -1,4 +1,4 @@
-{% extends "dssgmkt/proj_discussion_base.html" %}
+{% extends "marketplace/proj_discussion_base.html" %}
 
 {% block discussioncontents %}
 
@@ -18,7 +18,7 @@
       <form id="addcomment" class="section-header">
 
         {% csrf_token %}
-        {% include 'dssgmkt/components/standard_form_fields.html' with hide_field_labels=True %}
+        {% include 'marketplace/components/standard_form_fields.html' with hide_field_labels=True %}
         <div class="form-row mb-3">
           <div class="col-lg-3">
             <button type="submit"
@@ -46,7 +46,7 @@
           <li class="list-group-item">
             <div class="row">
               <div class="col-lg-3">
-                <div class="text-right">{% include 'dssgmkt/components/user_display.html' with user=log.author %}</div>
+                <div class="text-right">{% include 'marketplace/components/user_display.html' with user=log.author %}</div>
                 <div class="text-right text-muted">{{ log.comment_date }}</div>
               </div>
               <div class="col-lg-9">
@@ -57,7 +57,7 @@
         {% endfor %}
       </ul>
       {% url 'marketplace:proj_discussion' as proj_discussion_url %}
-      {% include 'dssgmkt/components/pagination.html' with baseurl=proj_discusion_url page_obj=project_comments %}
+      {% include 'marketplace/components/pagination.html' with baseurl=proj_discusion_url page_obj=project_comments %}
 
     {% else %}
       There are no comments in this discussion.

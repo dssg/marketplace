@@ -1,4 +1,4 @@
-{% extends 'dssgmkt/base.html' %}
+{% extends 'marketplace/base.html' %}
 
 {% block extraheaders %}
  {% load static %}
@@ -200,7 +200,7 @@
        <h5 class="text-muted">Featured volunteer</h5>
        {% if featured_volunteer %}
          <a class="itemlink" href="{% url 'marketplace:user_profile' featured_volunteer.user.id %}">
-           <h4>{% include 'dssgmkt/components/user_display.html' with user=featured_volunteer.user hide_anchor=True %}</h4>
+           <h4>{% include 'marketplace/components/user_display.html' with user=featured_volunteer.user hide_anchor=True %}</h4>
            <div class="last">Member since {{ featured_volunteer.user.date_joined }} </div>
            <div class="last">Volunteer in {{ featured_volunteer.taskcount }} tasks</div>
            {% if featured_volunteer_skills %}

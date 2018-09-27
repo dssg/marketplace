@@ -8,15 +8,15 @@ from django.core.paginator import Paginator
 
 def home_view(request):
     if request.user.is_authenticated:
-        return render(request, 'dssgmkt/home_user.html')
+        return render(request, 'marketplace/home_user.html')
     else:
-        return render(request, 'dssgmkt/home_anonymous.html')
+        return render(request, 'marketplace/home_anonymous.html')
 
 def about_view(request):
-    return render(request, 'dssgmkt/about.html')
+    return render(request, 'marketplace/about.html')
 
 def resources_view(request):
-    return render(request, 'dssgmkt/resources.html')
+    return render(request, 'marketplace/resources.html')
 
 def home_link(include_link=True):
     return ('Home', reverse_lazy('marketplace:home') if include_link else None)

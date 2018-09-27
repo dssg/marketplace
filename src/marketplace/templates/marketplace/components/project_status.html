@@ -10,7 +10,7 @@
       {% endif %}
       <span class="colg-md-1 status {% if project.is_new_status %}status-active{% endif %} border-bottom {% if not project.is_draft_status %}rounded-left{% endif %}">
         {% if project.is_draft_status %}
-          {% include 'dssgmkt/components/status_chevron.html' %}
+          {% include 'marketplace/components/status_chevron.html' %}
         {% endif %}
         <span>
           <i class="completed-icon material-icons" style="vertical-align: middle">check</i>
@@ -19,7 +19,7 @@
         </span>
       </span>
       <span class="colg-md-2 status {% if project.is_design_status %}status-active{% endif %} border-bottom">
-        {% include 'dssgmkt/components/status_chevron.html' %}
+        {% include 'marketplace/components/status_chevron.html' %}
         <span>
           <i class="completed-icon material-icons" style="vertical-align: middle">check</i>
           <i class="ongoing-icon fas fa-ruler"></i>
@@ -27,7 +27,7 @@
         </span>
       </span>
       <span class="colg-md-2 status {% if project.is_waiting_design_approval_status %}status-active{% endif %} border-bottom">
-        {% include 'dssgmkt/components/status_chevron.html' %}
+        {% include 'marketplace/components/status_chevron.html' %}
         <span>
           <i class="completed-icon material-icons" style="vertical-align: middle">check</i>
           <i class="ongoing-icon fas fa-pencil-ruler"></i>
@@ -35,7 +35,7 @@
         </span>
       </span>
       <span class="colg-md-2 status {% if project.is_waiting_staff_status %}status-active{% endif %} border-bottom">
-        {% include 'dssgmkt/components/status_chevron.html' %}
+        {% include 'marketplace/components/status_chevron.html' %}
         <span>
           <i class="completed-icon material-icons" style="vertical-align: middle">check</i>
           <i class="ongoing-icon fas fa-hands-helping"></i>
@@ -43,7 +43,7 @@
         </span>
       </span>
       <span class="colg-md-2 status {% if project.is_in_progress_status %}status-active{% endif %} border-bottom">
-        {% include 'dssgmkt/components/status_chevron.html' %}
+        {% include 'marketplace/components/status_chevron.html' %}
         <span>
           <i class="completed-icon material-icons" style="vertical-align: middle">check</i>
           <i class="ongoing-icon fas fa-tasks"></i>
@@ -51,7 +51,7 @@
         </span>
       </span>
       <span class="colg-md-2 status {% if project.is_waiting_review_status %}status-active{% endif %} border-bottom">
-        {% include 'dssgmkt/components/status_chevron.html' %}
+        {% include 'marketplace/components/status_chevron.html' %}
         <span>
           <i class="completed-icon material-icons" style="vertical-align: middle">check</i>
           <i class="ongoing-icon fas fa-award"></i>
@@ -60,7 +60,7 @@
       </span>
       {% if project.is_expired_status %}
         <span class="colg-md-2 status status-active bg-danger border-bottom">
-          {% include 'dssgmkt/components/status_chevron.html' %}
+          {% include 'marketplace/components/status_chevron.html' %}
           <span>
             <i class="material-icons" style="vertical-align: middle">check</i>
             <i class="text-muted fas fa-exclamation"></i>
@@ -69,7 +69,7 @@
         </span>
       {% else %}
         <span class="colg-md-2 status {% if project.is_completed_status %}status-active bg-success{% endif %} border-bottom rounded-right ">
-          {% include 'dssgmkt/components/status_chevron.html' %}
+          {% include 'marketplace/components/status_chevron.html' %}
           <span>
             <i class="material-icons final" style="vertical-align: middle">done_all</i>
             Completed

@@ -86,7 +86,7 @@ def organization_list_view(request):
     else:
         organizations_page = []
 
-    return render(request, 'dssgmkt/org_list.html',
+    return render(request, 'marketplace/org_list.html',
                         {
                             'breadcrumb': build_breadcrumb([home_link(), organizations_link(False)]),
                             'org_list': organizations_page,
@@ -106,7 +106,7 @@ def add_organization_common_context(request, organization, page_tab, context):
 
 class OrganizationView(generic.DetailView):
     model = Organization
-    template_name = 'dssgmkt/org_info.html'
+    template_name = 'marketplace/org_info.html'
     pk_url_kwarg = 'org_pk'
 
     def get_object(self):
@@ -133,7 +133,7 @@ class EditOrganizationForm(ModelForm):
 class OrganizationEdit(PermissionRequiredMixin, UpdateView):
     model = Organization
     form_class = EditOrganizationForm
-    template_name = 'dssgmkt/org_info_edit.html'
+    template_name = 'marketplace/org_info_edit.html'
     pk_url_kwarg = 'org_pk'
     permission_required = 'organization.information_edit'
     raise_exception = True
@@ -196,7 +196,7 @@ def organization_staff_view(request, org_pk):
     organization_requests = OrganizationService.get_membership_requests(request.user, organization)
     requests_page = paginate(request, organization_requests, request_key='requests_page', page_size=25)
 
-    return render(request, 'dssgmkt/org_staff.html',
+    return render(request, 'marketplace/org_staff.html',
                     add_organization_common_context(
                         request,
                         organization,
@@ -237,7 +237,7 @@ def add_organization_staff_view(request, org_pk):
 
     organization_requests = OrganizationService.get_membership_requests(request.user, organization)
     requests_page = paginate(request, organization_requests, request_key='requests_page', page_size=25)
-    return render(request, 'dssgmkt/org_staff.html',
+    return render(request, 'marketplace/org_staff.html',
                     add_organization_common_context(
                         request,
                         organization,
@@ -252,7 +252,7 @@ def add_organization_staff_view(request, org_pk):
 class OrganizationMembershipRequestCreate(CreateView):
     model = OrganizationMembershipRequest
     fields = []
-    template_name = 'dssgmkt/org_staff_request.html'
+    template_name = 'marketplace/org_staff_request.html'
 
     def get_success_url(self):
         return reverse('marketplace:org_info', args=[self.kwargs['org_pk']])
@@ -302,7 +302,7 @@ def process_organization_membership_request_view(request, org_pk, request_pk, ac
         form = OrganizationMembershipRequestForm()
     organization = get_organization(request, org_pk)
 
-    return render(request, 'dssgmkt/org_staff_request_review.html',
+    return render(request, 'marketplace/org_staff_request_review.html',
                     add_organization_common_context(
                         request,
                         organization,
@@ -318,7 +318,7 @@ def process_organization_membership_request_view(request, org_pk, request_pk, ac
 class OrganizationRoleEdit(PermissionRequiredMixin, UpdateView):
     model = OrganizationRole
     fields = ['role']
-    template_name = 'dssgmkt/org_staff_edit.html'
+    template_name = 'marketplace/org_staff_edit.html'
     pk_url_kwarg = 'role_pk'
     permission_required = 'organization.role_edit'
     raise_exception = True
@@ -353,7 +353,7 @@ class OrganizationRoleEdit(PermissionRequiredMixin, UpdateView):
 
 class OrganizationLeave(PermissionRequiredMixin, DeleteView):
     model = OrganizationRole
-    template_name = 'dssgmkt/org_staff_leave.html'
+    template_name = 'marketplace/org_staff_leave.html'
     permission_required = 'organization.membership_leave'
     raise_exception = True
 
@@ -410,7 +410,7 @@ def organization_role_delete_view(request, org_pk, role_pk):
     elif request.method == 'GET':
         form = DeleteOrganizationRoleForm()
     organization = get_organization(request, org_pk)
-    return render(request, 'dssgmkt/org_staff_remove.html',
+    return render(request, 'marketplace/org_staff_remove.html',
                     add_organization_common_context(request, organization, 'staff',
                         {
                             'organizationrole': organization_role,
@@ -432,7 +432,7 @@ class CreateOrganizationForm(ModelForm):
 class OrganizationCreateView(PermissionRequiredMixin, CreateView):
     model = Organization
     form_class = CreateOrganizationForm
-    template_name = 'dssgmkt/org_create.html'
+    template_name = 'marketplace/org_create.html'
     permission_required = 'organization.create'
     raise_exception = True
 

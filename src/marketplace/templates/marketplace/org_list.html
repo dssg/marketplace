@@ -1,4 +1,4 @@
-{% extends 'dssgmkt/base.html' %}
+{% extends 'marketplace/base.html' %}
 
 {% block pagecontents %}
   {% load rules %}
@@ -14,24 +14,24 @@
 
         <fieldset class="mt-3" name="socialcause">
           <legend>Social impact area</legend>
-          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='socialcause' field_value='education' field_text='Education' is_checked=checked_social_cause_fields.education %}
-          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='socialcause' field_value='health' field_text='Health' is_checked=checked_social_cause_fields.health %}
-          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='socialcause' field_value='environment' field_text='Environment' is_checked=checked_social_cause_fields.environment %}
-          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='socialcause' field_value='socialservices' field_text='Social Services' is_checked=checked_social_cause_fields.socialservices %}
-          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='socialcause' field_value='transportation' field_text='Transportation' is_checked=checked_social_cause_fields.transportation %}
-          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='socialcause' field_value='energy' field_text='Energy and Environment' is_checked=checked_social_cause_fields.energy %}
-          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='socialcause' field_value='internationaldev' field_text='International Development' is_checked=checked_social_cause_fields.internationaldev %}
-          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='socialcause' field_value='publicsafety' field_text='Public Safety' is_checked=checked_social_cause_fields.publicsafety %}
-          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='socialcause' field_value='economicdev' field_text='Economic Development' is_checked=checked_social_cause_fields.economicdev %}
-          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='socialcause' field_value='other' field_text='Other' is_checked=checked_social_cause_fields.other %}
+          {% include 'marketplace/components/filter_checkbox.html' with field_name='socialcause' field_value='education' field_text='Education' is_checked=checked_social_cause_fields.education %}
+          {% include 'marketplace/components/filter_checkbox.html' with field_name='socialcause' field_value='health' field_text='Health' is_checked=checked_social_cause_fields.health %}
+          {% include 'marketplace/components/filter_checkbox.html' with field_name='socialcause' field_value='environment' field_text='Environment' is_checked=checked_social_cause_fields.environment %}
+          {% include 'marketplace/components/filter_checkbox.html' with field_name='socialcause' field_value='socialservices' field_text='Social Services' is_checked=checked_social_cause_fields.socialservices %}
+          {% include 'marketplace/components/filter_checkbox.html' with field_name='socialcause' field_value='transportation' field_text='Transportation' is_checked=checked_social_cause_fields.transportation %}
+          {% include 'marketplace/components/filter_checkbox.html' with field_name='socialcause' field_value='energy' field_text='Energy and Environment' is_checked=checked_social_cause_fields.energy %}
+          {% include 'marketplace/components/filter_checkbox.html' with field_name='socialcause' field_value='internationaldev' field_text='International Development' is_checked=checked_social_cause_fields.internationaldev %}
+          {% include 'marketplace/components/filter_checkbox.html' with field_name='socialcause' field_value='publicsafety' field_text='Public Safety' is_checked=checked_social_cause_fields.publicsafety %}
+          {% include 'marketplace/components/filter_checkbox.html' with field_name='socialcause' field_value='economicdev' field_text='Economic Development' is_checked=checked_social_cause_fields.economicdev %}
+          {% include 'marketplace/components/filter_checkbox.html' with field_name='socialcause' field_value='other' field_text='Other' is_checked=checked_social_cause_fields.other %}
 
         </fieldset>
 
         <fieldset class="mt-3" name="status">
           <legend>Project status</legend>
-          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='projectstatus' field_value='new' field_text='With new projects' is_checked=checked_project_fields.new %}
-          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='projectstatus' field_value='in_progress' field_text='With projects in progress' is_checked=checked_project_fields.in_progress %}
-          {% include 'dssgmkt/components/filter_checkbox.html' with field_name='projectstatus' field_value='completed' field_text='With completed projects' is_checked=checked_project_fields.completed %}
+          {% include 'marketplace/components/filter_checkbox.html' with field_name='projectstatus' field_value='new' field_text='With new projects' is_checked=checked_project_fields.new %}
+          {% include 'marketplace/components/filter_checkbox.html' with field_name='projectstatus' field_value='in_progress' field_text='With projects in progress' is_checked=checked_project_fields.in_progress %}
+          {% include 'marketplace/components/filter_checkbox.html' with field_name='projectstatus' field_value='completed' field_text='With completed projects' is_checked=checked_project_fields.completed %}
         </fieldset>
         <button type="submit"
                 form="orglist"
@@ -66,7 +66,7 @@
                     <td>{{ organization.short_summary }}</img></td>
                     <td>
                       {% for sc in organization.organizationsocialcause_set.all %}
-                        {% include 'dssgmkt/components/social_cause_display.html' with object=sc social_cause=sc.get_social_cause_display %} <br/>
+                        {% include 'marketplace/components/social_cause_display.html' with object=sc social_cause=sc.get_social_cause_display %} <br/>
                       {% endfor %}
                     </td>
                 </tr>
@@ -76,7 +76,7 @@
         </div>
 
         {% url 'marketplace:org_list' as org_list_url %}
-        {% include 'dssgmkt/components/pagination.html' with baseurl=org_list_url page_obj=org_list %}
+        {% include 'marketplace/components/pagination.html' with baseurl=org_list_url page_obj=org_list %}
 
 
       {% else %}

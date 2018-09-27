@@ -119,7 +119,7 @@ def volunteer_list_view(request):
     else:
         volunteers_page = []
 
-    return render(request, 'dssgmkt/volunteer_list.html',
+    return render(request, 'marketplace/volunteer_list.html',
                         {
                             'breadcrumb': build_breadcrumb([home_link(),
                                                           volunteers_link(include_link=False)]),
@@ -134,7 +134,7 @@ def volunteer_list_view(request):
 
 class UserHomeView(PermissionRequiredMixin, generic.ListView): ## This is a listview because it is actually showing the list of user notifications
     model = UserNotification
-    template_name = 'dssgmkt/home_user.html'
+    template_name = 'marketplace/home_user.html'
     context_object_name = 'notification_list'
     paginate_by = 10
     permission_required = 'user.is_authenticated'
@@ -178,7 +178,7 @@ def home_view(request):
         featured_volunteer_skill_names = [volunteer_skill.skill.name for volunteer_skill in featured_volunteer_skills]
     else:
         featured_volunteer_skill_names = None
-    return render(request, 'dssgmkt/home_anonymous.html',
+    return render(request, 'marketplace/home_anonymous.html',
         {
             'user_is_any_organization_member': OrganizationService.user_can_create_projects(request.user),
             'featured_project': ProjectService.get_featured_project(),
@@ -195,7 +195,7 @@ def my_user_profile_view(request):
 class UserProfileView(generic.DetailView):
     model = User
     pk_url_kwarg = 'user_pk'
-    template_name = 'dssgmkt/user_profile.html'
+    template_name = 'marketplace/user_profile.html'
     context_object_name = 'userprofile'
 
     def get_object(self):
@@ -215,7 +215,7 @@ class UserProfileView(generic.DetailView):
 class UserProfileEdit(PermissionRequiredMixin, UpdateView):
     model = User
     fields = ['first_name', 'last_name', 'email', 'profile_image_file', 'phone_number', 'skype_name' ]
-    template_name = 'dssgmkt/user_profile_edit.html'
+    template_name = 'marketplace/user_profile_edit.html'
     pk_url_kwarg = 'user_pk'
     permission_required = 'user.is_same_user'
     raise_exception = True
@@ -246,7 +246,7 @@ class VolunteerProfileEdit(PermissionRequiredMixin, UpdateView):
     fields = ['portfolio_url', 'github_url', 'linkedin_url', 'degree_name', 'degree_level',
               'university', 'cover_letter', 'weekly_availability_hours', 'availability_start_date',
               'availability_end_date']
-    template_name = 'dssgmkt/user_volunteer_profile_edit.html'
+    template_name = 'marketplace/user_volunteer_profile_edit.html'
     pk_url_kwarg = 'volunteer_pk'
     permission_required = 'user.is_same_user'
     raise_exception = True
@@ -308,7 +308,7 @@ def user_preferences_edit_view(request, user_pk):
         elif p.is_type_qa():
             context['has_qa_preference'] = True
 
-    return render(request, 'dssgmkt/user_preferences_edit.html', context)
+    return render(request, 'marketplace/user_preferences_edit.html', context)
 
 @permission_required('user.is_same_user', raise_exception=True, fn=objectgetter(User, 'user_pk'))
 def user_profile_skills_edit_view(request, user_pk):
@@ -323,7 +323,7 @@ def user_profile_skills_edit_view(request, user_pk):
     elif request.method == 'GET':
         pass
 
-    return render(request, 'dssgmkt/user_profile_skills_edit.html',
+    return render(request, 'marketplace/user_profile_skills_edit.html',
                         {
                             'breadcrumb': build_breadcrumb([home_link(),
                                                             my_profile_link(user_pk),
@@ -347,7 +347,7 @@ def create_volunteer_profile_view(request, user_pk):
 
 
 def select_user_type_view(request):
-    return render(request, 'dssgmkt/signup_type_select.html',
+    return render(request, 'marketplace/signup_type_select.html',
                         {
                             'breadcrumb': [home_link(), ('Select your account type', None)]
                         })
@@ -382,7 +382,7 @@ def signup(request, user_type=None):
     else:
         form = SignUpForm()
         preferences = request.GET.getlist('preferences')
-    return render(request, 'dssgmkt/signup.html',
+    return render(request, 'marketplace/signup.html',
                     {
                         'form': form,
                         'user_type': user_type,

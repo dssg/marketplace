@@ -1,11 +1,11 @@
-{% extends 'dssgmkt/proj_task_base.html' %}
+{% extends 'marketplace/proj_task_base.html' %}
 
 {% block taskcontents %}
 
   <h4 class="section-header">Edit task {{ project_task.name }}</h4>
   <form id="edittask">
     {% csrf_token %}
-    {% include 'dssgmkt/components/standard_form_fields.html' %}
+    {% include 'marketplace/components/standard_form_fields.html' %}
     <div class="form-row">
       <div class="col-lg-9 offset-lg-3">
         <button type="submit"

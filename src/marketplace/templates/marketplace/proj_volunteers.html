@@ -1,4 +1,4 @@
-{% extends 'dssgmkt/proj.html' %}
+{% extends 'marketplace/proj.html' %}
 
 {% block tabcontents %}
 
@@ -27,7 +27,7 @@
         <tbody>
           {% for volunteer in volunteers %}
             <tr>
-                <td>{% include 'dssgmkt/components/user_display.html' with user=volunteer.user %}</td>
+                <td>{% include 'marketplace/components/user_display.html' with user=volunteer.user %}</td>
                 {# <td><a href="{% url 'marketplace:user_profile' volunteer.user.id %}">{{ volunteer.user.email }}</a></td> #}
                 <td>{{ volunteer.task.name }}</td>
                 <td>{% if volunteer.task.is_completed %}<span class="text-muted">Completed</span>{% else %}Active{% endif %}</td>
@@ -53,7 +53,7 @@
       </table>
     </div>
     {% url 'marketplace:proj_staff' as proj_staff_url %}
-    {% include 'dssgmkt/components/pagination.html' with baseurl=proj_staff_url page_obj=volunteers pagename='volunteers_page' %}
+    {% include 'marketplace/components/pagination.html' with baseurl=proj_staff_url page_obj=volunteers pagename='volunteers_page' %}
   {% else %}
     <p>No active volunteers in the project.</p>
   {% endif %}
@@ -76,7 +76,7 @@
         <tbody>
           {% for application in volunteer_applications %}
             <tr>
-                <td>{% include 'dssgmkt/components/user_display.html' with user=application.volunteer %}</td>
+                <td>{% include 'marketplace/components/user_display.html' with user=application.volunteer %}</td>
                 {# <td><a href="{% url 'marketplace:user_profile' application.volunteer.id %}">{{ application.volunteer.email }}</a></td> #}
                 <td>{{ application.task.name }}</td>
                 <td>{{ application.application_date }}</td>
@@ -108,7 +108,7 @@
       </table>
     </div>
     {% url 'marketplace:proj_staff' as proj_staff_url %}
-    {% include 'dssgmkt/components/pagination.html' with baseurl=proj_staff_url page_obj=volunteer_applications pagename='applications_page' %}
+    {% include 'marketplace/components/pagination.html' with baseurl=proj_staff_url page_obj=volunteer_applications pagename='applications_page' %}
   {% else %}
     <p>No applications found.</p>
   {% endif %}

@@ -1,6 +1,6 @@
 
     <span class="{% if badge.is_tier_basic %}badge-basic{% elif badge.is_tier_advanced %}badge-advanced{% elif badge.is_tier_master %}badge-master{% endif %}"
-          title="{% include 'dssgmkt/components/user_badge_text.html' %}">
+          title="{% include 'marketplace/components/user_badge_text.html' %}">
       {% if badge.is_type_work_speed %}
         <i class="fas fa-crown"></i>
       {% elif badge.is_type_early_user %}
@@ -11,6 +11,6 @@
         <i class="fas fa-star"></i>
       {% endif %}
       {% if not compact_display %}
-        {% include 'dssgmkt/components/user_badge_text.html' %}
+        {% include 'marketplace/components/user_badge_text.html' %}
       {% endif %}
     </span>

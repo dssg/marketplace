@@ -1,4 +1,4 @@
-{% extends 'dssgmkt/base.html' %}
+{% extends 'marketplace/base.html' %}
 
 {% block pagecontents %}
 
@@ -11,7 +11,7 @@
       <h2 class="section-header">Sign up</h2>
 
       {% csrf_token %}
-      {% include 'dssgmkt/components/standard_form_fields.html' with wide_field_names=True %}
+      {% include 'marketplace/components/standard_form_fields.html' with wide_field_names=True %}
 
       {% if preferences %}
         {% for p in preferences %}

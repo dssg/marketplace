@@ -1,13 +1,13 @@
-{% extends 'dssgmkt/proj.html' %}
+{% extends 'marketplace/proj.html' %}
 
 {% block tabcontents %}
 
   <h4 class="section-header">Remove volunteer</h4>
-  <p>User: {% include 'dssgmkt/components/user_display.html' with user=projecttaskrole.user %}</p>
+  <p>User: {% include 'marketplace/components/user_display.html' with user=projecttaskrole.user %}</p>
   {# <p>Email: {{ projecttaskrole.user.email }}</p> #}
   <form id="removestaff">
     {% csrf_token %}
-    {% include 'dssgmkt/components/standard_form_fields.html' %}
+    {% include 'marketplace/components/standard_form_fields.html' %}
 
     <div class="form-row">
       <div class="col-lg-9 offset-lg-3">

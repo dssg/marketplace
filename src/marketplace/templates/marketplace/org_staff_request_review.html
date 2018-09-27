@@ -1,4 +1,4 @@
-{% extends 'dssgmkt/org.html' %}
+{% extends 'marketplace/org.html' %}
 
 {% block tabcontents %}
 
@@ -11,7 +11,7 @@
       <p>This person has requested to join your organization. Please review the
       application and accept or reject it.</p>
 
-      <p>User: {% include 'dssgmkt/components/user_display.html' with user=organizationmembershiprequest.user %}</p>
+      <p>User: {% include 'marketplace/components/user_display.html' with user=organizationmembershiprequest.user %}</p>
       {% comment %} <p>Email addres:<a href="{% url 'marketplace:user_profile' organizationmembershiprequest.user.id %}">
         {{ organizationmembershiprequest.user.email }}</a></p> {% endcomment %}
       <p>Request date: {{ organizationmembershiprequest.request_date }} </p>
@@ -26,7 +26,7 @@
           <form id="orgmembershiprequestreview">
             {% csrf_token %}
 
-            {% include 'dssgmkt/components/standard_form_fields.html' %}
+            {% include 'marketplace/components/standard_form_fields.html' %}
 
             <div class="form-row">
               <div class="col-lg-9 offset-lg-3">
@@ -82,7 +82,7 @@
                             </span>
     </p>
       <p>Resolution date: {{ organizationmembershiprequest.resolution_date }}</p>
-      <p>Reviewer: {% include 'dssgmkt/components/user_display.html' with user=organizationmembershiprequest.reviewer %}
+      <p>Reviewer: {% include 'marketplace/components/user_display.html' with user=organizationmembershiprequest.reviewer %}
       </p>
     {% if organizationmembershiprequest.public_reviewer_comments %}
       <p>Reviewer's comments: {{ organizationmembershiprequest.public_reviewer_comments|markdown }}</p>

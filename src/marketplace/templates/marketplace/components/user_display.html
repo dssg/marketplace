@@ -6,6 +6,6 @@
   {% endif %}
 
   {% for badge in user.userbadge_set.all %}
-    {% include 'dssgmkt/components/user_badge.html' with badge=badge compact_display=True %}
+    {% include 'marketplace/components/user_badge.html' with badge=badge compact_display=True %}
   {% endfor %}
 {% if not hide_anchor %}</a>{% endif %}

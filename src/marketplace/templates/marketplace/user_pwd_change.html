@@ -1,4 +1,4 @@
-{% extends 'dssgmkt/base.html' %}
+{% extends 'marketplace/base.html' %}
 
 {% block pagecontents %}
 
@@ -7,7 +7,7 @@
       <h4 class="section-header">Change password</h4>
       <p>Please enter your old password and your new password twice so we can verify you typed it in correctly.</p>
       {% csrf_token %}
-      {% include 'dssgmkt/components/standard_form_fields.html' %}
+      {% include 'marketplace/components/standard_form_fields.html' %}
 
 
       <div class="form-row">

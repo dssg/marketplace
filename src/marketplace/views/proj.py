@@ -162,7 +162,7 @@ def project_list_view(request):
     else:
         single_org_membership = None
         organization_memberships = organizations
-    return render(request, 'dssgmkt/proj_list.html',
+    return render(request, 'marketplace/proj_list.html',
                         {
                             'breadcrumb': build_breadcrumb([home_link(), projects_link(False)]),
                             'proj_list': projects_page,
@@ -193,7 +193,7 @@ def add_project_task_common_context(request, project_task, page_tab, context):
 
 class ProjectView(PermissionRequiredMixin, generic.ListView): ## This is a listview because it is actually showing the list of open tasks
     model = ProjectTask
-    template_name = 'dssgmkt/proj_info.html'
+    template_name = 'marketplace/proj_info.html'
     context_object_name = 'project_tasks'
     paginate_by = 25
     permission_required = 'project.view'
@@ -215,7 +215,7 @@ class ProjectView(PermissionRequiredMixin, generic.ListView): ## This is a listv
         return get_project(self.request, self.kwargs['proj_pk'])
 
 class ProjectLogView(PermissionRequiredMixin, generic.ListView):
-    template_name = 'dssgmkt/proj_log.html'
+    template_name = 'marketplace/proj_log.html'
     context_object_name = 'project_logs'
     paginate_by = 20
     permission_required = 'project.log_view'
@@ -251,7 +251,7 @@ def project_comment_channel_index_view(request, proj_pk):
         if discussion_channels:
             return redirect('marketplace:proj_discussion', proj_pk=proj_pk, channel_pk=discussion_channels[0].id)
         else:
-            return render(request, 'dssgmkt/proj_discussion_channels.html',
+            return render(request, 'marketplace/proj_discussion_channels.html',
                         add_project_common_context(
                             request,
                             project,
@@ -281,7 +281,7 @@ def project_channel_comments_view(request, proj_pk, channel_pk):
     project_comments_page = paginate(request, project_comments, page_size=20)
     channel = ProjectService.get_project_channel(request.user, project, channel_pk)
     discussion_channels = ProjectService.get_project_channels(request.user, project)
-    return render(request, 'dssgmkt/proj_discussion.html',
+    return render(request, 'marketplace/proj_discussion.html',
                     add_project_common_context(
                         request,
                         project,
@@ -296,7 +296,7 @@ def project_channel_comments_view(request, proj_pk, channel_pk):
 
 class ProjectDeliverablesView(generic.DetailView):
     model = Project
-    template_name = 'dssgmkt/proj_deliverables.html'
+    template_name = 'marketplace/proj_deliverables.html'
     pk_url_kwarg = 'proj_pk'
 
     def get_object(self):
@@ -322,7 +322,7 @@ def project_scope_view(request, proj_pk, scope_pk=None):
         else:
             current_scope = ProjectService.get_current_project_scope(request.user, proj_pk)
             showing_current_scope = True
-        return render(request, 'dssgmkt/proj_scope.html',
+        return render(request, 'marketplace/proj_scope.html',
                         add_project_common_context(request, project, 'scope',
                             {
                                 'breadcrumb': project_breadcrumb(project, ('Scope', None)),
@@ -358,7 +358,7 @@ def project_edit_scope_view(request, proj_pk, scope_pk):
                 raise Http404
     elif request.method == 'GET':
         form = EditProjectScopeForm(instance=project_scope)
-    return render(request, 'dssgmkt/proj_scope_edit.html',
+    return render(request, 'marketplace/proj_scope_edit.html',
                     add_project_common_context(request, project, 'scope',
                         {
                             'breadcrumb': project_breadcrumb(project, ('Scope', reverse('marketplace:proj_scope',  args=[proj_pk])), ('Edit', None)),
@@ -367,7 +367,7 @@ def project_edit_scope_view(request, proj_pk, scope_pk):
                         }))
 
 class ProjectVolunteerInstructionsView(PermissionRequiredMixin, generic.ListView):
-    template_name = 'dssgmkt/proj_instructions.html'
+    template_name = 'marketplace/proj_instructions.html'
     context_object_name = 'project_tasks'
     permission_required = 'project.volunteer_instructions_view'
     raise_exception = True
@@ -396,7 +396,7 @@ class ProjectVolunteerInstructionsView(PermissionRequiredMixin, generic.ListView
 
 class ProjectVolunteerTaskDetailView(generic.DetailView):
     model = ProjectTask
-    template_name = 'dssgmkt/proj_instructions_task.html'
+    template_name = 'marketplace/proj_instructions_task.html'
     pk_url_kwarg = 'task_pk'
 
     def get_object(self):
@@ -424,7 +424,7 @@ class CreateProjectTaskReviewForm(ModelForm):
 class ProjectTaskReviewCreate(PermissionRequiredMixin, CreateView):
     model = ProjectTaskReview
     fields = ['volunteer_comment', 'volunteer_effort_hours']
-    template_name = 'dssgmkt/proj_task_finish.html'
+    template_name = 'marketplace/proj_task_finish.html'
     permission_required = 'project.volunteer_task_finish'
     raise_exception = True
 
@@ -480,7 +480,7 @@ def process_task_review_request_view(request, proj_pk, task_pk, review_pk, actio
     project_task = get_project_task(request, proj_pk, task_pk)
     project = project_task.project
 
-    return render(request, 'dssgmkt/proj_task_review.html',
+    return render(request, 'marketplace/proj_task_review.html',
                     add_project_task_common_context(
                         request,
                         project_task,
@@ -497,7 +497,7 @@ def process_task_review_request_view(request, proj_pk, task_pk, review_pk, actio
 
 class ProjectTaskCancel(PermissionRequiredMixin, DeleteView):
     model = ProjectTaskRole
-    template_name = 'dssgmkt/proj_task_cancel.html'
+    template_name = 'marketplace/proj_task_cancel.html'
     permission_required = 'project.volunteer_task_cancel'
     raise_exception = True
 
@@ -538,7 +538,7 @@ class ProjectTaskCancel(PermissionRequiredMixin, DeleteView):
 class ProjectTaskApply(PermissionRequiredMixin, CreateView):
     model = VolunteerApplication
     fields = ['volunteer_application_letter']
-    template_name = 'dssgmkt/proj_task_apply.html'
+    template_name = 'marketplace/proj_task_apply.html'
     permission_required = 'user.is_authenticated'
     raise_exception = True
 
@@ -573,7 +573,7 @@ class ProjectTaskApply(PermissionRequiredMixin, CreateView):
 
 class ProjectTaskIndex(PermissionRequiredMixin, generic.ListView):
     model = ProjectTask
-    template_name = 'dssgmkt/proj_task_list.html'
+    template_name = 'marketplace/proj_task_list.html'
     context_object_name = 'project_tasks'
     permission_required = 'project.tasks_view'
     raise_exception = True
@@ -603,7 +603,7 @@ class ProjectTaskIndex(PermissionRequiredMixin, generic.ListView):
 
 class ProjectTaskDetailView(generic.DetailView):
     model = ProjectTask
-    template_name = 'dssgmkt/proj_task.html'
+    template_name = 'marketplace/proj_task.html'
     pk_url_kwarg = 'task_pk'
 
     def get_object(self):
@@ -625,7 +625,7 @@ class ProjectTaskEdit(PermissionRequiredMixin, UpdateView):
     model = ProjectTask
     fields = ['name', 'description', 'type', 'onboarding_instructions', 'stage', 'accepting_volunteers', 'estimated_start_date',
                 'estimated_end_date', 'estimated_effort_hours', 'task_home_url', 'task_deliverables_url']
-    template_name = 'dssgmkt/proj_task_edit.html'
+    template_name = 'marketplace/proj_task_edit.html'
     pk_url_kwarg = 'task_pk'
     permission_required = 'project.task_edit'
     raise_exception = True
@@ -665,7 +665,7 @@ class ProjectEdit(PermissionRequiredMixin, UpdateView):
             'deliverables_description', 'deliverable_github_url',
             'deliverable_management_url', 'deliverable_documentation_url',
             'deliverable_reports_url', 'status']
-    template_name = 'dssgmkt/proj_info_edit.html'
+    template_name = 'marketplace/proj_info_edit.html'
     pk_url_kwarg = 'proj_pk'
     permission_required = 'project.information_edit'
     raise_exception = True
@@ -715,7 +715,7 @@ def project_task_requirements_edit_view(request, proj_pk, task_pk):
             pass
     elif request.method == 'GET':
         pass
-    return render(request, 'dssgmkt/proj_task_requirements_edit.html',
+    return render(request, 'marketplace/proj_task_requirements_edit.html',
                     add_project_task_common_context(request, task, 'tasklist',
                         {
                             'breadcrumb': project_breadcrumb(project,
@@ -741,7 +741,7 @@ def project_task_staff_edit_view(request, proj_pk, task_pk):
             pass
     elif request.method == 'GET':
         pass
-    return render(request, 'dssgmkt/proj_task_staff_edit.html',
+    return render(request, 'marketplace/proj_task_staff_edit.html',
                     add_project_task_common_context(request, task, 'tasklist',
                         {
                             'breadcrumb': project_breadcrumb(project,
@@ -753,7 +753,7 @@ def project_task_staff_edit_view(request, proj_pk, task_pk):
 
 class ProjectTaskRemove(PermissionRequiredMixin, DeleteView):
     model = ProjectTask
-    template_name = 'dssgmkt/proj_task_remove.html'
+    template_name = 'marketplace/proj_task_remove.html'
     pk_url_kwarg = 'task_pk'
     permission_required = 'project.task_delete'
     raise_exception = True
@@ -828,7 +828,7 @@ def project_staff_view(request, proj_pk):
     project_staff = ProjectService.get_all_project_staff(request.user, proj_pk)
     staff_page = paginate(request, project_staff, request_key='staff_page', page_size=20)
 
-    return render(request, 'dssgmkt/proj_staff.html',
+    return render(request, 'marketplace/proj_staff.html',
                     add_project_common_context(request, project, 'staff',
                         {
                             'breadcrumb': project_breadcrumb(project, ('Staff', None)),
@@ -847,7 +847,7 @@ def project_volunteers_view(request, proj_pk):
         volunteer_applications = ProjectService.get_all_volunteer_applications(request.user, proj_pk)
         applications_page = paginate(request, volunteer_applications, request_key='applications_page', page_size=20)
 
-        return render(request, 'dssgmkt/proj_volunteers.html',
+        return render(request, 'marketplace/proj_volunteers.html',
                         add_project_common_context(request, project, 'volunteers',
                             {
                                 'breadcrumb': project_breadcrumb(project, ('Volunteers', None)),
@@ -859,7 +859,7 @@ def project_volunteers_view(request, proj_pk):
 class ProjectRoleEdit(PermissionRequiredMixin, SuccessMessageMixin, UpdateView):
     model = ProjectRole
     fields = ['role']
-    template_name = 'dssgmkt/proj_staff_edit.html'
+    template_name = 'marketplace/proj_staff_edit.html'
     pk_url_kwarg = 'role_pk'
     success_message = 'Role edited successfully'
     permission_required = 'project.staff_edit'
@@ -918,7 +918,7 @@ def project_role_delete_view(request, proj_pk, role_pk):
     elif request.method == 'GET':
         form = DeleteProjectRoleForm()
     project = get_project(request, proj_pk)
-    return render(request, 'dssgmkt/proj_staff_remove.html',
+    return render(request, 'marketplace/proj_staff_remove.html',
                     add_project_common_context(request, project, 'staff',
                         {
                             'projectrole': project_role,
@@ -941,7 +941,7 @@ class EditProjectTaskRoleForm(ModelForm):
 class ProjectTaskRoleEdit(PermissionRequiredMixin, SuccessMessageMixin, UpdateView):
     model = ProjectTaskRole
     form_class = EditProjectTaskRoleForm
-    template_name = 'dssgmkt/proj_task_volunteer_edit.html'
+    template_name = 'marketplace/proj_task_volunteer_edit.html'
     pk_url_kwarg = 'task_role_pk'
     success_message = 'Volunteer edited successfully'
     permission_required = 'project.volunteers_edit'
@@ -982,7 +982,7 @@ class ProjectTaskRoleEdit(PermissionRequiredMixin, SuccessMessageMixin, UpdateVi
 
 class ProjectTaskRoleRemove(PermissionRequiredMixin, DeleteView):
     model = ProjectTaskRole
-    template_name = 'dssgmkt/proj_volunteer_remove.html'
+    template_name = 'marketplace/proj_volunteer_remove.html'
     permission_required = 'project.volunteers_remove'
     raise_exception = True
 
@@ -1045,7 +1045,7 @@ def volunteer_application_view(request, proj_pk, task_pk, volunteer_application_
 
     project = get_project(request, proj_pk)
     if volunteer_application and volunteer_application.task.id == task_pk and volunteer_application.task.project.id == proj_pk:
-        return render(request, 'dssgmkt/proj_volunteer_application_review.html',
+        return render(request, 'marketplace/proj_volunteer_application_review.html',
                         add_project_common_context(
                             request,
                             project,
@@ -1087,7 +1087,7 @@ def publish_project_view(request, proj_pk):
     elif request.method == 'GET':
         pass
     if project:
-        return render(request, 'dssgmkt/proj_publish.html',
+        return render(request, 'marketplace/proj_publish.html',
                         add_project_common_context(
                             request,
                             project,
@@ -1113,7 +1113,7 @@ def finish_project_view(request, proj_pk):
     elif request.method == 'GET':
         pass
     if project:
-        return render(request, 'dssgmkt/proj_finish.html',
+        return render(request, 'marketplace/proj_finish.html',
                         add_project_common_context(
                             request,
                             project,
@@ -1158,7 +1158,7 @@ class CreateProjectForm(ModelForm):
 class ProjectCreateView(PermissionRequiredMixin, CreateView):
     model = Project
     form_class = CreateProjectForm
-    template_name = 'dssgmkt/proj_create.html'
+    template_name = 'marketplace/proj_create.html'
     permission_required = 'organization.project_create'
     raise_exception = True
 
@@ -1204,7 +1204,7 @@ def project_create_select_organization_view(request):
     if len(organizations) == 1:
         return HttpResponseRedirect(reverse('marketplace:proj_create', args=[organizations[0].id]))
     else:
-        return render(request, 'dssgmkt/proj_create_org_select.html',
+        return render(request, 'marketplace/proj_create_org_select.html',
                             {
                                 'breadcrumb': [home_link(), ('Select organization', None)],
                                 'user_organizations': organizations,
@@ -1235,7 +1235,7 @@ def publish_project_task_view(request, proj_pk, task_pk):
     elif request.method == 'GET':
         pass
     if project_task:
-        return render(request, 'dssgmkt/proj_task_publish.html',
+        return render(request, 'marketplace/proj_task_publish.html',
                         add_project_task_common_context(
                             request,
                             project_task,
