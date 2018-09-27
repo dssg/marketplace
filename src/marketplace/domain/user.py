@@ -1,28 +1,38 @@
+import requests
+
+from django.conf import settings
 from django.db import IntegrityError, transaction
 from django.db.models import Q, Count, F
 from django.utils import timezone
-from django.conf import settings
 
-from ..models.common import (
-    ReviewStatus, SkillLevel,
-)
-from ..models.user import (
-    User, UserType, VolunteerProfile, VolunteerSkill, UserBadge, BadgeType, BadgeTier, Skill,
-    NotificationSource, NotificationSeverity, SignupCode, SignupCodeType, UserTaskPreference,
-)
-from ..models.org import (
-    OrganizationRole,
+from marketplace.authorization.common import ensure_user_has_permission
+
+from marketplace.models.common import ReviewStatus, SkillLevel
+from marketplace.models.org import OrganizationRole
+from marketplace.models.user import (
+    User,
+    UserType,
+    VolunteerProfile,
+    VolunteerSkill,
+    UserBadge,
+    BadgeType,
+    BadgeTier,
+    Skill,
+    NotificationSource,
+    NotificationSeverity,
+    SignupCode,
+    SignupCodeType,
+    UserTaskPreference,
 )
 
 from .common import validate_consistent_keys, award_view_model_translation, task_preferences_model_translation
 from .org import OrganizationService
-from .proj import ProjectService, ProjectTaskService
+from .proj import ProjectService
 from .notifications import NotificationService
-import requests
 
-from marketplace.authorization.common import ensure_user_has_permission
 
 class UserService():
+
     @staticmethod
     def get_user(request_user, userid):
         return User.objects.get(pk=userid)
