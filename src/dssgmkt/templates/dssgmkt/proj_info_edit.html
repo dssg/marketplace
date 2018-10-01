@@ -7,6 +7,7 @@
     <h4 class="section-header">Edit project information</h4>
     {% csrf_token %}
     {% include 'dssgmkt/components/standard_form_fields.html' %}
+    {% include 'dssgmkt/components/social_cause_edit_row.html' with label_text='Choose the social causes this project is focused on.' %}
 
     <div class="form-row">
       <div class="col-lg-9 offset-lg-3">

@@ -62,7 +62,7 @@
                   <th>Organization name</th>
                   <th>Summary</th>
                   <th>Status</th>
-                  <th>Social impact area</th>
+                  <th>Social impact areas</th>
               </tr>
             </thead>
             <tbody>
@@ -75,7 +75,9 @@
                       {% include 'dssgmkt/components/project_status_display.html' %}
                     </td>
                     <td>
-                      {% include 'dssgmkt/components/social_cause_display.html' with object=project social_cause=project.get_project_cause_display %}
+                      {% for sc in project.projectsocialcause_set.all %}
+                        {% include 'dssgmkt/components/social_cause_display.html' with object=sc social_cause=sc.get_social_cause_display %} <br/>
+                      {% endfor %}
                     </td>
                 </tr>
               {% endfor %}

@@ -7,6 +7,7 @@ from ..models.proj import (
     Project, ProjectStatus, ProjectRole, ProjRole, ProjectFollower, ProjectLog, ProjectLogType, ProjectLogSource, ProjectDiscussionChannel, ProjectComment,
     ProjectTask, TaskStatus, TaskRole, ProjectTaskRole, ProjectTaskReview, VolunteerApplication,
     ProjectTaskRequirement, TaskRequirementImportance, TaskType, ProjectScope, PinnedTaskReview,
+    ProjectSocialCause,
 )
 from ..models.common import (
     ReviewStatus,
@@ -51,7 +52,8 @@ class ProjectService():
                 social_causes = []
                 for social_cause_from_view in sc:
                     social_causes.append(social_cause_view_model_translation[social_cause_from_view])
-                base_query = base_query.filter(project_cause__in=social_causes)
+                # base_query = base_query.filter(project_cause__in=social_causes)
+                base_query = base_query.filter(projectsocialcause__social_cause__in=social_causes).distinct()
             if 'project_status' in search_config:
                 project_status_list = search_config['project_status']
                 if isinstance(project_status_list, str):
@@ -374,6 +376,20 @@ class ProjectService():
                                            ProjectLogSource.INFORMATION,
                                            project.id,
                                            message)
+
+    @staticmethod
+    def save_project_social_causes(request_user, projid, project, post_object):
+        validate_consistent_keys(project, ('id', projid))
+        ensure_user_has_permission(request_user, project, 'project.information_edit')
+        social_causes = post_object.getlist('id_social_causes')
+        with transaction.atomic():
+            for sc in ProjectSocialCause.objects.filter(project=projid):
+                sc.delete()
+            for sc in social_causes:
+                new_sc = ProjectSocialCause()
+                new_sc.social_cause = sc
+                new_sc.project = project
+                new_sc.save()
 
     @staticmethod
     def publish_project(request_user, projid, project):

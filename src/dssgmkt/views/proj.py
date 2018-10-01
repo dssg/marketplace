@@ -24,7 +24,7 @@ from ..models.proj import (
 from .common import build_breadcrumb, home_link, paginate, generic_getter
 from .org import organizations_link, organization_link, get_organization, add_organization_common_context
 from dssgmkt.domain.proj import ProjectService, ProjectTaskService
-
+from dssgmkt.domain.common import get_social_causes
 from dssgmkt.domain.org import OrganizationService
 from dssgmkt.domain.user import UserService
 
@@ -656,7 +656,7 @@ class ProjectEdit(PermissionRequiredMixin, UpdateView):
     model = Project
     fields = ['name', 'short_summary',
             'motivation', 'solution_description', 'project_impact', 'stakeholders', 'available_staff',
-            'banner_image_file', 'project_cause',
+            'banner_image_file',
             'developer_agreement', 'intended_start_date', 'intended_end_date',
             'deliverables_description', 'deliverable_github_url',
             'deliverable_management_url', 'deliverable_documentation_url',
@@ -673,6 +673,14 @@ class ProjectEdit(PermissionRequiredMixin, UpdateView):
         context = super().get_context_data(**kwargs)
         project = get_project(self.request, self.kwargs['proj_pk'])
         context['breadcrumb'] = project_breadcrumb(project, ('Edit project information', None))
+
+        social_causes = []
+        for sc in get_social_causes():
+            sc_value, sc_name = sc
+            selected = project.projectsocialcause_set.filter(social_cause=sc_value).exists()
+            social_causes.append({'social_cause_text': sc_name, 'social_cause_value': sc_value, 'selected': selected})
+        context['social_causes'] = social_causes
+
         add_project_common_context(self.request, project, 'info', context)
         return context
 
@@ -680,6 +688,7 @@ class ProjectEdit(PermissionRequiredMixin, UpdateView):
         project = form.save(commit = False)
         try:
             ProjectService.save_project(self.request.user, self.kwargs['proj_pk'], project)
+            ProjectService.save_project_social_causes(self.request.user, self.kwargs['proj_pk'], project, self.request.POST)
             return HttpResponseRedirect(self.get_success_url())
         except ValueError as v:
             form.add_error(None, str(v))
@@ -1129,7 +1138,7 @@ def toggle_task_accepting_volunteers_view(request, proj_pk, task_pk):
 class CreateProjectForm(ModelForm):
     class Meta:
         model = Project
-        fields = ['name', 'project_cause', 'short_summary',
+        fields = ['name', 'short_summary',
                     'motivation', 'solution_description', 'project_impact', 'stakeholders', 'available_staff',
 
                     'banner_image_file', 'developer_agreement',
@@ -1156,6 +1165,13 @@ class ProjectCreateView(PermissionRequiredMixin, CreateView):
         context = super().get_context_data(**kwargs)
         organization = get_organization(self.request, self.kwargs['org_pk'])
         context['breadcrumb'] = [home_link(), organizations_link(), organization_link(organization), ('Create new project', None)]
+
+        social_causes = []
+        for sc in get_social_causes():
+            sc_value, sc_name = sc
+            social_causes.append({'social_cause_text': sc_name, 'social_cause_value': sc_value, 'selected': False})
+        context['social_causes'] = social_causes
+
         return add_organization_common_context(
             self.request,
             organization,
@@ -1166,6 +1182,7 @@ class ProjectCreateView(PermissionRequiredMixin, CreateView):
         project = form.save(commit=False)
         try:
             project = OrganizationService.create_project(self.request.user, self.kwargs['org_pk'], project)
+            ProjectService.save_project_social_causes(self.request.user, project.id, project, self.request.POST)
             messages.info(self.request, "The project was created successfully and you were assigned administrator privileges over it.")
             self.object = project
             return HttpResponseRedirect(self.get_success_url())

@@ -5,9 +5,6 @@
   <div class="row">
     <div class="col-lg-9">
       <h1>{{ project.name }}</h1>
-      <h4>
-        {% include 'dssgmkt/components/social_cause_display.html' with object=project social_cause=project.get_project_cause_display %}
-      </h4>
       <h4><a href="{% url 'dssgmkt:org_info' project.organization.id %}">{{ project.organization.name }}</a></h4>
       <p>{{ project.follower_count }} followers.</p>
       <p>{{ project.short_summary }}</p>
@@ -23,6 +20,13 @@
       {% endif %}
 
     </div>
+
+    <div class="col-lg-12 mt-3">
+      {% for sc in project.projectsocialcause_set.all %}
+        <span class="mr-4">{% include 'dssgmkt/components/social_cause_display.html' with object=sc social_cause=sc.get_social_cause_display %}</span>
+      {% endfor %}
+    </div>
+
     <div class="col-lg-12 section-header">
       {% if user.volunteerprofile and user.volunteerprofile.is_accepted and first_open_task %}
         <a class="btn btn-success col-lg-6 offset-lg-3 mb-1 "

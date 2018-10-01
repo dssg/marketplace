@@ -302,6 +302,56 @@ class Project(models.Model):
     def is_social_cause_other(self):
         return self.project_cause == SocialCause.OTHER
 
+class ProjectSocialCause(models.Model):
+    social_cause = models.CharField(
+        verbose_name="Social cause",
+        help_text="What is the social cause that this project has as a goal?",
+        max_length=2,
+        choices=SocialCause.get_choices(),
+        default=SocialCause.EDUCATION,
+    )
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.CASCADE,
+        verbose_name="Project",
+    )
+
+    def is_social_cause_education(self):
+        return self.social_cause == SocialCause.EDUCATION
+
+    def is_social_cause_health(self):
+        return self.social_cause == SocialCause.HEALTH
+
+    def is_social_cause_environment(self):
+        return self.social_cause == SocialCause.ENVIRONMENT
+
+    def is_social_cause_social_services(self):
+        return self.social_cause == SocialCause.SOCIAL_SERVICES
+
+    def is_social_cause_transportation(self):
+        return self.social_cause == SocialCause.TRANSPORTATION
+
+    def is_social_cause_energy(self):
+        return self.social_cause == SocialCause.ENERGY
+
+    def is_social_cause_internantional_dev(self):
+        return self.social_cause == SocialCause.INTERNATIONAL_DEVELOPMENT
+
+    def is_social_cause_public_safety(self):
+        return self.social_cause == SocialCause.PUBLIC_SAFETY
+
+    def is_social_cause_economic_dev(self):
+        return self.social_cause == SocialCause.ECONOMIC_DEVELOPMENT
+
+    def is_social_cause_other(self):
+        return self.social_cause == SocialCause.OTHER
+
+    def __str__(self):
+        return self.get_social_cause_display()
+
+    class Meta:
+        unique_together = ('social_cause','project')
+
 class ProjectScope(models.Model):
     # ==========================
     scope_goals = models.TextField(
