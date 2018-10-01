@@ -54,3 +54,6 @@ award_view_model_translation = {
                                              'fast_work': BadgeType.WORK_SPEED,
                                              'early_user': BadgeType.EARLY_USER,
                                          }
+
+def get_social_causes():
+    return SocialCause.get_choices()

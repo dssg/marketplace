@@ -43,7 +43,6 @@ def example_organization():
     organization.zipcode = "11111"
     organization.budget = Budget.B100K
     organization.years_operation = YearsInOperation.Y0
-    organization.main_cause = SocialCause.EDUCATION
     organization.organization_scope = GeographicalScope.LOCAL
     return organization
 

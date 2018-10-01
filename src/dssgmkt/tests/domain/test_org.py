@@ -4,7 +4,7 @@ from django.contrib.auth.models import AnonymousUser
 
 from dssgmkt.models.common import ReviewStatus
 from dssgmkt.models.user import User, UserType
-from dssgmkt.models.org import Organization, OrganizationRole, Budget, YearsInOperation, SocialCause, GeographicalScope, OrganizationMembershipRequest, OrgRole
+from dssgmkt.models.org import Organization, OrganizationRole, OrganizationSocialCause, Budget, YearsInOperation, SocialCause, GeographicalScope, OrganizationMembershipRequest, OrgRole
 from dssgmkt.domain.user import UserService
 from dssgmkt.domain.org import OrganizationService
 
@@ -72,7 +72,6 @@ class OrganizationTestCase(TestCase):
         self.organization.zipcode = "EDITED11111"
         self.organization.budget = Budget.B50MP
         self.organization.years_operation = YearsInOperation.Y25
-        self.organization.main_cause = SocialCause.HEALTH
         self.organization.organization_scope = GeographicalScope.COUNTRY
 
         with self.subTest(stage='Add staff member'):
@@ -87,6 +86,10 @@ class OrganizationTestCase(TestCase):
 
     def test_filter_organization(self):
         OrganizationService.create_organization(self.organization_user, self.organization)
+        sc = OrganizationSocialCause()
+        sc.social_cause = SocialCause.EDUCATION
+        sc.organization = self.organization
+        sc.save()
         org_result_list = [self.organization]
         self.assertEqual(list(OrganizationService.get_all_organizations(self.organization_user, {'name': 'ORGAN'})), org_result_list)
         self.assertEqual(list(OrganizationService.get_all_organizations(self.organization_user, {'name': 'no match'})), [])

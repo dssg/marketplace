@@ -689,7 +689,6 @@ class ProjectEdit(PermissionRequiredMixin, UpdateView):
 
 @permission_required('project.task_requirements_view', raise_exception=True, fn=objectgetter(Project, 'proj_pk'))
 def project_task_requirements_edit_view(request, proj_pk, task_pk):
-    print(request)
     task = get_project_task(request, proj_pk, task_pk)
     project = get_project(request, proj_pk)
     if request.method == 'POST':

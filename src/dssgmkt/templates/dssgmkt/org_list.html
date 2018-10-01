@@ -56,7 +56,7 @@
               <tr>
                   <th>Organization name</th>
                   <th>Description</th>
-                  <th>Social impact area</th>
+                  <th>Social impact areas</th>
               </tr>
             </thead>
             <tbody>
@@ -65,7 +65,9 @@
                     <td><a href="{% url 'dssgmkt:org_info' organization.id %}">{{ organization.name }}</a></td>
                     <td>{{ organization.short_summary }}</img></td>
                     <td>
-                      {% include 'dssgmkt/components/social_cause_display.html' with object=organization social_cause=organization.get_main_cause_display %}
+                      {% for sc in organization.organizationsocialcause_set.all %}
+                        {% include 'dssgmkt/components/social_cause_display.html' with object=sc social_cause=sc.get_social_cause_display %} <br/>
+                      {% endfor %}
                     </td>
                 </tr>
               {% endfor %}

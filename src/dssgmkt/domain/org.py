@@ -1,9 +1,11 @@
+from itertools import accumulate
+
 from django.db import IntegrityError, transaction
 from django.db.models import Case, Q, When, Count
 
 from ..models.common import OrgRole, ReviewStatus, SocialCause
 from ..models.org import (
-    Organization, OrganizationMembershipRequest, OrganizationRole,
+    Organization, OrganizationMembershipRequest, OrganizationRole, OrganizationSocialCause,
 )
 from ..models.user import (
     User, NotificationSeverity, NotificationSource,
@@ -31,7 +33,8 @@ class OrganizationService():
                 social_causes = []
                 for social_cause_from_view in sc:
                     social_causes.append(social_cause_view_model_translation[social_cause_from_view])
-                base_query = base_query.filter(main_cause__in=social_causes)
+                base_query = base_query.filter(organizationsocialcause__social_cause__in=social_causes).distinct()
+
             if 'project_status' in search_config:
                 project_status_list = search_config['project_status']
                 if isinstance(project_status_list, str):
@@ -62,6 +65,20 @@ class OrganizationService():
             organization.save()
         else:
             raise ValueError('Request does not match organization')
+
+    @staticmethod
+    def save_organization_social_causes(request_user, orgid, organization, post_object):
+        ensure_user_has_permission(request_user, organization, 'organization.information_edit')
+        validate_consistent_keys(organization, ('id', orgid))
+        social_causes = post_object.getlist('id_social_causes')
+        with transaction.atomic():
+            for sc in OrganizationSocialCause.objects.filter(organization=orgid):
+                sc.delete()
+            for sc in social_causes:
+                new_sc = OrganizationSocialCause()
+                new_sc.social_cause = sc
+                new_sc.organization = organization
+                new_sc.save()
 
     @staticmethod
     def create_organization(request_user, organization):

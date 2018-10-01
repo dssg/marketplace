@@ -20,6 +20,7 @@ from ..models.org import (
     Organization, OrganizationMembershipRequest, OrganizationRole,
 )
 from dssgmkt.domain.org import OrganizationService
+from dssgmkt.domain.common import get_social_causes
 from .common import build_breadcrumb, home_link, paginate, generic_getter
 
 
@@ -127,7 +128,7 @@ class OrganizationView(generic.DetailView):
 class EditOrganizationForm(ModelForm):
     class Meta:
         model = Organization
-        exclude = ['logo_url']
+        exclude = ['logo_url', 'main_cause']
 
 class OrganizationEdit(PermissionRequiredMixin, UpdateView):
     model = Organization
@@ -146,6 +147,13 @@ class OrganizationEdit(PermissionRequiredMixin, UpdateView):
         context['organization'] = organization
         context['breadcrumb'] = organization_breadcrumb(organization,
                                                         ('Edit information', None))
+        social_causes = []
+        for sc in get_social_causes():
+            sc_value, sc_name = sc
+            selected = organization.organizationsocialcause_set.filter(social_cause=sc_value).exists()
+            social_causes.append({'social_cause_text': sc_name, 'social_cause_value': sc_value, 'selected': selected})
+        context['social_causes'] = social_causes
+
         add_organization_common_context(self.request, organization, 'info', context)
         return context
 
@@ -153,6 +161,7 @@ class OrganizationEdit(PermissionRequiredMixin, UpdateView):
         organization = form.save(commit = False)
         try:
             OrganizationService.save_organization_info(self.request.user, self.kwargs['org_pk'], organization)
+            OrganizationService.save_organization_social_causes(self.request.user, self.kwargs['org_pk'], organization, self.request.POST)
             return HttpResponseRedirect(self.get_success_url())
         except KeyError as k:
             form.add_error(None, str(k))
@@ -417,7 +426,7 @@ class CreateOrganizationForm(ModelForm):
         model = Organization
         fields = ['name', 'short_summary', 'description', 'logo_file', 'website_url', 'phone_number',
                 'email_address', 'street_address', 'address_line_2', 'city', 'state',
-                'zipcode', 'country', 'budget', 'years_operation', 'main_cause',
+                'zipcode', 'country', 'budget', 'years_operation',
                 'organization_scope',]
 
 class OrganizationCreateView(PermissionRequiredMixin, CreateView):
@@ -433,12 +442,18 @@ class OrganizationCreateView(PermissionRequiredMixin, CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['breadcrumb'] = [home_link(), organizations_link(), ('Create new organization', None)]
+        social_causes = []
+        for sc in get_social_causes():
+            sc_value, sc_name = sc
+            social_causes.append({'social_cause_text': sc_name, 'social_cause_value': sc_value, 'selected': False})
+        context['social_causes'] = social_causes
         return context
 
     def form_valid(self, form):
         organization = form.save(commit=False)
         try:
             organization = OrganizationService.create_organization(self.request.user, organization)
+            OrganizationService.save_organization_social_causes(self.request.user, organization.id, organization, self.request.POST)
             messages.info(self.request, "You have created a new organization and are now its first administrator user.")
             self.object = organization
             return HttpResponseRedirect(self.get_success_url())
