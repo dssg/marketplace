@@ -545,12 +545,14 @@ class TaskType():
     SCOPING_TASK='SCT'
     PROJECT_MANAGEMENT_TASK='PMT'
     DOMAIN_WORK_TASK='DWT'
+    QA_TASK='QAT'
 
     def get_choices():
         return (
                     (TaskType.SCOPING_TASK, 'Project scoping'),
                     (TaskType.PROJECT_MANAGEMENT_TASK, 'Project management'),
-                    (TaskType.DOMAIN_WORK_TASK, 'Domain work')
+                    (TaskType.DOMAIN_WORK_TASK, 'Domain work'),
+                    (TaskType.QA_TASK, 'QA'),
                 )
 
 class TaskStatus():
@@ -700,6 +702,9 @@ class ProjectTask(models.Model):
 
     def is_type_domain_work(self):
         return self.type == TaskType.DOMAIN_WORK_TASK
+
+    def is_type_qa(self):
+        return self.type == TaskType.QA_TASK
 
 class ProjectDiscussionChannel(models.Model):
     name = models.TextField(

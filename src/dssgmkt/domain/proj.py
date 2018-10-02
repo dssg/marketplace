@@ -109,6 +109,22 @@ class ProjectService():
         return user.is_authenticated and ProjectTaskRole.objects.filter(user=user, role=TaskRole.VOLUNTEER, task__project=proj, task__type=TaskType.PROJECT_MANAGEMENT_TASK, task__stage__in=[TaskStatus.STARTED, TaskStatus.WAITING_REVIEW]).exists()
 
     @staticmethod
+    def user_is_project_reviewer(user, proj):
+        return user.is_authenticated and ProjectTaskRole.objects.filter(user=user, role=TaskRole.VOLUNTEER, task__project=proj, task__type=TaskType.QA_TASK, task__stage__in=[TaskStatus.STARTED, TaskStatus.WAITING_REVIEW]).exists()
+
+    @staticmethod
+    def user_can_view_project_tasks(user, proj):
+        return ProjectService.user_is_project_member(user, proj) or ProjectService.user_is_project_reviewer(user, proj)
+
+    @staticmethod
+    def user_can_review_project_tasks(user, proj):
+        return ProjectService.user_is_project_owner(user, proj) or ProjectService.user_is_project_reviewer(user, proj)
+
+    @staticmethod
+    def user_can_complete_project(user, proj):
+        return ProjectService.user_is_project_official(user, proj) # or ProjectService.user_is_project_reviewer(user, proj)
+
+    @staticmethod
     def user_is_project_volunteer_official(user, proj):
         return user.is_authenticated and ProjectTaskRole.objects.filter(user=user, role=TaskRole.VOLUNTEER, task__project=proj, task__type__in=[TaskType.SCOPING_TASK, TaskType.PROJECT_MANAGEMENT_TASK], task__stage__in=[TaskStatus.STARTED, TaskStatus.WAITING_REVIEW]).exists()
 
@@ -146,6 +162,16 @@ class ProjectService():
             User.objects.filter(projecttaskrole__task__project=proj,
                                 projecttaskrole__role=TaskRole.VOLUNTEER,
                                 projecttaskrole__task__type__in=[TaskType.SCOPING_TASK, TaskType.PROJECT_MANAGEMENT_TASK],
+                                projecttaskrole__task__stage__in=[TaskStatus.STARTED, TaskStatus.WAITING_REVIEW]
+                                )
+        )
+
+    @staticmethod
+    def get_project_reviewers(request_user, proj):
+        return User.objects.filter(projectrole__project=proj, projectrole__role=ProjRole.OWNER).union(
+            User.objects.filter(projecttaskrole__task__project=proj,
+                                projecttaskrole__role=TaskRole.VOLUNTEER,
+                                projecttaskrole__task__type__in=[TaskType.QA_TASK],
                                 projecttaskrole__task__stage__in=[TaskStatus.STARTED, TaskStatus.WAITING_REVIEW]
                                 )
         )
@@ -310,6 +336,21 @@ class ProjectService():
             domain_work_task.estimated_end_date = date.today()
             domain_work_task.save()
 
+            qa_task = ProjectTask()
+            qa_task.name = 'Task and project QA'
+            qa_task.short_summary = 'Task for performing QA on the domain tasks.'
+            qa_task.description = 'This project needs experienced volunteers to work on ensuring that the tasks that are completed by other volunteers meet the requirements and the expected levels of delivery quality. Duties include reviewing work that volunteers complete, giving constructive feedback, deciding when tasks are ready to be marked as completed, and reviewing the status of the project before the final signoff.'
+            qa_task.onboarding_instructions = 'Describe in detail the volunteer onboarding instructions for this QA task.'
+            qa_task.stage = TaskStatus.DRAFT
+            qa_task.type = TaskType.QA_TASK
+            qa_task.accepting_volunteers = False
+            qa_task.project = project
+            qa_task.percentage_complete = 0
+            qa_task.business_area = 'no'
+            qa_task.estimated_start_date = date.today()
+            qa_task.estimated_end_date = date.today()
+            qa_task.save()
+
             # Create default discussion channels
             general_channel = ProjectDiscussionChannel()
             general_channel.project = project
@@ -343,6 +384,13 @@ class ProjectService():
             domain_work_channel.related_task = domain_work_task
             domain_work_channel.description = "Discussion channel for the task Domain work."
             domain_work_channel.save()
+
+            qa_channel = ProjectDiscussionChannel()
+            qa_channel.project = project
+            qa_channel.name = "QA"
+            qa_channel.related_task = qa_task
+            qa_channel.description = "Discussion channel for the QA task."
+            qa_channel.save()
 
 
             message = "The project {0} was created by {1} within the organization {2}.".format(project.name, request_user.standard_display_name(), organization.name)
@@ -684,9 +732,12 @@ class ProjectTaskService():
 
     @staticmethod
     def get_project_tasks_summary(request_user, proj):
-        return ProjectTask.objects.filter(project=proj) \
+        base_query = ProjectTask.objects.filter(project=proj) \
                                   .exclude(stage=TaskStatus.DELETED) \
                                   .order_by('-accepting_volunteers', '-stage')
+        if ProjectService.user_is_project_reviewer(request_user, proj):
+            base_query = base_query.filter(stage=TaskStatus.WAITING_REVIEW)
+        return base_query
 
     @staticmethod
     def get_user_task_application_status(request_user, projid, taskid):
@@ -735,7 +786,7 @@ class ProjectTaskService():
 
     @staticmethod
     def user_can_view_task_review(user, task_review):
-        return user.is_authenticated and (ProjectService.user_is_project_member(user, task_review.task.project) or ProjectTaskService.user_belongs_to_task_review(user, task_review))
+        return user.is_authenticated and (ProjectService.user_is_project_member(user, task_review.task.project) or ProjectTaskService.user_belongs_to_task_review(user, task_review) or ProjectService.user_is_project_reviewer(user, task_review.task.project))
 
     @staticmethod
     def user_can_view_all_task_reviews(user, task):
@@ -747,7 +798,7 @@ class ProjectTaskService():
 
     @staticmethod
     def user_can_review_task(user, task):
-        return ProjectService.user_is_project_official(user, task.project) and not ProjectTaskRole.objects.filter(user=user, task=task).exists()
+        return ProjectService.user_can_review_project_tasks(user, task.project) and not ProjectTaskRole.objects.filter(user=user, task=task).exists()
 
     @staticmethod
     def task_has_volunteers(request_user, taskid):
@@ -889,7 +940,7 @@ class ProjectTaskService():
                 project_task.stage = TaskStatus.WAITING_REVIEW
                 ProjectTaskService.save_task_internal(request_user, projid, taskid, project_task)
             message = "The task {0} from project {1} has been marked as completed by the volunteer and needs to be reviewed.".format(project_task.name, project.name)
-            NotificationService.add_multiuser_notification(ProjectService.get_project_officials(request_user, project),
+            NotificationService.add_multiuser_notification(ProjectService.get_project_reviewers(request_user, project),
                                                         message,
                                                         NotificationSeverity.WARNING,
                                                         NotificationSource.TASK,
