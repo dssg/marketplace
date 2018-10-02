@@ -552,8 +552,8 @@ class Develop(Local):
             'webapp',
         ]
 
-    @localmethod('mcmd', metavar='command', help="django management command")
     @localmethod('remainder', metavar='command arguments', nargs=REMAINDER)
+    @localmethod('mcmd', metavar='command', help="django management command")
     def djmanage(self, args):
         """manage the django project in a running container"""
         yield (
