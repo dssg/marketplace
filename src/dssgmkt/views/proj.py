@@ -406,6 +406,7 @@ class ProjectVolunteerTaskDetailView(generic.DetailView):
         context['breadcrumb'] = project_volunteer_task_breadcrumb(project_task)
         context['task_volunteers'] = ProjectTaskService.get_task_volunteers(self.request.user, self.kwargs['task_pk'])
         context['task_staff'] = ProjectTaskService.get_task_staff(self.request.user, self.kwargs['task_pk'])
+        context['task_reviewers'] = ProjectService.get_project_reviewers(self.request.user, self.kwargs['proj_pk'])
         context['task_reviews'] = ProjectTaskService.get_task_reviews(self.request.user, project_task, expand_pinned=True)
         add_project_task_common_context(self.request, project_task, 'instructions', context)
         context['project_tasks'] = ProjectTaskService.get_volunteer_all_project_tasks(self.request.user, self.request.user, project_task.project) # override the default tasks in the project.
@@ -612,6 +613,7 @@ class ProjectTaskDetailView(generic.DetailView):
         context['breadcrumb'] = project_task_breadcrumb(project_task)
         context['task_volunteers'] = ProjectTaskService.get_task_volunteers(self.request.user, self.kwargs['task_pk'])
         context['task_staff'] = ProjectTaskService.get_task_staff(self.request.user, self.kwargs['task_pk'])
+        context['task_reviewers'] = ProjectService.get_project_reviewers(self.request.user, self.kwargs['proj_pk'])
         add_project_task_common_context(self.request, project_task, 'tasklist', context)
         return context
 

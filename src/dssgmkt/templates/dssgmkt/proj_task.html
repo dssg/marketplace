@@ -92,6 +92,20 @@
             </div>
           </div>
           <div class="card">
+            <div class="card-header"><i class="fas fa-magic"></i> Skill requirements</div>
+            <div class="card-body">
+              {% if project_task.projecttaskrequirement_set.all %}
+                {% include 'dssgmkt/components/requirements_display.html' with task_requirements=project_task.projecttaskrequirement_set.all compact_display=True %}
+              {% else %}
+                No requirements listed.
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+
+        <div class="card-deck section-header">
+          <div class="card">
             <div class="card-header"><i class="fas fa-people-carry"></i> Support staff</div>
             <div class="card-body">
               {% if task_staff %}
@@ -103,17 +117,15 @@
               {% endif %}
             </div>
           </div>
-        </div>
-
-
-        <div class="card-deck section-header">
           <div class="card">
-            <div class="card-header"><i class="fas fa-magic"></i> Skill requirements</div>
+            <div class="card-header"><i class="fas fa-search"></i> QA Reviewers</div>
             <div class="card-body">
-              {% if project_task.projecttaskrequirement_set.all %}
-                {% include 'dssgmkt/components/requirements_display.html' with task_requirements=project_task.projecttaskrequirement_set.all compact_display=True %}
+              {% if task_reviewers %}
+                {% for reviewer in task_reviewers %}
+                  <div>{% include 'dssgmkt/components/user_display.html' with user=reviewer %}</div>
+                {% endfor %}
               {% else %}
-                No requirements listed.
+                No QA volunteers yet.
               {% endif %}
             </div>
           </div>

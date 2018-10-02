@@ -6,7 +6,7 @@
 
   {% load markdown_deux_tags %}
 
-  <div class="row mt-5 mb-5 section-header">
+  <div class="row mb-5 section-header">
     <div class="col-lg-8">
         <span class="text-muted">
           {% include 'dssgmkt/components/task_type_display.html' %}
@@ -85,6 +85,19 @@
             {% endfor %}
           {% else %}
             No staff assigned to this task.
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="card section-header">
+        <div class="card-header"><i class="fas fa-search"></i> QA Reviewers</div>
+        <div class="card-body">
+          {% if task_reviewers %}
+            {% for reviewer in task_reviewers %}
+              <div>{% include 'dssgmkt/components/user_display.html' with user=reviewer %}</div>
+            {% endfor %}
+          {% else %}
+            No QA volunteers yet.
           {% endif %}
         </div>
       </div>
