@@ -106,6 +106,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'dssgmkt.context_processors.ga_tracking_id',
             ],
         },
     },
@@ -281,3 +282,5 @@ RECAPTCHA_SITE_KEY = config('RECAPTCHA_SITE_KEY', default=None)
 RECAPTCHA_SECRET_KEY = config('RECAPTCHA_SECRET_KEY', default=None)
 
 AUTOMATICALLY_ACCEPT_VOLUNTEERS = config('AUTOMATICALLY_ACCEPT_VOLUNTEERS', default=False, cast=bool)
+
+GA_TRACKING_ID = config('GA_TRACKING_ID', default=None)
