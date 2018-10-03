@@ -9,10 +9,10 @@
 
     <div class="row mt-4">
      <div class="card-deck main-cards col-lg-12">
-      <div class="card">
-       <div class="card-header"><h3>Social Good Organization member</h3></div>
-       <ul class="list-group list-group-flush">
-         <li class="list-group-item">
+      <div class="card d-flex">
+       <div class="card-header"><h4 class="mb-0">Social Good Organization member</h4></div>
+       <ul class="list-group list-group-flush flex-grow-1 d-flex">
+         <li class="list-group-item flex-grow-1">
             Social Good Organization members can:
             <ul>
             <li> post new projects
@@ -29,24 +29,28 @@
         </ul>
       </div>
       <div class="card d-flex">
-       <div class="card-header"><h3>Volunteer</h3></div>
+       <div class="card-header"><h4 class="mb-0">Volunteer</h4></div>
        <ul class="list-group list-group-flush flex-grow-1">
          <li class="list-group-item flex-grow-1">
            Volunteers can work on existing projects through applying for tasks that are open on a project.
            After signing up, edit your volunteer profile and add your skills so you can be
-           matched to project tasks that match your expertise. <p>We need volunteers in four roles:
-           <ul>
-            <li> Project Scoping</li>
-            <li> Project Management</li>
-            <li> Data Science</li>
-            <li> Review/QA</li>
-          </ul>
-          <p>
-            <p>Don't worry, you can still join social good organizations and submit projects later if you want.</p>
+           matched to project tasks that match your expertise.
+           <p>We need volunteers in four roles (check the roles that interest you):</p>
+            <form id="preferences">
+              <ul>
+                {% include 'dssgmkt/components/task_preference_inputs.html' %}
+              </ul>
+              <p>Don't worry, you can still join social good organizations and submit projects later if you want.</p>
+            </form>
           </li>
-          <a class="list-group-item list-group-item-action bg-success text-white" href="{% url 'dssgmkt:signup_form' 'volunteer' %}">
-           Sign up as a volunteer
-         </a>
+           <button
+              type="submit"
+              form="preferences"
+              formaction="{% url 'dssgmkt:signup_form' 'volunteer' %}"
+              formmethod="get"
+              class="list-group-item list-group-item-action bg-success text-white">
+             Sign up as a volunteer
+           </button>
         </ul>
       </div>
      </div>

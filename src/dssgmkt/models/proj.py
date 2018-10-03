@@ -6,6 +6,7 @@ from dssgsolve import settings
 from .common import (
     SocialCause, ReviewStatus, Score,
     SkillLevel, validate_image_size,
+    TaskType,
 )
 from .org import Organization
 from .user import Skill
@@ -540,20 +541,6 @@ class ProjectFollower(models.Model):
 
     class Meta:
         unique_together = ('user','project')
-
-class TaskType():
-    SCOPING_TASK='SCT'
-    PROJECT_MANAGEMENT_TASK='PMT'
-    DOMAIN_WORK_TASK='DWT'
-    QA_TASK='QAT'
-
-    def get_choices():
-        return (
-                    (TaskType.SCOPING_TASK, 'Project scoping'),
-                    (TaskType.PROJECT_MANAGEMENT_TASK, 'Project management'),
-                    (TaskType.DOMAIN_WORK_TASK, 'Domain work'),
-                    (TaskType.QA_TASK, 'QA'),
-                )
 
 class TaskStatus():
     DRAFT='DRF'

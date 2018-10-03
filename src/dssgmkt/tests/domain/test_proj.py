@@ -2,9 +2,9 @@ from django.test import TestCase
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.models import AnonymousUser
 
-from dssgmkt.models.common import ReviewStatus, SkillLevel, Score
+from dssgmkt.models.common import ReviewStatus, SkillLevel, Score, TaskType
 from dssgmkt.models.proj import (
-    ProjectRole, ProjRole, TaskType, VolunteerApplication, ProjectScope,
+    ProjectRole, ProjRole, VolunteerApplication, ProjectScope,
     TaskStatus, ProjectComment, ProjectTaskRole, ProjectTaskReview,
     ProjectStatus, TaskRequirementImportance, ProjectTaskRequirement,
 )
@@ -38,34 +38,34 @@ class ProjectTestCase(TestCase):
         code.save()
 
         self.owner_user = example_organization_user()
-        UserService.create_user(None, self.owner_user, 'organization', None)
+        UserService.create_user(None, self.owner_user, 'organization', None, None)
 
         self.staff_user = example_staff_user()
-        UserService.create_user(None, self.staff_user, 'organization', None)
+        UserService.create_user(None, self.staff_user, 'organization', None, None)
 
         self.volunteer_user = example_volunteer_user()
         self.volunteer_user.special_code = "AUTOMATICVOLUNTEER"
-        UserService.create_user(None, self.volunteer_user, 'volunteer', None)
+        UserService.create_user(None, self.volunteer_user, 'volunteer', None, None)
         UserService.create_volunteer_profile(self.volunteer_user, self.volunteer_user.id)
 
         self.volunteer_applicant_user = example_volunteer_user(username="applicant")
         self.volunteer_applicant_user.special_code = "AUTOMATICVOLUNTEER"
-        UserService.create_user(None, self.volunteer_applicant_user, 'volunteer', None)
+        UserService.create_user(None, self.volunteer_applicant_user, 'volunteer', None, None)
         UserService.create_volunteer_profile(self.volunteer_applicant_user, self.volunteer_applicant_user.id)
 
         self.scoping_user = example_volunteer_user(username="scopinguser")
         self.scoping_user.special_code = "AUTOMATICVOLUNTEER"
-        UserService.create_user(None, self.scoping_user, 'volunteer', None)
+        UserService.create_user(None, self.scoping_user, 'volunteer', None, None)
         UserService.create_volunteer_profile(self.scoping_user, self.scoping_user.id)
 
         self.proj_mgmt_user = example_volunteer_user(username="managementuser")
         self.proj_mgmt_user.special_code = "AUTOMATICVOLUNTEER"
-        UserService.create_user(None, self.proj_mgmt_user, 'volunteer', None)
+        UserService.create_user(None, self.proj_mgmt_user, 'volunteer', None, None)
         UserService.create_volunteer_profile(self.proj_mgmt_user, self.proj_mgmt_user.id)
 
         self.qa_user = example_volunteer_user(username="qauser")
         self.qa_user.special_code = "AUTOMATICVOLUNTEER"
-        UserService.create_user(None, self.qa_user, 'volunteer', None)
+        UserService.create_user(None, self.qa_user, 'volunteer', None, None)
         UserService.create_volunteer_profile(self.qa_user, self.qa_user.id)
 
         self.organization = example_organization()

@@ -42,6 +42,11 @@
               Edit my volunteer profile
             </a>
             <a class="btn btn-success col-lg-12 mb-1"
+               href="{% url 'dssgmkt:user_preferences_edit' userprofile.id %}">
+               <i class="material-icons" style="vertical-align: middle">tune</i>
+              Edit my interests
+            </a>
+            <a class="btn btn-success col-lg-12 mb-1"
                href="{% url 'dssgmkt:user_profile_skills_edit' user.id %}">
                <i class="material-icons" style="vertical-align: middle">donut_small</i>
               Edit my skills
@@ -171,6 +176,18 @@
             <div>Start date: {{ userprofile.volunteerprofile.availability_start_date }}</div>
             <div>End date: {{ userprofile.volunteerprofile.availability_end_date }}</div>
             <div>Hours available per week: {{ userprofile.volunteerprofile.weekly_availability_hours }}</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">Volunteering interests</div>
+          <div class="card-body">
+            {% if user.usertaskpreference_set.all %}
+              {% for p in user.usertaskpreference_set.all %}
+                <div>{% include 'dssgmkt/components/task_type_display.html' with project_task=p %} {{ p.get_preference_display }}</div>
+              {% endfor %}
+            {% else %}
+              No stated preferences.
+            {% endif %}
           </div>
         </div>
       </div>

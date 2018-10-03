@@ -1,4 +1,4 @@
-from dssgmkt.models.common import SocialCause
+from dssgmkt.models.common import SocialCause, TaskType
 from dssgmkt.models.proj import ProjectStatus
 from dssgmkt.models.user import BadgeType
 
@@ -54,6 +54,14 @@ award_view_model_translation = {
                                              'fast_work': BadgeType.WORK_SPEED,
                                              'early_user': BadgeType.EARLY_USER,
                                          }
+
+
+task_preferences_model_translation = {
+     'scoping': TaskType.SCOPING_TASK,
+     'management': TaskType.PROJECT_MANAGEMENT_TASK,
+     'domainwork': TaskType.DOMAIN_WORK_TASK,
+     'qa': TaskType.QA_TASK,
+ }
 
 def get_social_causes():
     return SocialCause.get_choices()

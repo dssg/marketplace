@@ -10,6 +10,7 @@ from .common import (
     OrgRole,
     SkillLevel,
     validate_image_size,
+    TaskType,
 )
 
 
@@ -80,6 +81,35 @@ class User(AbstractUser):
 
     def is_type_dssg_staff(self):
         return self.initial_type == UserType.DSSG_STAFF
+
+class UserTaskPreference(models.Model):
+    preference = models.CharField(
+        verbose_name="Task type",
+        help_text="Choose what type of tasks you are interested in working in.",
+        max_length=3,
+        choices=TaskType.get_choices(),
+        default=TaskType.SCOPING_TASK,
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        verbose_name="User",
+    )
+
+    def is_type_scoping(self):
+        return self.preference == TaskType.SCOPING_TASK
+
+    def is_type_project_management(self):
+        return self.preference == TaskType.PROJECT_MANAGEMENT_TASK
+
+    def is_type_domain_work(self):
+        return self.preference == TaskType.DOMAIN_WORK_TASK
+
+    def is_type_qa(self):
+        return self.preference == TaskType.QA_TASK
+
+    class Meta:
+        unique_together = ('preference','user')
 
 class SignupCodeType():
     VOLUNTEER_AUTOMATIC_ACCEPT = 0

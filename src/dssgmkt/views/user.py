@@ -43,6 +43,9 @@ def my_profile_link(user_pk, include_link=True):
 def edit_my_skills_link(user_pk, include_link=True):
     return ("Edit my skills" , reverse('dssgmkt:user_profile_skills_edit', args=[user_pk]) if include_link else None)
 
+def edit_my_preferences_link(user_pk, include_link=True):
+    return ("Edit my interests" , reverse('dssgmkt:user_preferences_edit', args=[user_pk]) if include_link else None)
+
 def change_password_breadcrumb():
     return build_breadcrumb([home_link(),
                              users_link(),
@@ -277,6 +280,37 @@ class VolunteerProfileEdit(PermissionRequiredMixin, UpdateView):
 
 
 @permission_required('user.is_same_user', raise_exception=True, fn=objectgetter(User, 'user_pk'))
+def user_preferences_edit_view(request, user_pk):
+    userprofile = get_object_or_404(User, pk=user_pk)
+    if request.method == 'POST':
+        try:
+            UserService.save_user_task_preferences(userprofile, userprofile, request.POST.getlist('preferences'))
+            return redirect('dssgmkt:user_profile', user_pk=user_pk)
+        except KeyError:
+            raise Http404
+        except ValueError:
+            pass
+    elif request.method == 'GET':
+        pass
+    context = {
+        'breadcrumb': build_breadcrumb([home_link(),
+                                        my_profile_link(user_pk),
+                                        edit_my_preferences_link(user_pk, include_link=False)]),
+        'userprofile': userprofile,
+    }
+    for p in userprofile.usertaskpreference_set.all():
+        if p.is_type_scoping():
+            context['has_scoping_preference'] = True
+        elif p.is_type_project_management():
+            context['has_project_management_preference'] = True
+        elif p.is_type_domain_work():
+            context['has_domain_work_preference'] = True
+        elif p.is_type_qa():
+            context['has_qa_preference'] = True
+
+    return render(request, 'dssgmkt/user_preferences_edit.html', context)
+
+@permission_required('user.is_same_user', raise_exception=True, fn=objectgetter(User, 'user_pk'))
 def user_profile_skills_edit_view(request, user_pk):
     if request.method == 'POST':
         try:
@@ -328,12 +362,13 @@ class SignUpForm(UserCreationForm):
 def signup(request, user_type=None):
     if not user_type in ['volunteer', 'organization']:
         raise Http404
+    preferences = []
     if request.method == 'POST':
         form = SignUpForm(request.POST)
         if form.is_valid():
             new_user = form.save(commit=False)
             try:
-                new_user = UserService.create_user(request.user, new_user, user_type, request.POST.get('g-recaptcha-response'))
+                new_user = UserService.create_user(request.user, new_user, user_type, request.POST.get('g-recaptcha-response'), request.POST.getlist('preferences'))
                 username = form.cleaned_data.get('username')
                 raw_password = form.cleaned_data.get('password1')
                 user = authenticate(username=username, password=raw_password)
@@ -346,6 +381,7 @@ def signup(request, user_type=None):
                 form.add_error(None, str(v))
     else:
         form = SignUpForm()
+        preferences = request.GET.getlist('preferences')
     return render(request, 'dssgmkt/signup.html',
                     {
                         'form': form,
@@ -353,4 +389,5 @@ def signup(request, user_type=None):
                         'breadcrumb': build_breadcrumb([home_link(),
                                                         ('Sign up', None)]),
                         'captcha_site_key': settings.RECAPTCHA_SITE_KEY,
+                        'preferences': preferences,
                     })

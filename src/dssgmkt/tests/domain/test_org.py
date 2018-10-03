@@ -22,11 +22,11 @@ class OrganizationTestCase(TestCase):
 
     def setUp(self):
         self.organization_user = example_organization_user()
-        UserService.create_user(None, self.organization_user, 'organization', None)
+        UserService.create_user(None, self.organization_user, 'organization', None, None)
         self.staff_user = example_staff_user()
-        UserService.create_user(None, self.staff_user, 'organization', None)
+        UserService.create_user(None, self.staff_user, 'organization', None, None)
         self.volunteer_user = example_volunteer_user()
-        UserService.create_user(None, self.volunteer_user, 'volunteer', None)
+        UserService.create_user(None, self.volunteer_user, 'volunteer', None, None)
 
         self.organization = example_organization()
 

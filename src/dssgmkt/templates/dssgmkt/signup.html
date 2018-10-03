@@ -13,6 +13,29 @@
       {% csrf_token %}
       {% include 'dssgmkt/components/standard_form_fields.html' with wide_field_names=True %}
 
+      {% if preferences %}
+        {% for p in preferences %}
+          <input type="hidden" name="preferences" value="{{ p }}"></input>
+        {% endfor %}
+      {% elif user_type == 'volunteer' %}
+        <div class="form-group row">
+          <div class="col-sm-6">
+            <label class="control-label"
+                   for="id_preferences">
+              Task type preference
+            </label>
+            <div class="form-text text-muted help-block">
+              <small>
+                Let us know what type of tasks you are more interested in helping with, so we can pair you with the most appropriate projects.
+              </small>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            {% include 'dssgmkt/components/task_preference_inputs.html' %}
+          </div>
+        </div>
+      {% endif %}
+
       {% if captcha_site_key %}
         <div class="col-lg-6 offset-lg-6 mb-5">
           <div class="g-recaptcha" data-sitekey="{{ captcha_site_key }}"></div>

@@ -59,7 +59,7 @@ class UserTestCase(TestCase):
         dssg_user.first_name = "DSSG"
         dssg_user.last_name = "Staff"
         dssg_user.special_code = "MAKEDSSG"
-        UserService.create_user(None, dssg_user, 'organization', None)
+        UserService.create_user(None, dssg_user, 'organization', None, None)
         self.dssg_staff_user = dssg_user
 
     def test_organization_user(self):
@@ -67,7 +67,7 @@ class UserTestCase(TestCase):
         organization_user.username = "OrgUser"
         organization_user.first_name = "Organization"
         organization_user.last_name = "User"
-        UserService.create_user(None, organization_user, 'organization', None)
+        UserService.create_user(None, organization_user, 'organization', None, None)
         self.assertEqual(UserService.get_user(organization_user, organization_user.id), organization_user)
 
         self.assertFalse(UserService.user_is_dssg_staff(organization_user, organization_user))
@@ -86,7 +86,7 @@ class UserTestCase(TestCase):
         dssg_user.first_name = "DSSG"
         dssg_user.last_name = "Staff"
         dssg_user.special_code = "MAKEDSSG"
-        UserService.create_user(None, dssg_user, 'organization', None)
+        UserService.create_user(None, dssg_user, 'organization', None, None)
         self.assertEqual(UserService.get_user(dssg_user, dssg_user.id), dssg_user)
 
         self.assertTrue(UserService.user_is_dssg_staff(dssg_user, dssg_user))
@@ -105,7 +105,7 @@ class UserTestCase(TestCase):
         volunteer_user.first_name = "Volunteer"
         volunteer_user.last_name = "User"
         volunteer_user.email = "volunteer@email.com"
-        UserService.create_user(None, volunteer_user, 'volunteer', None)
+        UserService.create_user(None, volunteer_user, 'volunteer', None, None)
 
         self.assertFalse(UserService.user_is_dssg_staff(volunteer_user, volunteer_user))
         self.assertFalse(UserService.user_is_organization_creator(volunteer_user))
@@ -132,7 +132,7 @@ class UserTestCase(TestCase):
         volunteer_user2.first_name = "Volunteer2"
         volunteer_user2.last_name = "User2"
         volunteer_user2.email = "volunteer2@email.com"
-        UserService.create_user(None, volunteer_user2, 'volunteer', None)
+        UserService.create_user(None, volunteer_user2, 'volunteer', None, None)
         UserService.reject_volunteer_profile(self.dssg_staff_user, volunteer_user2.volunteerprofile.id)
         self.assertFalse(UserService.user_has_approved_volunteer_profile(volunteer_user2))
 
@@ -142,7 +142,7 @@ class UserTestCase(TestCase):
         volunteer_user3.last_name = "User3"
         volunteer_user3.email = "volunteer3@email.com"
         volunteer_user3.special_code = "AUTOMATICVOLUNTEER"
-        UserService.create_user(None, volunteer_user3, 'volunteer', None)
+        UserService.create_user(None, volunteer_user3, 'volunteer', None, None)
         self.assertTrue(UserService.user_has_approved_volunteer_profile(volunteer_user3))
 
         self.assertEqual(set(UserService.get_all_approved_volunteer_profiles(AnonymousUser())),
@@ -155,7 +155,7 @@ class UserTestCase(TestCase):
         volunteer_user.last_name = "User3"
         volunteer_user.email = "volunteer3@email.com"
         volunteer_user.special_code = "AUTOMATICVOLUNTEER"
-        UserService.create_user(None, volunteer_user, 'volunteer', None)
+        UserService.create_user(None, volunteer_user, 'volunteer', None, None)
 
         skill1 = Skill()
         skill1.area = "Area 1"
@@ -192,7 +192,7 @@ class UserTestCase(TestCase):
 
         volunteer_user.special_code = "SINGLEUSECODE"
         self.assertTrue(UserService.has_valid_special_signup_code(volunteer_user, SignupCodeType.VOLUNTEER_AUTOMATIC_ACCEPT))
-        
+
         volunteer_user.special_code = "singleusecode"
         self.assertTrue(UserService.has_valid_special_signup_code(volunteer_user, SignupCodeType.VOLUNTEER_AUTOMATIC_ACCEPT))
 

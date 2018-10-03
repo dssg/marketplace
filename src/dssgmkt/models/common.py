@@ -87,3 +87,17 @@ def validate_image_size(value):
         raise ValidationError("The maximum image size that can be uploaded is 500KB.")
     else:
         return value
+
+class TaskType():
+    SCOPING_TASK='SCT'
+    PROJECT_MANAGEMENT_TASK='PMT'
+    DOMAIN_WORK_TASK='DWT'
+    QA_TASK='QAT'
+
+    def get_choices():
+        return (
+                    (TaskType.SCOPING_TASK, 'Project scoping'),
+                    (TaskType.PROJECT_MANAGEMENT_TASK, 'Project management'),
+                    (TaskType.DOMAIN_WORK_TASK, 'Data science'),
+                    (TaskType.QA_TASK, 'QA'),
+                )

@@ -8,13 +8,13 @@ from ..models.common import (
 )
 from ..models.user import (
     User, UserType, VolunteerProfile, VolunteerSkill, UserBadge, BadgeType, BadgeTier, Skill,
-    NotificationSource, NotificationSeverity, SignupCode, SignupCodeType,
+    NotificationSource, NotificationSeverity, SignupCode, SignupCodeType, UserTaskPreference,
 )
 from ..models.org import (
     OrganizationRole,
 )
 
-from .common import validate_consistent_keys, award_view_model_translation
+from .common import validate_consistent_keys, award_view_model_translation, task_preferences_model_translation
 from .org import OrganizationService
 from .proj import ProjectService, ProjectTaskService
 from .notifications import NotificationService
@@ -82,7 +82,20 @@ class UserService():
         return requests.post(url, data=data).json().get('success') == True
 
     @staticmethod
-    def create_user(request_user, new_user, user_type, captcha_response):
+    def save_user_task_preferences(request_user, target_user, task_preferences):
+        ensure_user_has_permission(request_user, target_user, 'user.is_same_user')
+        if task_preferences is not None:
+            with transaction.atomic():
+                for current_preference in UserTaskPreference.objects.filter(user=target_user):
+                    current_preference.delete()
+                for p in task_preferences:
+                    new_preference = UserTaskPreference()
+                    new_preference.preference = task_preferences_model_translation[p]
+                    new_preference.user = target_user
+                    new_preference.save()
+
+    @staticmethod
+    def create_user(request_user, new_user, user_type, captcha_response, task_preferences):
         with transaction.atomic():
             if not UserService.verify_captcha(captcha_response):
                 raise ValueError('Incorrect reCAPTCHA answer')
@@ -99,6 +112,7 @@ class UserService():
 
             if new_user.initial_type == UserType.VOLUNTEER:
                 UserService.create_volunteer_profile(new_user, new_user.id)
+                UserService.save_user_task_preferences(new_user, new_user, task_preferences)
             return new_user
 
 

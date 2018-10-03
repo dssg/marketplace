@@ -6,11 +6,11 @@ from datetime import date
 from ..models.proj import (
     Project, ProjectStatus, ProjectRole, ProjRole, ProjectFollower, ProjectLog, ProjectLogType, ProjectLogSource, ProjectDiscussionChannel, ProjectComment,
     ProjectTask, TaskStatus, TaskRole, ProjectTaskRole, ProjectTaskReview, VolunteerApplication,
-    ProjectTaskRequirement, TaskRequirementImportance, TaskType, ProjectScope, PinnedTaskReview,
+    ProjectTaskRequirement, TaskRequirementImportance, ProjectScope, PinnedTaskReview,
     ProjectSocialCause,
 )
 from ..models.common import (
-    ReviewStatus,
+    ReviewStatus, TaskType,
 )
 from ..models.user import (
     User, NotificationSeverity, NotificationSource, VolunteerProfile, Skill, BadgeTier, UserBadge, BadgeType,
