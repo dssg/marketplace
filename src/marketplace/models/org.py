@@ -107,7 +107,6 @@ class Organization(models.Model):
     email_address = models.EmailField(
         verbose_name="Contact email",
         blank=True,
-        null=True,
     )
     street_address = models.CharField(
         verbose_name="Address line 1",
