@@ -1,5 +1,7 @@
 from datetime import date
 
+from allauth.socialaccount import providers
+
 from django.contrib.auth import logout, login, authenticate
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.messages.views import SuccessMessageMixin
@@ -411,3 +413,28 @@ def signup(request, user_type):
         'captcha_site_key': settings.RECAPTCHA_SITE_KEY,
         'preferences': preferences,
     })
+
+
+@require_POST
+def signup_oauth(request, user_type, provider_id):
+    """Record desired user type before redirecting visitor to OAuth
+    provider.
+
+    *This* redirect is in fact internal, but to a handler which does not
+    (need to) record any such thing, (and which handler is currently
+    part of allauth). The visitor will then be redirected to the
+    requested OAuth provider.
+
+    """
+    if user_type not in ('volunteer', 'organization'):
+        raise Http404
+
+    try:
+        provider = providers.registry.by_id(provider_id, request)
+    except LookupError:
+        raise Http404
+
+    redirect_url = provider.get_login_url(request, process='login')
+    request.session['oauth_signup_usertype'] = user_type
+
+    return redirect(redirect_url)

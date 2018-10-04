@@ -72,6 +72,7 @@ urlpatterns = [
 
     path('signup/select', user.select_user_type_view, name='signup_type_select'),
     path('signup/do/<str:user_type>', user.signup, name='signup_form'),
+    path('signup/do/<str:user_type>/via/<str:provider_id>/', user.signup_oauth, name='signup_oauth'),
 
     path('user/pwdchange', auth_views.PasswordChangeView.as_view(template_name='marketplace/user_pwd_change.html',
                                                                  success_url=reverse_lazy('marketplace:my_user_profile'),

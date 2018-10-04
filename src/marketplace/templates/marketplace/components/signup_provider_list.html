@@ -1,0 +1,17 @@
+{% load socialaccount %}
+
+{% get_providers as socialaccount_providers %}
+
+<form id="signup_oauth">
+{% csrf_token %}
+{% for provider in socialaccount_providers %}
+    <button
+        title="Sign up via {{provider.name}}"
+        class="btn {{provider.id}}"
+        type="submit"
+        form="signup_oauth"
+        formaction="{% url 'marketplace:signup_oauth' user_type provider.id %}"
+        formmethod="post"
+    >{{provider.name}}</button>
+{% endfor %}
+</form>
