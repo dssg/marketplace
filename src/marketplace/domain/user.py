@@ -5,6 +5,8 @@ from django.db import IntegrityError, transaction
 from django.db.models import Q, Count, F
 from django.utils import timezone
 
+from namespaces import Namespace
+
 from marketplace.authorization.common import ensure_user_has_permission
 
 from marketplace.models.common import ReviewStatus, SkillLevel
@@ -29,6 +31,87 @@ from .common import validate_consistent_keys, award_view_model_translation, task
 from .org import OrganizationService
 from .proj import ProjectService
 from .notifications import NotificationService
+
+
+# Namespace declaration #
+
+# TODO: continue/extend experiment with Namespaces over *Services
+
+
+UserDomain = Namespace('user')
+
+
+@UserDomain
+def query_signup_codes_by_text(code_name):
+    if not code_name:
+        return None
+
+    return (
+        SignupCode.objects
+        .filter(name__iexact=code_name)
+        .filter(Q(current_uses__lt=F('max_uses')) | Q(max_uses__isnull=True))
+        .filter(Q(expiration_date__gt=timezone.now()) | Q(expiration_date__isnull=True))
+    )
+
+
+@UserDomain._method_
+def is_valid_special_signup_code(self, signup_code, code_type):
+    if not signup_code:
+        return False
+
+    return (
+        self.query_signup_codes_by_text(signup_code)
+        .filter(type=code_type)
+        .exists()
+    )
+
+
+@UserDomain._method_
+def use_signup_code(self, code_name):
+    if not code_name:
+        return
+
+    signup_codes = self.query_signup_codes_by_text(code_name)
+    signup_codes.filter(current_uses=None).update(current_uses=0)
+    signup_codes.update(current_uses=(F('current_uses') + 1))
+
+
+@UserDomain
+def verify_captcha(answer):
+    if settings.RECAPTCHA_SECRET_KEY is None:
+        return True
+
+    service_response = requests.post(
+        'https://www.google.com/recaptcha/api/siteverify',
+        data={
+            'secret': settings.RECAPTCHA_SECRET_KEY,
+            'response': answer,
+        }
+    )
+    return service_response.json().get('success') is True
+
+
+@UserDomain._method_
+@transaction.atomic
+def add_user(self, user, user_type, task_preferences=None):
+    if user_type not in ('volunteer', 'organization'):
+        raise ValueError('Unknown user type')
+
+    if user_type == 'volunteer':
+        user.initial_type = UserType.VOLUNTEER
+    elif user_type == 'organization':
+        user.initial_type = UserType.ORGANIZATION
+
+    if self.is_valid_special_signup_code(user.special_code,
+                                         SignupCodeType.MAKE_DSSG_STAFF):
+        user.initial_type = UserType.DSSG_STAFF
+        self.use_signup_code(user.special_code)
+
+    user.save()
+
+    if user.initial_type == UserType.VOLUNTEER:
+        UserService.create_volunteer_profile(user, user.pk)
+        UserService.save_user_task_preferences(user, user, task_preferences)
 
 
 class UserService():
@@ -80,18 +163,6 @@ class UserService():
             .first()
 
     @staticmethod
-    def verify_captcha(captcha_response):
-        secret_key = settings.RECAPTCHA_SECRET_KEY
-        if secret_key is None:
-            return True
-        url = 'https://www.google.com/recaptcha/api/siteverify'
-        data = {
-            "secret": secret_key,
-            "response": captcha_response,
-            }
-        return requests.post(url, data=data).json().get('success') == True
-
-    @staticmethod
     def save_user_task_preferences(request_user, target_user, task_preferences):
         ensure_user_has_permission(request_user, target_user, 'user.is_same_user')
         if task_preferences is not None:
@@ -105,60 +176,9 @@ class UserService():
                     new_preference.save()
 
     @staticmethod
-    def create_user(request_user, new_user, user_type, captcha_response, task_preferences):
-        with transaction.atomic():
-            if not UserService.verify_captcha(captcha_response):
-                raise ValueError('Incorrect reCAPTCHA answer')
-            if not user_type in ['volunteer', 'organization']:
-                raise ValueError('Unknown user type')
-            if user_type == 'volunteer':
-                new_user.initial_type = UserType.VOLUNTEER
-            elif user_type == 'organization':
-                new_user.initial_type = UserType.ORGANIZATION
-            if UserService.has_valid_special_signup_code(new_user, SignupCodeType.MAKE_DSSG_STAFF):
-                new_user.initial_type = UserType.DSSG_STAFF
-                UserService.use_signup_code(new_user.special_code, SignupCodeType.MAKE_DSSG_STAFF)
-            new_user.save()
-
-            if new_user.initial_type == UserType.VOLUNTEER:
-                UserService.create_volunteer_profile(new_user, new_user.id)
-                UserService.save_user_task_preferences(new_user, new_user, task_preferences)
-            return new_user
-
-
-    @staticmethod
     def save_user(request_user, user_pk, user):
         validate_consistent_keys(user, ('id', user_pk))
         user.save()
-
-
-    @staticmethod
-    def get_signup_codes_by_text(code_name):
-        if code_name:
-            return SignupCode.objects.filter(name__iexact=code_name) \
-                                    .filter(Q(current_uses__lt=F('max_uses')) | Q(max_uses__isnull=True)) \
-                                    .filter(Q(expiration_date__gt=timezone.now()) | Q(expiration_date__isnull=True))
-        else:
-            return None
-
-    @staticmethod
-    def use_signup_code(code_name, code_type):
-        if code_name:
-            existing_signup_codes = UserService.get_signup_codes_by_text(code_name)
-            for signup_code in existing_signup_codes:
-                signup_code.current_uses = signup_code.current_uses + 1 if signup_code.current_uses else 1
-                signup_code.save()
-
-    @staticmethod
-    def has_valid_special_signup_code(user, code_type):
-        signup_code = user.special_code
-        if signup_code:
-            existing_signup_codes = UserService.get_signup_codes_by_text(signup_code)
-            existing_code_types = [code.type for code in existing_signup_codes]
-            return existing_code_types and code_type in existing_code_types
-        else:
-            return False
-
 
 
     @staticmethod
@@ -171,12 +191,18 @@ class UserService():
                 volunteer_profile.user = request_user
                 volunteer_profile.volunteer_status = ReviewStatus.NEW
                 volunteer_profile.is_edited = False
-                if UserService.has_valid_special_signup_code(volunteer_profile.user, SignupCodeType.VOLUNTEER_AUTOMATIC_ACCEPT) \
-                    or settings.AUTOMATICALLY_ACCEPT_VOLUNTEERS:
+
+
+                if (
+                    settings.AUTOMATICALLY_ACCEPT_VOLUNTEERS or
+                    UserDomain.is_valid_special_signup_code(volunteer_profile.user.special_code,
+                                                            SignupCodeType.VOLUNTEER_AUTOMATIC_ACCEPT)
+                ):
                     volunteer_profile.volunteer_status = ReviewStatus.ACCEPTED
                     volunteer_profile.is_edited = True
                     if volunteer_profile.user.special_code:
-                        UserService.use_signup_code(volunteer_profile.user.special_code, SignupCodeType.VOLUNTEER_AUTOMATIC_ACCEPT)
+                        UserDomain.use_signup_code(volunteer_profile.user.special_code)
+
                 try:
                     volunteer_profile.save()
 
