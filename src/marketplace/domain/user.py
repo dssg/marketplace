@@ -42,6 +42,16 @@ UserDomain = Namespace('user')
 
 
 @UserDomain
+def query_pending_volunteer_profiles(request_user):
+    ensure_user_has_permission(request_user, request_user, 'volunteer.new_user_review')
+    return (
+        VolunteerProfile.objects
+        .filter(volunteer_status=ReviewStatus.NEW)
+        .order_by('is_edited', '-creation_date')
+    )
+
+
+@UserDomain
 def query_signup_codes_by_text(code_name):
     if not code_name:
         return None
@@ -110,8 +120,75 @@ def add_user(self, user, user_type, task_preferences=None):
     user.save()
 
     if user.initial_type == UserType.VOLUNTEER:
-        UserService.create_volunteer_profile(user, user.pk)
-        UserService.save_user_task_preferences(user, user, task_preferences)
+        self.set_task_preferences(user, task_preferences)
+
+
+@UserDomain
+@transaction.atomic
+def set_task_preferences(user, preferences):
+    if preferences is None:
+        return
+
+    user.usertaskpreference_set.all().delete()
+
+    if len(preferences) == 0:
+        return
+
+    UserTaskPreference.objects.bulk_create([
+        UserTaskPreference(
+            preference=task_preferences_model_translation[preference],
+            user=user,
+        )
+        for preference in preferences
+    ])
+
+
+VolunteerDomain = UserDomain(Namespace('volunteer'))
+
+
+@VolunteerDomain._method_
+@transaction.atomic
+def ensure_profile(self, user):
+    (volunteer_profile, created) = VolunteerProfile.objects.get_or_create(
+        user=user,
+        defaults=dict(
+            volunteer_status=ReviewStatus.NEW,
+            is_edited=False,
+        ),
+    )
+
+    if not created:
+        return volunteer_profile
+
+    if (
+        settings.AUTOMATICALLY_ACCEPT_VOLUNTEERS or
+        UserDomain.is_valid_special_signup_code(
+            user.special_code, SignupCodeType.VOLUNTEER_AUTOMATIC_ACCEPT
+        )
+    ):
+        volunteer_profile.volunteer_status = ReviewStatus.ACCEPTED
+        volunteer_profile.is_edited = True
+        volunteer_profile.save()
+
+        if user.special_code:
+            UserDomain.use_signup_code(user.special_code)
+
+    if volunteer_profile.id < 1000:
+        if volunteer_profile.id < 100:
+            badge_tier = BadgeTier.MASTER
+        elif volunteer_profile.id < 500:
+            badge_tier = BadgeTier.ADVANCED
+        else:
+            badge_tier = BadgeTier.BASIC
+
+        user.userbadge_set.get_or_create(
+            type=BadgeType.EARLY_USER,
+            defaults=dict(
+                tier=badge_tier,
+            ),
+        )
+
+    return volunteer_profile
 
 
 class UserService():
@@ -163,67 +240,9 @@ class UserService():
             .first()
 
     @staticmethod
-    def save_user_task_preferences(request_user, target_user, task_preferences):
-        ensure_user_has_permission(request_user, target_user, 'user.is_same_user')
-        if task_preferences is not None:
-            with transaction.atomic():
-                for current_preference in UserTaskPreference.objects.filter(user=target_user):
-                    current_preference.delete()
-                for p in task_preferences:
-                    new_preference = UserTaskPreference()
-                    new_preference.preference = task_preferences_model_translation[p]
-                    new_preference.user = target_user
-                    new_preference.save()
-
-    @staticmethod
     def save_user(request_user, user_pk, user):
         validate_consistent_keys(user, ('id', user_pk))
         user.save()
-
-
-    @staticmethod
-    def create_volunteer_profile(request_user, user_pk):
-        target_user = UserService.get_user(request_user, user_pk)
-        ensure_user_has_permission(request_user, target_user, 'user.is_same_user')
-        if not VolunteerProfile.objects.filter(user=request_user).exists():
-            with transaction.atomic():
-                volunteer_profile = VolunteerProfile()
-                volunteer_profile.user = request_user
-                volunteer_profile.volunteer_status = ReviewStatus.NEW
-                volunteer_profile.is_edited = False
-
-
-                if (
-                    settings.AUTOMATICALLY_ACCEPT_VOLUNTEERS or
-                    UserDomain.is_valid_special_signup_code(volunteer_profile.user.special_code,
-                                                            SignupCodeType.VOLUNTEER_AUTOMATIC_ACCEPT)
-                ):
-                    volunteer_profile.volunteer_status = ReviewStatus.ACCEPTED
-                    volunteer_profile.is_edited = True
-                    if volunteer_profile.user.special_code:
-                        UserDomain.use_signup_code(volunteer_profile.user.special_code)
-
-                try:
-                    volunteer_profile.save()
-
-                    new_badge_tier = None
-                    if volunteer_profile.id < 100:
-                        new_badge_tier = BadgeTier.MASTER
-                    elif volunteer_profile.id < 500:
-                        new_badge_tier = BadgeTier.ADVANCED
-                    elif volunteer_profile.id < 1000:
-                        new_badge_tier = BadgeTier.BASIC
-                    if new_badge_tier is not None:
-                        new_user_badge = UserBadge()
-                        new_user_badge.tier = new_badge_tier
-                        new_user_badge.type = BadgeType.EARLY_USER
-                        new_user_badge.user = volunteer_profile.user
-                        new_user_badge.save()
-
-                    return volunteer_profile
-                except IntegrityError:
-                    raise ValueError('User already has a volunteer profile')
-
 
     @staticmethod
     def save_volunteer_profile(request_user, volunteer_profile_pk, volunteer_profile):
@@ -325,12 +344,6 @@ class UserService():
     @staticmethod
     def user_is_organization_creator(request_user):
         return request_user.is_authenticated and request_user.initial_type == UserType.ORGANIZATION
-
-    @staticmethod
-    def get_pending_volunteer_profiles(request_user):
-        ensure_user_has_permission(request_user, request_user, 'volunteer.new_user_review')
-        return VolunteerProfile.objects.filter(volunteer_status=ReviewStatus.NEW).order_by('is_edited', '-creation_date')
-
 
     @staticmethod
     def get_user_todos(request_user, user):

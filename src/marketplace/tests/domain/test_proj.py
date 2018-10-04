@@ -49,22 +49,27 @@ class ProjectTestCase(TestCase):
         self.volunteer_user = example_volunteer_user()
         self.volunteer_user.special_code = "AUTOMATICVOLUNTEER"
         marketplace.user.add_user(self.volunteer_user, 'volunteer')
-        UserService.create_volunteer_profile(self.volunteer_user, self.volunteer_user.id)
 
-        self.volunteer_applicant_user = example_volunteer_user(username="applicant")
+        self.volunteer_applicant_user = example_volunteer_user(
+            username="applicant",
+            email='applicant-volunteer@example.com',
+        )
         self.volunteer_applicant_user.special_code = "AUTOMATICVOLUNTEER"
         marketplace.user.add_user(self.volunteer_applicant_user, 'volunteer')
-        UserService.create_volunteer_profile(self.volunteer_applicant_user, self.volunteer_applicant_user.id)
 
-        self.scoping_user = example_volunteer_user(username="scopinguser")
+        self.scoping_user = example_volunteer_user(
+            username="scopinguser",
+            email='scopinguser@example.com',
+        )
         self.scoping_user.special_code = "AUTOMATICVOLUNTEER"
         marketplace.user.add_user(self.scoping_user, 'volunteer')
-        UserService.create_volunteer_profile(self.scoping_user, self.scoping_user.id)
 
-        self.proj_mgmt_user = example_volunteer_user(username="managementuser")
+        self.proj_mgmt_user = example_volunteer_user(
+            username="managementuser",
+            email='managementuser@example.com',
+        )
         self.proj_mgmt_user.special_code = "AUTOMATICVOLUNTEER"
         marketplace.user.add_user(self.proj_mgmt_user, 'volunteer')
-        UserService.create_volunteer_profile(self.proj_mgmt_user, self.proj_mgmt_user.id)
 
         self.qa_user = example_volunteer_user(username="qauser")
         self.qa_user.special_code = "AUTOMATICVOLUNTEER"

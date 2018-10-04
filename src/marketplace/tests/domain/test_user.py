@@ -68,10 +68,12 @@ class UserTestCase(TestCase):
         self.dssg_staff_user = dssg_user
 
     def test_organization_user(self):
-        organization_user = User()
-        organization_user.username = "OrgUser"
-        organization_user.first_name = "Organization"
-        organization_user.last_name = "User"
+        organization_user = User(
+            username="OrgUser",
+            email='orguser@example.com',
+            first_name="Organization",
+            last_name="User",
+        )
         marketplace.user.add_user(organization_user, 'organization')
         self.assertEqual(UserService.get_user(organization_user, organization_user.id), organization_user)
 
@@ -84,25 +86,6 @@ class UserTestCase(TestCase):
         organization_user.first_name = "Organization edited"
         UserService.save_user(organization_user, organization_user.id, organization_user)
         self.assertEqual(UserService.get_user(organization_user, organization_user.id), organization_user)
-
-    def test_dssg_user(self):
-        dssg_user = User()
-        dssg_user.username = "DSSGUser"
-        dssg_user.first_name = "DSSG"
-        dssg_user.last_name = "Staff"
-        dssg_user.special_code = "MAKEDSSG"
-        marketplace.user.add_user(dssg_user, 'organization')
-        self.assertEqual(UserService.get_user(dssg_user, dssg_user.id), dssg_user)
-
-        self.assertTrue(UserService.user_is_dssg_staff(dssg_user, dssg_user))
-        self.assertFalse(UserService.user_is_organization_creator(dssg_user))
-        self.assertFalse(UserService.user_has_skills(dssg_user))
-        self.assertFalse(UserService.user_has_volunteer_profile(dssg_user))
-        self.assertFalse(UserService.user_has_approved_volunteer_profile(dssg_user))
-
-        UserService.create_volunteer_profile(dssg_user, volunteer_user.id)
-        self.assertTrue(UserService.user_has_volunteer_profile(dssg_user))
-        self.assertFalse(UserService.user_has_approved_volunteer_profile(dssg_user))
 
     def test_dssg_user(self):
         volunteer_user = User()
@@ -124,9 +107,10 @@ class UserTestCase(TestCase):
         self.assertTrue(volunteer_user.volunteerprofile.is_edited)
         self.assertFalse(UserService.user_has_approved_volunteer_profile(volunteer_user))
 
-        self.assertEqual(set(UserService.get_pending_volunteer_profiles(self.dssg_staff_user)),
-            set([volunteer_user.volunteerprofile]))
-
+        self.assertSequenceEqual(
+            marketplace.user.query_pending_volunteer_profiles(self.dssg_staff_user),
+            [volunteer_user.volunteerprofile],
+        )
 
         UserService.accept_volunteer_profile(self.dssg_staff_user, volunteer_user.volunteerprofile.id)
         self.assertTrue(volunteer_user.volunteerprofile.is_edited)
