@@ -44,7 +44,7 @@ def edit_my_skills_link(user_pk, include_link=True):
     return ("Edit my skills" , reverse('marketplace:user_profile_skills_edit', args=[user_pk]) if include_link else None)
 
 def edit_my_preferences_link(user_pk, include_link=True):
-    return ("Edit my interests" , reverse('dssgmkt:user_preferences_edit', args=[user_pk]) if include_link else None)
+    return ("Edit my interests" , reverse('marketplace:user_preferences_edit', args=[user_pk]) if include_link else None)
 
 def change_password_breadcrumb():
     return build_breadcrumb([home_link(),
@@ -285,7 +285,7 @@ def user_preferences_edit_view(request, user_pk):
     if request.method == 'POST':
         try:
             UserService.save_user_task_preferences(userprofile, userprofile, request.POST.getlist('preferences'))
-            return redirect('dssgmkt:user_profile', user_pk=user_pk)
+            return redirect('marketplace:user_profile', user_pk=user_pk)
         except KeyError:
             raise Http404
         except ValueError:

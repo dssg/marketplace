@@ -183,7 +183,7 @@
           <div class="card-body">
             {% if user.usertaskpreference_set.all %}
               {% for p in user.usertaskpreference_set.all %}
-                <div>{% include 'dssgmkt/components/task_type_display.html' with project_task=p %} {{ p.get_preference_display }}</div>
+                <div>{% include 'marketplace/components/task_type_display.html' with project_task=p %} {{ p.get_preference_display }}</div>
               {% endfor %}
             {% else %}
               No stated preferences.

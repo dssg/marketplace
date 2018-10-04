@@ -94,7 +94,7 @@
         <div class="card-body">
           {% if task_reviewers %}
             {% for reviewer in task_reviewers %}
-              <div>{% include 'dssgmkt/components/user_display.html' with user=reviewer %}</div>
+              <div>{% include 'marketplace/components/user_display.html' with user=reviewer %}</div>
             {% endfor %}
           {% else %}
             No QA volunteers yet.
