@@ -1,4 +1,4 @@
-{% extends 'dssgmkt/base.html' %}
+{% extends 'marketplace/base.html' %}
 
 {% block pagecontents %}
 
@@ -19,7 +19,7 @@
         </div>
       </div>
       <div class="col-sm-6">
-        {% include 'dssgmkt/components/task_preference_inputs.html' %}
+        {% include 'marketplace/components/task_preference_inputs.html' %}
       </div>
     </div>
 
@@ -28,14 +28,14 @@
       <div class="col-lg-6 offset-lg-6">
         <button type="submit"
                 form="edituserprofile"
-                formaction="{% url 'dssgmkt:user_preferences_edit' user.id %}"
+                formaction="{% url 'marketplace:user_preferences_edit' user.id %}"
                 formmethod="post"
                 class="btn btn-success mr-3">
           <i class="material-icons" style="vertical-align: middle">save</i>
           Save
         </button>
         <a class="btn btn-outline-primary"
-           href="{% url 'dssgmkt:user_profile' userprofile.id %}">
+           href="{% url 'marketplace:user_profile' userprofile.id %}">
           <i class="material-icons" style="vertical-align: middle">close</i>
           Cancel
         </a>

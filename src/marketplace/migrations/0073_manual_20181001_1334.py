@@ -1,7 +1,7 @@
 from django.db import migrations, models
 import django.db.models.deletion
-from dssgmkt.models.org import Organization, OrganizationSocialCause
-from dssgmkt.models.proj import Project, ProjectSocialCause
+from marketplace.models.org import Organization, OrganizationSocialCause
+from marketplace.models.proj import Project, ProjectSocialCause
 
 def rebuild_organization_social_causes(apps, schema_editor):
     for org in Organization.objects.all():
@@ -22,7 +22,7 @@ def rebuild_project_social_causes(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('dssgmkt', '0072_auto_20181001_1321'),
+        ('marketplace', '0072_auto_20181001_1321'),
     ]
 
     operations = [

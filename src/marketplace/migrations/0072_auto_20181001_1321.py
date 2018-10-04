@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('dssgmkt', '0071_auto_20181001_1049'),
+        ('marketplace', '0071_auto_20181001_1049'),
     ]
 
     operations = [
@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('social_cause', models.CharField(choices=[('ED', 'Education'), ('HE', 'Health'), ('EN', 'Environment'), ('SS', 'Social Services'), ('TR', 'Transportation'), ('EE', 'Energy and Environment'), ('ID', 'International development'), ('PS', 'Public Safety'), ('EC', 'Economic Development'), ('OT', 'Other')], default='ED', help_text='What is the social cause that this project has as a goal?', max_length=2, verbose_name='Social cause')),
-                ('project', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='dssgmkt.Project', verbose_name='Project')),
+                ('project', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='marketplace.Project', verbose_name='Project')),
             ],
         ),
         migrations.AlterUniqueTogether(
