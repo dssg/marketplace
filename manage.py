@@ -485,7 +485,7 @@ class Develop(Local):
             help="(re-)build image before container creation",
         )
 
-    def exec(self, user='webapp', interactive=True, tty=True):
+    def exec(self, user='webapp', interactive=True, tty=True, **environ):
         command = self.local['docker']['exec']
 
         if user:
@@ -496,6 +496,12 @@ class Develop(Local):
 
         if tty:
             command = command['-t']
+
+        if environ:
+            command = command[
+                '--env', ','.join(f'{key}={value}'
+                                  for (key, value) in environ.items()),
+            ]
 
         return command[self.args.name]
 
@@ -537,6 +543,15 @@ class Develop(Local):
             self.exec(**kwargs)[args.cmd or 'bash'],
         )
 
+    @localmethod
+    def restart(self):
+        """restart the web server"""
+        yield self.exec(user=None, interactive=False, tty=False)[
+            'supervisorctl',
+            'restart',
+            'webapp',
+        ]
+
     @localmethod('mcmd', metavar='command', help="django management command")
     @localmethod('remainder', metavar='command arguments', nargs=REMAINDER)
     def djmanage(self, args):
@@ -544,7 +559,7 @@ class Develop(Local):
         yield (
             # foreground command to fully support shell
             self.local.FG(retcode=None),
-            self.exec()[
+            self.exec(PAGER='more')[
                 './manage.py',
                 args.mcmd,
                 args.remainder,
