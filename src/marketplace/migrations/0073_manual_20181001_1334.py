@@ -1,23 +1,39 @@
-from django.db import migrations, models
-import django.db.models.deletion
-from marketplace.models.org import Organization, OrganizationSocialCause
-from marketplace.models.proj import Project, ProjectSocialCause
+from django.db import migrations
+
 
 def rebuild_organization_social_causes(apps, schema_editor):
-    for org in Organization.objects.all():
-        if org.main_cause and not OrganizationSocialCause.objects.filter(organization=org).exists():
-            new_social_cause = OrganizationSocialCause()
-            new_social_cause.social_cause = org.main_cause
-            new_social_cause.organization = org
-            new_social_cause.save()
+    Organization = apps.get_model('marketplace', 'Organization')
+    OrganizationSocialCause = apps.get_model('marketplace', 'OrganizationSocialCause')
+
+    organizations = (Organization.objects
+                     .exclude(main_cause='')
+                     .filter(organizationsocialcause=None))
+
+    OrganizationSocialCause.objects.bulk_create([
+        OrganizationSocialCause(
+            social_cause=organization.main_cause,
+            organization=organization,
+        )
+        for organization in organizations.iterator()
+    ])
+
 
 def rebuild_project_social_causes(apps, schema_editor):
-    for proj in Project.objects.all():
-        if proj.project_cause and not ProjectSocialCause.objects.filter(project=proj).exists():
-            new_social_cause = ProjectSocialCause()
-            new_social_cause.social_cause = proj.project_cause
-            new_social_cause.project = proj
-            new_social_cause.save()
+    Project = apps.get_model('marketplace', 'Project')
+    ProjectSocialCause = apps.get_model('marketplace', 'ProjectSocialCause')
+
+    projects = (Project.objects
+                .exclude(project_cause='')
+                .filter(projectsocialcause=None))
+
+    ProjectSocialCause.objects.bulk_create([
+        ProjectSocialCause(
+            social_cause=project.project_cause,
+            project=project,
+        )
+        for project in projects.iterator()
+    ])
+
 
 class Migration(migrations.Migration):
 
