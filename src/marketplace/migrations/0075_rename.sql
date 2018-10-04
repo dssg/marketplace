@@ -3,6 +3,11 @@
 --
 UPDATE django_content_type SET app_label='marketplace' WHERE app_label='dssgmkt';
 UPDATE django_migrations SET app='marketplace' WHERE app='dssgmkt';
+
+--
+-- Rename deployed tables
+--
+
 --
 -- Rename table for newspiece to marketplace_newspiece
 --
@@ -101,3 +106,20 @@ ALTER TABLE "dssgmkt_volunteerprofile" RENAME TO "marketplace_volunteerprofile";
 -- Rename table for volunteerskill to marketplace_volunteerskill
 --
 ALTER TABLE "dssgmkt_volunteerskill" RENAME TO "marketplace_volunteerskill";
+
+--
+-- Rename undeployed tables if exist
+--
+
+--
+-- Rename table for organizationsocialcause to marketplace_organizationsocialcause
+--
+ALTER TABLE IF EXISTS "dssgmkt_organizationsocialcause" RENAME TO "marketplace_organizationsocialcause";
+--
+-- Rename table for projectsocialcause to marketplace_projectsocialcause
+--
+ALTER TABLE IF EXISTS "dssgmkt_projectsocialcause" RENAME TO "marketplace_projectsocialcause";
+--
+-- Rename table for usertaskpreference to marketplace_usertaskpreference
+--
+ALTER TABLE IF EXISTS "dssgmkt_usertaskpreference" RENAME TO "marketplace_usertaskpreference";
