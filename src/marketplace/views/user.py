@@ -21,6 +21,7 @@ from ..models.proj import Project, ProjectStatus, ProjectTask, VolunteerApplicat
 from ..models.user import Skill, SkillLevel, User, VolunteerProfile, VolunteerSkill, UserNotification, NotificationSource
 from .common import build_breadcrumb, home_link, paginate
 
+from marketplace.domain import marketplace
 from marketplace.domain.user import UserService
 from marketplace.domain.proj import ProjectService, ProjectTaskService
 from marketplace.domain.org import OrganizationService
@@ -352,42 +353,61 @@ def select_user_type_view(request):
                             'breadcrumb': [home_link(), ('Select your account type', None)]
                         })
 
+
 class SignUpForm(UserCreationForm):
+
     class Meta:
         model = User
-        fields = ['username', 'password1', 'password2',
-                  'first_name', 'last_name', 'email', 'phone_number', 'skype_name',
-                  'special_code']
+        fields = (
+            'username',
+            'password1',
+            'password2',
+            'first_name',
+            'last_name',
+            'email',
+            'phone_number',
+            'skype_name',
+            'special_code',
+        )
+
 
 def signup(request, user_type=None):
-    if not user_type in ['volunteer', 'organization']:
+    if user_type not in ('volunteer', 'organization'):
         raise Http404
-    preferences = []
+
     if request.method == 'POST':
         form = SignUpForm(request.POST)
+        preferences = request.POST.getlist('preferences')
+
         if form.is_valid():
             new_user = form.save(commit=False)
             try:
-                new_user = UserService.create_user(request.user, new_user, user_type, request.POST.get('g-recaptcha-response'), request.POST.getlist('preferences'))
-                username = form.cleaned_data.get('username')
-                raw_password = form.cleaned_data.get('password1')
-                user = authenticate(username=username, password=raw_password)
+                if not marketplace.user.verify_captcha(
+                    request.POST.get('g-recaptcha-response')
+                ):
+                    raise ValueError('Incorrect reCAPTCHA answer')
+
+                marketplace.user.add_user(new_user, user_type, preferences)  # also ValueError
+            except ValueError as exc:
+                form.add_error(None, str(exc))
+            else:
+                user = authenticate(
+                    username=form.cleaned_data['username'],
+                    password=form.cleaned_data['password1'],
+                )
                 login(request, user)
-                messages.info(request, 'Welcome to DSSG Solve! Your account was created successfully.')
+                messages.info(request,
+                              'Welcome to DSSG Solve! '
+                              'Your account was created successfully.')
                 return redirect('marketplace:user_dashboard')
-            except KeyError as k:
-                form.add_error(None, str(k))
-            except ValueError as v:
-                form.add_error(None, str(v))
     else:
         form = SignUpForm()
         preferences = request.GET.getlist('preferences')
-    return render(request, 'marketplace/signup.html',
-                    {
-                        'form': form,
-                        'user_type': user_type,
-                        'breadcrumb': build_breadcrumb([home_link(),
-                                                        ('Sign up', None)]),
-                        'captcha_site_key': settings.RECAPTCHA_SITE_KEY,
-                        'preferences': preferences,
-                    })
+
+    return render(request, 'marketplace/signup.html', {
+        'form': form,
+        'user_type': user_type,
+        'breadcrumb': build_breadcrumb([home_link(), ('Sign up', None)]),
+        'captcha_site_key': settings.RECAPTCHA_SITE_KEY,
+        'preferences': preferences,
+    })

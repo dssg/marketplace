@@ -2,17 +2,20 @@ from django.test import TestCase
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.models import AnonymousUser
 
+from marketplace.domain import marketplace
+from marketplace.domain.user import UserService
+from marketplace.domain.org import OrganizationService
+
 from marketplace.models.common import ReviewStatus
 from marketplace.models.user import User, UserType
 from marketplace.models.org import Organization, OrganizationRole, OrganizationSocialCause, Budget, YearsInOperation, SocialCause, GeographicalScope, OrganizationMembershipRequest, OrgRole
-from marketplace.domain.user import UserService
-from marketplace.domain.org import OrganizationService
 
 from marketplace.tests.domain.common import (
     example_organization_user, example_staff_user, example_volunteer_user,
     example_organization,
     test_users_group_inclusion, test_permission_denied_operation,
 )
+
 
 class OrganizationTestCase(TestCase):
     organization_user = None
@@ -22,11 +25,11 @@ class OrganizationTestCase(TestCase):
 
     def setUp(self):
         self.organization_user = example_organization_user()
-        UserService.create_user(None, self.organization_user, 'organization', None, None)
+        marketplace.user.add_user(self.organization_user, 'organization', None)
         self.staff_user = example_staff_user()
-        UserService.create_user(None, self.staff_user, 'organization', None, None)
+        marketplace.user.add_user(self.staff_user, 'organization', None)
         self.volunteer_user = example_volunteer_user()
-        UserService.create_user(None, self.volunteer_user, 'volunteer', None, None)
+        marketplace.user.add_user(self.volunteer_user, 'volunteer', None)
 
         self.organization = example_organization()
 

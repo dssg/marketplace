@@ -1,20 +1,25 @@
+import datetime
+
 from django.test import TestCase
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.models import AnonymousUser
 
+from marketplace.domain import marketplace
+from marketplace.domain.user import UserService
+
 from marketplace.models.common import ReviewStatus, SkillLevel
 from marketplace.models.user import (
     SignupCodeType, SignupCode, User, UserType, Skill, VolunteerSkill, )
-from marketplace.domain.user import UserService
 
 from marketplace.tests.domain.common import (
     example_organization_user, example_staff_user, example_volunteer_user,
     example_organization, example_project,
     test_users_group_inclusion, test_permission_denied_operation,
 )
-import datetime
+
 
 class UserTestCase(TestCase):
+
     dssg_staff_user = None
     volunteer_user = None
 
@@ -59,7 +64,7 @@ class UserTestCase(TestCase):
         dssg_user.first_name = "DSSG"
         dssg_user.last_name = "Staff"
         dssg_user.special_code = "MAKEDSSG"
-        UserService.create_user(None, dssg_user, 'organization', None, None)
+        marketplace.user.add_user(dssg_user, 'organization')
         self.dssg_staff_user = dssg_user
 
     def test_organization_user(self):
@@ -67,7 +72,7 @@ class UserTestCase(TestCase):
         organization_user.username = "OrgUser"
         organization_user.first_name = "Organization"
         organization_user.last_name = "User"
-        UserService.create_user(None, organization_user, 'organization', None, None)
+        marketplace.user.add_user(organization_user, 'organization')
         self.assertEqual(UserService.get_user(organization_user, organization_user.id), organization_user)
 
         self.assertFalse(UserService.user_is_dssg_staff(organization_user, organization_user))
@@ -86,7 +91,7 @@ class UserTestCase(TestCase):
         dssg_user.first_name = "DSSG"
         dssg_user.last_name = "Staff"
         dssg_user.special_code = "MAKEDSSG"
-        UserService.create_user(None, dssg_user, 'organization', None, None)
+        marketplace.user.add_user(dssg_user, 'organization')
         self.assertEqual(UserService.get_user(dssg_user, dssg_user.id), dssg_user)
 
         self.assertTrue(UserService.user_is_dssg_staff(dssg_user, dssg_user))
@@ -105,7 +110,7 @@ class UserTestCase(TestCase):
         volunteer_user.first_name = "Volunteer"
         volunteer_user.last_name = "User"
         volunteer_user.email = "volunteer@email.com"
-        UserService.create_user(None, volunteer_user, 'volunteer', None, None)
+        marketplace.user.add_user(volunteer_user, 'volunteer')
 
         self.assertFalse(UserService.user_is_dssg_staff(volunteer_user, volunteer_user))
         self.assertFalse(UserService.user_is_organization_creator(volunteer_user))
@@ -132,7 +137,7 @@ class UserTestCase(TestCase):
         volunteer_user2.first_name = "Volunteer2"
         volunteer_user2.last_name = "User2"
         volunteer_user2.email = "volunteer2@email.com"
-        UserService.create_user(None, volunteer_user2, 'volunteer', None, None)
+        marketplace.user.add_user(volunteer_user2, 'volunteer')
         UserService.reject_volunteer_profile(self.dssg_staff_user, volunteer_user2.volunteerprofile.id)
         self.assertFalse(UserService.user_has_approved_volunteer_profile(volunteer_user2))
 
@@ -142,7 +147,7 @@ class UserTestCase(TestCase):
         volunteer_user3.last_name = "User3"
         volunteer_user3.email = "volunteer3@email.com"
         volunteer_user3.special_code = "AUTOMATICVOLUNTEER"
-        UserService.create_user(None, volunteer_user3, 'volunteer', None, None)
+        marketplace.user.add_user(volunteer_user3, 'volunteer')
         self.assertTrue(UserService.user_has_approved_volunteer_profile(volunteer_user3))
 
         self.assertEqual(set(UserService.get_all_approved_volunteer_profiles(AnonymousUser())),
@@ -155,7 +160,7 @@ class UserTestCase(TestCase):
         volunteer_user.last_name = "User3"
         volunteer_user.email = "volunteer3@email.com"
         volunteer_user.special_code = "AUTOMATICVOLUNTEER"
-        UserService.create_user(None, volunteer_user, 'volunteer', None, None)
+        marketplace.user.add_user(volunteer_user, 'volunteer')
 
         skill1 = Skill()
         skill1.area = "Area 1"
@@ -181,32 +186,40 @@ class UserTestCase(TestCase):
                          skill2.area: [{'system_skill': skill2, 'volunteer_skill': skill2_skill}]})
 
     def test_signup_codes(self):
-        volunteer_user = User()
-        volunteer_user.username = "VolUser3"
-        volunteer_user.first_name = "Volunteer3"
-        volunteer_user.last_name = "User3"
-        volunteer_user.email = "volunteer3@email.com"
-        volunteer_user.special_code = "EXPIREDCODE"
+        self.assertFalse(
+            marketplace.user.is_valid_special_signup_code(
+                'EXPIREDCODE',
+                SignupCodeType.VOLUNTEER_AUTOMATIC_ACCEPT,
+            )
+        )
 
-        self.assertFalse(UserService.has_valid_special_signup_code(volunteer_user, SignupCodeType.VOLUNTEER_AUTOMATIC_ACCEPT))
+        for special_code in (
+            'SINGLEUSECODE',
+            'singleusecode',
+            'SingleUseCode',
+        ):
+            self.assertTrue(
+                marketplace.user.is_valid_special_signup_code(
+                    special_code,
+                    SignupCodeType.VOLUNTEER_AUTOMATIC_ACCEPT,
+                )
+            )
 
-        volunteer_user.special_code = "SINGLEUSECODE"
-        self.assertTrue(UserService.has_valid_special_signup_code(volunteer_user, SignupCodeType.VOLUNTEER_AUTOMATIC_ACCEPT))
+        marketplace.user.use_signup_code('SINGLEUSECODE')
+        self.assertFalse(
+            marketplace.user.is_valid_special_signup_code(
+                'SingleUseCode',
+                SignupCodeType.VOLUNTEER_AUTOMATIC_ACCEPT,
+            )
+        )
 
-        volunteer_user.special_code = "singleusecode"
-        self.assertTrue(UserService.has_valid_special_signup_code(volunteer_user, SignupCodeType.VOLUNTEER_AUTOMATIC_ACCEPT))
-
-        volunteer_user.special_code = "SingleUseCode"
-        self.assertTrue(UserService.has_valid_special_signup_code(volunteer_user, SignupCodeType.VOLUNTEER_AUTOMATIC_ACCEPT))
-
-        UserService.use_signup_code("SINGLEUSECODE", SignupCodeType.VOLUNTEER_AUTOMATIC_ACCEPT)
-        self.assertFalse(UserService.has_valid_special_signup_code(volunteer_user, SignupCodeType.VOLUNTEER_AUTOMATIC_ACCEPT))
-
-        self.assertEqual(set(UserService.get_signup_codes_by_text("MULTIPLECODES")),
-            set([self.code_repeated_1, self.code_repeated_2]))
+        self.assertSequenceEqual(
+            marketplace.user.query_signup_codes_by_text("MULTIPLECODES").order_by('pk'),
+            (self.code_repeated_1, self.code_repeated_2),
+        )
 
 # TODO test these methods:
 # UserService.get_user_todos(request_user, user)
 # UserService.get_volunteer_leaderboards(request_user)
 # UserService.get_featured_volunteer()
-# UserService.verify_captcha(captcha_response)
+# marketplace.user.verify_captcha(captcha_response)
