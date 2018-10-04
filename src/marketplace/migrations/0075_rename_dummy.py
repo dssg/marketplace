@@ -62,8 +62,8 @@ class Migration(migrations.Migration):
     atomic = False
 
     dependencies = [
-        # ('dssgmkt', '0070_auto_20180826_2110'),
-        ('marketplace', '0070_auto_20180826_2110'),
+        # ('dssgmkt', '0074_auto_20181002_1650'),
+        ('marketplace', '0074_auto_20181002_1650'),
     ]
 
     #
