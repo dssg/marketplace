@@ -436,6 +436,7 @@ class BadgeTier():
                 )
 
 class UserBadge(models.Model):
+
     type = models.CharField(
         max_length=2,
         choices=BadgeType.get_choices(),

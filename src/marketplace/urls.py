@@ -3,7 +3,10 @@ from django.urls import path, reverse_lazy
 
 from .views import common, org, proj, user, admin
 
+
+# Set URL namespace
 app_name = 'marketplace'
+
 urlpatterns = [
     path('', user.home_view, name='home'),
     path('about/', common.about_view, name='about'),
@@ -65,14 +68,16 @@ urlpatterns = [
     path('proj/<int:proj_pk>/staff/<int:role_pk>/remove', proj.project_role_delete_view, name='proj_staff_remove'),
     path('proj/<int:proj_pk>/volunteers', proj.project_volunteers_view, name='proj_volunteers'),
 
-
     path('logout/', user.logout_view, name='logout'),
     path('login/', auth_views.LoginView.as_view(template_name='marketplace/login.html'), name='login'),
+
     path('signup/select', user.select_user_type_view, name='signup_type_select'),
     path('signup/do/<str:user_type>', user.signup, name='signup_form'),
+
     path('user/pwdchange', auth_views.PasswordChangeView.as_view(template_name='marketplace/user_pwd_change.html',
                                                                  success_url=reverse_lazy('marketplace:my_user_profile'),
                                                                  extra_context={'breadcrumb':user.change_password_breadcrumb()}),name='user_pwd_change'),
+
     path('pwd/resetrequest', auth_views.PasswordResetView.as_view(template_name='marketplace/pwd_reset_request.html',
                                                                  success_url=reverse_lazy('marketplace:pwd_reset_request_done'),
                                                                  email_template_name='marketplace/password_reset_email.html',
@@ -81,7 +86,6 @@ urlpatterns = [
     path('pwd/reset/<str:uidb64>/<str:token>', auth_views.PasswordResetConfirmView.as_view(template_name='marketplace/pwd_reset.html',
                                                                                             success_url=reverse_lazy('marketplace:pwd_reset_complete')), name='pwd_reset'),
     path('pwd/reset/done', auth_views.PasswordResetCompleteView.as_view(template_name='marketplace/pwd_reset_complete.html'), name='pwd_reset_complete'),
-
 
     path('volunteers/', user.volunteer_list_view, name='volunteer_list'),
     path('user/', user.my_user_profile_view, name='my_user_profile'),
@@ -98,5 +102,4 @@ urlpatterns = [
 
     path('ajax/org/<int:org_pk>/candidates/', org.get_all_users_not_organization_members_json, name='validate_username'),
     path('ajax/org/<int:org_pk>/candidates/<str:query>', org.get_all_users_not_organization_members_json, name='validate_username_do'),
-
 ]

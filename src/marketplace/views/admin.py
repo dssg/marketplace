@@ -12,6 +12,7 @@ from rules.contrib.views import (
 from ..models.user import VolunteerProfile
 from .common import build_breadcrumb, home_link, paginate
 
+from marketplace.domain import marketplace
 from marketplace.domain.user import UserService
 
 
@@ -29,7 +30,7 @@ class AdminHomeView(PermissionRequiredMixin, generic.ListView):
     allow_empty = True
 
     def get_queryset(self):
-        return UserService.get_pending_volunteer_profiles(self.request.user)
+        return marketplace.user.query_pending_volunteer_profiles(self.request.user)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
