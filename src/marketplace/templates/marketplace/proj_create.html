@@ -1,0 +1,35 @@
+{% extends 'marketplace/org.html' %}
+
+{% block tabcontents %}
+
+
+    <h4 class="section-header">Create new project</h4>
+
+
+    <p>Create a new project of {{ organization.name }} that needs help from volunters.</p>
+
+    <form id="createproject" enctype="multipart/form-data">
+      {% csrf_token %}
+      {% include 'marketplace/components/standard_form_fields.html' %}
+      {% include 'marketplace/components/social_cause_edit_row.html' with label_text='Choose the social causes this project is focused on.' %}
+
+      <div class="form-row">
+        <div class="col-lg-9 offset-lg-3">
+          <button type="submit"
+                  form="createproject"
+                  formaction="{% url 'marketplace:proj_create' organization.id %}"
+                  formmethod="post"
+                  class="btn btn-success mr-3">
+            <i class="material-icons" style="vertical-align: middle">check</i>
+            Create Project
+          </button>
+          <a class="btn btn-outline-primary" href="{% url 'marketplace:org_info' organization.id %}">
+            <i class="material-icons" style="vertical-align: middle">close</i>
+            Cancel
+          </a>
+        </div>
+      </div>
+    </form>
+
+
+{% endblock %}

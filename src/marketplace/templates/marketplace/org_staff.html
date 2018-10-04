@@ -1,0 +1,209 @@
+{% extends 'marketplace/org.html' %}
+
+{% block tabcontents %}
+
+  <h4 class="section-header">Staff members</h4>
+  {% if organization_staff %}
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+              <th>Full name</th>
+              {# <th>Email address</th> #}
+              <th>Role</th>
+              <th>Member since</th>
+              {% if user_is_administrator %}
+              <th></th>
+              <th></th>
+              {% endif %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for staff in organization_staff %}
+            <tr>
+                <td>{% include 'marketplace/components/user_display.html' with user=staff.user %}</td>
+                {# <td><a href="{% url 'marketplace:user_profile' staff.user.id %}">{{ staff.user.email }}</a></td> #}
+                <td>{{ staff.get_role_display }}</td>
+                <td>{{ staff.creation_date }}</td>
+                {% if user_is_administrator %}
+                <td>
+                  <a href="{% url 'marketplace:org_staff_edit' staff.organization.id staff.id %}">
+                    <i class="material-icons md-12" style="vertical-align: middle">edit</i>
+                    Edit
+                  </a>
+                </td>
+                <td>
+                  <a class="text-danger" href="{% url 'marketplace:org_staff_remove' staff.organization.id staff.id %}">
+                    <i class="material-icons" style="vertical-align: middle">remove_circle</i>
+                    Remove
+                  </a>
+                </td>
+                {% endif %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% url 'marketplace:org_staff' as org_staff_url %}
+    {% include 'marketplace/components/pagination.html' with baseurl=org_staff_url page_obj=organization_staff pagename='staff_page' %}
+  {% else %}
+    <p>No staff found.</p>
+  {% endif %}
+
+  {% if user_is_administrator %}
+    <h4 class="section-header">Add staff member</h4>
+    <noscript>
+      <style type="text/css">
+        #addstaffajax {display:none;}
+      </style>
+      <form id="addstaff" class="form-inline">
+        {% if form.errors %}
+          <ol>
+          {% for error in form.subject.errors %}
+              <li><strong>{{ error|escape }}</strong></li>
+          {% endfor %}
+          </ol>
+        {% endif %}
+
+        {% csrf_token %}
+        {% include 'marketplace/components/inline_form_fields.html' with form=add_staff_form %}
+
+        <div class="form-group col-lg-3">
+          <div>
+            <button type="submit"
+                    form="addstaff"
+                    formaction="{% url 'marketplace:org_staff' organization.id %}"
+                    formmethod="post"
+                    class="btn btn-success">
+              <i class="material-icons" style="vertical-align: middle">add_circle</i>
+              Add staff member
+            </button>
+          </div>
+        </div>
+      </form>
+    </noscript>
+
+    <form id="addstaffajax" class="form-inline">
+      {% if form_errors %}
+        <div class="alert alert-danger col-lg-12">
+          <ul>
+            {% for error in form_errors %}
+              <li>{{ error }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+
+
+      <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+      <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+      <script src="/static/js/bootstrap3-typeahead.min.js"></script>
+
+      {% csrf_token %}
+       <div class="input-group">
+        <label class="control-label mr-1" for="username">User</label>
+        <div class="mr-5">
+          <input type="text" data-provide="typeahead" class="form-control typeahead" name="username" id="username" placeholder="Type a user name..." autocomplete="off">
+          <input type="hidden" id="userid" name="userid"></input>
+        </div>
+       </div>
+        <div class="input-group">
+         <label class="control-label mr-1" for="role">Role</label>
+         <div class="mr-5">
+           <select class="form-control" name="role" id="role">
+             {% for role_value, role_name in organization_roles %}
+                <option value="{{ role_value }}">{{ role_name }}</option>
+             {% endfor %}
+           </select>
+          </div>
+        </div>
+       <script>
+          var input = $('.typeahead');
+          $('.typeahead').typeahead({
+              source: function (query, process) {
+                  return $.getJSON(
+                      '/ajax/org/{{ organization.id }}/candidates/' + query,
+                      {},
+                      function (data) {
+                          return process(data['users']);
+                      })
+              },
+              afterSelect: function(x) {
+                $('#userid').val(x['id'])
+              }
+          });
+
+      </script>
+
+      <div class="form-group col-lg-3">
+        <div>
+          <button type="submit"
+                  form="addstaffajax"
+                  formaction="{% url 'marketplace:org_staff_add' organization.id %}"
+                  formmethod="post"
+                  class="btn btn-success">
+            <i class="material-icons" style="vertical-align: middle">add_circle</i>
+            Add staff member
+          </button>
+        </div>
+      </div>
+    </form>
+
+
+
+  {% endif %}
+
+  <h4 class="section-header">Organization membership requests</h4>
+  {% if organization_requests %}
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+              <th>Full name</th>
+              {# <th>Email address</th> #}
+              <th>Request date</th>
+              <th>Status</th>
+              <th>Resolution date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for request in organization_requests %}
+            <tr>
+                <td>{% include 'marketplace/components/user_display.html' with user=request.user %}</td>
+                {# <td><a href="{% url 'marketplace:user_profile' request.user.id %}">{{ request.user.email }}</a></td> #}
+                <td>{{ request.request_date }}</td>
+                <td>
+                  <a href="{% url 'marketplace:org_staff_request_review' organization.id request.id %}"
+                     class="{% if request.is_accepted %}
+                               text-success
+                             {% elif request.is_rejected %}
+                               text-danger
+                             {% elif request.is_new %}
+                               text-info
+                             {% endif %}">
+                    <i class="material-icons" style="vertical-align: middle">
+                      {% if request.is_accepted %}
+                        check
+                      {% elif request.is_rejected %}
+                        block
+                      {% elif request.is_new %}
+                        edit
+                      {% endif %}
+                  </i>
+                    {{ request.get_status_display }}
+                  </a>
+                </td>
+                <td>{% if not request.is_new %}
+                      {{ request.resolution_date|default_if_none:"" }}
+                    {% endif %}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% url 'marketplace:org_staff' as org_staff_url %}
+    {% include 'marketplace/components/pagination.html' with baseurl=org_staff_url page_obj=organization_requests pagename='requests_page' %}
+  {% else %}
+    <p>No requests found.</p>
+  {% endif %}
+{% endblock %}

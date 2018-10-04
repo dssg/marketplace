@@ -1,0 +1,80 @@
+{% extends 'marketplace/proj.html' %}
+
+{% block tabcontents %}
+
+  {% load rules %}
+  {% has_perm 'project.staff_edit' user project as perm_staff_edit %}
+  {% has_perm 'project.staff_remove' user project as perm_staff_remove %}
+
+  <h4 class="section-header">Staff members</h4>
+  {% if project_staff %}
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+              <th>Full name</th>
+              {# <th>Email address</th> #}
+              <th>Role</th>
+              {% if perm_staff_edit %}
+                <th></th>
+              {% endif %}
+              {% if perm_staff_remove %}
+                <th></th>
+              {% endif %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for staff in project_staff %}
+            <tr>
+                <td>{% include 'marketplace/components/user_display.html' with user=staff.user %}</td>
+                {# <td><a href="{% url 'marketplace:user_profile' staff.user.id %}">{{ staff.user.email }}</a></td> #}
+                <td>{{ staff.get_role_display }}</td>
+                {% if perm_staff_edit %}
+                  <td>
+                    <a href="{% url 'marketplace:proj_staff_edit' staff.project.id staff.id %}">
+                      <i class="material-icons md-12" style="vertical-align: middle">edit</i>
+                      Edit
+                    </a>
+                  </td>
+                {% endif %}
+                {% if perm_staff_remove %}
+                  <td>
+                    <a class="text-danger" href="{% url 'marketplace:proj_staff_remove' staff.project.id staff.id %}">
+                      <i class="material-icons" style="vertical-align: middle">remove_circle</i>
+                      Remove
+                    </a>
+                  </td>
+                {% endif %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% url 'marketplace:proj_staff' as proj_staff_url %}
+    {% include 'marketplace/components/pagination.html' with baseurl=proj_staff_url page_obj=project_staff pagename='staff_page' %}
+  {% else %}
+    <p>No staff found.</p>
+  {% endif %}
+
+  {% if perm_staff_edit %}
+    <h4 class="section-header">Add staff member</h4>
+    <form id="addstaff" class="form-inline">
+      {% csrf_token %}
+      {% include 'marketplace/components/inline_form_fields.html' with form=add_staff_form %}
+
+      <div class="form-group col-lg-3">
+        <div>
+          <button type="submit"
+                  form="addstaff"
+                  formaction="{% url 'marketplace:proj_staff' project.id %}"
+                  formmethod="post"
+                  class="btn btn-success">
+            <i class="material-icons" style="vertical-align: middle">add_circle</i>
+            Add staff member
+          </button>
+        </div>
+      </div>
+    </form>
+  {% endif %}
+
+{% endblock %}

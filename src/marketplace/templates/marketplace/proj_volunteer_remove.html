@@ -1,0 +1,30 @@
+{% extends 'marketplace/proj.html' %}
+
+{% block tabcontents %}
+
+  <h4 class="section-header">Remove volunteer</h4>
+  <p>User: {% include 'marketplace/components/user_display.html' with user=projecttaskrole.user %}</p>
+  {# <p>Email: {{ projecttaskrole.user.email }}</p> #}
+  <form id="removestaff">
+    {% csrf_token %}
+    {% include 'marketplace/components/standard_form_fields.html' %}
+
+    <div class="form-row">
+      <div class="col-lg-9 offset-lg-3">
+        <button type="submit"
+                form="removestaff"
+                formaction="{% url 'marketplace:proj_volunteer_remove' project.id projecttaskrole.task.id projecttaskrole.id %}"
+                formmethod="post"
+                class="btn btn-danger mr-3">
+          <i class="material-icons" style="vertical-align: middle">remove_circle</i>
+          Yes, remove this volunteer from the project
+        </button>
+        <a class="btn btn-outline-primary" href="{% url 'marketplace:proj_volunteers' project.id %}">
+          <i class="material-icons" style="vertical-align: middle">close</i>
+          No, keep this volunteer in the project
+        </a>
+      </div>
+    </div>
+  </form>
+
+{% endblock %}

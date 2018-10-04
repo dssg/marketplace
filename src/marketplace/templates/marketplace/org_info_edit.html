@@ -1,0 +1,32 @@
+{% extends 'marketplace/org.html' %}
+
+{% block tabcontents %}
+
+
+  <form id="editorg" enctype="multipart/form-data">
+    <h4 class="section-header">Edit organization</h4>
+    <p>Tell us more about the organization you represent.</p>
+    {% csrf_token %}
+    {% include 'marketplace/components/standard_form_fields.html' %}
+    {% include 'marketplace/components/social_cause_edit_row.html' with label_text='Choose the social causes this organization works towards.' %}
+
+    <div class="form-row">
+      <div class="col-lg-9 offset-lg-3">
+        <button type="submit"
+                form="editorg"
+                formaction="{% url 'marketplace:org_info_edit' organization.id %}"
+                formmethod="post"
+                class="btn btn-success mr-3">
+          <i class="material-icons" style="vertical-align: middle">save</i>
+          Save
+        </button>
+        <a class="btn btn-outline-primary"
+           href="{% url 'marketplace:org_info' organization.id %}">
+           <i class="material-icons" style="vertical-align: middle">close</i>
+           Cancel
+        </a>
+      </div>
+    </div>
+  </form>
+
+{% endblock %}

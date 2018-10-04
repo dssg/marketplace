@@ -1,0 +1,30 @@
+<div class="form-group row">
+  <div class="col-sm-3">
+    <label class="control-label"
+           for="id_social_causes">
+      Social Causes
+    </label>
+    <div class="form-text text-muted help-block">
+      <small>
+        {{ label_text }}
+      </small>
+    </div>
+  </div>
+  <div class="col-sm-9 row">
+    {% for sc in social_causes %}
+      <div class="col-lg-5 row mr-3">
+        <input type="checkbox"
+                class="form-control col-lg-1"
+                id="{{ sc.social_cause_value }}"
+                value="{{ sc.social_cause_value }}"
+                name="id_social_causes"
+                {% if sc.selected %}checked="checked"{% endif %}>
+        </input>
+        <label class="control-label col-lg-11"
+               for="{{ sc.social_cause_value }}">
+          {% include 'marketplace/components/social_cause_display.html' with object=sc.social_cause_value social_cause=sc.social_cause_text %}
+        </label>
+      </div>
+    {% endfor %}
+  </div>
+</div>

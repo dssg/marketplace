@@ -1,0 +1,40 @@
+{% load static %}
+
+<nav class="navbar sticky-top navbar-expand-lg navbar-dark bg-primary">
+  <div class="container">
+    <a id="dssglogo" class="navbar-brand" href="{% url 'marketplace:home' %}"><img src="{% static 'img/dssglogo.png' %}"></img></a>
+
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item navbar-padder"></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'marketplace:home' %}">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'marketplace:about' %}">About us</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'marketplace:proj_list' %}">Projects</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'marketplace:org_list' %}">Organizations</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'marketplace:volunteer_list' %}">Volunteers</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'marketplace:resources' %}">Resources</a></li>
+
+
+        {% if user.is_authenticated %}
+          {% if user.is_type_dssg_staff %}
+            <li class="nav-item"><a class="nav-link text-warning" href="{% url 'marketplace:admin_home' %}">Admin</a></li>
+          {% endif %}
+        {% endif %}
+      </ul>
+      <ul class="navbar-nav">
+        {% if user.is_authenticated %}
+          <li class="nav-item"><a class="nav-link" href="{% url 'marketplace:user_dashboard' %}">Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'marketplace:user_profile' user.id %}">My profile</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'marketplace:logout' %}">Log out</a></li>
+        {% else %}
+          <li class="nav-item"><a class="nav-link btn btn-warning text-primary pl-4 pr-4 mr-3" href="{% url 'marketplace:signup_type_select' %}">Sign up</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'marketplace:login' %}">Log in</a></li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>

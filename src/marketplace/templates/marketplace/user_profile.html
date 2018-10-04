@@ -1,0 +1,258 @@
+{% extends 'marketplace/base.html' %}
+
+{% block pagecontents %}
+  {% load markdown_deux_tags %}
+
+
+    <div class="row section-header">
+      <div class="col-lg-12">
+        {% if user == userprofile %}
+          <h4>My profile</h4>
+        {% else %}
+          <h4>{% include 'marketplace/components/user_display.html' with user=userprofile %}</h4>
+        {% endif %}
+      </div>
+    </div>
+    <div class="row mb-5">
+      <div class="{% if user == userprofile %}col-lg-8{% else %}col-lg-12{% endif %}">
+        {% if userprofile.volunteerprofile %}
+          <p>{{ userprofile.volunteerprofile.cover_letter|markdown }}</p>
+        {% endif %}
+      </div>
+
+      <div class="col-lg-4">
+        {% if userprofile.profile_image_file %}
+          <img class="img-fluid mb-3" src="{{ userprofile.profile_image_file.url }}"></img>
+        {% endif %}
+        {% if user == userprofile %}
+          <a class="btn btn-success col-lg-12 mb-1"
+             href="{% url 'marketplace:user_profile_edit' userprofile.id %}">
+             <i class="material-icons" style="vertical-align: middle">account_circle</i>
+            Edit my basic information
+          </a>
+          <a class="btn btn-success col-lg-12 mb-1"
+             href="{% url 'marketplace:user_pwd_change' %}">
+             <i class="material-icons" style="vertical-align: middle">lock_open</i>
+            Change my password
+          </a>
+          {% if userprofile.volunteerprofile %}
+            <a class="btn btn-success col-lg-12 mb-1"
+               href="{% url 'marketplace:user_volunteer_profile_edit' userprofile.id userprofile.volunteerprofile.id %}">
+               <i class="material-icons" style="vertical-align: middle">build</i>
+              Edit my volunteer profile
+            </a>
+            <a class="btn btn-success col-lg-12 mb-1"
+               href="{% url 'marketplace:user_preferences_edit' userprofile.id %}">
+               <i class="material-icons" style="vertical-align: middle">tune</i>
+              Edit my interests
+            </a>
+            <a class="btn btn-success col-lg-12 mb-1"
+               href="{% url 'marketplace:user_profile_skills_edit' user.id %}">
+               <i class="material-icons" style="vertical-align: middle">donut_small</i>
+              Edit my skills
+            </a>
+          {% else %}
+            <form id="addvolunteerprofile">
+              {% csrf_token %}
+              {{ form.as_p }}
+              <button type="submit"
+                      form="addvolunteerprofile"
+                      formaction="{% url 'marketplace:user_volunteer_profile_create' user.id %}"
+                      formmethod="post"
+                      class="btn btn-success col-lg-12 mb-1">
+                <i class="material-icons" style="vertical-align: middle">person_add</i>
+                Create a volunteer profile
+              </button>
+            </form>
+          {% endif %}
+
+          {% if not user.volunteerprofile.is_edited  %}
+            <div class="alert alert-warning">
+              <i class="fas fa-exclamation-triangle"></i>
+              Your need to fill out your volunteer profile to be able to apply
+              to volunteer in projects.
+            </div>
+          {% elif user.volunteerprofile.is_pending_review %}
+            <div class="alert alert-warning">
+              <i class="fas fa-exclamation-triangle"></i>
+              Your application to volunteer is being reviewed by our staff. You will be notified
+              as soon as you are approved and can start applying to volunteer in projects.
+            </div>
+          {% elif user.volunteerprofile.is_rejected %}
+            <div class="alert alert-danger">
+              <i class="fas fa-exclamation-triangle"></i>
+              Your application to volunteer was reviewed by our staff and it was not accepted, so
+              you cannot apply to volunteer in projects at the moment.
+            </div>
+          {% endif %}
+        {% endif %}
+      </div>
+    </div>
+
+
+    {% if pinned_reviews %}
+      <h4>Volunteer highlights</h4>
+      <div class="row">
+        {% for pinned_review in pinned_reviews %}
+          <div class="col-lg-6 volunteer-highlight pr-5 pl-5">
+            <blockquote class="blockquote">
+              <div class="title text-muted d-flex">
+                <span class="flex-grow-1">Project {{ pinned_review.task_review.task.project.name }}: {{ pinned_review.task_review.task.name }}</span>
+                <span>Score: {% include 'marketplace/components/review_score_display.html' with review=pinned_review.task_review score_display=pinned_review.task_review.get_review_score_display %}</span>
+              </div>
+              <div class="mb-0 text">{{ pinned_review.task_review.public_reviewer_comments|markdown }}</div>
+              <footer class="blockquote-footer">{% include 'marketplace/components/user_display.html' with user=pinned_review.task_review.reviewer %}</footer>
+            </blockquote>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <div class="card-deck section-header">
+      <div class="card">
+        <div class="card-header">Personal information</div>
+        <div class="card-body">
+          <div>Full name: {{ userprofile.full_name }}</div>
+          <div>User name: {{ userprofile.username }}</div>
+          {# <div>Email address: {{ userprofile.email }}</div> #}
+          {# <div>Phone number: {{ userprofile.phone_number }}</div> #}
+          {% if userprofile.skype_name %}<div>Skype name: {{ userprofile.skype_name }}</div> {% endif %}
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">Organization memberships</div>
+        <div class="card-body">
+          {% if userprofile.organizationrole_set.all %}
+            {% for organizationrole in userprofile.organizationrole_set.all %}
+                <div><a href="{% url 'marketplace:org_info' organizationrole.organization.id %}">{{ organizationrole.organization.name }}</a>
+                    ({{ organizationrole.get_role_display }})
+                </div>
+            {% endfor %}
+          {% else %}
+              <div>Not a member of any organization.</div>
+          {% endif %}
+        </div>
+      </div>
+      {% if userprofile.volunteerprofile.is_accepted %}
+        <div class="card">
+          <div class="card-header">Awards</div>
+          <div class="card-body">
+            {% if userprofile.userbadge_set.exists %}
+              {% for badge in userprofile.userbadge_set.all %}
+                  <div>
+                    {% include 'marketplace/components/user_badge.html' with badge=badge compact_display=False %}
+                  </div>
+              {% endfor %}
+            {% else %}
+                <div>No awards received yet.</div>
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
+    </div>
+
+    {% if userprofile.volunteerprofile %}
+      <div class="card-deck section-header">
+        <div class="card">
+          <div class="card-header">Volunteer background</div>
+          <div class="card-body">
+            {% if userprofile.volunteerprofile.degree_name %}
+              <div>Education: {{ userprofile.volunteerprofile.get_degree_level_display }} on {{ userprofile.volunteerprofile.degree_name }} ({{ userprofile.volunteerprofile.university }})</div>
+            {% endif %}
+            {% if userprofile.volunteerprofile.linkedin_url %}
+              <div><a href="{{ userprofile.volunteerprofile.linkedin_url }}">LinkedIn profile</a></div>
+            {% endif %}
+            {% if userprofile.volunteerprofile.github_url %}
+              <div><a href="{{ userprofile.volunteerprofile.github_url }}">Github profile</a></div>
+            {% endif %}
+            {% if userprofile.volunteerprofile.portfolio_url %}
+              <div><a href="{{ userprofile.volunteerprofile.portfolio_url }}">Portfolio</a></div>
+            {% endif %}
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">Volunteer availability</div>
+          <div class="card-body">
+            <div>Start date: {{ userprofile.volunteerprofile.availability_start_date }}</div>
+            <div>End date: {{ userprofile.volunteerprofile.availability_end_date }}</div>
+            <div>Hours available per week: {{ userprofile.volunteerprofile.weekly_availability_hours }}</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">Volunteering interests</div>
+          <div class="card-body">
+            {% if user.usertaskpreference_set.all %}
+              {% for p in user.usertaskpreference_set.all %}
+                <div>{% include 'marketplace/components/task_type_display.html' with project_task=p %} {{ p.get_preference_display }}</div>
+              {% endfor %}
+            {% else %}
+              No stated preferences.
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="card-deck section-header">
+        <div class="card">
+          <div class="card-header">Skills</div>
+          <div class="card-body">
+          {% if userprofile.volunteerskill_set.all %}
+            {% include 'marketplace/components/requirements_display.html' with task_requirements=userprofile.volunteerskill_set.all extra_wide_display=True %}
+          {% else %}
+              <p>No skills listed.</p>
+          {% endif %}
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+    {% if userprofile.volunteerprofile %}
+
+      <h4 class="section-header">Volunteer projects</h4>
+      {% if project_tasks %}
+        <div class="row">
+          <div class="col-lg-12 table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                    <th>Project name</th>
+                    <th>Organization name</th>
+                    <th>Social impact area</th>
+                    <th>Project summary</th>
+                    <th>Task name</th>
+                    <th>Task status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for project_task in project_tasks %}
+                  <tr>
+                      <td><a href="{% url 'marketplace:proj_info' project_task.project.id %}">{{ project_task.project.name }}</a></td>
+                      <td><a href="{% url 'marketplace:org_info' project_task.project.organization.id %}">{{ project_task.project.organization.name }}</a></td>
+                      <td>
+                        {% include 'marketplace/components/social_cause_display.html' with object=project_task.project social_cause=project_task.project.get_project_cause_display %}
+                      </td>
+                      <td>{{ project_task.project.short_summary }}</td>
+                      <td>
+                        {% include 'marketplace/components/task_type_display.html' with compact_display=True %}
+                        {{ project_task.name }}
+                      </td>
+                      <td>
+                        {% include 'marketplace/components/task_stage_display.html' %}
+                      </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            {% url 'marketplace:user_profile' as user_profile_url %}
+            {% include 'marketplace/components/pagination.html' with baseurl=user_profile_url page_obj=project_tasks pagename='project_tasks_page' %}
+          </div>
+        </div>
+
+      {% else %}
+          <p>No volunteer work yet.</p>
+      {% endif %}
+
+    {% endif %}
+
+
+{% endblock %}

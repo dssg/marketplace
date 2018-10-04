@@ -1,0 +1,26 @@
+{% extends 'marketplace/base.html' %}
+
+{% block pagecontents %}
+
+  <div class="col-lg-9 offset-lg-3">
+    <h4 class="section-header">Select organization</h4>
+
+    <p>Select which of the organizations you belong to you want to create the project for.</p>
+
+    {% for org in user_organizations %}
+      <div class="mb-3">
+        <a href="{% url 'marketplace:proj_create' org.id %}">
+          {{ org.name }}
+        </a>
+      </div>
+    {% endfor %}
+
+    <div>
+      <a class="btn btn-outline-primary" href="{% url 'marketplace:home' %}">
+        <i class="material-icons" style="vertical-align: middle">close</i>
+        Cancel
+      </a>
+    </div>
+  </div>
+
+{% endblock %}

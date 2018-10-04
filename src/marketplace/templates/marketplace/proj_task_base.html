@@ -1,0 +1,15 @@
+{% extends "marketplace/proj.html" %}
+
+{% block tabcontents %}
+
+  <div class="row">
+    <div class="col-lg-3 section-header">
+    {% include 'marketplace/components/project_tasks_index.html' %}
+    </div>
+    <div class="col-lg-9">
+      {% block taskcontents %}
+      {% endblock %}
+    </div>
+  </div>
+
+{% endblock %}

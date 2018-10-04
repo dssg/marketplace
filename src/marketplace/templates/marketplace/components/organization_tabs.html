@@ -1,0 +1,26 @@
+{% load rules %}
+
+<ul class="nav nav-tabs">
+
+  <li class="nav-item">
+    {% if page_tab == 'info' %}
+      <span class="nav-link active">Organization information</span>
+    {% else %}
+        <a class="nav-link" href="{% url 'marketplace:org_info' organization.id %}">Organization information</a>
+    {% endif %}
+  </li>
+
+  {% has_perm 'organization.staff_view' user organization as perm_staff_view %}
+  {% if perm_staff_view %}
+
+    <li class="nav-item">
+      {% if page_tab == 'staff' %}
+        <span class="nav-link active">Staff</span>
+      {% else %}
+          <a class="nav-link" href="{% url 'marketplace:org_staff' organization.id %}">Staff</a>
+      {% endif %}
+    </li>
+
+  {% endif %}
+
+</ul>

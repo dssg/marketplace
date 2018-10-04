@@ -1,0 +1,32 @@
+{% extends 'marketplace/base.html' %}
+
+{% block pagecontents %}
+
+  <div class="col-lg-9">
+    <form id="pwdreset">
+      <h2>Reset your password</h2>
+      <p>You can now reset your password; just type the reset code we sent you
+        to your email	address and your new password.</p>
+
+      {% csrf_token %}
+      {% include 'marketplace/components/standard_form_fields.html' %}
+
+      <div class="form-row">
+        <div class="col-lg-9 offset-lg-3">
+          <button type="submit"
+                  form="pwdreset"
+                  formmethod="post"
+                  class="btn btn-success mr-3">
+            <i class="material-icons" style="vertical-align: middle">arrow_forward</i>
+            Reset password
+          </button>
+          <a class="btn btn-outline-primary"
+             href="{% url 'marketplace:login' %}">
+            Cancel
+          </a>
+        </div>
+      </div>
+    </form>
+
+
+{% endblock %}

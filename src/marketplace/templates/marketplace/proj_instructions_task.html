@@ -1,0 +1,164 @@
+{% extends "marketplace/proj_volunteer_task_base.html" %}
+
+{% block taskcontents %}
+
+
+
+  {% load markdown_deux_tags %}
+
+  <div class="row mb-5 section-header">
+    <div class="col-lg-8">
+        <span class="text-muted">
+          {% include 'marketplace/components/task_type_display.html' %}
+        </span>
+        <h4>{{ project_task.name }}</h4>
+          {% include 'marketplace/components/task_status.html' with task=project_task %}
+
+      <p>{{ project_task.description|markdown }}</p>
+      <p>{{ project_task.onboarding_instructions|markdown }}</p>
+
+      {% if project.deliverable_management_url %}
+        <a href="{{ project.deliverable_management_url }}">External project home</a>
+      {% endif %}
+      {% if project.deliverable_github_url %}
+        <a href="{{ project.deliverable_github_url }}">Project github page</a>
+      {% endif %}
+      {% if project.deliverable_reports_url %}
+        <a href="{{ project.deliverable_reports_url }}">Project reports</a>
+      {% endif %}
+      {% if project.deliverable_documentation_url %}
+        <a href="{{ project.deliverable_documentation_url }}">Project documentation</a>
+      {% endif %}
+
+
+
+
+
+    </div>
+
+    <div class="col-lg-4">
+      {% if not project_task.is_completed %}
+        <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'marketplace:proj_task_cancel' project.id project_task.id %}">
+          <i class="material-icons" style="vertical-align: middle">clear</i>
+          Cancel this volunteer work
+        </a>
+      {% endif %}
+
+      {% if project_task.is_in_progress %}
+        <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'marketplace:proj_task_finish' project.id project_task.id %}">
+          <i class="material-icons" style="vertical-align: middle">check_circle</i>
+          Mark this task as completed
+        </a>
+        <a href=></a>
+      {% elif project_task.is_pending_review %}
+        <a class="btn btn-light disabled col-lg-12 mb-1">
+          <i class="material-icons" style="vertical-align: middle">reply</i>
+          Task QA review pending
+        </a>
+      {% endif %}
+
+      <div class="card section-header">
+        <div class="card-header"><i class="far fa-calendar-alt"></i> Schedule</div>
+        <div class="card-body">
+          <p>Start: {{ project_task.estimated_start_date }} (estimated), {{ project_task.actual_start_date }} (actual)</p>
+          <p>End: {{ project_task.estimated_end_date }} (estimated), {{ project_task.actual_end_date }} (actual)</p>
+        </div>
+      </div>
+
+      <div class="card section-header">
+        <div class="card-header"><i class="fas fa-user-cog"></i> Volunteers</div>
+        <div class="card-body">
+          {% for volunteer in task_volunteers %}
+            <div>
+              {% include 'marketplace/components/user_display.html' with user=volunteer %}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="card section-header">
+        <div class="card-header"><i class="fas fa-people-carry"></i> Support staff</div>
+        <div class="card-body">
+          {% if task_staff %}
+            {% for staff in task_staff %}
+              <div>{% include 'marketplace/components/user_display.html' with user=staff %}</div>
+            {% endfor %}
+          {% else %}
+            No staff assigned to this task.
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="card section-header">
+        <div class="card-header"><i class="fas fa-search"></i> QA Reviewers</div>
+        <div class="card-body">
+          {% if task_reviewers %}
+            {% for reviewer in task_reviewers %}
+              <div>{% include 'marketplace/components/user_display.html' with user=reviewer %}</div>
+            {% endfor %}
+          {% else %}
+            No QA volunteers yet.
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <h5 class="section-header">Task reviews</h5>
+  <div class="table-responsive">
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th>Status</th>
+          <th>Reviewer's comments</th>
+          <th>Score</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for task_review in task_reviews %}
+          <tr>
+            <td>
+              <span
+                 class="{% if task_review.is_accepted %}
+                           text-success
+                         {% elif task_review.is_rejected %}
+                           text-danger
+                         {% elif task_review.is_pending %}
+                           text-info
+                         {% endif %}">
+                <i class="material-icons" style="vertical-align: middle">
+                  {% if task_review.is_accepted %}
+                    check
+                  {% elif task_review.is_rejected %}
+                    block
+                  {% elif task_review.is_pending %}
+                    edit
+                  {% endif %}
+              </i>
+                {{ task_review.get_review_result_display }}
+              </span>
+            </td>
+
+            <td>{{ task_review.public_reviewer_comments }}</td>
+
+            <td>{%if task_review.is_accepted or task_review.is_rejected %}
+                  {{ task_review.get_review_score_display }}
+                {% endif %}
+            </td>
+
+            <td>{% if task_review.is_accepted %}
+                  <a href="{% url 'marketplace:proj_instructions_task_review_pin' project.id project_task.id task_review.id %}">
+                    {% if task_review.pinnedreview %}
+                      Unpin review
+                    {% else %}
+                      Pin review
+                    {% endif %}
+                  </a>
+                {% endif %}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

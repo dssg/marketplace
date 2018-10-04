@@ -1,0 +1,31 @@
+{% extends "marketplace/proj_volunteer_task_base.html" %}
+
+{% block taskcontents %}
+
+  <h4 class="section-header">Cancel task {{ project_task.name }}</h4>
+  <p>Are you sure that you want to cancel this volunteer work and stop your involvement in the project?
+    You will have to reapply to get involved in the project if you leave the project and change your mind in the future.</p>
+
+  <form id="canceltask">
+    {% csrf_token %}
+    {% include 'marketplace/components/standard_form_fields.html' %}
+
+    <div class="form-row">
+      <div class="col-lg-9 offset-lg-3">
+        <button type="submit"
+                form="canceltask"
+                formaction="{% url 'marketplace:proj_task_cancel' project.id project_task.id %}"
+                formmethod="post"
+                class="btn btn-danger mr-3">
+          <i class="material-icons" style="vertical-align: middle">block</i>
+          Yes, stop working on this project
+        </button>
+        <a class="btn btn-outline-primary" href="{% url 'marketplace:proj_instructions_task' project.id project_task.id %}">
+          <i class="material-icons" style="vertical-align: middle">close</i>
+          No, keep working on this project
+        </a>
+      </div>
+    </div>
+  </form>
+
+{% endblock %}
