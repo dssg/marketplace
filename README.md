@@ -81,7 +81,9 @@ And, so long as you are not using Django's `runserver` command along with its fi
 
 To restart the Web server:
 
-    manage develop shell --root supervisorctl restart webapp
+    manage develop restart
+
+(The equivalent of: `manage develop shell --root supervisorctl restart webapp`.)
 
 The Web app binds to `localhost:8000`.
 
