@@ -20,7 +20,9 @@ def process_social_login(request, sociallogin, **_kwargs):
     if user.email and not user.username:
         # Set reasonable username
         # (socialaccount does not base this on email address)
+        #
         # TODO: handle collisions?
+        # socialaccount does, but then you get that lame username.
         user.username = user.email.split('@', 1)[0]
 
     # Assign requested user type (pre-OAuth) #
