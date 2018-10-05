@@ -42,6 +42,7 @@ class User(AbstractUser):
         choices = UserType.get_choices(),
         default=UserType.VOLUNTEER,
     )
+    email = models.EmailField('email address', unique=True)
     skype_name = models.CharField(
         verbose_name="Skype user name (Optional)",
         max_length=50,
