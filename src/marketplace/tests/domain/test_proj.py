@@ -71,10 +71,12 @@ class ProjectTestCase(TestCase):
         self.proj_mgmt_user.special_code = "AUTOMATICVOLUNTEER"
         marketplace.user.add_user(self.proj_mgmt_user, 'volunteer')
 
-        self.qa_user = example_volunteer_user(username="qauser")
+        self.qa_user = example_volunteer_user(
+            username="qauser",
+            email='qauser@example.com',
+        )
         self.qa_user.special_code = "AUTOMATICVOLUNTEER"
         marketplace.user.add_user(self.qa_user, 'volunteer')
-        UserService.create_volunteer_profile(self.qa_user, self.qa_user.id)
 
         self.organization = example_organization()
         OrganizationService.create_organization(self.owner_user, self.organization)
