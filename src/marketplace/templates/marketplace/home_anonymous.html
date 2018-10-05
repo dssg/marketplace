@@ -1,0 +1,217 @@
+{% extends 'marketplace/base.html' %}
+
+{% block extraheaders %}
+ {% load static %}
+ <link rel="stylesheet" href="{% static 'css/dssgsolve_frontpage.css' %}"/>
+ <link href="https://fonts.googleapis.com/css?family=Nunito+Sans:200,400" rel="stylesheet">
+{% endblock %}
+
+{% block pagecontents %}
+
+{% load markdown_deux_tags %}
+
+<div class="marketing-header">
+  <div class="px-2 px-lg-0">
+     <div class="row">
+       <div class="col-lg-4 offset-lg-1 pl-5 d-none d-lg-block">
+        <img src="{% static 'img/front_page_hero.png' %}" class="img-fluid"></img>
+       </div>
+       <div class="col-lg-7">
+        <h1 class="text-success">Projects that matter</h1>
+        <h1 class="text-white">Work that matters</h1>
+        <h2 class="text-success">Data Science for Social Good.</h2>
+       </div>
+     </div>
+     <div class="col-lg-12 row no-gutters mt-5 action-links">
+       <div class="col-lg-4 offset-lg-2 mt-2 d-flex mr-lg-2">
+         {% if not user.is_authenticated or user_is_any_organization_member %}
+           <a class="btn btn-lg btn-warning text-primary flex-grow-1 pt-3" href="{% if user_is_any_organization_member %}{% url 'marketplace:proj_create_org_select' %}{% else %}{% url 'marketplace:signup_form' 'organization' %}{% endif %}">
+             <h2>
+               Post a project
+             </h2>
+           </a>
+         {% endif %}
+       </div>
+       <div class="col-lg-4 d-flex mt-2 ml-lg-2">
+         <a class="btn btn-lg btn-warning text-primary flex-grow-1 pt-3" href="{% if user.is_authenticated %}{% url 'marketplace:proj_list' %}{% else %}{% url 'marketplace:signup_form' 'volunteer' %}{% endif %}">
+           <h2>
+             Start volunteering
+           </h2>
+         </a>
+       </div>
+     </div>
+   </div>
+</div>
+
+<div class="container">
+
+ <div class="row mt-5">
+
+  <div class="col-lg-9">
+   <div class="col-lg-12">
+     <h2>What is <span class="text-warning">DSSG Solve</span>?</h2>
+    </div>
+    <div class="col-lg-12">
+     <p class="main-text">DSSG Solve is an online platform for social good organization to post projects they need help with,
+      for volunteers to help scope those projects
+      into well-defined problems, and to help solve those problems.</p>
+   </div>
+  </div>
+   <div class="col-lg-2 d-none d-lg-block">
+    <img src="{% static 'img/front_page_dssg.png' %}" class="img-fluid"></img>
+   </div>
+  </div>
+
+
+  {% if news %}
+  <div class="row mt-4 pt-4 pb-4 pl-3 pr-3">
+    <div class="col-lg-12">
+     <h2>Recent highlights</h2>
+    </div>
+    {% for newspiece in news %}
+      <div class="col-lg-6">
+        <h4>
+          {% if newspiece.link_url %}<a href="{{ newspiece.link_url }}">{% endif %}
+          {% if newspiece.title %}{{ newspiece.title }}{% elif newspiece.link_url %}Learn more{% endif %}
+          {% if newspiece.link_url %}</a>{% endif %}
+        </h4>
+        <div class="text-muted">{{ newspiece.creation_date }}</div>
+       {% if newspiece.contents %}
+          <p class="">
+            {{ newspiece.contents|markdown }}
+          </p>
+       {% endif %}
+      </div>
+    {% endfor %}
+   </div>
+  {% endif %}
+
+  <div class="row mt-4">
+   <div class="card-deck main-cards col-lg-12">
+    <div class="card text-white bg-primary">
+     <div class="card-header"><h3>For social good organizations</h3></div>
+     <div class="card-body flex-column">
+      <div class="flex-fill"> DSSG Solve enables organizations to use data-driven methods to better achieve their missions.
+       Post your project to connect with skilled volunteers who can:<p>
+       <ul>
+        <li>Understand your goals and help scope projects</li>
+        <li>Work with you and other volunteers on those projects</li>
+        <li>Review the solutions and give feedback</li>
+        <li>Help you understand and operartionalize the results</li>
+       </ul>
+
+     </div>
+     <img src="{% static 'img/front_page_project_diagram.svg' %}" class="img-fluid mt-3 col-lg-12"></img>
+     </div>
+     <div class="card-footer">
+      <div class="d-flex mt-2 mb-2">
+        <a class="btn btn-warning text-primary flex-grow-1" href="{% url 'marketplace:signup_form' 'organization' %}">
+            Post a project now
+        </a>
+      </div>
+     </div>
+    </div>
+    <div class="card text-white bg-primary">
+     <div class="card-header"><h3>For volunteers</h3></div>
+     <div class="card-body d-flex flex-column">
+      <div class="flex-fill">
+        DSSG Solve needs a global community of volunteers that are passionate about using technology and data for social good. If you have project scoping, management, or data science skills, join us to:<p>
+        <ul>
+         <li>Apply your skills for work that matters</li>
+         <li>Collaborate with other smart and passionate volunteers</li>
+         <li>Gain data science experience and build your portfolio of work</li>
+         <li>Showcase your skills and increase your visibility</li>
+        </ul>
+      </div>
+      <img src="{% static 'img/front_page_volunteer_diagram.svg' %}" class="img-fluid mt-3 col-lg-12"></img>
+     </div>
+     <div class="card-footer">
+      <div class="d-flex mt-2 mb-2">
+        <a class="btn btn-warning text-primary flex-grow-1" href="{% url 'marketplace:signup_form' 'volunteer' %}">
+            <span class="d-none d-lg-block">Ready to help? Sign up now</span>
+            <span class="d-block d-lg-none">Sign up now</span>
+        </a>
+      </div>
+     </div>
+    </div>
+   </div>
+  </div>
+
+
+
+  <div class="row mt-5">
+   <div class="card-deck col-lg-12">
+    <div class="card">
+     <div class="card-header bg-primary text-white"><h4 class="mt-2">Projects</h4></div>
+     <ul class="list-group list-group-flush">
+      <li class="list-group-item">
+        <p>Projects our volunteers are working on.</p>
+        <p><a href="{% url 'marketplace:proj_list' %}">Browse projects</a></p>
+      </li>
+      <li class="list-group-item featured d-flex flex-column">
+       <h5 class="text-muted">Featured project</h5>
+       {% if featured_project %}
+         <a class="itemlink" href="{% url 'marketplace:proj_info' featured_project.id %}">
+           <h4>{{ featured_project.name }}</h4>
+           {% if featured_project.banner_image_file %}
+            <img src="{{ featured_project.banner_image_file.url }}" class="img-fluid" alt=""></img>
+           {% elif featured_project.banner_image_url %}
+            <img src="{{ featured_project.banner_image_url }}" class="img-fluid" alt=""></img>
+           {% else %}
+              <div class="last">{{ featured_project.short_summary }}</div>
+           {% endif %}
+         </a>
+       {% endif %}
+      </li>
+     </ul>
+    </div>
+    <div class="card">
+     <div class="card-header bg-primary text-white"><h4 class="mt-2">Organizations</h4></div>
+     <ul class="list-group list-group-flush">
+      <li class="list-group-item">
+        <p>Organizations working on social good.</p>
+        <p><a href="{% url 'marketplace:org_list' %}">Browse organizations</a></p>
+      </li>
+      <li class="list-group-item featured d-flex flex-column">
+       <h5 class="text-muted">Featured organization</h5>
+       {% if featured_organization %}
+         <a class="itemlink" href="{% url 'marketplace:org_info' featured_organization.id %}">
+           <h4>{{ featured_organization.name }}</h4>
+           <div class="last">
+             {% if featured_organization.logo_file %}
+              <img src="{{ featured_organization.logo_file.url }}" class="img-fluid" alt=""></img>
+             {% elif featured_organization.logo_url %}
+              <img src="{{ featured_organization.logo_url }}" class="img-fluid" alt=""></img>
+            {% endif %}
+           </div>
+         </a>
+       {% endif %}
+      </li>
+     </ul>
+    </div>
+    <div class="card">
+     <div class="card-header bg-primary text-white"><h4 class="mt-2">Volunteers</h4></div>
+     <ul class="list-group list-group-flush">
+      <li class="list-group-item">
+        <p>Volunteers that make our projects a reality.</p>
+        <p><a href="{% url 'marketplace:volunteer_list' %}">Browse volunteers</a></p>
+      </li>
+      <li class="list-group-item featured d-flex flex-column">
+       <h5 class="text-muted">Featured volunteer</h5>
+       {% if featured_volunteer %}
+         <a class="itemlink" href="{% url 'marketplace:user_profile' featured_volunteer.user.id %}">
+           <h4>{% include 'marketplace/components/user_display.html' with user=featured_volunteer.user hide_anchor=True %}</h4>
+           <div class="last">Member since {{ featured_volunteer.user.date_joined }} </div>
+           <div class="last">Volunteer in {{ featured_volunteer.taskcount }} tasks</div>
+           {% if featured_volunteer_skills %}
+              <div class="last">Expert in {{ featured_volunteer_skills|join:", " }}</div>
+           {% endif %}
+          </a>
+        {% endif %}
+      </li>
+     </ul>
+    </div>
+   </div>
+  </div>
+ </div>
+{% endblock %}

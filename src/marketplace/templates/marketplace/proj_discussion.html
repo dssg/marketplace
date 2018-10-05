@@ -1,0 +1,67 @@
+{% extends "marketplace/proj_discussion_base.html" %}
+
+{% block discussioncontents %}
+
+  {% load markdown_deux_tags %}
+
+  {% load rules %}
+  {% has_perm 'project.comment_add' user channel as user_is_channel_commenter %}
+
+  {% if channel.description %}
+    <p class="section-header">{{ channel.description }}</p>
+  {% endif %}
+
+  {% if user_is_channel_commenter %}
+    {% if channel.is_read_only %}
+      This channel is locked and is now read only.
+    {% else %}
+      <form id="addcomment" class="section-header">
+
+        {% csrf_token %}
+        {% include 'marketplace/components/standard_form_fields.html' with hide_field_labels=True %}
+        <div class="form-row mb-3">
+          <div class="col-lg-3">
+            <button type="submit"
+                    form="addcomment"
+                    formaction="{% url 'marketplace:proj_discussion_add' project.id channel.id %}"
+                    formmethod="post"
+                    class="btn btn-success mr-3">
+              <i class="material-icons" style="vertical-align: middle">add_comment</i>
+              Add comment
+            </button>
+          </div>
+          <div class="col-lg-9">
+            <div><strong>IMPORTANT</strong>: remember this discussion channel is public and can be seen by anybody that accesses this project's page (even anonymous visitors).</div>
+          </div>
+        </div>
+
+      </form>
+    {% endif %}
+  {% endif %}
+
+  <div class="section-header">
+    {% if project_comments %}
+      <ul class="list-group list-group-flush mb-3">
+        {% for log in project_comments %}
+          <li class="list-group-item">
+            <div class="row">
+              <div class="col-lg-3">
+                <div class="text-right">{% include 'marketplace/components/user_display.html' with user=log.author %}</div>
+                <div class="text-right text-muted">{{ log.comment_date }}</div>
+              </div>
+              <div class="col-lg-9">
+                {{ log.comment|markdown }}
+              </div>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+      {% url 'marketplace:proj_discussion' as proj_discussion_url %}
+      {% include 'marketplace/components/pagination.html' with baseurl=proj_discusion_url page_obj=project_comments %}
+
+    {% else %}
+      There are no comments in this discussion.
+    {% endif %}
+  </div>
+
+{% endblock %}

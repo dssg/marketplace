@@ -1,0 +1,98 @@
+{% extends "marketplace/proj_task_base.html" %}
+
+{% block taskcontents %}
+
+  {% load markdown_deux_tags %}
+
+  <h4 class="section-header">Completed task review</h4>
+  <p>Task: {{ project_task.name }}</p>
+  <p>Estimated effort in hours: {{ project_task.estimated_effort_hours }}</p>
+  <p>Total effort spent (in hours): {{ task_review.volunteer_effort_hours }}</p>
+  <p>Volunteer's comments: {{ task_review.volunteer_comment|markdown }}</p>
+
+  {% if project_task.task_home_url %}
+    <p>External task home: <a href="{{ project_task.task_home_url }}">{{ project_task.task_home_url }}</a></p>
+  {% endif %}
+  {% if project_task.task_deliverables_url %}
+    <p>External deliverables page: <a href="{{ project_task.task_deliverables_url }}">{{ project_task.task_deliverables_url }}</a></p>
+  {% endif %}
+  <p>Request date: {{ task_review.review_request_date }} </p>
+
+  {% load rules %}
+  {% has_perm 'project.task_review_do' user project as perm_task_reviewer %}
+
+  {% if task_review.is_pending %}
+    {% if perm_task_reviewer %}
+
+      <div class="row">
+        <div class="col-lg-12">
+          <form id="taskreview">
+            {% csrf_token %}
+            {% include 'marketplace/components/standard_form_fields.html' %}
+
+
+            <div class="form-row">
+              <div class="col-lg-9 offset-lg-3">
+                <button type="submit"
+                        form="taskreview"
+                        formaction="{% url 'marketplace:proj_task_review_do' project.id project_task.id task_review.id 'accept' %}"
+                        formmethod="post"
+                        class="btn btn-success mr-3">
+                  <i class="material-icons" style="vertical-align: middle">check</i>
+                  Accept task as finished
+                </button>
+                <button type="submit"
+                        form="taskreview"
+                        formaction="{% url 'marketplace:proj_task_review_do' project.id project_task.id task_review.id 'reject' %}"
+                        formmethod="post"
+                        class="btn btn-danger mr-3">
+                  <i class="material-icons" style="vertical-align: middle">block</i>
+                  Reject task and reopen it
+                </button>
+                <a class="btn btn-outline-primary mr-3"
+                   href="{% url 'marketplace:proj_task' project.id project_task.id %}">
+                   <i class="material-icons" style="vertical-align: middle">close</i>
+                  Cancel
+                </a>
+              </div>
+            </div>
+
+          </form>
+        </div>
+      </div>
+    {% endif %}
+  {% else %}
+    <p>Request status: <span class="{% if task_review.is_accepted %}
+                                         text-success
+                                       {% elif task_review.is_rejected %}
+                                         text-danger
+                                       {% elif task_review.is_pending %}
+                                         text-info
+                                       {% endif %}">
+                               <i class="material-icons" style="vertical-align: middle">
+                                  {% if task_review.is_accepted %}
+                                    check
+                                  {% elif task_review.is_rejected %}
+                                    block
+                                  {% elif task_review.is_pending %}
+                                    edit
+                                  {% endif %}
+                                </i>
+                                {{ task_review.get_review_result_display }}
+                            </span></p>
+    <p>Score: {% include 'marketplace/components/review_score_display.html' with review=task_review score_display=task_review.get_review_score_display %}</p>
+    <p>Resolution date: {{ task_review.review_date }}</p>
+    <p>Reviewer: {% include 'marketplace/components/user_display.html' with user=task_review.reviewer %}</p>
+    {% if task_review.public_reviewer_comments %}
+      <p>Reviewer's comments: {{ task_review.public_reviewer_comments|markdown }}</p>
+    {% endif %}
+    {% if task_review.private_reviewer_notes %}
+      {% if perm_task_reviewer %}
+        <p>Private reviewer's notes: {{ task_review.private_reviewer_notes|markdown }}</p>
+      {% endif %}
+    {% endif %}
+
+  {% endif %}
+
+
+{% endblock %}

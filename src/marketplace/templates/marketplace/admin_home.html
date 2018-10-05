@@ -1,0 +1,62 @@
+{% extends "marketplace/base.html" %}
+
+{% block pagecontents %}
+
+
+    <h4 class="section-header">Volunteer profiles pending approval</h4>
+
+    {% if volunteer_profiles %}
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+                <th>User</th>
+                <th>Filled volunteer profile?</th>
+                <th>Request date</th>
+                <th></th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for profile in volunteer_profiles %}
+              <tr>
+                  <td>{% include 'marketplace/components/user_display.html' with user=profile.user %}</td>
+                  <td>{{ profile.is_edited }}</img></td>
+                  <td>{{ profile.creation_date }}</img></td>
+                  <td>
+
+                      <form id="orgmembershiprequestreview">
+                        {% csrf_token %}
+
+                        {% include 'marketplace/components/standard_form_fields.html' %}
+
+                            <button type="submit"
+                                    form="orgmembershiprequestreview"
+                                    formaction="{% url 'marketplace:admin_volunteer_review' profile.id 'accept' %}"
+                                    formmethod="post"
+                                    class="btn btn-success mr-3">
+                              <i class="material-icons" style="vertical-align: middle">check</i>
+                              Accept volunteer profile
+                            </button>
+
+                            <button type="submit"
+                                    form="orgmembershiprequestreview"
+                                    formaction="{% url 'marketplace:admin_volunteer_review' profile.id 'reject' %}"
+                                    formmethod="post"
+                                    class="btn btn-danger mr-3">
+                              <i class="material-icons" style="vertical-align: middle">block</i>
+                              Reject volunteer profile
+                            </button>
+                      </form>
+                  </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% url 'marketplace:admin_home' as admin_home_url %}
+      {% include 'marketplace/components/pagination.html' with baseurl=admin_home_url %}
+    {% else %}
+      No pending profiles at this time.
+    {% endif %}
+
+{% endblock %}

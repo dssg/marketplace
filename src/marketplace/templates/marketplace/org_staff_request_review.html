@@ -1,0 +1,97 @@
+{% extends 'marketplace/org.html' %}
+
+{% block tabcontents %}
+
+  {% load markdown_deux_tags %}
+
+  <div class="row">
+    <div class="col-lg-12">
+      <h4 class="section-header">Membership request review</h4>
+
+      <p>This person has requested to join your organization. Please review the
+      application and accept or reject it.</p>
+
+      <p>User: {% include 'marketplace/components/user_display.html' with user=organizationmembershiprequest.user %}</p>
+      {% comment %} <p>Email addres:<a href="{% url 'marketplace:user_profile' organizationmembershiprequest.user.id %}">
+        {{ organizationmembershiprequest.user.email }}</a></p> {% endcomment %}
+      <p>Request date: {{ organizationmembershiprequest.request_date }} </p>
+    </div>
+  </div>
+
+
+  {% if organizationmembershiprequest.is_new %}
+    {% if user_is_administrator %}
+      <div class="row">
+        <div class="col-lg-12">
+          <form id="orgmembershiprequestreview">
+            {% csrf_token %}
+
+            {% include 'marketplace/components/standard_form_fields.html' %}
+
+            <div class="form-row">
+              <div class="col-lg-9 offset-lg-3">
+                <button type="submit"
+                        form="orgmembershiprequestreview"
+                        formaction="{% url 'marketplace:org_staff_request_review_do' organization.id organizationmembershiprequest.id 'accept' %}"
+                        formmethod="post"
+                        class="btn btn-success mr-3">
+                  <i class="material-icons" style="vertical-align: middle">check</i>
+                  Accept membership request
+                </button>
+
+                <button type="submit"
+                        form="orgmembershiprequestreview"
+                        formaction="{% url 'marketplace:org_staff_request_review_do' organization.id organizationmembershiprequest.id 'reject' %}"
+                        formmethod="post"
+                        class="btn btn-danger mr-3">
+                  <i class="material-icons" style="vertical-align: middle">block</i>
+                  Reject membership request
+                </button>
+
+                <a class="btn btn-outline-primary" href="{% url 'marketplace:org_staff' organization.id %}">
+                  <i class="material-icons" style="vertical-align: middle">close</i>
+                  Cancel
+                </a>
+              </div>
+            </div>
+
+          </form>
+        </div>
+      </div>
+    {% endif %}
+
+  {% else %}
+
+    <p>Request status:    <span class="{% if organizationmembershiprequest.is_accepted %}
+                                         text-success
+                                       {% elif organizationmembershiprequest.is_rejected %}
+                                         text-danger
+                                       {% elif organizationmembershiprequest.is_new %}
+                                         text-info
+                                       {% endif %}">
+                               <i class="material-icons" style="vertical-align: middle">
+                                  {% if organizationmembershiprequest.is_accepted %}
+                                    check
+                                  {% elif organizationmembershiprequest.is_rejected %}
+                                    block
+                                  {% elif organizationmembershiprequest.is_new %}
+                                    edit
+                                  {% endif %}
+                                </i>
+                                {{ organizationmembershiprequest.get_status_display }}
+                            </span>
+    </p>
+      <p>Resolution date: {{ organizationmembershiprequest.resolution_date }}</p>
+      <p>Reviewer: {% include 'marketplace/components/user_display.html' with user=organizationmembershiprequest.reviewer %}
+      </p>
+    {% if organizationmembershiprequest.public_reviewer_comments %}
+      <p>Reviewer's comments: {{ organizationmembershiprequest.public_reviewer_comments|markdown }}</p>
+    {% endif %}
+    {% if user_is_member and organizationmembershiprequest.private_reviewer_notes %}
+      <p>Private reviewer's notes: {{ organizationmembershiprequest.private_reviewer_notes|markdown }}</p>
+    {% endif %}
+    <a href="{% url 'marketplace:org_staff' organization.id %}">Back</a>
+
+  {% endif %}
+
+{% endblock %}

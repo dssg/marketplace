@@ -1,0 +1,47 @@
+{% extends 'marketplace/base.html' %}
+
+{% block pagecontents %}
+
+  <div class="row">
+    <div class="col-lg-9">
+      <h1>{{ project.name }}</h1>
+      <h4><a href="{% url 'marketplace:org_info' project.organization.id %}">{{ project.organization.name }}</a></h4>
+      <p>{{ project.follower_count }} followers.</p>
+      <p>{{ project.short_summary }}</p>
+      {% if project.is_demo %}
+        <div class="text-danger">This is a demo project for instructional purposes only.</div>
+      {% endif %}
+    </div>
+    <div class="col-lg-3">
+      {% if project.banner_image_file %}
+        <img class="img-fluid" src="{{ project.banner_image_file.url }}"></img>
+      {% elif project.banner_image_url %}
+        <img class="img-fluid" src="{{ project.banner_image_url }}"></img>
+      {% endif %}
+
+    </div>
+
+    <div class="col-lg-12 mt-3">
+      {% for sc in project.projectsocialcause_set.all %}
+        <span class="mr-4">{% include 'marketplace/components/social_cause_display.html' with object=sc social_cause=sc.get_social_cause_display %}</span>
+      {% endfor %}
+    </div>
+
+    <div class="col-lg-12 section-header">
+      {% if user.volunteerprofile and user.volunteerprofile.is_accepted and first_open_task %}
+        <a class="btn btn-success col-lg-6 offset-lg-3 mb-1 "
+           href="{% url 'marketplace:proj_task_apply' project.id first_open_task.id %}">
+          <i class="material-icons" style="vertical-align: middle">how_to_vote</i>
+          Apply to volunteer
+        </a>
+      {% endif %}
+    </div>
+    {% include 'marketplace/components/project_status.html' %}
+  </div>
+
+  {% include 'marketplace/components/project_tabs.html' %}
+
+  {% block tabcontents %}
+  {% endblock %}
+
+{% endblock %}
