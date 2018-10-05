@@ -579,7 +579,7 @@ class ProjectTask(models.Model):
     )
     type = models.CharField(
         verbose_name="Task type",
-        help_text="Different types of tasks have different roles within the project. Scoping tasks are needed to help new projects define the work that needs to be done. Project management tasks are used to guide the project from inception to finish. Domain work tasks include any data science work specified in the project.",
+        help_text="Different types of tasks have different roles within the project. Scoping tasks are needed to help new projects define the work that needs to be done. Project management tasks are used to guide the project from inception to finish. Domain work tasks include any data science work specified in the project. QA tasks review work that has been marked as complete and verify that everything is up to the necessary standards of quality.",
         max_length=3,
         choices=TaskType.get_choices(),
         default=TaskType.SCOPING_TASK,
