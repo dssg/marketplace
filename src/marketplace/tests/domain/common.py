@@ -12,6 +12,7 @@ def example_organization_user():
     organization_user.username = "OrgUser"
     organization_user.first_name = "Organization"
     organization_user.last_name = "User"
+    organization_user.email = "orguser@email.com"
     return organization_user
 
 def example_staff_user():
@@ -19,14 +20,15 @@ def example_staff_user():
     staff_user.username = "StaffUser"
     staff_user.first_name = "Staff"
     staff_user.last_name = "User"
+    staff_user.email = "staffuser@email.com"
     return staff_user
 
-def example_volunteer_user(username="VolUser"):
+def example_volunteer_user(username="VolUser", email="volunteer@email.com"):
     volunteer_user = User()
     volunteer_user.username = username
     volunteer_user.first_name = "Volunteer"
     volunteer_user.last_name = "User"
-    volunteer_user.email = "volunteer@email.com"
+    volunteer_user.email = email
     return volunteer_user
 
 def example_organization():

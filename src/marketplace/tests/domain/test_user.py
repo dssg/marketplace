@@ -59,6 +59,7 @@ class UserTestCase(TestCase):
         dssg_user.first_name = "DSSG"
         dssg_user.last_name = "Staff"
         dssg_user.special_code = "MAKEDSSG"
+        dssg_user.email = "dssg@email.com"
         UserService.create_user(None, dssg_user, 'organization', None, None)
         self.dssg_staff_user = dssg_user
 
@@ -67,6 +68,7 @@ class UserTestCase(TestCase):
         organization_user.username = "OrgUser"
         organization_user.first_name = "Organization"
         organization_user.last_name = "User"
+        organization_user.email = "org@email.com"
         UserService.create_user(None, organization_user, 'organization', None, None)
         self.assertEqual(UserService.get_user(organization_user, organization_user.id), organization_user)
 
@@ -86,6 +88,7 @@ class UserTestCase(TestCase):
         dssg_user.first_name = "DSSG"
         dssg_user.last_name = "Staff"
         dssg_user.special_code = "MAKEDSSG"
+        dssg_user.email = "dssg@email.com"
         UserService.create_user(None, dssg_user, 'organization', None, None)
         self.assertEqual(UserService.get_user(dssg_user, dssg_user.id), dssg_user)
 
