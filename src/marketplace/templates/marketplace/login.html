@@ -3,18 +3,24 @@
 {% block pagecontents %}
 
   <div class="col-lg-6 offset-lg-3">
-    <form id="login">
-      <h2 class="section-header">Log in</h2>
-      <p>Type your email address and password to access your account</p>
-      {% if next %}
-          {% if user.is_authenticated %}
-            <p>Your account doesn't have access to this page. To proceed,
-            please login with an account that has access.</p>
-          {% else %}
-            <p>Please login to see this page.</p>
-          {% endif %}
-      {% endif %}
+    <h2 class="section-header">Log in</h2>
 
+    {% if next %}
+      {% if user.is_authenticated %}
+        <p>Your account doesn't have access to the page you requested. To proceed,
+           please log in with an account that has access.</p>
+      {% else %}
+        <p>The page you requested requires that you log in.</p>
+      {% endif %}
+    {% endif %}
+
+    <p>Log in via one of these providers or enter your email address and password below.</p>
+
+    {% include "marketplace/components/login_provider_list.html" %}
+
+    <hr>
+
+    <form id="login">
       {% if form.errors %}
         <p>Your username and password didn't match. Please try again.</p>
       {% endif %}
@@ -37,6 +43,5 @@
       </div>
     </form>
   </div>
-
 
 {% endblock %}
