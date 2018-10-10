@@ -60,11 +60,27 @@ class GeographicalScope():
             (GeographicalScope.OTHER, 'Other')
         )
 
+class OrganizationType():
+    SOCIAL_GOOD = 'SGP'
+    VOLUNTEER = 'VOL'
+
+    def get_choices():
+        return (
+            (OrganizationType.SOCIAL_GOOD, 'Social good organization'),
+            (OrganizationType.VOLUNTEER, 'Volunteer group'),
+        )
+
 class Organization(models.Model):
     name = models.CharField(
         max_length=200,
         verbose_name="Organization name",
         help_text="Type the name of your organization.",
+    )
+    type = models.CharField(
+        verbose_name="Organization type",
+        max_length=3,
+        choices=OrganizationType.get_choices(),
+        default=OrganizationType.SOCIAL_GOOD,
     )
     short_summary = models.TextField(
         verbose_name="Short summary",

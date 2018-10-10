@@ -5,7 +5,7 @@ from django.db.models import Case, Q, When, Count
 
 from ..models.common import OrgRole, ReviewStatus, SocialCause
 from ..models.org import (
-    Organization, OrganizationMembershipRequest, OrganizationRole, OrganizationSocialCause,
+    Organization, OrganizationMembershipRequest, OrganizationRole, OrganizationSocialCause, OrganizationType,
 )
 from ..models.user import (
     User, NotificationSeverity, NotificationSource,
@@ -21,8 +21,8 @@ from marketplace.authorization.common import ensure_user_has_permission
 
 class OrganizationService():
     @staticmethod
-    def get_all_organizations(request_user, search_config=None):
-        base_query = Organization.objects.all()
+    def get_all_organizations(request_user, search_config=None, type=OrganizationType.SOCIAL_GOOD):
+        base_query = Organization.objects.filter(type=type)
         if search_config:
             if 'name' in search_config:
                 base_query = base_query.filter(name__icontains=search_config['name'])
@@ -46,13 +46,13 @@ class OrganizationService():
         return base_query.order_by('name')
 
     @staticmethod
-    def get_organization(request_user, org_pk):
-        return Organization.objects.get(pk=org_pk)
+    def get_organization(request_user, org_pk, type=OrganizationType.SOCIAL_GOOD):
+        return Organization.objects.get(pk=org_pk, type=type)
 
     @staticmethod
     def get_featured_organization():
         # Long-term, devise a better way of selecting a featured organization.
-        return Organization.objects.all() \
+        return Organization.objects.filter(type=OrganizationType.SOCIAL_GOOD) \
                                 .annotate(projectcount=Count('project')) \
                                 .order_by('-projectcount').first()
 
@@ -86,6 +86,8 @@ class OrganizationService():
         if Organization.objects.filter(name=organization.name).exists():
             raise ValueError('An organization with this name already exists.')
         with transaction.atomic():
+            if organization.type is None:
+                organization.type = OrganizationType.SOCIAL_GOOD
             organization.save()
             admin_role = OrganizationRole()
             admin_role.user = request_user
@@ -172,7 +174,7 @@ class OrganizationService():
     def get_organizations_with_user_create_project_permission(request_user):
         if request_user.is_anonymous:
             return []
-        all_user_orgs = Organization.objects.filter(organizationrole__user=request_user)
+        all_user_orgs = Organization.objects.filter(organizationrole__user=request_user, type=OrganizationType.SOCIAL_GOOD)
         orgs = []
         for org in all_user_orgs:
             if request_user.has_perm('organization.project_create', org):
@@ -183,7 +185,7 @@ class OrganizationService():
     def user_can_create_projects(request_user):
         if request_user.is_anonymous:
             return False
-        all_user_orgs = Organization.objects.filter(organizationrole__user=request_user)
+        all_user_orgs = Organization.objects.filter(organizationrole__user=request_user, type=OrganizationType.SOCIAL_GOOD)
         for org in all_user_orgs:
             if request_user.has_perm('organization.project_create', org):
                 return True

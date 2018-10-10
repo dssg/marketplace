@@ -128,7 +128,7 @@ class OrganizationView(generic.DetailView):
 class EditOrganizationForm(ModelForm):
     class Meta:
         model = Organization
-        exclude = ['logo_url', 'main_cause']
+        exclude = ['logo_url', 'main_cause', 'type']
 
 class OrganizationEdit(PermissionRequiredMixin, UpdateView):
     model = Organization
