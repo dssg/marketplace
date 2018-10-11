@@ -330,3 +330,18 @@ fieldset legend {
     border: 0px;
     color: #000;
 }
+
+.btn.provider {
+    margin-right: 3px;
+}
+
+.btn.google {
+    background: url(/static/img/google.svg) center center no-repeat;
+    background-size: 100%;
+    color: transparent;
+}
+.btn.github {
+    background: url(/static/img/github.png) center center no-repeat;
+    background-size: 95%;
+    color: transparent;
+}

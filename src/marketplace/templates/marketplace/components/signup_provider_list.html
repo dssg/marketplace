@@ -7,7 +7,7 @@
 {% for provider in socialaccount_providers %}
     <button
         title="Sign up via {{provider.name}}"
-        class="btn {{provider.id}}"
+        class="btn btn-light provider {{provider.id}}"
         type="submit"
         form="signup_oauth"
         formaction="{% url 'marketplace:signup_oauth' user_type provider.id %}"
