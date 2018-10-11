@@ -1,29 +1,26 @@
-from datetime import date
-
 from allauth.socialaccount import providers
 
 from django.contrib.auth import logout, login, authenticate
 from django.contrib.auth.forms import UserCreationForm
-from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib import messages
-from django.db.models import Q
-from django.forms import ModelForm
-from django.http import Http404, HttpResponseRedirect
+from django.http import Http404, HttpResponseForbidden, HttpResponseRedirect
+from django import forms
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.views import generic
 from django.views.decorators.http import require_http_methods, require_POST
-from django.views.generic.edit import CreateView, DeleteView, UpdateView
+from django.views.generic.edit import UpdateView
 from django.conf import settings
 from rules.contrib.views import (
     PermissionRequiredMixin, objectgetter, permission_required,
 )
 
 from ..models.org import Organization, OrganizationMembershipRequest
-from ..models.proj import Project, ProjectStatus, ProjectTask, VolunteerApplication
-from ..models.user import Skill, SkillLevel, User, VolunteerProfile, VolunteerSkill, UserNotification, NotificationSource
+from ..models.proj import Project, ProjectTask, VolunteerApplication
+from ..models.user import SkillLevel, User, UserType, VolunteerProfile, UserNotification, NotificationSource
 from .common import build_breadcrumb, home_link, paginate
 
+from marketplace import utils
 from marketplace.domain import marketplace
 from marketplace.domain.user import UserService
 from marketplace.domain.proj import ProjectService, ProjectTaskService
@@ -345,11 +342,61 @@ def create_volunteer_profile_view(request, user_pk):
                     user_pk=user_pk, volunteer_pk=volunteer_profile.pk)
 
 
-def select_user_type_view(request):
-    return render(request, 'marketplace/signup_type_select.html',
-                        {
-                            'breadcrumb': [home_link(), ('Select your account type', None)]
-                        })
+def select_user_type_before(request):
+    return render(request, 'marketplace/signup_type_select.html', {
+        'breadcrumb': [home_link(), ('Select your account type', None)],
+    })
+
+
+class UserTypeSelectionForm(forms.ModelForm):
+
+    initial_type = forms.TypedChoiceField(
+        choices=[
+            (value, description)
+            for (value, description) in UserType.get_choices()
+            if value in (UserType.VOLUNTEER, UserType.ORGANIZATION)
+        ],
+        widget=utils.SubmitSelect,
+    )
+
+    class Meta:
+        model = User
+        fields = ('initial_type',)
+
+
+@require_http_methods(['GET', 'POST'])
+def select_user_type_after(request):
+    if not request.user.is_authenticated:
+        return HttpResponseForbidden("Forbidden")
+
+    if request.method == 'GET':
+        redirect_path = request.GET.get('next')
+    else:
+        redirect_path = request.POST.get('next')
+    if not redirect_path:
+        redirect_path = reverse('marketplace:user_dashboard')
+
+    if request.user.initial_type is not None:
+        return redirect(redirect_path)
+
+    if request.method == 'POST':
+        form = UserTypeSelectionForm(request.POST, instance=request.user)
+
+        if form.is_valid():
+            form.save()
+
+            if request.user.initial_type == UserType.VOLUNTEER:
+                preferences = request.POST.getlist('preferences')
+                marketplace.user.set_task_preferences(request.user, preferences)
+
+            messages.info(request, "Your selection has been saved.")
+            return redirect(redirect_path)
+    else:
+        form = UserTypeSelectionForm()
+
+    return render(request, 'marketplace/user_type_select.html', {
+        'form': form,
+    })
 
 
 class SignUpForm(UserCreationForm):
