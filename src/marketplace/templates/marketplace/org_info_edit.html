@@ -4,8 +4,20 @@
 
 
   <form id="editorg" enctype="multipart/form-data">
-    <h4 class="section-header">Edit organization</h4>
-    <p>Tell us more about the organization you represent.</p>
+    <h4 class="section-header">
+      {% if organization.is_volunteer_group %}
+        Edit volunteer group
+      {% else %}
+        Edit organization
+      {% endif %}
+    </h4>
+    <p>
+      {% if organization.is_volunteer_group %}
+        Tell us more about this volunteer group.
+      {% else %}
+        Tell us more about the organization you represent.
+      {% endif %}
+    </p>
     {% csrf_token %}
     {% include 'marketplace/components/standard_form_fields.html' %}
     {% include 'marketplace/components/social_cause_edit_row.html' with label_text='Choose the social causes this organization works towards.' %}

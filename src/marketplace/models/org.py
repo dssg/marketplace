@@ -213,6 +213,12 @@ class Organization(models.Model):
     def is_social_cause_other(self):
         return self.main_cause == SocialCause.OTHER
 
+    def is_volunteer_group(self):
+        return self.type == OrganizationType.VOLUNTEER
+
+    def is_social_good_organization(self):
+        return self.type == OrganizationType.SOCIAL_GOOD
+        
     def __str__(self):
         return self.name
 

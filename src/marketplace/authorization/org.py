@@ -4,8 +4,10 @@ from marketplace.domain.org import OrganizationService
 from marketplace.domain.user import UserService
 
 @predicate
-def is_organization_creator(user, org=None):
-    return user.is_authenticated and UserService.user_is_organization_creator(user)
+def is_organization_creator(user, orgtype):
+    return user.is_authenticated and \
+        (((orgtype == 'socialgood' or orgtype is None) and UserService.user_is_organization_creator(user)) or \
+        (orgtype == 'volunteergroup' and UserService.user_has_approved_volunteer_profile(user)))
 
 add_perm('organization.create', is_organization_creator)
 add_perm('organization.information_edit', OrganizationService.user_is_organization_admin)

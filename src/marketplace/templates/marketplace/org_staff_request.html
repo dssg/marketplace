@@ -3,9 +3,21 @@
 {% block tabcontents %}
   <div class="row">
     <form id="orgmembershiprequest" class="form col-lg-6 offset-lg-3">
-    <h4 class="section-header">Join organization</h4>
-    <p>Are you part of this organization? Send a membership request so
-    the administrators can add you to the organization's staff.</p>
+    <h4 class="section-header">
+      {% if organization.is_volunteer_group %}
+        Join volunteer group
+      {% else %}
+        Join organization
+      {% endif %}
+    </h4>
+    <p>
+      {% if organization.is_volunteer_group %}
+        Do you want to become a part of this volunteer group? Send a membership
+        request so the administrators can add you as a member.
+      {% else %}
+        Are you part of this organization? Send a membership request so
+        the administrators can add you to the organization's staff.
+      {% endif %}</p>
       {% csrf_token %}
       {{ form.as_p }}
       <div class="form-row">
@@ -15,7 +27,11 @@
                 formmethod="post"
                 class="btn btn-success mr-3">
             <i class="material-icons" style="vertical-align: middle">person_add</i>
-            Request organization membership
+            {% if organization.is_volunteer_group %}
+              Request volunteer group membership
+            {% else %}
+              Request organization membership
+            {% endif %}
         </button>
         <a class="btn btn-outline-primary" href="{% url 'marketplace:org_info' organization.id %}">
           <i class="material-icons" style="vertical-align: middle">close</i>

@@ -27,6 +27,12 @@
 
         </fieldset>
 
+        <fieldset class="mt-3" name="type">
+          <legend>Organization type</legend>
+          {% include 'marketplace/components/filter_checkbox.html' with field_name='type' field_value='socialgood' field_text='Social good organization' is_checked=checked_type_fields.socialgood %}
+          {% include 'marketplace/components/filter_checkbox.html' with field_name='type' field_value='volunteergroup' field_text='Volunteer group' is_checked=checked_type_fields.volunteergroup %}
+        </fieldset>
+
         <fieldset class="mt-3" name="status">
           <legend>Project status</legend>
           {% include 'marketplace/components/filter_checkbox.html' with field_name='projectstatus' field_value='new' field_text='With new projects' is_checked=checked_project_fields.new %}
@@ -55,6 +61,7 @@
             <thead>
               <tr>
                   <th>Organization name</th>
+                  <th>Type</th>
                   <th>Description</th>
                   <th>Social impact areas</th>
               </tr>
@@ -63,6 +70,7 @@
               {% for organization in org_list %}
                 <tr>
                     <td><a href="{% url 'marketplace:org_info' organization.id %}">{{ organization.name }}</a></td>
+                    <td>{{ organization.get_type_display }}</img></td>
                     <td>{{ organization.short_summary }}</img></td>
                     <td>
                       {% for sc in organization.organizationsocialcause_set.all %}

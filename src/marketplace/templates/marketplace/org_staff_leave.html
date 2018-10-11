@@ -4,8 +4,20 @@
 
   <div>
     <form id="leaveorg">
-    <h4 class="section-header">Leave organization</h4>
-    <p>Are you sure you want to leave this organization?</p>
+    <h4 class="section-header">
+        {% if organization.is_volunteer_group %}
+          Leave volunteer group
+        {% else %}
+          Leave organization
+        {% endif %}
+    </h4>
+    <p>
+      {% if organization.is_volunteer_group %}
+        Are you sure you want to leave this volunteer group?
+      {% else %}
+        Are you sure you want to leave this organization?
+      {% endif %}
+    </p>
       {% csrf_token %}
       {% include 'marketplace/components/standard_form_fields.html' %}
 
@@ -18,10 +30,20 @@
                   class="btn btn-danger mr-3">
             <i class="material-icons" style="vertical-align: middle">meeting_room</i>
             Yes, leave organization
+
+            {% if organization.is_volunteer_group %}
+              Yes, leave volunteer group
+            {% else %}
+              Yes, leave organization
+            {% endif %}
           </button>
           <a class="btn btn-outline-primary" href="{% url 'marketplace:org_info' organization.id %}">
             <i class="material-icons" style="vertical-align: middle">close</i>
-            No, stay in the organization
+            {% if organization.is_volunteer_group %}
+              No, stay in the volunteer group
+            {% else %}
+              No, stay in the organization
+            {% endif %}
           </a>
         </div>
       </div>

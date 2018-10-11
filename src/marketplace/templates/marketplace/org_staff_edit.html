@@ -3,7 +3,13 @@
 {% block tabcontents %}
 
   <form id="editstaff">
-    <h4 class="section-header">Edit staff member</h4>
+    <h4 class="section-header">
+      {% if organization.is_volunteer_group %}
+        Edit member
+      {% else %}
+        Edit staff member
+      {% endif %}
+    </h4>
     <p>User: {% include 'marketplace/components/user_display.html' with user=organizationrole.user %}</p>
     {# <p>Email: {{ organizationrole.user.email }}</p> #}
     {% csrf_token %}

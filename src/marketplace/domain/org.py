@@ -14,15 +14,15 @@ from ..models.proj import ProjectStatus
 from .notifications import NotificationService
 from .proj import ProjectService
 
-from .common import validate_consistent_keys, social_cause_view_model_translation, project_status_view_model_translation
+from .common import validate_consistent_keys, social_cause_view_model_translation, project_status_view_model_translation, org_type_view_model_translation
 
 from marketplace.authorization.common import ensure_user_has_permission
 
 
 class OrganizationService():
     @staticmethod
-    def get_all_organizations(request_user, search_config=None, type=OrganizationType.SOCIAL_GOOD):
-        base_query = Organization.objects.filter(type=type)
+    def get_all_organizations(request_user, search_config=None):
+        base_query = Organization.objects.all()
         if search_config:
             if 'name' in search_config:
                 base_query = base_query.filter(name__icontains=search_config['name'])
@@ -34,7 +34,14 @@ class OrganizationService():
                 for social_cause_from_view in sc:
                     social_causes.append(social_cause_view_model_translation[social_cause_from_view])
                 base_query = base_query.filter(organizationsocialcause__social_cause__in=social_causes).distinct()
-
+            if 'type' in search_config:
+                sc = search_config['type']
+                if isinstance(sc, str):
+                    sc = [sc]
+                types = []
+                for type_from_view in sc:
+                    types.append(org_type_view_model_translation[type_from_view])
+                base_query = base_query.filter(type__in=types).distinct()
             if 'project_status' in search_config:
                 project_status_list = search_config['project_status']
                 if isinstance(project_status_list, str):
@@ -46,8 +53,8 @@ class OrganizationService():
         return base_query.order_by('name')
 
     @staticmethod
-    def get_organization(request_user, org_pk, type=OrganizationType.SOCIAL_GOOD):
-        return Organization.objects.get(pk=org_pk, type=type)
+    def get_organization(request_user, org_pk):
+        return Organization.objects.get(pk=org_pk)
 
     @staticmethod
     def get_featured_organization():
@@ -81,11 +88,12 @@ class OrganizationService():
                 new_sc.save()
 
     @staticmethod
-    def create_organization(request_user, organization):
-        ensure_user_has_permission(request_user, organization, 'organization.create')
+    def create_organization(request_user, organization, org_type='socialgood'):
+        ensure_user_has_permission(request_user, org_type, 'organization.create')
         if Organization.objects.filter(name=organization.name).exists():
             raise ValueError('An organization with this name already exists.')
         with transaction.atomic():
+            organization.type = org_type_view_model_translation[org_type]
             if organization.type is None:
                 organization.type = OrganizationType.SOCIAL_GOOD
             organization.save()
@@ -116,7 +124,7 @@ class OrganizationService():
 
     @staticmethod
     def user_is_any_organization_member(user):
-        return user.is_authenticated and OrganizationRole.objects.filter(user=user).exists()
+        return user.is_authenticated and OrganizationRole.objects.filter(user=user, organization__type=OrganizationType.SOCIAL_GOOD).exists()
 
     @staticmethod
     def user_is_organization_member(user, org):
@@ -158,10 +166,13 @@ class OrganizationService():
 
     @staticmethod
     def get_organization_projects(request_user, org):
-        if OrganizationService.user_is_organization_member(request_user, org):
-            return ProjectService.get_all_organization_projects(request_user, org)
+        if org.is_volunteer_group():
+            return ProjectService.get_all_organization_member_volunteer_projects(request_user, org)
         else:
-            return ProjectService.get_organization_public_projects(request_user, org)
+            if OrganizationService.user_is_organization_member(request_user, org):
+                return ProjectService.get_all_organization_projects(request_user, org)
+            else:
+                return ProjectService.get_organization_public_projects(request_user, org)
 
     @staticmethod
     def create_project(request_user, orgid, project):

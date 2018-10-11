@@ -1,6 +1,7 @@
 from marketplace.models.common import SocialCause, TaskType
 from marketplace.models.proj import ProjectStatus
 from marketplace.models.user import BadgeType
+from marketplace.models.org import OrganizationType
 
 
 def get_field_value(object, path):
@@ -63,6 +64,11 @@ task_preferences_model_translation = {
      'management': TaskType.PROJECT_MANAGEMENT_TASK,
      'domainwork': TaskType.DOMAIN_WORK_TASK,
      'qa': TaskType.QA_TASK,
+ }
+
+org_type_view_model_translation = {
+     'socialgood': OrganizationType.SOCIAL_GOOD,
+     'volunteergroup': OrganizationType.VOLUNTEER,
  }
 
 def get_social_causes():

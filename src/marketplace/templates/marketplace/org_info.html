@@ -4,10 +4,16 @@
   {% load rules %}
   {% load markdown_deux_tags %}
 
-  <div class="row mt-5 mb-5">
+  <div class="row mb-5">
     <div class="col-lg-8">
       <p>{{ organization.description|markdown }}</p>
-      <h4 class="section-header">Organization's projects</h4>
+      <h4 class="section-header">
+        {% if organization.is_volunteer_group %}
+          Projects that our members are volunteering at
+        {% else %}
+          Organization's projects
+        {% endif %}
+      </h4>
       <div class="row">
         <div class="col-lg-12">
         {% if projects %}
@@ -30,7 +36,9 @@
                         {% include 'marketplace/components/project_status_display.html' %}
                       </td>
                       <td>
-                        {% include 'marketplace/components/social_cause_display.html' with object=project social_cause=project.get_project_cause_display %}
+                        {% for sc in project.projectsocialcause_set.all %}
+                          {% include 'marketplace/components/social_cause_display.html' with object=sc social_cause=sc.get_social_cause_display %} <br/>
+                        {% endfor %}
                       </td>
                   </tr>
                 {% endfor %}
@@ -47,7 +55,7 @@
 
     </div>
 
-    <div class="col-lg-4">
+    <div class="col-lg-4 section-header">
       {% has_perm 'organization.information_edit' user organization as perm_org_edit %}
       {% if perm_org_edit %}
         <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'marketplace:org_info_edit' organization.id %}">
@@ -56,55 +64,77 @@
         </a>
       {% endif %}
 
-      {% has_perm 'organization.project_create' user organization as perm_proj_create %}
-      {% if perm_proj_create %}
-        <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'marketplace:proj_create' organization.id %}">
-          <i class="material-icons" style="vertical-align: middle">add_circle</i>
-          Create new project
-        </a>
+      {% if organization.is_social_good_organization %}
+        {% has_perm 'organization.project_create' user organization as perm_proj_create %}
+        {% if perm_proj_create %}
+          <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'marketplace:proj_create' organization.id %}">
+            <i class="material-icons" style="vertical-align: middle">add_circle</i>
+            Create new project
+          </a>
+        {% endif %}
       {% endif %}
 
       {% if user_is_member %}
         <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'marketplace:org_staff_leave' organization.id %}">
           <i class="material-icons" style="vertical-align: middle">meeting_room</i>
-          Leave organization
+          {% if organization.is_volunteer_group %}
+            Leave volunteer group
+          {% else %}
+            Leave organization
+          {% endif %}
         </a>
       {% elif user_is_pending_membership %}
         <a class="btn btn-light disabled col-lg-12 mb-1">
           <i class="material-icons" style="vertical-align: middle">check</i>
           Membership requested
         </a>
-      {% else %}
+      {% elif user.is_authenticated %}
         <a class="btn btn-success col-lg-12 mb-1" role="button" href="{% url 'marketplace:org_staff_request' organization.id %}">
           <i class="material-icons" style="vertical-align: middle">person_add</i>
           Request membership
         </a>
       {% endif %}
 
-      <div class="card section-header">
-        <div class="card-header">Organization's details</div>
-        <div class="card-body">
-          <p>Years in operation: {{ organization.get_years_operation_display }}</p>
-          <p>Yearly budget: {{ organization.get_budget_display }}</p>
-          <p>Geographical scope: {{ organization.get_organization_scope_display }}</p>
+
+      {% if organization.is_social_good_organization %}
+        <div class="card section-header">
+          <div class="card-header">Organization's details</div>
+          <div class="card-body">
+            <p>Years in operation: {{ organization.get_years_operation_display }}</p>
+            <p>Yearly budget: {{ organization.get_budget_display }}</p>
+            <p>Geographical scope: {{ organization.get_organization_scope_display }}</p>
+          </div>
         </div>
-      </div>
-      <div class="card section-header">
-        <div class="card-header">Address</div>
-        <div class="card-body">
-          <p>{{ organization.street_address }}</p>
-          <p>{{ organization.address_line_2 }}</p>
-          <p>{{ organization.city }}, {{ organization.state }} {{ organization.zipcode }}</p>
-          <p>{{ organization.get_country_display }}</p>
+        <div class="card section-header">
+          <div class="card-header">Address</div>
+          <div class="card-body">
+            <p>{{ organization.street_address }}</p>
+            <p>{{ organization.address_line_2 }}</p>
+            <p>{{ organization.city }}, {{ organization.state }} {{ organization.zipcode }}</p>
+            <p>{{ organization.get_country_display }}</p>
+          </div>
         </div>
-      </div>
-      <div class="card section-header">
-        <div class="card-header">Contact information</div>
-        <div class="card-body">
-          <p>Phone number: {{ organization.phone_number }}</p>
-          <p>Email address: {{ organization.email }}</p>
+        <div class="card section-header">
+          <div class="card-header">Contact information</div>
+          <div class="card-body">
+            <p>Phone number: {{ organization.phone_number }}</p>
+            <p>Email address: {{ organization.email }}</p>
+          </div>
         </div>
-      </div>
+      {% else %}
+        <div class="card section-header">
+          <div class="card-header">Volunteer group members</div>
+          <div class="card-body">
+            {% if members %}
+              {% for staff in members %}
+                <div>{% include 'marketplace/components/user_display.html' with user=staff %}</div>
+              {% endfor %}
+            {% else %}
+              No staff assigned to this task.
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
     </div>
   </div>
 

@@ -62,6 +62,7 @@ def get_organization_role_by_pk(request, org_pk, role_pk):
 
 def organization_list_view(request):
     checked_social_cause_fields = {}
+    checked_type_fields = {}
     checked_project_fields = {}
     filter_orgname = ""
     if request.method == 'POST':
@@ -73,6 +74,10 @@ def organization_list_view(request):
             search_config['social_cause'] = request.POST.getlist('socialcause')
             for f in request.POST.getlist('socialcause'):
                 checked_social_cause_fields[f] = True
+        if 'type' in request.POST:
+            search_config['type'] = request.POST.getlist('type')
+            for f in request.POST.getlist('type'):
+                checked_type_fields[f] = True
         if 'projectstatus' in request.POST:
             search_config['project_status'] = request.POST.getlist('projectstatus')
             for f in request.POST.getlist('projectstatus'):
@@ -91,6 +96,7 @@ def organization_list_view(request):
                             'breadcrumb': build_breadcrumb([home_link(), organizations_link(False)]),
                             'org_list': organizations_page,
                             'checked_social_cause_fields': checked_social_cause_fields,
+                            'checked_type_fields': checked_type_fields,
                             'checked_project_fields': checked_project_fields,
                             'filter_orgname': filter_orgname
                         })
@@ -116,6 +122,11 @@ class OrganizationView(generic.DetailView):
         context = super().get_context_data(**kwargs)
         context['breadcrumb'] = organization_breadcrumb(self.object)
         organization = self.object
+
+        members = []
+        if organization.is_volunteer_group():
+            members = OrganizationService.get_organization_members(self.request.user, organization)
+        context['members'] = paginate(self.request, members, request_key='members_page', page_size=25)
 
         projects = OrganizationService.get_organization_projects(self.request.user, organization)
         context['projects'] = paginate(self.request, projects, request_key='projects_page', page_size=25)
@@ -441,7 +452,14 @@ class OrganizationCreateView(PermissionRequiredMixin, CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['breadcrumb'] = [home_link(), organizations_link(), ('Create new organization', None)]
+        org_type = self.kwargs.get('type', 'socialgood')
+        if not org_type in ['socialgood', 'volunteergroup']:
+            org_type = 'socialgood'
+        context['type'] = org_type
+        breadcrumb_text = 'Create new organization'
+        if org_type == 'volunteergroup':
+            breadcrumb_text = 'Create new volunteer group'
+        context['breadcrumb'] = [home_link(), organizations_link(), (breadcrumb_text, None)]
         social_causes = []
         for sc in get_social_causes():
             sc_value, sc_name = sc
@@ -452,7 +470,7 @@ class OrganizationCreateView(PermissionRequiredMixin, CreateView):
     def form_valid(self, form):
         organization = form.save(commit=False)
         try:
-            organization = OrganizationService.create_organization(self.request.user, organization)
+            organization = OrganizationService.create_organization(self.request.user, organization, self.request.POST.get('type'))
             OrganizationService.save_organization_social_causes(self.request.user, organization.id, organization, self.request.POST)
             messages.info(self.request, "You have created a new organization and are now its first administrator user.")
             self.object = organization
@@ -464,8 +482,7 @@ class OrganizationCreateView(PermissionRequiredMixin, CreateView):
             return self.form_invalid(form)
 
     def get_permission_object(self):
-        return None
-
+        return self.kwargs.get('type', 'socialgood')
 
 
 def get_all_users_not_organization_members_json(request, org_pk, query=None):

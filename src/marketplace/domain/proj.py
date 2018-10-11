@@ -71,6 +71,13 @@ class ProjectService():
         return Project.objects.filter(organization=org).order_by('name')
 
     @staticmethod
+    def get_all_organization_member_volunteer_projects(request_user, org):
+        return Project.objects.filter(
+            projecttask__projecttaskrole__role=TaskRole.VOLUNTEER,
+            projecttask__projecttaskrole__user__organizationrole__organization=org
+        ).distinct().order_by('name')
+
+    @staticmethod
     def get_featured_project():
         # Long-term, make a more intelligent selection, choosing for example
         # the project with best average task review score, the one with the

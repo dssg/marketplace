@@ -2,7 +2,13 @@
 
 {% block tabcontents %}
 
-  <h4 class="section-header">Staff members</h4>
+  <h4 class="section-header">
+    {% if organization.is_volunteer_group %}
+      Members
+    {% else %}
+      Staff members
+    {% endif %}
+  </h4>
   {% if organization_staff %}
     <div class="table-responsive">
       <table class="table table-hover">
@@ -50,7 +56,7 @@
     <p>No staff found.</p>
   {% endif %}
 
-  {% if user_is_administrator %}
+  {% if user_is_administrator and organization.is_social_good_organization %}
     <h4 class="section-header">Add staff member</h4>
     <noscript>
       <style type="text/css">

@@ -3,25 +3,42 @@
 {% block pagecontents %}
 
 
-    <h4 class="section-header">Create new organization</h4>
+    <h4 class="section-header">
+      {% if type == 'volunteergroup' %}
+        Create new volunteer group
+      {% else %}
+        Create new organization
+      {% endif %}
+    </h4>
 
 
-    <p>Create a new organization to post new projects that need help from volunters.</p>
+    <p>
+      {% if type == 'volunteergroup' %}
+        Create a new association of volunteers with common goals or interests.
+      {% else %}
+        Create a new organization to post new projects that need help from volunters.
+      {% endif %}
+    </p>
 
     <form id="createorganization" enctype="multipart/form-data">
       {% csrf_token %}
       {% include 'marketplace/components/standard_form_fields.html' %}
       {% include 'marketplace/components/social_cause_edit_row.html' with label_text='Choose the social causes this organization works towards.' %}
+      <input type="hidden" name="type" value="{{ type }}"></input>
 
       <div class="form-row">
         <div class="col-lg-9 offset-lg-3">
           <button type="submit"
                   form="createorganization"
-                  formaction="{% url 'marketplace:org_create' %}"
+                  formaction="{% url 'marketplace:org_create_type' type %}"
                   formmethod="post"
                   class="btn btn-success mr-3">
             <i class="material-icons" style="vertical-align: middle">check</i>
-            Create organization
+            {% if type == 'volunteergroup' %}
+              Create volunteer group
+            {% else %}
+              Create organization
+            {% endif %}
           </button>
           <a class="btn btn-outline-primary" href="{% url 'marketplace:org_list' %}">
             <i class="material-icons" style="vertical-align: middle">close</i>
