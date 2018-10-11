@@ -1,7 +1,7 @@
 import requests
 
 from django.conf import settings
-from django.db import IntegrityError, transaction
+from django.db import transaction
 from django.db.models import Q, Count, F
 from django.utils import timezone
 
@@ -140,6 +140,7 @@ def set_task_preferences(user, preferences):
             user=user,
         )
         for preference in preferences
+        if preference in task_preferences_model_translation
     ])
 
 
