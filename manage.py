@@ -498,10 +498,9 @@ class Develop(Local):
             command = command['-t']
 
         if environ:
-            command = command[
-                '--env', ','.join(f'{key}={value}'
-                                  for (key, value) in environ.items()),
-            ]
+            command = command[[
+                ('--env', f'{key}={value}') for (key, value) in environ.items()
+            ]]
 
         return command[self.args.name]
 
@@ -554,12 +553,16 @@ class Develop(Local):
 
     @localmethod('remainder', metavar='command arguments', nargs=REMAINDER)
     @localmethod('mcmd', metavar='command', help="django management command")
+    @localmethod('-e', '--env', action='append', help='set environment variables')
     def djmanage(self, args):
         """manage the django project in a running container"""
         yield (
             # foreground command to fully support shell
             self.local.FG(retcode=None),
-            self.exec(PAGER='more')[
+            self.exec(
+                PAGER='more',
+                **dict(pair.split('=') for pair in args.env or ()),
+            )[
                 './manage.py',
                 args.mcmd,
                 args.remainder,
