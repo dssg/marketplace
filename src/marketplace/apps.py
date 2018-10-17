@@ -9,4 +9,6 @@ class MarketplaceConfig(AppConfig):
     verbose_name = 'Solve for Good'
 
     def ready(self):
-        importlib.import_module('marketplace.signals')
+        # marketplace.domain contains signal-connections, so ensure it
+        # is (eagerly) imported, as soon as the app is ready (loaded)
+        importlib.import_module('marketplace.domain')
