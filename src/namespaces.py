@@ -14,6 +14,33 @@ import functools
 import typing
 
 
+# TODO: Perhaps: Namespace class API
+#
+# Similar to Enum, could treat existing interface as functional API, and
+# supply a class inheritance interface.
+#
+# (That said, this may or may not work internally the same as Enum.)
+#
+# This way, if desired, namespace declaration could take the form:
+#
+#    class User(Namespace):
+#
+#       foo = 'bar'
+#
+#       def add(name):
+#           ...
+#
+# and be equivalent to the current:
+#
+#   UserNamespace = Namespace('user')
+#
+#   UserNamespace.foo = 'bar'
+#
+#   @UserNamespace
+#   def add(name):
+#       ...
+
+
 class Namespace:
 
     def __init__(self, name: str):
