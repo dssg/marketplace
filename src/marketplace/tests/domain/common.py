@@ -12,12 +12,14 @@ def example_organization_user(
     email='orguser@example.com',
     first_name="Organization",
     last_name="User",
+    **kwargs
 ):
     return User(
         username=username,
         email=email,
         first_name=first_name,
         last_name=last_name,
+        **kwargs
     )
 
 
@@ -26,12 +28,14 @@ def example_staff_user(
     email='staffuser@example.com',
     first_name="Staff",
     last_name="User",
+    **kwargs
 ):
     return User(
         username=username,
         email=email,
         first_name=first_name,
         last_name=last_name,
+        **kwargs
     )
 
 
@@ -40,12 +44,14 @@ def example_volunteer_user(
     email="volunteer@email.com",
     first_name="Volunteer",
     last_name="User",
+    **kwargs
 ):
     return User(
         username=username,
         email=email,
         first_name=first_name,
         last_name=last_name,
+        **kwargs
     )
 
 
