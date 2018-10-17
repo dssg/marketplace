@@ -5,7 +5,6 @@ from django.contrib.auth.models import AnonymousUser
 from marketplace.domain import marketplace
 from marketplace.domain.org import OrganizationService
 from marketplace.domain.proj import ProjectService, ProjectTaskService
-from marketplace.domain.user import UserService
 
 from marketplace.models.common import ReviewStatus, SkillLevel, Score, TaskType
 from marketplace.models.proj import (
@@ -49,27 +48,34 @@ class ProjectTestCase(TestCase):
         self.volunteer_user = example_volunteer_user()
         self.volunteer_user.special_code = "AUTOMATICVOLUNTEER"
         marketplace.user.add_user(self.volunteer_user, 'volunteer')
-        UserService.create_volunteer_profile(self.volunteer_user, self.volunteer_user.id)
 
-        self.volunteer_applicant_user = example_volunteer_user(username="applicant", email="applicant@email.com")
-        self.volunteer_applicant_user.special_code = "AUTOMATICVOLUNTEER"
+        self.volunteer_applicant_user = example_volunteer_user(
+            username="applicant",
+            email='applicant-volunteer@example.com',
+            special_code="AUTOMATICVOLUNTEER",
+        )
         marketplace.user.add_user(self.volunteer_applicant_user, 'volunteer')
-        UserService.create_volunteer_profile(self.volunteer_applicant_user, self.volunteer_applicant_user.id)
 
-        self.scoping_user = example_volunteer_user(username="scopinguser", email="scoping@email.com")
-        self.scoping_user.special_code = "AUTOMATICVOLUNTEER"
+        self.scoping_user = example_volunteer_user(
+            username="scopinguser",
+            email='scopinguser@example.com',
+            special_code="AUTOMATICVOLUNTEER",
+        )
         marketplace.user.add_user(self.scoping_user, 'volunteer')
-        UserService.create_volunteer_profile(self.scoping_user, self.scoping_user.id)
 
-        self.proj_mgmt_user = example_volunteer_user(username="managementuser", email="management@email.com")
-        self.proj_mgmt_user.special_code = "AUTOMATICVOLUNTEER"
+        self.proj_mgmt_user = example_volunteer_user(
+            username="managementuser",
+            email='managementuser@example.com',
+            special_code="AUTOMATICVOLUNTEER",
+        )
         marketplace.user.add_user(self.proj_mgmt_user, 'volunteer')
-        UserService.create_volunteer_profile(self.proj_mgmt_user, self.proj_mgmt_user.id)
 
-        self.qa_user = example_volunteer_user(username="qauser", email="qa@email.com")
-        self.qa_user.special_code = "AUTOMATICVOLUNTEER"
+        self.qa_user = example_volunteer_user(
+            username="qauser",
+            email="qa@email.com",
+            special_code="AUTOMATICVOLUNTEER",
+        )
         marketplace.user.add_user(self.qa_user, 'volunteer')
-        UserService.create_volunteer_profile(self.qa_user, self.qa_user.id)
 
         self.organization = example_organization()
         OrganizationService.create_organization(self.owner_user, self.organization)
