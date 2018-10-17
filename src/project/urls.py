@@ -23,7 +23,7 @@ from django.views.static import serve
 urlpatterns = [
     path('', include('marketplace.urls')),
 
-    path('accounts/', include('marketplace.socialprovider_urls')),
+    path('accounts/', include('marketplace.socialauth.provider_urls')),
 
     path('admin/', admin.site.urls),
 
