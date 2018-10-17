@@ -182,6 +182,7 @@ LOGIN_URL = 'marketplace:login'
 
 # allauth
 ACCOUNT_EMAIL_REQUIRED = True
+SOCIALACCOUNT_ADAPTER = 'marketplace.socialauth.adapter.SocialAccountAdapter'
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.0/topics/i18n/
