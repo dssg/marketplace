@@ -38,6 +38,8 @@ from .notifications import NotificationService
 # TODO: continue/extend experiment with Namespaces over *Services
 
 
+# User domain #
+
 UserDomain = Namespace('user')
 
 
@@ -144,6 +146,8 @@ def set_task_preferences(user, preferences):
     ])
 
 
+# Volunteer user domain #
+
 VolunteerDomain = UserDomain(Namespace('volunteer'))
 
 
@@ -191,6 +195,8 @@ def ensure_profile(self, user):
 
     return volunteer_profile
 
+
+# UserService class (legacy) #
 
 class UserService():
 
