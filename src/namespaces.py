@@ -45,6 +45,7 @@ class Namespace:
 
     def __init__(self, name: str):
         self.__name__ = name
+        self.__parents__ = {}
 
     def __repr__(self):
         return f'{self.__class__.__name__}({self.__name__!r})'
@@ -71,6 +72,9 @@ class Namespace:
         for obj in named:
             setattr(self, obj.__name__, obj)
 
+            if isinstance(obj, Namespace):
+                obj.__parents__[self.__name__] = self
+
     def _staticmethod_(self, func):
         self._add_(func)
         return func
@@ -84,7 +88,38 @@ class Namespace:
         self._add_(named)
         return named
 
+    def _parent_(self, name, *names):
+        parent = self.__parents__[name]
+
+        if names:
+            return parent._parent_(*names)
+
+        return parent
+
+    @property
+    def __parent__(self):
+        try:
+            (parent, *remainder) = self.__parents__.values()
+        except ValueError:
+            return None
+
+        if remainder:
+            raise self.MultipleParents(tuple(self.__parents__.keys()))
+
+        return parent
+
+    @property
+    def __root__(self):
+        # TODO: (immediately) protect against circular references?
+        parent = self.__parent__
+        if parent is None:
+            return self
+        return parent.__root__
+
     class ReassignmentError(AttributeError):
+        pass
+
+    class MultipleParents(ValueError):
         pass
 
 
