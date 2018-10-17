@@ -1,5 +1,7 @@
 from datetime import date
 
+from allauth.socialaccount import providers
+
 from django.contrib.auth import logout, login, authenticate
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.messages.views import SuccessMessageMixin
@@ -10,6 +12,7 @@ from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.views import generic
+from django.views.decorators.http import require_http_methods, require_POST
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django.conf import settings
 from rules.contrib.views import (
@@ -285,7 +288,7 @@ def user_preferences_edit_view(request, user_pk):
     userprofile = get_object_or_404(User, pk=user_pk)
     if request.method == 'POST':
         try:
-            UserService.save_user_task_preferences(userprofile, userprofile, request.POST.getlist('preferences'))
+            marketplace.user.set_task_preferences(userprofile, request.POST.getlist('preferences'))
             return redirect('marketplace:user_profile', user_pk=user_pk)
         except KeyError:
             raise Http404
@@ -334,17 +337,12 @@ def user_profile_skills_edit_view(request, user_pk):
                         })
 
 
+@require_POST
 @permission_required('user.is_same_user', raise_exception=True, fn=objectgetter(User, 'user_pk'))
 def create_volunteer_profile_view(request, user_pk):
-    if request.method == 'GET':
-        raise Http404
-    elif request.method == 'POST':
-        try:
-            volunteer_profile = UserService.create_volunteer_profile(request.user, user_pk)
-            return redirect('marketplace:user_volunteer_profile_edit', user_pk=user_pk, volunteer_pk=volunteer_profile.id)
-        except KeyError:
-            messages.error(request, 'There was an error while processing your request.')
-            return redirect('marketplace:user_profile', user_pk=user_pk)
+    volunteer_profile = marketplace.user.volunteer.ensure_profile(request.user)
+    return redirect('marketplace:user_volunteer_profile_edit',
+                    user_pk=user_pk, volunteer_pk=volunteer_profile.pk)
 
 
 def select_user_type_view(request):
@@ -371,7 +369,8 @@ class SignUpForm(UserCreationForm):
         )
 
 
-def signup(request, user_type=None):
+@require_http_methods(['GET', 'POST'])
+def signup(request, user_type):
     if user_type not in ('volunteer', 'organization'):
         raise Http404
 
@@ -380,14 +379,17 @@ def signup(request, user_type=None):
         preferences = request.POST.getlist('preferences')
 
         if form.is_valid():
-            new_user = form.save(commit=False)
             try:
                 if not marketplace.user.verify_captcha(
                     request.POST.get('g-recaptcha-response')
                 ):
                     raise ValueError('Incorrect reCAPTCHA answer')
 
-                marketplace.user.add_user(new_user, user_type, preferences)  # also ValueError
+                marketplace.user.add_user(
+                    form.save(commit=False),
+                    user_type,
+                    preferences,
+                )  # also ValueError
             except ValueError as exc:
                 form.add_error(None, str(exc))
             else:
@@ -411,3 +413,28 @@ def signup(request, user_type=None):
         'captcha_site_key': settings.RECAPTCHA_SITE_KEY,
         'preferences': preferences,
     })
+
+
+@require_POST
+def signup_oauth(request, user_type, provider_id):
+    """Record desired user type before redirecting visitor to OAuth
+    provider.
+
+    *This* redirect is in fact internal, but to a handler which does not
+    (need to) record any such thing, (and which handler is currently
+    part of allauth). The visitor will then be redirected to the
+    requested OAuth provider.
+
+    """
+    if user_type not in ('volunteer', 'organization'):
+        raise Http404
+
+    try:
+        provider = providers.registry.by_id(provider_id, request)
+    except LookupError:
+        raise Http404
+
+    redirect_url = provider.get_login_url(request, process='login')
+    request.session['oauth_signup_usertype'] = user_type
+
+    return redirect(redirect_url)
