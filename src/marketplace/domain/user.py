@@ -128,7 +128,10 @@ def add_user(self, user, user_type, task_preferences=None):
         self.set_task_preferences(user, task_preferences)
 
 
-@receiver(allauth.socialaccount.signals.pre_social_login)
+@receiver(
+    allauth.socialaccount.signals.pre_social_login,
+    dispatch_uid='process_social_login_user',
+)
 def _process_social_login_user(request, sociallogin, **_kwargs):
     """Ensure validity of user to be created from a social login.
 
@@ -254,7 +257,11 @@ def ensure_profile(self, user):
     return volunteer_profile
 
 
-@receiver(django.db.models.signals.post_save, sender=User)
+@receiver(
+    django.db.models.signals.post_save,
+    sender=User,
+    dispatch_uid='create_volunteer_profile',
+)
 def _create_volunteer_profile(instance, created, raw, **_kwargs):
     """Create a volunteer profile for any new volunteer user.
 
