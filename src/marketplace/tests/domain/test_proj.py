@@ -2,6 +2,11 @@ from django.test import TestCase
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.models import AnonymousUser
 
+from marketplace.domain import marketplace
+from marketplace.domain.org import OrganizationService
+from marketplace.domain.proj import ProjectService, ProjectTaskService
+from marketplace.domain.user import UserService
+
 from marketplace.models.common import ReviewStatus, SkillLevel, Score, TaskType
 from marketplace.models.proj import (
     ProjectRole, ProjRole, VolunteerApplication, ProjectScope,
@@ -9,9 +14,6 @@ from marketplace.models.proj import (
     ProjectStatus, TaskRequirementImportance, ProjectTaskRequirement,
 )
 from marketplace.models.user import SignupCodeType, SignupCode, Skill
-from marketplace.domain.user import UserService
-from marketplace.domain.org import OrganizationService
-from marketplace.domain.proj import ProjectService, ProjectTaskService
 
 from marketplace.tests.domain.common import (
     example_organization_user, example_staff_user, example_volunteer_user,
@@ -21,6 +23,7 @@ from marketplace.tests.domain.common import (
 
 
 class ProjectTestCase(TestCase):
+
     owner_user = None
     staff_user = None
     volunteer_user = None
@@ -38,34 +41,34 @@ class ProjectTestCase(TestCase):
         code.save()
 
         self.owner_user = example_organization_user()
-        UserService.create_user(None, self.owner_user, 'organization', None, None)
+        marketplace.user.add_user(self.owner_user, 'organization')
 
         self.staff_user = example_staff_user()
-        UserService.create_user(None, self.staff_user, 'organization', None, None)
+        marketplace.user.add_user(self.staff_user, 'organization')
 
         self.volunteer_user = example_volunteer_user()
         self.volunteer_user.special_code = "AUTOMATICVOLUNTEER"
-        UserService.create_user(None, self.volunteer_user, 'volunteer', None, None)
+        marketplace.user.add_user(self.volunteer_user, 'volunteer')
         UserService.create_volunteer_profile(self.volunteer_user, self.volunteer_user.id)
 
         self.volunteer_applicant_user = example_volunteer_user(username="applicant", email="applicant@email.com")
         self.volunteer_applicant_user.special_code = "AUTOMATICVOLUNTEER"
-        UserService.create_user(None, self.volunteer_applicant_user, 'volunteer', None, None)
+        marketplace.user.add_user(self.volunteer_applicant_user, 'volunteer')
         UserService.create_volunteer_profile(self.volunteer_applicant_user, self.volunteer_applicant_user.id)
 
         self.scoping_user = example_volunteer_user(username="scopinguser", email="scoping@email.com")
         self.scoping_user.special_code = "AUTOMATICVOLUNTEER"
-        UserService.create_user(None, self.scoping_user, 'volunteer', None, None)
+        marketplace.user.add_user(self.scoping_user, 'volunteer')
         UserService.create_volunteer_profile(self.scoping_user, self.scoping_user.id)
 
         self.proj_mgmt_user = example_volunteer_user(username="managementuser", email="management@email.com")
         self.proj_mgmt_user.special_code = "AUTOMATICVOLUNTEER"
-        UserService.create_user(None, self.proj_mgmt_user, 'volunteer', None, None)
+        marketplace.user.add_user(self.proj_mgmt_user, 'volunteer')
         UserService.create_volunteer_profile(self.proj_mgmt_user, self.proj_mgmt_user.id)
 
         self.qa_user = example_volunteer_user(username="qauser", email="qa@email.com")
         self.qa_user.special_code = "AUTOMATICVOLUNTEER"
-        UserService.create_user(None, self.qa_user, 'volunteer', None, None)
+        marketplace.user.add_user(self.qa_user, 'volunteer')
         UserService.create_volunteer_profile(self.qa_user, self.qa_user.id)
 
         self.organization = example_organization()
