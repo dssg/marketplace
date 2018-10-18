@@ -1,23 +1,23 @@
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
+from django.db import transaction
 
-from marketplace.models.user import UserType
+from marketplace.domain import marketplace
 
 
 class SocialAccountAdapter(DefaultSocialAccountAdapter):
+    """Ensure validity of user to be created from a social login.
 
+    django-allauth handles authentication of users against OAuth
+    providers. And when this proves to be an existing User, it's then
+    largely just a matter of logging them in.
+
+    In the case of the authentication of a new User, however, allauth
+    populates a new User instance -- and otherwise without the
+    involvement of this codebase. So the allauth-constructed User
+    is processed here, before it is later persisted in the database.
+
+    """
     def pre_social_login(self, request, sociallogin):
-        """Ensure validity of user to be created from a social login.
-
-        django-allauth handles authentication of users against OAuth
-        providers. And when this proves to be an existing User, it's then
-        largely just a matter of logging them in.
-
-        In the case of the authentication of a new User, however, allauth
-        populates a new User instance -- and otherwise without the
-        involvement of this codebase. So the allauth-constructed User
-        is processed here, before it is later persisted in the database.
-
-        """
         user = sociallogin.user
 
         # Set username #
@@ -29,17 +29,19 @@ class SocialAccountAdapter(DefaultSocialAccountAdapter):
             # socialaccount *does*, but then you get that lame username.
             user.username = user.email.split('@', 1)[0]
 
+    @transaction.atomic
+    def save_user(self, request, sociallogin, form=None):
+        creation = not sociallogin.user.pk
+
         # Assign user type (requested pre-OAuth) #
         user_type = request.session.pop('oauth_signup_usertype', None)
 
-        if not user.pk:
+        if creation:
             # New user was generated from social account profile;
             # ensure initial type setting reflects user's selection.
-            if user_type == 'volunteer':
-                user.initial_type = UserType.VOLUNTEER
-            elif user_type == 'organization':
-                user.initial_type = UserType.ORGANIZATION
-            else:
+            try:
+                marketplace.user.add_user_presave(sociallogin.user, user_type)
+            except ValueError:
                 # No (valid) type was requested (that we can tell).
                 # This could be a "log in" on a user account that never signed up.
                 #
@@ -55,4 +57,12 @@ class SocialAccountAdapter(DefaultSocialAccountAdapter):
                 #
                 # User.initial_type defaults to the "volunteer" value, so we have to
                 # be explicit that no selection has been made:
-                user.initial_type = None
+                sociallogin.user.initial_type = None
+
+        user = super().save_user(request, sociallogin, form)
+
+        # Assign user volunteer profile and preferences #
+        task_preferences = request.session.pop('oauth_signup_preferences', None)
+
+        if creation:
+            marketplace.user.add_user_postsave(user, task_preferences)

@@ -1,10 +1,8 @@
 import requests
 
-import django.db.models.signals
 from django.conf import settings
 from django.db import transaction
 from django.db.models import Q, Count, F
-from django.dispatch import receiver
 from django.utils import timezone
 
 from namespaces import Namespace
@@ -106,8 +104,7 @@ def verify_captcha(answer):
 
 
 @UserDomain._method_
-@transaction.atomic
-def add_user(self, user, user_type, task_preferences=None):
+def add_user_presave(self, user, user_type):
     if user_type not in ('volunteer', 'organization'):
         raise ValueError('Unknown user type')
 
@@ -121,10 +118,21 @@ def add_user(self, user, user_type, task_preferences=None):
         user.initial_type = UserType.DSSG_STAFF
         self.use_signup_code(user.special_code)
 
-    user.save()
 
+@UserDomain._method_
+@transaction.atomic
+def add_user_postsave(self, user, task_preferences=None):
     if user.initial_type == UserType.VOLUNTEER:
+        self.volunteer.ensure_profile(user)
         self.set_task_preferences(user, task_preferences)
+
+
+@UserDomain._method_
+@transaction.atomic
+def add_user(self, user, user_type, task_preferences=None):
+    self.add_user_presave(user, user_type)
+    user.save()
+    self.add_user_postsave(user, task_preferences)
 
 
 @UserDomain
@@ -196,30 +204,6 @@ def ensure_profile(self, user):
         )
 
     return volunteer_profile
-
-
-@receiver(
-    django.db.models.signals.post_save,
-    sender=User,
-    dispatch_uid='create_volunteer_profile',
-)
-def _create_volunteer_profile(instance, created, raw, **_kwargs):
-    """Create a volunteer profile for any new volunteer user.
-
-    This logic is connected to User.save() via signal:
-
-    * to ensure data integrity
-    * such that plugin apps (such as django-allauth) may create proper
-      Users, (without needless overriding of its methods)
-
-    """
-    # NOTE: *at the moment*, most important anyway, this covers:
-    # * the signup view (which calls UserDomain.add_user)
-    # * allauth
-    # If need be, this could be reimplemented, so long as these bases
-    # are covered.
-    if created and not raw and instance.initial_type == UserType.VOLUNTEER:
-        VolunteerDomain.ensure_profile(instance)
 
 
 # UserService class (legacy) #
