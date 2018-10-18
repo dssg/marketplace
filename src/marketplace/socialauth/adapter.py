@@ -5,7 +5,7 @@ from marketplace.domain import marketplace
 
 
 class SocialAccountAdapter(DefaultSocialAccountAdapter):
-    """Ensure validity of user to be created from a social login.
+    """Ensure validity of user created from social login.
 
     django-allauth handles authentication of users against OAuth
     providers. And when this proves to be an existing User, it's then
@@ -14,7 +14,7 @@ class SocialAccountAdapter(DefaultSocialAccountAdapter):
     In the case of the authentication of a new User, however, allauth
     populates a new User instance -- and otherwise without the
     involvement of this codebase. So the allauth-constructed User
-    is processed here, before it is later persisted in the database.
+    is pre- and post-processed here.
 
     """
     def pre_social_login(self, request, sociallogin):
