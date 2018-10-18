@@ -4,6 +4,11 @@
 
 <form id="signup_oauth">
 {% csrf_token %}
+
+{% for preference in preferences %}
+  <input type="hidden" name="preferences" value="{{ preference }}">
+{% endfor %}
+
 {% for provider in socialaccount_providers %}
     <button
         title="Sign up via {{provider.name}}"

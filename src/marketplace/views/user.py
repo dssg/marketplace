@@ -482,6 +482,9 @@ def signup_oauth(request, user_type, provider_id):
         raise Http404
 
     redirect_url = provider.get_login_url(request, process='login')
+
     request.session['oauth_signup_usertype'] = user_type
+    if 'preferences' in request.POST:
+        request.session['oauth_signup_preferences'] = request.POST.getlist('preferences')
 
     return redirect(redirect_url)
