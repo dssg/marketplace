@@ -385,9 +385,8 @@ def select_user_type_after(request):
         if form.is_valid():
             form.save()
 
-            if request.user.initial_type == UserType.VOLUNTEER:
-                preferences = request.POST.getlist('preferences')
-                marketplace.user.set_task_preferences(request.user, preferences)
+            preferences = request.POST.getlist('preferences')
+            marketplace.user.add_user_postsave(request.user, preferences)
 
             messages.info(request, "Your selection has been saved.")
             return redirect(redirect_path)
