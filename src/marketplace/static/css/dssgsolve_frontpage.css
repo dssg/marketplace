@@ -92,3 +92,9 @@ h1, h2, h3 {
 .card-header {
   background-color: #2C3E50;
 }
+
+.alert {
+  border-radius: 0;
+  margin: 0;
+  text-align: center;
+}
