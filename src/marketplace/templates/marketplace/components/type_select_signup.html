@@ -1,7 +1,7 @@
 {% extends 'marketplace/components/type_select.html' %}
 
 {% block type_select_organization %}
-<a class="list-group-item list-group-item-action bg-success text-white" href="{% url 'marketplace:signup_form' 'organization' %}">
+<a class="btn list-group-item list-group-item-action bg-success text-white" href="{% url 'marketplace:signup_form' 'organization' %}">
     Sign up as an organization member
 </a>
 {% endblock %}
@@ -12,7 +12,7 @@
   form="type_select"
   formaction="{% url 'marketplace:signup_form' 'volunteer' %}"
   formmethod="get"
-  class="list-group-item list-group-item-action bg-success text-white">
+  class="btn list-group-item list-group-item-action bg-success text-white">
  Sign up as a volunteer
 </button>
 {% endblock %}
