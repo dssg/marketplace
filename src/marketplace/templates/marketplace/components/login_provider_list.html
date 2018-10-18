@@ -5,7 +5,7 @@
 {% for provider in socialaccount_providers %}
 <a
     title="Log in via {{provider.name}}"
-    class="btn btn-light provider {{provider.id}}"
+    class="btn btn-outline-light provider {{provider.id}}"
     href="{% provider_login_url provider.id process='login' %}"
->{{provider.name}}</a>
+><i class="fab fa-{{provider.id}}"></i>{{provider.name}}</a>
 {% endfor %}

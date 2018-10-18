@@ -333,15 +333,30 @@ fieldset legend {
 
 .btn.provider {
     margin-right: 3px;
+    color: #212529;
+}
+
+.btn.provider:hover {
+    background-color: transparent;
+}
+
+.btn.provider i.fab {
+    float: none;
+    padding: 0 1px;
 }
 
 .btn.google {
-    background: url(/static/img/google.svg) center center no-repeat;
-    background-size: 100%;
+    background: url(/static/img/google.svg) center bottom no-repeat;
+    background-size: 85%;
     color: transparent;
 }
+
 .btn.github {
+/* If we like, but font-awesome looks better:
+ *
     background: url(/static/img/github.png) center center no-repeat;
     background-size: 95%;
     color: transparent;
+ *
+ */
 }
