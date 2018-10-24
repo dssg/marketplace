@@ -1,22 +1,31 @@
+import allauth.exceptions
+import allauth.utils
+from allauth.socialaccount import providers
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
+from django.conf import settings
+from django.contrib import messages
 from django.db import transaction
+from django.template.loader import render_to_string
+from django.urls import reverse
 
 from marketplace.domain import marketplace
+from marketplace.utils import redirect
 
 
 class SocialAccountAdapter(DefaultSocialAccountAdapter):
-    """Ensure validity of user created from social login.
+    """Override social account authentication defaults."""
 
-    django-allauth handles authentication of users against OAuth
-    providers. And when this proves to be an existing User, it's then
-    largely just a matter of logging them in.
+    # Ensure validity of user created from social login.
+    #
+    # django-allauth handles authentication of users against OAuth
+    # providers. And when this proves to be an existing User, it's then
+    # largely just a matter of logging them in.
+    #
+    # In the case of the authentication of a new User, however, allauth
+    # populates a new User instance -- and otherwise without the
+    # involvement of this codebase. So the allauth-constructed User
+    # is pre- and post-processed here.
 
-    In the case of the authentication of a new User, however, allauth
-    populates a new User instance -- and otherwise without the
-    involvement of this codebase. So the allauth-constructed User
-    is pre- and post-processed here.
-
-    """
     def pre_social_login(self, request, sociallogin):
         user = sociallogin.user
 
@@ -66,3 +75,42 @@ class SocialAccountAdapter(DefaultSocialAccountAdapter):
 
         if creation:
             marketplace.user.add_user_postsave(user, task_preferences)
+
+    # Customize handling of multiple signups against same email address
+
+    def get_connect_redirect_url(self, request, socialaccount):
+        return reverse('marketplace:user_social_connections')
+
+    def is_auto_signup_allowed(self, request, sociallogin):
+        auto_signup = super().is_auto_signup_allowed(request, sociallogin)
+
+        if (
+            not auto_signup and
+            sociallogin.user.email and
+            allauth.utils.email_address_exists(sociallogin.user.email)
+        ):
+            # allauth *assumes* that this is a case of a hacker attempting
+            # to assume an identity they haven't validated with a matching
+            # email address; however, we (currently) presume the validity
+            # of email addresses (from the currently enabled providers),
+            # and would like to provide an expedited verification workflow,
+            # (rather than redirect them to a page that says "choose a new
+            # unverified email address (OR find your way to sign in with
+            # the appropriate account)).
+            provider = providers.registry.by_id(sociallogin.account.provider, request)
+            messages.warning(
+                request,
+                render_to_string('marketplace/messages/anonymous-connect.html', {
+                    'email': sociallogin.user.email,
+                    'provider_name': provider.name,
+                    'SITE_NAME': settings.SITE_NAME,
+                }),
+                extra_tags='htmlsafe',
+            )
+            raise allauth.exceptions.ImmediateHttpResponse(
+                redirect('marketplace:login', params={
+                    'next': provider.get_login_url(request, process='connect'),
+                })
+            )
+
+        return auto_signup

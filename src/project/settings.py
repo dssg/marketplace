@@ -182,6 +182,7 @@ LOGIN_URL = 'marketplace:login'
 
 # allauth
 ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_EMAIL_VERIFICATION = 'none'  # unnecessary for installed providers?
 SOCIALACCOUNT_ADAPTER = 'marketplace.socialauth.adapter.SocialAccountAdapter'
 
 # Internationalization

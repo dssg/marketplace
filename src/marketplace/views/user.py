@@ -1,16 +1,22 @@
 from allauth.socialaccount import providers
+from allauth.socialaccount.views import ConnectionsView
 
-from django.contrib.auth import logout, login, authenticate
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib import messages
-from django.http import Http404, HttpResponseForbidden, HttpResponseRedirect
+import django.contrib.auth.views
 from django import forms
+from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth import logout, login, authenticate
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import SetPasswordForm, UserCreationForm
+from django.http import Http404, HttpResponseForbidden, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
+from django.utils.decorators import method_decorator
 from django.views import generic
+from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.debug import sensitive_post_parameters
 from django.views.decorators.http import require_http_methods, require_POST
 from django.views.generic.edit import UpdateView
-from django.conf import settings
 from rules.contrib.views import (
     PermissionRequiredMixin, objectgetter, permission_required,
 )
@@ -47,11 +53,6 @@ def edit_my_skills_link(user_pk, include_link=True):
 def edit_my_preferences_link(user_pk, include_link=True):
     return ("Edit my interests" , reverse('marketplace:user_preferences_edit', args=[user_pk]) if include_link else None)
 
-def change_password_breadcrumb():
-    return build_breadcrumb([home_link(),
-                             users_link(),
-                             ('My profile', reverse_lazy('marketplace:my_user_profile')),
-                             ('Change password', None)])
 
 def logout_view(request):
     logout(request)
@@ -487,3 +488,85 @@ def signup_oauth(request, user_type, provider_id):
         request.session['oauth_signup_preferences'] = request.POST.getlist('preferences')
 
     return redirect(redirect_url)
+
+
+class BasePasswordChangeView(django.contrib.auth.views.PasswordChangeView):
+
+    success_message = None
+    template_name = None
+
+    success_url = reverse_lazy('marketplace:my_user_profile')
+
+    @method_decorator(sensitive_post_parameters())
+    @method_decorator(csrf_protect)
+    @method_decorator(login_required)
+    def dispatch(self, *args, **kwargs):
+        user_redirect = self.user_redirect(self.request.user)
+        if user_redirect is not None:
+            return user_redirect
+
+        return super().dispatch(*args, **kwargs)
+
+    def form_valid(self, form):
+        messages.success(self.request, self.success_message)
+        return super().form_valid(form)
+
+    def user_redirect(self, user):
+        return None
+
+
+class PasswordChangeView(BasePasswordChangeView):
+
+    success_message = 'Password successfully changed.'
+    template_name = 'marketplace/user_pwd_change.html'
+
+    def user_redirect(self, user):
+        if not user.has_usable_password():
+            return redirect('marketplace:user_pwd_set')
+
+change_password = PasswordChangeView.as_view(
+    extra_context={
+        'breadcrumb': build_breadcrumb([
+            home_link(),
+            ('My profile', reverse_lazy('marketplace:my_user_profile')),
+            ('Change password', None),
+        ]),
+    },
+)
+
+
+class PasswordSetView(BasePasswordChangeView):
+
+    form_class = SetPasswordForm
+    template_name = 'marketplace/user_pwd_set.html'
+    success_message = 'Password successfully set.'
+
+    def user_redirect(self, user):
+        if self.request.user.has_usable_password():
+            return redirect('marketplace:user_pwd_change')
+
+set_password = PasswordSetView.as_view(
+    extra_context={
+        'breadcrumb': build_breadcrumb([
+            home_link(),
+            ('My profile', reverse_lazy('marketplace:my_user_profile')),
+            ('Set password', None),
+        ]),
+    },
+)
+
+
+social_connections = login_required(
+    ConnectionsView.as_view(
+        success_url=reverse_lazy('marketplace:user_social_connections'),
+        template_name='marketplace/connections.html',
+        extra_context={
+            'breadcrumb': build_breadcrumb([
+                home_link(),
+                ('My profile', reverse_lazy('marketplace:my_user_profile')),
+                ('Social accounts', None),
+            ]),
+            'SITE_NAME': settings.SITE_NAME,
+        },
+    )
+)

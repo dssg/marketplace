@@ -64,6 +64,13 @@ body {
   color: white;
 }
 
+p.line-compact, .line-compact p {
+  margin-bottom: 0.5rem;
+}
+p.line-compact:last-child, .line-compact p:last-child {
+  margin-bottom: 0;
+}
+
 .btn i {
   float: left;
   margin-right: 5px;
@@ -75,6 +82,14 @@ fieldset legend {
 
 .normal-link {
   font-weight: normal;
+}
+
+.alert-warning {
+  background-color: #f5b652;
+  color: #282829;
+}
+.alert-warning a {
+  color: #525456;
 }
 
 .read-alert-outer {
@@ -334,6 +349,10 @@ fieldset legend {
 .btn.provider {
     margin-right: 3px;
     color: #212529;
+}
+
+.provider-list.list-inline .list-inline-item:not(:last-child) {
+    margin-right: 0.2rem;
 }
 
 .btn.provider:hover {

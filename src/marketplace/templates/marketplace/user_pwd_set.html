@@ -3,22 +3,23 @@
 {% block pagecontents %}
 
   <div class="col-lg-9">
-    <form id="userpwdchange">
-      <h4 class="section-header">Change password</h4>
-      <p>Please enter your old password and your new password twice so we can verify you typed it in correctly.</p>
+    <form id="userpwdset">
+      <h4 class="section-header">Set password</h4>
+      <p>Set a password so that you can log in directly.</p>
+      <p>Please enter your new password twice so we can verify you typed it in correctly.</p>
       {% csrf_token %}
-      {% include 'marketplace/components/standard_form_fields.html' %}
 
+      {% include 'marketplace/components/standard_form_fields.html' %}
 
       <div class="form-row">
         <div class="col-lg-9 offset-lg-3">
           <button type="submit"
-                  form="userpwdchange"
-                  formaction="{% url 'marketplace:user_pwd_change' %}"
+                  form="userpwdset"
+                  formaction="{% url 'marketplace:user_pwd_set' %}"
                   formmethod="post"
                   class="btn btn-success mr-3">
             <i class="material-icons" style="vertical-align: middle">lock_open</i>
-            Change my password
+            Set my password
           </button>
           <a class="btn btn-outline-primary"
              href="{% url 'marketplace:user_profile' user.id %}">

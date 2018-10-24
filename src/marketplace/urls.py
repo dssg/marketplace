@@ -75,9 +75,9 @@ urlpatterns = [
     path('signup/do/<str:user_type>', user.signup, name='signup_form'),
     path('signup/do/<str:user_type>/via/<str:provider_id>/', user.signup_oauth, name='signup_oauth'),
 
-    path('user/pwdchange', auth_views.PasswordChangeView.as_view(template_name='marketplace/user_pwd_change.html',
-                                                                 success_url=reverse_lazy('marketplace:my_user_profile'),
-                                                                 extra_context={'breadcrumb':user.change_password_breadcrumb()}),name='user_pwd_change'),
+    path('user/pwdchange', user.change_password, name='user_pwd_change'),
+    path('user/pwdset', user.set_password, name='user_pwd_set'),
+    path('user/connections/', user.social_connections, name='user_social_connections'),
 
     path('pwd/resetrequest', auth_views.PasswordResetView.as_view(template_name='marketplace/pwd_reset_request.html',
                                                                  success_url=reverse_lazy('marketplace:pwd_reset_request_done'),
