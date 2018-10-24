@@ -3,15 +3,21 @@
 {% get_providers as socialaccount_providers %}
 
 {% with process|default:'login' as process %}
+
+<ul class="list-inline provider-list">
+
 {% for provider in socialaccount_providers %}
-<li class="list-inline-item">
-  <a
-      title="Log in via {{provider.name}}"
-      class="btn btn-outline-light provider {{provider.id}}"
-      href="{% provider_login_url provider.id process=process %}"
-  >
-    <i class="fab fa-{{provider.id}}"></i>{{provider.name}}
-  </a>
-</li>
+  <li class="list-inline-item">
+    <a
+        title="Log in via {{provider.name}}"
+        class="btn btn-outline-light provider {{provider.id}}"
+        href="{% provider_login_url provider.id process=process %}"
+    >
+      <i class="fab fa-{{provider.id}}"></i>{{provider.name}}
+    </a>
+  </li>
 {% endfor %}
+
+</ul>
+
 {% endwith %}
