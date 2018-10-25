@@ -1,14 +1,15 @@
+from allauth.account.models import EmailAddress
 from allauth.socialaccount import providers
 from allauth.socialaccount.views import ConnectionsView
 
+import django.contrib.auth.forms
 import django.contrib.auth.views
 from django import forms
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import logout, login, authenticate
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import SetPasswordForm, UserCreationForm
-from django.http import Http404, HttpResponseForbidden, HttpResponseRedirect
+from django.http import Http404, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
@@ -54,15 +55,12 @@ def edit_my_preferences_link(user_pk, include_link=True):
     return ("Edit my interests" , reverse('marketplace:user_preferences_edit', args=[user_pk]) if include_link else None)
 
 
-def logout_view(request):
-    logout(request)
-    return HttpResponseRedirect(reverse('marketplace:home'))
-
 def get_or_none(classmodel, **kwargs):
     try:
         return classmodel.objects.get(**kwargs)
     except classmodel.DoesNotExist:
         return None
+
 
 def get_url_for_notification(source_type, source_id):
     url = None
@@ -90,6 +88,31 @@ def get_url_for_notification(source_type, source_id):
             if membership_request:
                 url = reverse('marketplace:org_staff_request_review', args=[membership_request.organization.id, source_id])
     return url
+
+
+class AuthenticationForm(django.contrib.auth.forms.AuthenticationForm):
+
+    error_messages = {
+        'invalid_login': "Please enter a correct username (or email) and password. "
+                         "Note that both fields may be case-sensitive.",
+    }
+
+    username = django.contrib.auth.forms.UsernameField(
+        label='Username or email',
+        max_length=254,
+        widget=forms.TextInput(attrs={'autofocus': True}),
+    )
+
+login_view = django.contrib.auth.views.LoginView.as_view(
+    form_class=AuthenticationForm,
+    template_name='marketplace/login.html',
+)
+
+
+def logout_view(request):
+    logout(request)
+    return redirect('marketplace:home')
+
 
 def volunteer_list_view(request):
     # checked_social_cause_fields = {}
@@ -192,7 +215,8 @@ def home_view(request):
 
 
 def my_user_profile_view(request):
-    return HttpResponseRedirect(reverse('marketplace:user_profile', args=[request.user.id]))
+    return redirect('marketplace:user_profile', args=[request.user.id])
+
 
 class UserProfileView(generic.DetailView):
     model = User
@@ -238,7 +262,7 @@ class UserProfileEdit(PermissionRequiredMixin, UpdateView):
         user = form.save(commit = False)
         try:
             UserService.save_user(self.request.user, self.kwargs['user_pk'], user)
-            return HttpResponseRedirect(self.get_success_url())
+            return redirect(self.get_success_url())
         except ValueError as v:
             form.add_error(None, str(v))
             return super().form_invalid(form)
@@ -272,7 +296,7 @@ class VolunteerProfileEdit(PermissionRequiredMixin, UpdateView):
         volunteer_profile = form.save(commit = False)
         try:
             UserService.save_volunteer_profile(self.request.user, self.kwargs['volunteer_pk'], volunteer_profile)
-            return HttpResponseRedirect(self.get_success_url())
+            return redirect(self.get_success_url())
         except ValueError as v:
             form.add_error(None, str(v))
             return super().form_invalid(form)
@@ -399,7 +423,58 @@ def select_user_type_after(request):
     })
 
 
-class SignUpForm(UserCreationForm):
+class SignUpForm(django.contrib.auth.forms.UserCreationForm):
+
+    def _validate_unique_username(self, username):
+        """(Re)-implement username uniqueness validation.
+
+        Disallow --
+
+            * confusion
+            * trickery
+            * *attempted* (but unlikely) hacking of username/email-flexible log-in
+            * mistakes
+
+        -- reject a username:
+
+            * equal to any existing username (*case-insensitive*)
+            * equal to any registered email address (case-insensitive)
+
+        """
+        if (
+            User.objects.filter(username__iexact=username).exists() or
+            User.objects.filter(email__iexact=username).exists() or
+            EmailAddress.objects.filter(email__iexact=username).exists()
+        ):
+            raise forms.ValidationError("A user with that username already exists.")
+
+    def validate_unique(self):
+        """Call the instance's validate_unique() method and update the form's
+        validation errors if any were raised.
+
+        Overridden to reimplement username uniqueness check, to prevent
+        sign-up of users under confusingly-similar usernames, (either
+        intentionally or not).
+
+        (Unlike email, username is *not* otherwise considered case-
+        insensitive data, and so this check is currently only
+        reimplemented here.)
+
+        """
+        exclude = ['username'] + self._get_validation_exclusions()
+        try:
+            self.instance.validate_unique(exclude=exclude)
+        except forms.ValidationError as exc:
+            self._update_errors(exc)
+
+        try:
+            self._validate_unique_username(self.instance.username)
+        except forms.ValidationError as exc:
+            self._update_errors(
+                forms.ValidationError({
+                    'username': [exc],
+                })
+            )
 
     class Meta:
         model = User
@@ -537,7 +612,7 @@ change_password = PasswordChangeView.as_view(
 
 class PasswordSetView(BasePasswordChangeView):
 
-    form_class = SetPasswordForm
+    form_class = django.contrib.auth.forms.SetPasswordForm
     template_name = 'marketplace/user_pwd_set.html'
     success_message = 'Password successfully set.'
 

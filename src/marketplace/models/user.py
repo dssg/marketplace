@@ -3,6 +3,7 @@ from django.contrib.auth.models import (
     AbstractUser,
     UserManager as AuthUserManager,
 )
+from django.contrib.postgres.fields import CIEmailField
 from django.db import models
 
 from .common import (
@@ -43,7 +44,11 @@ class User(AbstractUser):
         default=UserType.VOLUNTEER,
         null=True,
     )
-    email = models.EmailField('email address', unique=True)
+    email = CIEmailField(
+        'email address',
+        unique=True,
+        error_messages={'unique': "That email address is already in use."},
+    )
     skype_name = models.CharField(
         verbose_name="Skype user name (Optional)",
         max_length=50,
@@ -83,6 +88,7 @@ class User(AbstractUser):
 
     def is_type_dssg_staff(self):
         return self.initial_type == UserType.DSSG_STAFF
+
 
 class UserTaskPreference(models.Model):
     preference = models.CharField(

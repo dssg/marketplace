@@ -14,7 +14,7 @@
       {% endif %}
     {% endif %}
 
-    <p>Log in via one of these providers or enter your username and password below.</p>
+    <p>Log in via one of these providers or enter your username (or email) and password below.</p>
 
     {% include "marketplace/components/login_provider_list.html" %}
 
@@ -22,7 +22,7 @@
 
     <form id="login">
       {% if form.errors %}
-        <p>Your username and password didn't match. Please try again.</p>
+        <p>Your username (or email) and password didn't match. Please try again.</p>
       {% endif %}
 
       {% csrf_token %}
