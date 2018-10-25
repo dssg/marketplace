@@ -365,7 +365,7 @@ fieldset legend {
 }
 
 .btn.google {
-    background: url(/static/img/google.svg) center bottom no-repeat;
+    background: url(../img/google.svg) center bottom no-repeat;
     background-size: 85%;
     color: transparent;
 }
@@ -373,7 +373,7 @@ fieldset legend {
 .btn.github {
 /* If we like, but font-awesome looks better:
  *
-    background: url(/static/img/github.png) center center no-repeat;
+    background: url(../img/github.png) center center no-repeat;
     background-size: 95%;
     color: transparent;
  *
