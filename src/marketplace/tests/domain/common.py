@@ -1,35 +1,59 @@
 from django.utils import timezone
 from django.core.exceptions import PermissionDenied
 
-from marketplace.models.common import ReviewStatus, SocialCause
+from marketplace.models.common import SocialCause
 from marketplace.models.user import User
 from marketplace.models.proj import Project
 from marketplace.models.org import Organization, Budget, YearsInOperation, GeographicalScope
 
 
-def example_organization_user():
-    organization_user = User()
-    organization_user.username = "OrgUser"
-    organization_user.first_name = "Organization"
-    organization_user.last_name = "User"
-    organization_user.email = "orguser@email.com"
-    return organization_user
+def example_organization_user(
+    username="OrgUser",
+    email='orguser@example.com',
+    first_name="Organization",
+    last_name="User",
+    **kwargs
+):
+    return User(
+        username=username,
+        email=email,
+        first_name=first_name,
+        last_name=last_name,
+        **kwargs
+    )
 
-def example_staff_user():
-    staff_user = User()
-    staff_user.username = "StaffUser"
-    staff_user.first_name = "Staff"
-    staff_user.last_name = "User"
-    staff_user.email = "staffuser@email.com"
-    return staff_user
 
-def example_volunteer_user(username="VolUser", email="volunteer@email.com"):
-    volunteer_user = User()
-    volunteer_user.username = username
-    volunteer_user.first_name = "Volunteer"
-    volunteer_user.last_name = "User"
-    volunteer_user.email = email
-    return volunteer_user
+def example_staff_user(
+    username="StaffUser",
+    email='staffuser@example.com',
+    first_name="Staff",
+    last_name="User",
+    **kwargs
+):
+    return User(
+        username=username,
+        email=email,
+        first_name=first_name,
+        last_name=last_name,
+        **kwargs
+    )
+
+
+def example_volunteer_user(
+    username="VolUser",
+    email="volunteer@email.com",
+    first_name="Volunteer",
+    last_name="User",
+    **kwargs
+):
+    return User(
+        username=username,
+        email=email,
+        first_name=first_name,
+        last_name=last_name,
+        **kwargs
+    )
+
 
 def example_organization():
     organization = Organization()

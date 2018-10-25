@@ -1,0 +1,13 @@
+{% extends 'marketplace/base.html' %}
+
+{% block pagecontents %}
+
+  <div class="col-lg-12">
+    <h4 class="section-header">What type of account would you like?</h4>
+
+    <p>Select the option below that fits your role the best:</p>
+
+    {% include "marketplace/components/type_select_update.html" %}
+  </div>
+
+{% endblock %}

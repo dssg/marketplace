@@ -20,7 +20,9 @@ from django.core.exceptions import ImproperlyConfigured
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-SITE_NAME=config('SITE_NAME', default='DSSG Solve')
+SITE_ID = 1
+
+SITE_NAME = config('SITE_NAME', default='DSSG Solve')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
@@ -61,17 +63,37 @@ if file_storage_option not in file_storage_options:
 # Application definition
 
 INSTALLED_APPS = [
-    'django_countries',
+    # our apps
     'marketplace.apps.MarketplaceConfig',
+
+    # social login
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    # ...enabled providers
+	# 'allauth.socialaccount.providers.bitbucket',
+    # 'allauth.socialaccount.providers.bitbucket_oauth2',
+    # 'allauth.socialaccount.providers.facebook',
+    'allauth.socialaccount.providers.github',
+    # 'allauth.socialaccount.providers.gitlab',
+    'allauth.socialaccount.providers.google',
+    # 'allauth.socialaccount.providers.linkedin',
+    # 'allauth.socialaccount.providers.linkedin_oauth2',
+
+    # third-party apps
+    'django_countries',
+    'rules',
+    'markdown_deux',
+    'widget_tweaks',
+
+    # django apps
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
-    'django.contrib.sessions',
     'django.contrib.messages',
+    'django.contrib.sessions',
+    'django.contrib.sites',
     'django.contrib.staticfiles',
-    'rules',
-    'widget_tweaks',
-    'markdown_deux',
 ]
 
 if file_storage_option == 's3':
@@ -86,6 +108,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    'marketplace.middleware.UserTypeMiddleware',
 ]
 
 if file_storage_option == 'whitenoise':
@@ -146,6 +170,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 AUTHENTICATION_BACKENDS = (
     'rules.permissions.ObjectPermissionBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
     'django.contrib.auth.backends.ModelBackend',
 )
 
@@ -154,6 +179,11 @@ AUTH_USER_MODEL = 'marketplace.User'
 LOGIN_REDIRECT_URL = 'marketplace:home'
 
 LOGIN_URL = 'marketplace:login'
+
+# allauth
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_EMAIL_VERIFICATION = 'none'  # unnecessary for installed providers?
+SOCIALACCOUNT_ADAPTER = 'marketplace.socialauth.adapter.SocialAccountAdapter'
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.0/topics/i18n/

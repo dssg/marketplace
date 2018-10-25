@@ -1,26 +1,32 @@
-from datetime import date
+from allauth.socialaccount import providers
+from allauth.socialaccount.views import ConnectionsView
 
-from django.contrib.auth import logout, login, authenticate
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.messages.views import SuccessMessageMixin
+import django.contrib.auth.views
+from django import forms
+from django.conf import settings
 from django.contrib import messages
-from django.db.models import Q
-from django.forms import ModelForm
-from django.http import Http404, HttpResponseRedirect
+from django.contrib.auth import logout, login, authenticate
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import SetPasswordForm, UserCreationForm
+from django.http import Http404, HttpResponseForbidden, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
+from django.utils.decorators import method_decorator
 from django.views import generic
-from django.views.generic.edit import CreateView, DeleteView, UpdateView
-from django.conf import settings
+from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.debug import sensitive_post_parameters
+from django.views.decorators.http import require_http_methods, require_POST
+from django.views.generic.edit import UpdateView
 from rules.contrib.views import (
     PermissionRequiredMixin, objectgetter, permission_required,
 )
 
 from ..models.org import Organization, OrganizationMembershipRequest
-from ..models.proj import Project, ProjectStatus, ProjectTask, VolunteerApplication
-from ..models.user import Skill, SkillLevel, User, VolunteerProfile, VolunteerSkill, UserNotification, NotificationSource
+from ..models.proj import Project, ProjectTask, VolunteerApplication
+from ..models.user import SkillLevel, User, UserType, VolunteerProfile, UserNotification, NotificationSource
 from .common import build_breadcrumb, home_link, paginate
 
+from marketplace import utils
 from marketplace.domain import marketplace
 from marketplace.domain.user import UserService
 from marketplace.domain.proj import ProjectService, ProjectTaskService
@@ -47,11 +53,6 @@ def edit_my_skills_link(user_pk, include_link=True):
 def edit_my_preferences_link(user_pk, include_link=True):
     return ("Edit my interests" , reverse('marketplace:user_preferences_edit', args=[user_pk]) if include_link else None)
 
-def change_password_breadcrumb():
-    return build_breadcrumb([home_link(),
-                             users_link(),
-                             ('My profile', reverse_lazy('marketplace:my_user_profile')),
-                             ('Change password', None)])
 
 def logout_view(request):
     logout(request)
@@ -285,7 +286,7 @@ def user_preferences_edit_view(request, user_pk):
     userprofile = get_object_or_404(User, pk=user_pk)
     if request.method == 'POST':
         try:
-            UserService.save_user_task_preferences(userprofile, userprofile, request.POST.getlist('preferences'))
+            marketplace.user.set_task_preferences(userprofile, request.POST.getlist('preferences'))
             return redirect('marketplace:user_profile', user_pk=user_pk)
         except KeyError:
             raise Http404
@@ -334,24 +335,68 @@ def user_profile_skills_edit_view(request, user_pk):
                         })
 
 
+@require_POST
 @permission_required('user.is_same_user', raise_exception=True, fn=objectgetter(User, 'user_pk'))
 def create_volunteer_profile_view(request, user_pk):
+    volunteer_profile = marketplace.user.volunteer.ensure_profile(request.user)
+    return redirect('marketplace:user_volunteer_profile_edit',
+                    user_pk=user_pk, volunteer_pk=volunteer_profile.pk)
+
+
+def select_user_type_before(request):
+    return render(request, 'marketplace/signup_type_select.html', {
+        'breadcrumb': [home_link(), ('Select your account type', None)],
+    })
+
+
+class UserTypeSelectionForm(forms.ModelForm):
+
+    initial_type = forms.TypedChoiceField(
+        choices=[
+            (value, description)
+            for (value, description) in UserType.get_choices()
+            if value in (UserType.VOLUNTEER, UserType.ORGANIZATION)
+        ],
+        widget=utils.SubmitSelect,
+    )
+
+    class Meta:
+        model = User
+        fields = ('initial_type',)
+
+
+@require_http_methods(['GET', 'POST'])
+def select_user_type_after(request):
+    if not request.user.is_authenticated:
+        return HttpResponseForbidden("Forbidden")
+
     if request.method == 'GET':
-        raise Http404
-    elif request.method == 'POST':
-        try:
-            volunteer_profile = UserService.create_volunteer_profile(request.user, user_pk)
-            return redirect('marketplace:user_volunteer_profile_edit', user_pk=user_pk, volunteer_pk=volunteer_profile.id)
-        except KeyError:
-            messages.error(request, 'There was an error while processing your request.')
-            return redirect('marketplace:user_profile', user_pk=user_pk)
+        redirect_path = request.GET.get('next')
+    else:
+        redirect_path = request.POST.get('next')
+    if not redirect_path:
+        redirect_path = reverse('marketplace:user_dashboard')
 
+    if request.user.initial_type is not None:
+        return redirect(redirect_path)
 
-def select_user_type_view(request):
-    return render(request, 'marketplace/signup_type_select.html',
-                        {
-                            'breadcrumb': [home_link(), ('Select your account type', None)]
-                        })
+    if request.method == 'POST':
+        form = UserTypeSelectionForm(request.POST, instance=request.user)
+
+        if form.is_valid():
+            form.save()
+
+            preferences = request.POST.getlist('preferences')
+            marketplace.user.add_user_postsave(request.user, preferences)
+
+            messages.info(request, "Your selection has been saved.")
+            return redirect(redirect_path)
+    else:
+        form = UserTypeSelectionForm()
+
+    return render(request, 'marketplace/user_type_select.html', {
+        'form': form,
+    })
 
 
 class SignUpForm(UserCreationForm):
@@ -371,7 +416,8 @@ class SignUpForm(UserCreationForm):
         )
 
 
-def signup(request, user_type=None):
+@require_http_methods(['GET', 'POST'])
+def signup(request, user_type):
     if user_type not in ('volunteer', 'organization'):
         raise Http404
 
@@ -380,14 +426,17 @@ def signup(request, user_type=None):
         preferences = request.POST.getlist('preferences')
 
         if form.is_valid():
-            new_user = form.save(commit=False)
             try:
                 if not marketplace.user.verify_captcha(
                     request.POST.get('g-recaptcha-response')
                 ):
                     raise ValueError('Incorrect reCAPTCHA answer')
 
-                marketplace.user.add_user(new_user, user_type, preferences)  # also ValueError
+                marketplace.user.add_user(
+                    form.save(commit=False),
+                    user_type,
+                    preferences,
+                )  # also ValueError
             except ValueError as exc:
                 form.add_error(None, str(exc))
             else:
@@ -411,3 +460,113 @@ def signup(request, user_type=None):
         'captcha_site_key': settings.RECAPTCHA_SITE_KEY,
         'preferences': preferences,
     })
+
+
+@require_POST
+def signup_oauth(request, user_type, provider_id):
+    """Record desired user type before redirecting visitor to OAuth
+    provider.
+
+    *This* redirect is in fact internal, but to a handler which does not
+    (need to) record any such thing, (and which handler is currently
+    part of allauth). The visitor will then be redirected to the
+    requested OAuth provider.
+
+    """
+    if user_type not in ('volunteer', 'organization'):
+        raise Http404
+
+    try:
+        provider = providers.registry.by_id(provider_id, request)
+    except LookupError:
+        raise Http404
+
+    redirect_url = provider.get_login_url(request, process='login')
+
+    request.session['oauth_signup_usertype'] = user_type
+    if 'preferences' in request.POST:
+        request.session['oauth_signup_preferences'] = request.POST.getlist('preferences')
+
+    return redirect(redirect_url)
+
+
+class BasePasswordChangeView(django.contrib.auth.views.PasswordChangeView):
+
+    success_message = None
+    template_name = None
+
+    success_url = reverse_lazy('marketplace:my_user_profile')
+
+    @method_decorator(sensitive_post_parameters())
+    @method_decorator(csrf_protect)
+    @method_decorator(login_required)
+    def dispatch(self, *args, **kwargs):
+        user_redirect = self.user_redirect(self.request.user)
+        if user_redirect is not None:
+            return user_redirect
+
+        return super().dispatch(*args, **kwargs)
+
+    def form_valid(self, form):
+        messages.success(self.request, self.success_message)
+        return super().form_valid(form)
+
+    def user_redirect(self, user):
+        return None
+
+
+class PasswordChangeView(BasePasswordChangeView):
+
+    success_message = 'Password successfully changed.'
+    template_name = 'marketplace/user_pwd_change.html'
+
+    def user_redirect(self, user):
+        if not user.has_usable_password():
+            return redirect('marketplace:user_pwd_set')
+
+change_password = PasswordChangeView.as_view(
+    extra_context={
+        'breadcrumb': build_breadcrumb([
+            home_link(),
+            ('My profile', reverse_lazy('marketplace:my_user_profile')),
+            ('Change password', None),
+        ]),
+    },
+)
+
+
+class PasswordSetView(BasePasswordChangeView):
+
+    form_class = SetPasswordForm
+    template_name = 'marketplace/user_pwd_set.html'
+    success_message = 'Password successfully set.'
+
+    def user_redirect(self, user):
+        if self.request.user.has_usable_password():
+            return redirect('marketplace:user_pwd_change')
+
+set_password = PasswordSetView.as_view(
+    extra_context={
+        'breadcrumb': build_breadcrumb([
+            home_link(),
+            ('My profile', reverse_lazy('marketplace:my_user_profile')),
+            ('Set password', None),
+        ]),
+    },
+)
+
+
+social_connections = login_required(
+    ConnectionsView.as_view(
+        success_url=reverse_lazy('marketplace:user_social_connections'),
+        template_name='marketplace/connections.html',
+        extra_context={
+            'breadcrumb': build_breadcrumb([
+                home_link(),
+                ('My profile', reverse_lazy('marketplace:my_user_profile')),
+                ('Social accounts', None),
+            ]),
+            'SITE_NAME': settings.SITE_NAME,
+        },
+    )
+)

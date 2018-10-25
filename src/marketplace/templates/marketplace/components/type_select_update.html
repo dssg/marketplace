@@ -1,0 +1,41 @@
+{% extends 'marketplace/components/type_select.html' %}
+
+{% load widgets_redux %}
+
+{% block form_extra %}
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ request.GET.next }}">
+{% endblock %}
+
+{% block type_select_organization %}
+
+{% url "marketplace:user_type_select" as form_action %}
+
+{% select "org_button" form.initial_type choice_label='Organization member' %}
+
+{% with button_label="Continue as an organization member" %}
+{% with button_class="btn list-group-item list-group-item-action bg-success text-white" %}
+
+{% render_widget org_button label=button_label attrs__class=button_class attrs__formmethod="post" attrs__formaction=form_action %}
+
+{% endwith %}
+{% endwith %}
+
+{% endblock %}
+
+
+{% block type_select_volunteer %}
+
+{% url "marketplace:user_type_select" as form_action %}
+
+{% select "volunteer_button" form.initial_type choice_label='Volunteer' %}
+
+{% with button_label="Continue as a volunteer" %}
+{% with button_class="btn list-group-item list-group-item-action bg-success text-white" %}
+
+{% render_widget volunteer_button label=button_label attrs__class=button_class attrs__formmethod="post" attrs__formaction=form_action %}
+
+{% endwith %}
+{% endwith %}
+
+{% endblock %}

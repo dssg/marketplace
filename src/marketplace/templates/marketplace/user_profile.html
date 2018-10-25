@@ -3,7 +3,6 @@
 {% block pagecontents %}
   {% load markdown_deux_tags %}
 
-
     <div class="row section-header">
       <div class="col-lg-12">
         {% if user == userprofile %}
@@ -30,11 +29,27 @@
              <i class="material-icons" style="vertical-align: middle">account_circle</i>
             Edit my basic information
           </a>
+
+          <a class="btn btn-success col-lg-12 mb-1"
+              href="{% url 'marketplace:user_social_connections' %}">
+              <i class="material-icons" style="vertical-align: middle">exit_to_app</i>
+            Manage my social accounts &amp; log-in
+          </a>
+
+          {% if user.has_usable_password %}
           <a class="btn btn-success col-lg-12 mb-1"
              href="{% url 'marketplace:user_pwd_change' %}">
              <i class="material-icons" style="vertical-align: middle">lock_open</i>
             Change my password
           </a>
+          {% else %}
+          <a class="btn btn-success col-lg-12 mb-1"
+             href="{% url 'marketplace:user_pwd_set' %}">
+             <i class="material-icons" style="vertical-align: middle">lock_open</i>
+            Set my password
+          </a>
+          {% endif %}
+
           {% if userprofile.volunteerprofile %}
             <a class="btn btn-success col-lg-12 mb-1"
                href="{% url 'marketplace:user_volunteer_profile_edit' userprofile.id userprofile.volunteerprofile.id %}">
@@ -69,7 +84,7 @@
           {% if not user.volunteerprofile.is_edited  %}
             <div class="alert alert-warning">
               <i class="fas fa-exclamation-triangle"></i>
-              Your need to fill out your volunteer profile to be able to apply
+              You need to fill out your volunteer profile to be able to apply
               to volunteer in projects.
             </div>
           {% elif user.volunteerprofile.is_pending_review %}

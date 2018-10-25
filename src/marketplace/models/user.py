@@ -7,7 +7,6 @@ from django.db import models
 
 from .common import (
     ReviewStatus,
-    OrgRole,
     SkillLevel,
     validate_image_size,
     TaskType,
@@ -38,9 +37,11 @@ class User(AbstractUser):
 
     initial_type = models.IntegerField(
         verbose_name="Initial type of user",
-        help_text="Users can check their preference when they sign up to indicate they want to be volunteers or create/join organizations",
-        choices = UserType.get_choices(),
+        help_text="Users can check their preference when they sign up to indicate "
+                  "they want to be volunteers or create/join organizations",
+        choices=UserType.get_choices(),
         default=UserType.VOLUNTEER,
+        null=True,
     )
     email = models.EmailField('email address', unique=True)
     skype_name = models.CharField(
@@ -436,6 +437,7 @@ class BadgeTier():
                 )
 
 class UserBadge(models.Model):
+
     type = models.CharField(
         max_length=2,
         choices=BadgeType.get_choices(),

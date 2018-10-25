@@ -64,6 +64,13 @@ body {
   color: white;
 }
 
+p.line-compact, .line-compact p {
+  margin-bottom: 0.5rem;
+}
+p.line-compact:last-child, .line-compact p:last-child {
+  margin-bottom: 0;
+}
+
 .btn i {
   float: left;
   margin-right: 5px;
@@ -75,6 +82,14 @@ fieldset legend {
 
 .normal-link {
   font-weight: normal;
+}
+
+.alert-warning {
+  background-color: #f5b652;
+  color: #282829;
+}
+.alert-warning a {
+  color: #525456;
 }
 
 .read-alert-outer {
@@ -329,4 +344,38 @@ fieldset legend {
 .ui-datepicker-year {
     border: 0px;
     color: #000;
+}
+
+.btn.provider {
+    margin-right: 3px;
+    color: #212529;
+}
+
+.provider-list.list-inline .list-inline-item:not(:last-child) {
+    margin-right: 0.2rem;
+}
+
+.btn.provider:hover {
+    background-color: transparent;
+}
+
+.btn.provider i.fab {
+    float: none;
+    padding: 0 1px;
+}
+
+.btn.google {
+    background: url(/static/img/google.svg) center bottom no-repeat;
+    background-size: 85%;
+    color: transparent;
+}
+
+.btn.github {
+/* If we like, but font-awesome looks better:
+ *
+    background: url(/static/img/github.png) center center no-repeat;
+    background-size: 95%;
+    color: transparent;
+ *
+ */
 }
