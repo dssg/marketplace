@@ -170,8 +170,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 AUTHENTICATION_BACKENDS = (
     'rules.permissions.ObjectPermissionBackend',
-    'allauth.account.auth_backends.AuthenticationBackend',
     'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
 )
 
 AUTH_USER_MODEL = 'marketplace.User'
@@ -181,6 +181,7 @@ LOGIN_REDIRECT_URL = 'marketplace:home'
 LOGIN_URL = 'marketplace:login'
 
 # allauth
+ACCOUNT_AUTHENTICATION_METHOD = 'email'  # let Django ModelBackend handle usernames
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = 'none'  # unnecessary for installed providers?
 SOCIALACCOUNT_ADAPTER = 'marketplace.socialauth.adapter.SocialAccountAdapter'

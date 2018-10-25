@@ -69,7 +69,7 @@ urlpatterns = [
     path('proj/<int:proj_pk>/volunteers', proj.project_volunteers_view, name='proj_volunteers'),
 
     path('logout/', user.logout_view, name='logout'),
-    path('login/', auth_views.LoginView.as_view(template_name='marketplace/login.html'), name='login'),
+    path('login/', user.login_view, name='login'),
 
     path('signup/select', user.select_user_type_before, name='signup_type_select'),
     path('signup/do/<str:user_type>', user.signup, name='signup_form'),
