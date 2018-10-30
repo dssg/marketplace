@@ -182,6 +182,7 @@ LOGIN_URL = 'marketplace:login'
 
 # allauth
 ACCOUNT_AUTHENTICATION_METHOD = 'email'  # let Django ModelBackend handle usernames
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = config('ACCOUNT_DEFAULT_HTTP_PROTOCOL', default='http')
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = 'none'  # unnecessary for installed providers?
 SOCIALACCOUNT_ADAPTER = 'marketplace.socialauth.adapter.SocialAccountAdapter'
