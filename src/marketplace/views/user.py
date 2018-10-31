@@ -214,8 +214,9 @@ def home_view(request):
         })
 
 
+@login_required
 def my_user_profile_view(request):
-    return redirect('marketplace:user_profile', args=[request.user.id])
+    return redirect('marketplace:user_profile', request.user.pk)
 
 
 class UserProfileView(generic.DetailView):
