@@ -211,10 +211,6 @@ def ensure_profile(self, user):
 class UserService():
 
     @staticmethod
-    def get_user(request_user, userid):
-        return User.objects.get(pk=userid)
-
-    @staticmethod
     def get_all_approved_volunteer_profiles(request_user, search_config=None):
         base_query = VolunteerProfile.objects.filter(volunteer_status=ReviewStatus.ACCEPTED)
         if search_config:
@@ -322,7 +318,7 @@ class UserService():
 
     @staticmethod
     def set_volunteer_skills(request_user, user_pk, post_object):
-        target_user = UserService.get_user(request_user, user_pk)
+        target_user = User.objects.get(pk=user_pk)
         ensure_user_has_permission(request_user, target_user, 'user.is_same_user')
         volunteer_skill_list = VolunteerSkill.objects.filter(user__id=user_pk)
         volunteer_skill_dict = {}

@@ -69,7 +69,6 @@ class UserTestCase(TestCase):
             last_name="User",
         )
         marketplace.user.add_user(organization_user, 'organization')
-        self.assertEqual(UserService.get_user(organization_user, organization_user.id), organization_user)
 
         self.assertFalse(UserService.user_is_dssg_staff(organization_user, organization_user))
         self.assertTrue(UserService.user_is_organization_creator(organization_user))
@@ -79,7 +78,7 @@ class UserTestCase(TestCase):
 
         organization_user.first_name = "Organization edited"
         UserService.save_user(organization_user, organization_user.id, organization_user)
-        self.assertEqual(UserService.get_user(organization_user, organization_user.id), organization_user)
+        self.assertEqual(User.objects.get(pk=organization_user.id), organization_user)
 
     def test_dssg_user(self):
         volunteer_user = User(

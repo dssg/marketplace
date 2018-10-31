@@ -219,13 +219,11 @@ def my_user_profile_view(request):
 
 
 class UserProfileView(generic.DetailView):
+
     model = User
     pk_url_kwarg = 'user_pk'
     template_name = 'marketplace/user_profile.html'
     context_object_name = 'userprofile'
-
-    def get_object(self):
-        return UserService.get_user(self.request.user, self.kwargs['user_pk'])
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -268,6 +266,7 @@ class UserProfileEdit(PermissionRequiredMixin, UpdateView):
             return super().form_invalid(form)
 
 class VolunteerProfileEdit(PermissionRequiredMixin, UpdateView):
+
     model = VolunteerProfile
     fields = ['portfolio_url', 'github_url', 'linkedin_url', 'degree_name', 'degree_level',
               'university', 'cover_letter', 'weekly_availability_hours', 'availability_start_date',
@@ -302,7 +301,7 @@ class VolunteerProfileEdit(PermissionRequiredMixin, UpdateView):
             return super().form_invalid(form)
 
     def get_permission_object(self):
-        return UserService.get_user(self.request.user, self.kwargs['user_pk'])
+        return self.object.user
 
 
 @permission_required('user.is_same_user', raise_exception=True, fn=objectgetter(User, 'user_pk'))

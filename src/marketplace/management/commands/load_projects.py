@@ -6,8 +6,9 @@ import os
 
 from marketplace.domain.org import OrganizationService
 from marketplace.domain.proj import ProjectService
-from marketplace.domain.user import UserService
 from marketplace.models.proj import Project
+from marketplace.models.user import User
+
 
 class Command(BaseCommand):
     help = '''Loads a list of projects from a csv file.
@@ -100,7 +101,7 @@ The 'project_cause' field must be set to one of:
                 try:
                     organization_pk = int(row['org_pk'])
                     user_pk = int(row['user_pk'])
-                    owner = UserService.get_user(None, user_pk)
+                    owner = User.objects.get(pk=user_pk)
                     OrganizationService.create_project(owner, organization_pk, new_project)
                     if row['status']:
                         new_project.status = row['status']
