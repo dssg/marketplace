@@ -26,6 +26,11 @@
       {% endif %}
 
       {% csrf_token %}
+
+      {% if next %}
+      <input type="hidden" name="next" value="{{ next }}">
+      {% endif %}
+
       {% include 'marketplace/components/standard_form_fields.html' %}
 
       <div class="form-row">
