@@ -138,10 +138,8 @@ class Build(ContainerRegistryMixin, Local):
 
         parser.add_argument(
             '-n', '--name',
-            action=store_env_override,
-            envvar='IMAGE_REPOSITORY_NAME',
-            default=lambda envvalue: envvalue and f'{envvalue}:latest',
-            description='image name:tag',
+            help='image name:tag (default derived from repository name: '
+                 '{REPOSITORY_NAME}:latest)',
         )
         parser.add_argument(
             '--label',
@@ -178,11 +176,12 @@ class Build(ContainerRegistryMixin, Local):
         if args.login and not args.push:
             parser.error("will not log in outside of push operation")
 
+        repository_latest = args.repository_name + ':latest'
         command = self.local['docker'][
             'build',
             '--build-arg', f'TARGET={args.target}',
-            '-t', args.name,
-            '-t', self.get_full_name(args.name),
+            '-t', (args.name or repository_latest),
+            '-t', self.get_full_name(repository_latest),
         ]
 
         if args.label:
@@ -203,7 +202,7 @@ class Build(ContainerRegistryMixin, Local):
 
     @localmethod('-l', '--login', action='store_true', help="log in to AWS ECR")
     def push(self, args):
-        """push latest image to registry"""
+        """push image(s) to registry"""
         if args.login:
             login_command = self.local['aws'][
                 'ecr',
@@ -220,7 +219,7 @@ class Build(ContainerRegistryMixin, Local):
 
         yield self.local['docker'][
             'push',
-            self.get_full_name(args.name),
+            self.get_full_name(args.repository_name),
         ]
 
     class Deploy(Local):
