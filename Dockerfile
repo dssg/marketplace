@@ -8,12 +8,14 @@ FROM python:$PYVERSION
 # build for production by default, but allow use of alternative Python
 # requirement files for alternative runtime targets (such as development)
 ARG TARGET=production
+ARG CHVERSION=2.2.0
 
 # redeclare PYVERSION argument for access in label (FIXME: does this work?)
 ARG PYVERSION
 
-LABEL version="0.2" \
+LABEL version="0.3" \
       pyversion="$PYVERSION" \
+      chversion="$CHVERSION" \
       target="$TARGET"
 
 ENV DEBIAN_FRONTEND noninteractive
@@ -22,6 +24,20 @@ ENV PYTHONUNBUFFERED 1
 RUN apt-get update && apt-get install -y \
       supervisor \
     && rm -rf /var/lib/apt/lists/*
+
+# install chamber for (non-development) environments, which can populate
+# the environ of CMD with environment-specific values, at run-time, via
+# entrypoint override, e.g.:
+#
+#     [ /usr/local/bin/chamber, exec, marketplace/production, -- ]
+#
+# (chamber does not yet fully support a null backend, nor specification
+# of the service by environment variable; so, it is not yet appropriate
+# to integrate by default.)
+RUN curl -fL \
+      -o /usr/local/bin/chamber \
+      https://github.com/segmentio/chamber/releases/download/v${CHVERSION}/chamber-v${CHVERSION}-linux-amd64 \
+    && chmod +x /usr/local/bin/chamber
 
 RUN groupadd webapp \
     && useradd webapp -g webapp
