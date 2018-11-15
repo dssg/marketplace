@@ -71,7 +71,36 @@ require pyenv \
 PY_VERSION=3.7.0
 
 exists_python() {
-  pyenv versions 2> /dev/null | grep -E "^ *${PY_VERSION}$" > /dev/null
+  if icli::check_command pyenv; then
+    pyenv versions 2> /dev/null | grep -E "^ *${PY_VERSION}$" > /dev/null
+  else
+    # check if installed globally or via an active virtual environment
+    local PYTHON_EXIST=false
+    local PYTHON_EXE="python${PY_VERSION}"
+
+    until [ $PYTHON_EXIST = true ]; do
+      if icli::check_command $PYTHON_EXE; then
+        PYTHON_EXIST=true
+      elif [ $PYTHON_EXE = python ]; then
+        break
+      else
+        # strip a version part from the exe
+        PYTHON_EXE="$(<<<"$PYTHON_EXE" sed -e 's/\.\?[0-9]\+$//')"
+      fi
+    done
+
+    if [ $PYTHON_EXIST = true ]; then
+      local INSTALLED_INFO="$($PYTHON_EXE --version 2>/dev/null)"
+      if [ -z "$INSTALLED_INFO" ]; then
+        # python <3.4 printed version to stderr
+        INSTALLED_INFO="$($PYTHON_EXE --version 2>&1)"
+      fi
+
+      [ "${INSTALLED_INFO#* }" = "$PY_VERSION" ]
+    else
+      return 1
+    fi
+  fi
 }
 
 install_python() {
@@ -95,10 +124,10 @@ install_virtualenv() {
   pyenv virtualenv $PY_VERSION $PROJECT
 }
 
-require $PROJECT \
+require virtualenv \
   exists_virtualenv \
   install_virtualenv \
-  --fail-prefix="project virtual environment not found"
+  --fail-prefix="pyenv project virtual environment \"$PROJECT\" not found"
 
 # python libs
 
