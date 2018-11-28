@@ -85,7 +85,8 @@ exists_python() {
         break
       else
         # strip a version part from the exe
-        PYTHON_EXE="$(<<<"$PYTHON_EXE" sed -e 's/\.\?[0-9]\+$//')"
+        # NOTE: must support POSIX sed (not just GNU)
+        PYTHON_EXE="$(<<<"$PYTHON_EXE" sed -Ee 's/\.{0,1}[0-9]{1,}$//')"
       fi
     done
 
