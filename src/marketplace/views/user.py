@@ -269,11 +269,14 @@ class UserProfileEdit(PermissionRequiredMixin, UpdateView):
 class VolunteerProfileEdit(PermissionRequiredMixin, UpdateView):
 
     model = VolunteerProfile
-    fields = ['portfolio_url', 'github_url', 'linkedin_url', 'degree_name', 'degree_level',
+    fields = ('portfolio_url', 'github_url', 'linkedin_url', 'degree_name', 'degree_level',
               'university', 'cover_letter', 'weekly_availability_hours', 'availability_start_date',
-              'availability_end_date']
+              'availability_end_date')
+
     template_name = 'marketplace/user_volunteer_profile_edit.html'
+
     pk_url_kwarg = 'volunteer_pk'
+
     permission_required = 'user.is_same_user'
     raise_exception = True
 
@@ -282,27 +285,49 @@ class VolunteerProfileEdit(PermissionRequiredMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        volunteerprofile = self.object
-        if volunteerprofile and volunteerprofile.user.id == self.request.user.id and self.request.user.id == self.kwargs['user_pk']:
-            context['volunteerprofile'] = volunteerprofile
-            context['breadcrumb'] = build_breadcrumb([home_link(),
-                                                        my_profile_link(volunteerprofile.user.id),
-                                                        ("Edit volunteer information", None)])
-            return context
-        else:
-            raise Http404
+
+        context.update(
+            volunteerprofile=self.object,
+            breadcrumb=build_breadcrumb([home_link(),
+                                         my_profile_link(self.object.user.id),
+                                         ("Edit volunteer information", None)]),
+        )
+
+        return context
 
     def form_valid(self, form):
-        volunteer_profile = form.save(commit = False)
+        profile = form.save(commit=False)
+
         try:
-            UserService.save_volunteer_profile(self.request.user, self.kwargs['volunteer_pk'], volunteer_profile)
-            return redirect(self.get_success_url())
-        except ValueError as v:
-            form.add_error(None, str(v))
+            UserService.save_volunteer_profile(
+                self.request.user,
+                self.kwargs['volunteer_pk'],
+                profile,
+            )
+        except ValueError as exc:
+            form.add_error(None, str(exc))
             return super().form_invalid(form)
+        else:
+            self.object = profile
+            return redirect(self.get_success_url())
 
     def get_permission_object(self):
-        return self.object.user
+        # NOTE: This method is called by dispatch; and,
+        # get_object() isn't called -- and self.object not set
+        # -- until *after* dispatch.
+        # (Therefore, we can't simply return ``self.object.user``.)
+        #
+        # NOTE: Regardless, we're only really concerned with the User
+        # owning the VolunteerProfile, (rather than the profile itself),
+        # so we'll just retrieve that here -- at the same time as
+        # we *enforce the consistency of the parameters in the URL*
+        # (otherwise we're just testing that the user knows their ID,
+        # not that they actually own this profile):
+        return get_object_or_404(
+            User,
+            pk=self.kwargs['user_pk'],
+            volunteerprofile=self.kwargs['volunteer_pk'],
+        )
 
 
 @permission_required('user.is_same_user', raise_exception=True, fn=objectgetter(User, 'user_pk'))
