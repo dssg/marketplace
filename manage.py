@@ -132,7 +132,7 @@ class Marketplace(LocalRoot):
 
 @Marketplace.register
 class Build(ContainerRegistryMixin, Local):
-    """build app container image"""
+    """build app container image for deployment"""
 
     def __init__(self, parser):
         super().__init__(parser)
@@ -150,7 +150,7 @@ class Build(ContainerRegistryMixin, Local):
         )
         parser.add_argument(
             '--target',
-            choices=('development', 'production'),
+            choices=('production',),
             default='production',
             help="target environment (default: production)",
         )
