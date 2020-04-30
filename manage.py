@@ -5,6 +5,7 @@ import json
 import os
 import re
 import sys
+import textwrap
 import time
 from argparse import _StoreAction, REMAINDER
 from pathlib import Path
@@ -168,6 +169,13 @@ class Build(ContainerRegistryMixin, Local):
             action='store_true',
             help="deploy the container once the image is pushed",
         )
+        parser.add_argument(
+            '-f', '--force',
+            dest='show_warnings',
+            action='store_false',
+            default=True,
+            help="ignore warnings",
+        )
 
     def get_full_name(self, name):
         return '/'.join((self.args.repository_uri, name))
@@ -191,6 +199,25 @@ class Build(ContainerRegistryMixin, Local):
                     '-t', name,
                     '-t', self.get_full_name(name),
                 ]
+        elif args.show_warnings and args.target == 'production':
+            parser.error(textwrap.dedent("""\
+                at least the standard versioning label is recommended for builds intended for production
+
+                for example – 0.1.1 –
+
+                    manage build --label 0.1.1
+
+                ensure that you have pulled the latest from the Git repository, and consult –
+
+                    git tag -l --sort version:refname
+
+                – for the tags currently in use. and, ensure that you apply (and push) the same tag
+                to the source in the Git repository as to the Docker image here, for example –
+
+                    git tag -a 0.1.1
+
+                (to suppress this warning, see: `manage build --force`)\
+                """))
 
         yield command[ROOT_PATH]
 
