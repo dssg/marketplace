@@ -646,6 +646,35 @@ class Build(ContainerRegistryMixin, EnvironmentMixin, Local):
 
                 container = ssh['docker']['exec', '-u', 'webapp', container_name]
 
+                # Grab target environment's entrypoint
+                #
+                # NOTE: This might change; but currently, the Dockerfile leaves
+                # the default entrypoint, and sets the default command to
+                # supervisor/webapp. However, *in staging/production*, the
+                # entrypoint is set to `chamber`, to populate
+                # configuration/secrets.
+                #
+                # We'll set our own command here to execute, of course; but, it
+                # won't succeed without reinstituting the target environment's
+                # entrypoint, (which `exec` won't do for us).
+                #
+                # (It's conceivable that this could be resolved by baking
+                # `chamber` into the Dockerfile entrypoint, with a null backend
+                # when environment not established by the environ. But,
+                # investigation is warranted.)
+                #
+                # Rather than build the logic of that entrypoint here, we'll
+                # simply read it from the running container, and prepend it to
+                # our command.
+
+                (_retcode, stdout, _stderr) = yield ssh['docker'][
+                    'inspect',
+                    '--format', '"{{json .Config.Entrypoint}}"',
+                    container_name,
+                ]
+                entrypoint = json.loads(stdout)
+                container = container[entrypoint]
+
                 if args.migrate:
                     yield (
                         local.FG(retcode=None),
