@@ -95,9 +95,9 @@ The Web app binds to `localhost:8000`.
 
 To build the app's Docker image for deployment:
 
-    manage build [--label=LABEL]
+    manage build [--label=LABEL] {staging,production}
 
-It is recommended to provide a label, in the form of a version number, *e.g.*: `1.0.2`.
+It is recommended to provide a label, in the form of a version number, *e.g.*: `1.0.2`. This tag should also be applied to the Git repository.
 
 ### Configure deployment
 
@@ -116,23 +116,23 @@ For a full accounting of environment variables relevant to deployment, consult [
 
 The latest deployment image may be pushed to the image repository via the build sub-command `push`:
 
-    manage build push
+    manage build {staging,production} push
 
 Or a new image may be built and pushed in one command:
 
-    manage build [-p/--push]
+    manage build {staging,production} [-p/--push]
 
 ### Authentication
 
 In order to push an image to the repository, you must have created an authenticated session. The `-l/--login` flag may be passed to both `build` and `build push`:
 
-    manage build -lp
+    manage build {staging,production} -lp
 
 ### Image promotion
 
 To promote the latest pushed image to production, *i.e.* to deploy, invoke the build sub-command `deploy`:
 
-    manage build deploy [--static] [--migrate]
+    manage build {staging,production} deploy [--static] [--migrate]
 
 Either flag `--static` or `--migrate` instructs the `deploy` command, after promoting the latest image, to **wait** for at least one Web server to start a container based on this image; and, subsequently, to instruct this container, via SSH, to execute either the `collectstatic` command, the `migrate` command, or both.
 
@@ -140,6 +140,6 @@ Either flag `--static` or `--migrate` instructs the `deploy` command, after prom
 
 Like other build subcommands, `deploy` may be rolled up into the build command:
 
-    manage build [-p/--push] [-d/--deploy]
+    manage build {staging,production} [-p/--push] [-d/--deploy]
 
 However, in this form, no deploy-specific options may be passed, (such as `--migrate`).

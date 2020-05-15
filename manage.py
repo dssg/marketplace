@@ -1,5 +1,7 @@
 import datetime
+import dateutil.parser
 import enum
+import functools
 import itertools
 import json
 import os
@@ -11,6 +13,8 @@ from argparse import _StoreAction, REMAINDER
 from pathlib import Path
 
 from argcmdr import Local, LocalRoot, localmethod
+from descriptors import cachedclassproperty
+from plumbum.commands import ExecutionModifier
 from terminaltables import AsciiTable
 
 
@@ -37,6 +41,10 @@ def spincycle(chars='|/–\\', file=sys.stdout, wait=1):
         file.write('\b')
 
 
+class EnvDefault(str):
+    pass
+
+
 def store_env_override(option_strings,
                        dest,
                        envvar,
@@ -45,6 +53,7 @@ def store_env_override(option_strings,
                        type=None,
                        choices=None,
                        description=None,
+                       addendum=None,
                        help=None,
                        metavar=None):
     """Construct an argparse action which stores the value of a command
@@ -61,7 +70,13 @@ def store_env_override(option_strings,
 
     Rather than have to fully explain the relationship of this
     environment-backed option, help text may be generated from a
-    provided description.
+    provided description. (And an addendum may be optionally appended to
+    the end of the generated text.)
+
+    To aide in the differentiation of whether the resulting value
+    originated from the command line or the process environment, the
+    environment-derived default (and its optional transformation) are
+    wrapped in the ``str`` subclass: ``EnvDefault``.
 
     """
     if envvar == '':
@@ -70,9 +85,9 @@ def store_env_override(option_strings,
     envvalue = os.getenv(envvar)
 
     if callable(default):
-        default_value = default(envvalue)
+        default_value = EnvDefault(default(envvalue))
     elif envvalue:
-        default_value = envvalue
+        default_value = EnvDefault(envvalue)
     else:
         default_value = default
 
@@ -89,9 +104,13 @@ def store_env_override(option_strings,
                 envvar,
                 default_value,
             )
+            if addendum:
+                help += f' {addendum}'
         else:
             help = (f'{description} (required because '
                     f'envvar {envvar} is empty)')
+    elif addendum:
+        raise ValueError("addendum intended for use in conjunction with description")
 
     return _StoreAction(
         option_strings=option_strings,
@@ -105,6 +124,110 @@ def store_env_override(option_strings,
         help=help,
         metavar=metavar,
     )
+
+
+class _SHH(ExecutionModifier):
+    """plumbum execution modifier to ensure output is not echoed to terminal
+
+    essentially a no-op, this may be used to override argcmdr settings
+    and cli flags controlling this feature, on a line-by-line basis, to
+    hide unnecessary or problematic (e.g. highly verbose) command output.
+
+    """
+    __slots__ = ('retcode', 'timeout')
+
+    def __init__(self, retcode=0, timeout=None):
+        self.retcode = retcode
+        self.timeout = timeout
+
+    def __rand__(self, cmd):
+        return cmd.run(retcode=self.retcode, timeout=self.timeout)
+
+
+SHH = _SHH()
+
+
+class EnvironmentMixin:
+
+    def __init__(self, parser):
+        super().__init__(parser)
+
+        parser.add_argument(
+            'target',
+            choices=('staging', 'production',),
+            help="target environment",
+        )
+
+
+class ClusterServiceMixin:
+
+    environmental = False
+
+    @cachedclassproperty
+    def _environmental(cls):
+        return cls.environmental or issubclass(cls, EnvironmentMixin)
+
+    def __init__(self, parser):
+        super().__init__(parser)
+
+        parser.add_argument(
+            '--cluster',
+            action=store_env_override,
+            envvar='ECS_CLUSTER_NAME',
+            description="short name or full Amazon Resource Name (ARN) "
+		        "of the cluster that your service is running on",
+            addendum='(default extended for staging with suffix: -staging)'
+                     if self._environmental else None,
+        )
+        parser.add_argument(
+            '--service',
+            action=store_env_override,
+            envvar='ECS_SERVICE_NAME',
+            description="name of the service to update",
+            addendum='(default extended for staging with suffix: -staging)'
+                     if self._environmental else None,
+        )
+
+        parser.set_defaults(
+            resolve_cluster=functools.lru_cache()(self.resolve_cluster),
+            resolve_service=functools.lru_cache()(self.resolve_service),
+        )
+
+    def resolve_cluster(self):
+        if (
+            self._environmental and
+            self.args.target == 'staging' and
+            isinstance(self.args.cluster, EnvDefault)
+        ):
+            return self.args.cluster + '-staging'
+
+        return self.args.cluster
+
+    def resolve_service(self):
+        if (
+            self._environmental and
+            self.args.target == 'staging' and
+            isinstance(self.args.service, EnvDefault)
+        ):
+            return self.args.service + '-staging'
+
+        return self.args.service
+
+    def describe_service(self, suppress=True):
+        modifier = SHH if suppress else None
+        (_retcode, stdout, _stderr) = yield modifier, self.local['aws'][
+            'ecs',
+            'describe-services',
+            '--cluster', self.args.resolve_cluster(),
+            '--services', self.args.resolve_service(),
+        ]
+
+        if stdout is None:
+            return None
+
+        result = json.loads(stdout)
+        (service,) = result['services']
+        return service
 
 
 class ContainerRegistryMixin:
@@ -123,7 +246,22 @@ class ContainerRegistryMixin:
             action=store_env_override,
             envvar='IMAGE_REPOSITORY_NAME',
             description='image repository name',
+            addendum='(default extended for staging to: …/staging)'
+                     if isinstance(self, EnvironmentMixin) else None,
         )
+        parser.set_defaults(
+            resolve_repository_name=functools.lru_cache()(self.resolve_repository_name),
+        )
+
+    def resolve_repository_name(self):
+        if (
+            isinstance(self, EnvironmentMixin) and
+            self.args.target == 'staging' and
+            isinstance(self.args.repository_name, EnvDefault)
+        ):
+            return self.args.repository_name + '/staging'
+
+        return self.args.repository_name
 
 
 class Marketplace(LocalRoot):
@@ -131,7 +269,77 @@ class Marketplace(LocalRoot):
 
 
 @Marketplace.register
-class Build(ContainerRegistryMixin, Local):
+class Db(Local):
+    """manage databases"""
+
+    default_production_id = 'marketplace-db'
+    default_staging_id = 'marketplace-staging-db'
+
+    @localmethod('--name', default=default_staging_id,
+                 help=f"database instance name to apply (default: {default_staging_id})")
+    @localmethod('--from', dest='from_name', metavar='NAME', default=default_production_id,
+                 help=f"database instance whose snapshot to use (production) "
+                      f"(default: {default_production_id})")
+    def build_staging(self, args, parser):
+        """restore most recent production snapshot to NEW staging database"""
+        # Look up production instance info (vpc subnet group, etc.)
+        (_retcode, stdout, _stderr) = yield SHH, self.local['aws'][
+            'rds',
+            'describe-db-instances',
+            '--db-instance-identifier',
+            args.from_name,
+        ]
+
+        if stdout is None:
+            subnet_group_name = 'DRY-RUN'
+        else:
+            try:
+                (description,) = json.loads(stdout)['DBInstances']
+                subnet_group_name = description['DBSubnetGroup']['DBSubnetGroupName']
+            except (KeyError, TypeError, ValueError):
+                print(stdout)
+                raise ValueError('unexpected response')
+
+        def snapshot_datetime(data):
+            timestamp = data['SnapshotCreateTime']
+            return dateutil.parser.parse(timestamp)
+
+        (_retcode, stdout, _stderr) = yield SHH, self.local['aws'][
+            'rds',
+            'describe-db-snapshots',
+            '--snapshot-type', 'automated',
+            '--db-instance-identifier', args.from_name,
+        ]
+
+        if stdout is None:
+            snapshot_id = 'DRY-RUN'
+        else:
+            try:
+                snapshots = json.loads(stdout)['DBSnapshots']
+                snapshots_available = (snapshot for snapshot in snapshots
+                                       if snapshot['Status'] == 'available')
+                snapshots_sorted = sorted(snapshots_available, key=snapshot_datetime, reverse=True)
+                snapshot_id = snapshots_sorted[0]['DBSnapshotIdentifier']
+            except IndexError:
+                parser.error(f"{args.from_name} has no snapshots available")
+            except (KeyError, TypeError, ValueError):
+                print(stdout)
+                raise ValueError('unexpected response')
+
+        yield self.local['aws'][
+            'rds',
+            'restore-db-instance-from-db-snapshot',
+            '--no-publicly-accessible',
+            '--db-subnet-group-name', subnet_group_name,
+            '--db-instance-identifier', args.name,
+            '--db-snapshot-identifier', snapshot_id,
+        ]
+
+    build_staging.__name__ = 'build-staging'
+
+
+@Marketplace.register
+class Build(ContainerRegistryMixin, EnvironmentMixin, Local):
     """build app container image for deployment"""
 
     def __init__(self, parser):
@@ -149,10 +357,11 @@ class Build(ContainerRegistryMixin, Local):
                  'if any, is treated as the "version"',
         )
         parser.add_argument(
-            '--target',
-            choices=('production',),
-            default='production',
-            help="target environment (default: production)",
+            '-f', '--force',
+            dest='show_warnings',
+            action='store_false',
+            default=True,
+            help="ignore warnings",
         )
         parser.add_argument(
             '-l', '--login',
@@ -169,13 +378,6 @@ class Build(ContainerRegistryMixin, Local):
             action='store_true',
             help="deploy the container once the image is pushed",
         )
-        parser.add_argument(
-            '-f', '--force',
-            dest='show_warnings',
-            action='store_false',
-            default=True,
-            help="ignore warnings",
-        )
 
     def get_full_name(self, name):
         return '/'.join((self.args.repository_uri, name))
@@ -184,17 +386,17 @@ class Build(ContainerRegistryMixin, Local):
         if args.login and not args.push:
             parser.error("will not log in outside of push operation")
 
-        repository_latest = args.repository_name + ':latest'
+        repository_tag = args.name or (args.resolve_repository_name() + ':latest')
         command = self.local['docker'][
             'build',
-            '--build-arg', f'TARGET={args.target}',
-            '-t', (args.name or repository_latest),
-            '-t', self.get_full_name(repository_latest),
+            '--build-arg', 'TARGET=production',
+            '-t', repository_tag,
+            '-t', self.get_full_name(repository_tag),
         ]
 
         if args.label:
             for label in args.label:
-                name = args.repository_name + ':' + label
+                name = args.resolve_repository_name() + ':' + label
                 command = command[
                     '-t', name,
                     '-t', self.get_full_name(name),
@@ -205,7 +407,7 @@ class Build(ContainerRegistryMixin, Local):
 
                 for example – 0.1.1 –
 
-                    manage build --label 0.1.1
+                    manage build --label 0.1.1 production
 
                 ensure that you have pulled the latest from the Git repository, and consult –
 
@@ -246,11 +448,13 @@ class Build(ContainerRegistryMixin, Local):
 
         yield self.local['docker'][
             'push',
-            self.get_full_name(args.repository_name),
+            self.get_full_name(args.resolve_repository_name()),
         ]
 
-    class Deploy(Local):
+    class Deploy(ClusterServiceMixin, Local):
         """deploy the latest image container to the cluster service"""
+
+        environmental = True  # flag for ClusterServiceMixin
 
         TASK_START_PATTERN = re.compile(r'\(service (?P<service_name>[\w-]+)\) '
                                         r'has started (?P<number_tasks>\d+) '
@@ -277,19 +481,7 @@ class Build(ContainerRegistryMixin, Local):
                 return str(value)
 
         def __init__(self, parser):
-            parser.add_argument(
-                '--cluster',
-                action=store_env_override,
-                envvar='ECS_CLUSTER_NAME',
-                description="short name or full Amazon Resource Name (ARN) "
-                            "of the cluster that your service is running on",
-            )
-            parser.add_argument(
-                '--service',
-                action=store_env_override,
-                envvar='ECS_SERVICE_NAME',
-                description="name of the service to update",
-            )
+            super().__init__(parser)
 
             parser.add_argument(
                 '--static',
@@ -335,15 +527,8 @@ class Build(ContainerRegistryMixin, Local):
                 # to containers and instances, which makes this quite annoying.
                 #
                 # Retrieve a baseline event:
-                (_retcode, stdout, _stderr) = yield local['aws'][
-                    'ecs',
-                    'describe-services',
-                    '--cluster', args.cluster,
-                    '--services', args.service,
-                ]
-                if stdout is not None:
-                    result = json.loads(stdout)
-                    (service,) = result['services']
+                service = yield from self.describe_service(suppress=False)
+                if service is not None:
                     last_event = service['events'][0]
 
             # update service (deploy)
@@ -351,8 +536,8 @@ class Build(ContainerRegistryMixin, Local):
                 'ecs',
                 'update-service',
                 '--force-new-deployment',
-                '--cluster', args.cluster,
-                '--service', args.service,
+                '--cluster', args.resolve_cluster(),
+                '--service', args.resolve_service(),
             ]
 
             # report on deployments
@@ -388,8 +573,8 @@ class Build(ContainerRegistryMixin, Local):
                     (_retcode, stdout, _stderr) = yield local['aws'][
                         'ecs',
                         'describe-services',
-                        '--cluster', args.cluster,
-                        '--services', args.service,
+                        '--cluster', args.resolve_cluster(),
+                        '--services', args.resolve_service(),
                     ]
                     result = json.loads(stdout)
                     (service,) = result['services']
@@ -415,7 +600,7 @@ class Build(ContainerRegistryMixin, Local):
                 (_retcode, stdout, _stderr) = yield local['aws'][
                     'ecs',
                     'describe-tasks',
-                    '--cluster', args.cluster,
+                    '--cluster', args.resolve_cluster(),
                     '--tasks', task_id,
                 ]
                 result = json.loads(stdout)
@@ -424,7 +609,7 @@ class Build(ContainerRegistryMixin, Local):
                 (_retcode, stdout, _stderr) = yield local['aws'][
                     'ecs',
                     'describe-container-instances',
-                    '--cluster', args.cluster,
+                    '--cluster', args.resolve_cluster(),
                     '--container-instances', task['containerInstanceArn'],
                 ]
                 result = json.loads(stdout)
@@ -443,7 +628,7 @@ class Build(ContainerRegistryMixin, Local):
                 (ssh_exec, *ssh_args) = args.ssh.split()
                 ssh = local[ssh_exec].bound_command(*ssh_args)[public_ip]
 
-                image_path = '/'.join((args.repository_uri, args.repository_name))
+                image_path = '/'.join((args.repository_uri, args.resolve_repository_name()))
                 for _cycle in spinner:
                     # FIXME: We've seen it not here tho it should be: investigate
                     (_retcode, stdout, _stderr) = yield ssh['docker'][
