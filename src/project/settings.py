@@ -184,7 +184,8 @@ LOGIN_URL = 'marketplace:login'
 ACCOUNT_AUTHENTICATION_METHOD = 'email'  # let Django ModelBackend handle usernames
 ACCOUNT_DEFAULT_HTTP_PROTOCOL = config('ACCOUNT_DEFAULT_HTTP_PROTOCOL', default='http')
 ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_EMAIL_VERIFICATION = 'none'  # unnecessary for installed providers?
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'  # verify they control the email account
+SOCIALACCOUNT_EMAIL_VERIFICATION = 'optional'  # ...BUT trust social providers (just let them know they registered)
 SOCIALACCOUNT_ADAPTER = 'marketplace.socialauth.adapter.SocialAccountAdapter'
 
 # Internationalization
