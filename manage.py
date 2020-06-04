@@ -532,7 +532,8 @@ class Build(ContainerRegistryMixin, EnvironmentMixin, Local):
                     last_event = service['events'][0]
 
             # update service (deploy)
-            (_retcode, stdout, _stderr) = yield local['aws'][
+            modifier = SHH if args.__command__ is not self else None
+            (_retcode, stdout, _stderr) = yield modifier, local['aws'][
                 'ecs',
                 'update-service',
                 '--force-new-deployment',
@@ -570,14 +571,7 @@ class Build(ContainerRegistryMixin, EnvironmentMixin, Local):
                 # deployed version
                 spinner = spincycle(['']) if args.show_commands else spincycle()
                 for _cycle in spinner:
-                    (_retcode, stdout, _stderr) = yield local['aws'][
-                        'ecs',
-                        'describe-services',
-                        '--cluster', args.resolve_cluster(),
-                        '--services', args.resolve_service(),
-                    ]
-                    result = json.loads(stdout)
-                    (service,) = result['services']
+                    service = yield from self.describe_service(suppress=False)
                     events = tuple(itertools.takewhile(
                         lambda event: event['id'] != last_event['id'],
                         service['events']
