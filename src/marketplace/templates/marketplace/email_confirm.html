@@ -1,0 +1,45 @@
+{% extends 'marketplace/base.html' %}
+
+{% load i18n %}
+{% load account %}
+
+{% block pagecontents %}
+  <div class="col-lg-8 offset-lg-2">
+
+    <h2 class="section-header">Verify your e-mail address</h2>
+
+    {% if confirmation %}
+
+    {% user_display confirmation.email_address.user as user_display %}
+
+    <p>{% blocktrans with confirmation.email_address.email as email %}Please confirm that the e-mail address <a href="mailto:{{ email }}">{{ email }}</a> belongs to user <strong>{{ user_display }}</strong>.{% endblocktrans %}</p>
+
+    <form method="post" action="{% url 'account_confirm_email' confirmation.key %}">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-success mr-3">
+        {% trans 'Yes, it does' %}
+        <i class="material-icons on-right">check_circle</i>
+    </button>
+    </form>
+
+    {% else %}
+
+    {% comment %}
+    In allauth this block links to the "account_email" page; however, we haven't implemented this, (and might not).
+
+    Moreover, while that page could be useful, it's of debatable utility here. The user must log in to access it; if they're restricted from logging in because they lack a verified email, then that's the flow they should use.
+    {% endcomment %}
+
+    {% comment %}
+    {% url 'account_email' as email_url %}
+
+    <p>{% blocktrans %}This e-mail confirmation link is expired or invalid.{% endblocktrans %}</p>
+    <p>{% blocktrans %}Please <a href="{{ email_url }}">issue a new e-mail confirmation request</a>.{% endblocktrans %}</p>
+    {% endcomment %}
+
+    <p>{% blocktrans %}This e-mail confirmation link is expired or invalid.{% endblocktrans %}</p>
+
+    {% endif %}
+
+  </div>
+{% endblock %}

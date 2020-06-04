@@ -1,4 +1,5 @@
 from allauth.account.models import EmailAddress
+from allauth.account.utils import perform_login
 from allauth.socialaccount import providers
 from allauth.socialaccount.views import ConnectionsView
 
@@ -7,7 +8,7 @@ import django.contrib.auth.views
 from django import forms
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import logout, login, authenticate
+from django.contrib.auth import logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.http import Http404, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
@@ -103,7 +104,32 @@ class AuthenticationForm(django.contrib.auth.forms.AuthenticationForm):
         widget=forms.TextInput(attrs={'autofocus': True}),
     )
 
-login_view = django.contrib.auth.views.LoginView.as_view(
+
+class LoginView(django.contrib.auth.views.LoginView):
+
+    # NOTE: The below override is necessary to adopt allauth's post-
+    # NOTE: login email-verification scheme.
+    #
+    # NOTE: allauth was added after-the-fact, for its handling of social
+    # NOTE: auth; and, its LoginView assumes (for example) that you're
+    # NOTE: using the url name "account_signup" as well.
+    #
+    # NOTE: It might make sense to switch over to its accounts-handling
+    # NOTE: whole-hog; but, until then, this kind of patchwork is
+    # NOTE: necessary. (And, it might not be so bad, in so far as this
+    # NOTE: way we adopt only what we need.)
+
+    def form_valid(self, form):
+        """Security check complete. Log the user in."""
+        return perform_login(
+            self.request,
+            form.get_user(),
+            email_verification=settings.ACCOUNT_EMAIL_VERIFICATION,
+            redirect_url=self.get_success_url(),
+        )
+
+
+login_view = LoginView.as_view(
     form_class=AuthenticationForm,
     template_name='marketplace/login.html',
 )
@@ -544,11 +570,15 @@ def signup(request, user_type):
                     username=form.cleaned_data['username'],
                     password=form.cleaned_data['password1'],
                 )
-                login(request, user)
                 messages.info(request,
                               'Welcome to DSSG Solve! '
                               'Your account was created successfully.')
-                return redirect('marketplace:user_dashboard')
+                return perform_login(
+                    request,
+                    user,
+                    email_verification=settings.ACCOUNT_EMAIL_VERIFICATION,
+                    redirect_url=reverse('marketplace:user_dashboard'),
+                )
     else:
         form = SignUpForm()
         preferences = request.GET.getlist('preferences')

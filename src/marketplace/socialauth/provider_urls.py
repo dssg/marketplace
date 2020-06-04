@@ -17,6 +17,8 @@ from allauth.socialaccount import providers
 # and then include these as needed.
 #
 # https://django-allauth.readthedocs.io/en/latest/installation.html
+#
+# See also: marketplace.socialauth.account_urls
 
 
 urlpatterns = []

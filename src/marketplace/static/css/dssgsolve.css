@@ -76,6 +76,11 @@ p.line-compact:last-child, .line-compact p:last-child {
   margin-right: 5px;
 }
 
+.btn i.on-right {
+  float: right;
+  margin: 0 0 0 6px;
+}
+
 fieldset legend {
   font-size: 1.3em;
 }
