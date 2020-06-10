@@ -578,7 +578,7 @@ def signup(request, user_type):
                     user,
                     email_verification=settings.ACCOUNT_EMAIL_VERIFICATION,
                     redirect_url=reverse('marketplace:user_dashboard'),
-                    signup=True,  # uses a different email template;
+                    signup=True,  # enables a different email template;
                                   # and, for convenience, user should be
                                   # stashed in session (pending email
                                   # verification)

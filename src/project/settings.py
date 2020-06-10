@@ -185,7 +185,12 @@ ACCOUNT_AUTHENTICATION_METHOD = 'email'  # let Django ModelBackend handle userna
 ACCOUNT_DEFAULT_HTTP_PROTOCOL = config('ACCOUNT_DEFAULT_HTTP_PROTOCOL', default='http')
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory'  # verify they control the email account
-SOCIALACCOUNT_EMAIL_VERIFICATION = 'optional'  # ...BUT trust social providers (just let them know they registered)
+# ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = False  # change to True to allow newly-signed-up users to
+                                               # be logged-in automatically following email verification
+SOCIALACCOUNT_EMAIL_VERIFICATION = 'optional'  # ...BUT trust social providers
+# NOTE: In current set-up, users receive an email verification message as their "welcome email" --
+# NOTE: IFF their email address isn't auto-verified by a social auth provider.
+# NOTE: (As such, those signing up with Google might receive no welcome email at all.)
 SOCIALACCOUNT_ADAPTER = 'marketplace.socialauth.adapter.SocialAccountAdapter'
 
 # Internationalization
