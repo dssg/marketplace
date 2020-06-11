@@ -63,6 +63,7 @@
                   <th>Summary</th>
                   <th>Status</th>
                   <th>Social impact areas</th>
+                  <th>Date posted</th>
               </tr>
             </thead>
             <tbody>
@@ -79,6 +80,7 @@
                         {% include 'marketplace/components/social_cause_display.html' with object=sc social_cause=sc.get_social_cause_display %} <br/>
                       {% endfor %}
                     </td>
+                    <td>{{ project.creation_date|date:"j M. Y" }}</td>
                 </tr>
               {% endfor %}
             </tbody>
