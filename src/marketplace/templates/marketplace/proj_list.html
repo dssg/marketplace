@@ -71,7 +71,7 @@
                 <tr>
                     <td><a href="{% url 'marketplace:proj_info' project.id %}">{{ project.name }}</a></td>
                     <td><a href="{% url 'marketplace:org_info' project.organization.id %}">{{ project.organization.name }}</a></td>
-                    <td>{{ project.short_summary }}</td>
+                    <td>{{ project.short_summary|truncatewords:40 }}</td>
                     <td>
                       {% include 'marketplace/components/project_status_display.html' %}
                     </td>
