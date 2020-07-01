@@ -1,7 +1,12 @@
+import itertools
+import re
+
 from django.db import IntegrityError, transaction
 from django.utils import timezone
 from django.core.exceptions import PermissionDenied
 from datetime import date
+
+from namespaces import Namespace
 
 from ..models.proj import (
     Project, ProjectStatus, ProjectRole, ProjRole, ProjectFollower, ProjectLog, ProjectLogType, ProjectLogSource, ProjectDiscussionChannel, ProjectComment,
@@ -21,61 +26,80 @@ from .common import validate_consistent_keys, social_cause_view_model_translatio
 from .notifications import NotificationDomain, NotificationService
 from marketplace.authorization.common import ensure_user_has_permission
 
-def filter_public_projects(query_set):
-    return query_set.exclude(status=ProjectStatus.DRAFT) \
-                    .exclude(status=ProjectStatus.EXPIRED) \
-                    .exclude(status=ProjectStatus.DELETED)
 
-class ProjectService():
+def filter_public_projects(query_set):
+    return (query_set.exclude(status=ProjectStatus.DRAFT)
+                     .exclude(status=ProjectStatus.EXPIRED)
+                     .exclude(status=ProjectStatus.DELETED))
+
+
+# Namespace declaration #
+
+# TODO: continue/extend experiment with Namespaces over *Services
+
+
+# Project domain #
+
+ProjectDomain = Namespace('project')
+
+
+@ProjectDomain
+def list_public_projects(projname=None,
+                         orgname=None,
+                         skills=None,
+                         social_cause=None,
+                         project_status=None):
+    # We could also add the projects that are non-public but that also belong
+    # to the organizations that the user is member of. Should that be added
+    # or should users access those projects through the page of their org?
+    projects = filter_public_projects(Project.objects.all())
+
+    if projname:
+        projects = projects.filter(name__icontains=projname)
+
+    if orgname:
+        projects = projects.filter(organization__name__icontains=orgname)
+
+    if skills:
+        for skill in re.split(r'[,\s]+', skills):
+            projects = projects.filter(projecttask__projecttaskrequirement__skill__name__icontains=skill)
+
+    if social_cause:
+        if isinstance(social_cause, str):
+            social_cause = (social_cause,)
+
+        social_causes = [social_cause_view_model_translation[sc] for sc in social_cause
+                         if sc in social_cause_view_model_translation]
+        projects = projects.filter(projectsocialcause__social_cause__in=social_causes).distinct()
+
+    if project_status:
+        if isinstance(project_status, str):
+            project_status = (project_status,)
+
+        project_statuses = itertools.chain.from_iterable(
+            project_status_view_model_translation[ps] for ps in project_status
+            if ps in project_status_view_model_translation
+        )
+        projects = projects.filter(status__in=project_statuses).distinct()
+
+    # Here we'll make this method order by creation_date descending, rather than by name.
+    # It's only used by the project list view, which wants it this way.
+    #
+    # However, upon refactor, it *might* make sense to make this configurable by call argument,
+    # (and have the view indicate this preference), or omitted entirely (and left to the caller
+    # to apply `order_by()`).
+    #
+    # And, this module can either continue to insist on name ascending, or it looks like this
+    # could be safely moved to the model's Meta default.
+    #
+    return projects.distinct().order_by('-creation_date')
+
+
+class ProjectService:
+
     @staticmethod
     def get_project(request_user, projid):
         return Project.objects.filter(pk=projid).annotate(follower_count=Count('projectfollower')).first()
-
-    @staticmethod
-    def get_all_public_projects(request_user, search_config=None):
-        # We could also add the projects that are non-public but that also belong
-        # to the organizations that the user is member of. Should that be added
-        # or should users access those projects through the page of their org?
-        base_query = filter_public_projects(Project.objects.all())
-        if search_config:
-            if 'projname' in search_config:
-                base_query = base_query.filter(name__icontains=search_config['projname'])
-            if 'orgname' in search_config:
-                base_query = base_query.filter(organization__name__icontains=search_config['orgname'])
-            if 'skills' in search_config:
-                for skill_fragment in search_config['skills'].split():
-                    base_query = base_query.filter(projecttask__projecttaskrequirement__skill__name__icontains=skill_fragment.strip())
-            if 'social_cause' in search_config:
-                sc = search_config['social_cause']
-                if isinstance(sc, str):
-                    sc = [sc]
-                social_causes = []
-                for social_cause_from_view in sc:
-                    social_causes.append(social_cause_view_model_translation[social_cause_from_view])
-                # base_query = base_query.filter(project_cause__in=social_causes)
-                base_query = base_query.filter(projectsocialcause__social_cause__in=social_causes).distinct()
-            if 'project_status' in search_config:
-                project_status_list = search_config['project_status']
-                if isinstance(project_status_list, str):
-                    project_status_list = [project_status_list]
-                project_statuses = []
-                for project_status_from_view in project_status_list:
-                    status_filter = project_status_view_model_translation[project_status_from_view]
-                    project_statuses.extend(status_filter)
-                base_query = base_query.filter(status__in=project_statuses).distinct()
-
-        # Here we'll make this method order by creation_date descending, rather than by name.
-        # It's only used by the project list view, which wants it this way.
-        #
-        # However, upon refactor, it *might* make sense to make this configurable by call argument,
-        # (and have the view indicate this preference), or omitted entirely (and left to the caller
-        # to apply `order_by()`).
-        #
-        # And, this module can either continue to insist on name ascending, or it looks like this
-        # could be safely moved to the model's Meta default.
-        #
-        return base_query.distinct().order_by('-creation_date')
-
 
     @staticmethod
     def get_all_organization_projects(request_user, org):

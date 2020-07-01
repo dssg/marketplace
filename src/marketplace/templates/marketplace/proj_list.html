@@ -4,7 +4,6 @@
   <div class="row">
     <div class="col-lg-3">
       <form id="projlist">
-        {% csrf_token %}
         <h4>Filter results</h4>
         <label for="projname" class="col-lg-12 pl-0 pr-0">
           Project name
@@ -36,9 +35,10 @@
           {% include 'marketplace/components/filter_checkbox.html' with field_name='projectstatus' field_value='in_progress' field_text='In progress' is_checked=checked_project_fields.in_progress %}
           {% include 'marketplace/components/filter_checkbox.html' with field_name='projectstatus' field_value='completed' field_text='Completed' is_checked=checked_project_fields.completed %}
         </fieldset>
+
         <button type="submit"
                 form="projlist"
-                formmethod="post"
+                formmethod="get"
                 formaction="{% url 'marketplace:proj_list' %}"
                 class="btn btn-success col-lg-12 mt-3">
           <i class="material-icons" style="vertical-align: middle">filter_list</i>
@@ -86,8 +86,8 @@
             </tbody>
           </table>
         </div>
-        {% url 'marketplace:proj_list' as proj_list_url %}
-        {% include 'marketplace/components/pagination.html' with baseurl=proj_list_url page_obj=proj_list %}
+
+        {% include 'marketplace/components/pagination.html' with page_obj=proj_list %}
 
       {% else %}
         <p>No projects found.</p>

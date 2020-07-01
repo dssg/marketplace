@@ -84,7 +84,7 @@ class ProjectTestCase(TestCase):
         self.project = example_project()
 
     def test_create_project(self):
-        self.assertEqual(list(ProjectService.get_all_public_projects(self.owner_user, None)), [])
+        self.assertEqual(list(marketplace.project.list_public_projects()), [])
         self.assertEqual(list(ProjectService.get_all_organization_projects(self.owner_user, self.organization)), [])
         self.assertEqual(list(ProjectService.get_organization_public_projects(self.owner_user, self.organization)), [])
         self.assertEqual(ProjectService.get_project(self.owner_user, 1), None)
@@ -98,7 +98,7 @@ class ProjectTestCase(TestCase):
         OrganizationService.create_project(self.owner_user, self.organization.id, self.project)
 
         projects_list = [self.project]
-        self.assertEqual(list(ProjectService.get_all_public_projects(self.owner_user, None)), [])
+        self.assertEqual(list(marketplace.project.list_public_projects()), [])
         self.assertEqual(list(ProjectService.get_all_organization_projects(self.owner_user, self.organization)), projects_list)
         self.assertEqual(list(ProjectService.get_organization_public_projects(self.owner_user, self.organization)), [])
         self.assertEqual(ProjectService.get_featured_project(), None)
@@ -122,7 +122,7 @@ class ProjectTestCase(TestCase):
             lambda x: ProjectService.publish_project(x, self.project.id, self.project))
         ProjectService.publish_project(self.owner_user, self.project.id, self.project)
 
-        self.assertEqual(list(ProjectService.get_all_public_projects(self.owner_user, None)), [self.project])
+        self.assertEqual(list(marketplace.project.list_public_projects()), [self.project])
         self.assertEqual(list(ProjectService.get_all_organization_projects(self.owner_user, self.organization)), projects_list)
         self.assertEqual(list(ProjectService.get_organization_public_projects(self.owner_user, self.organization)), projects_list)
         self.assertEqual(ProjectService.get_featured_project(), self.project)
