@@ -10,6 +10,7 @@ from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views import generic
+from django.views.decorators.http import require_GET
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from rules.contrib.views import (
     PermissionRequiredMixin, objectgetter, permission_required,
@@ -24,6 +25,7 @@ from ..models.proj import (
 from .common import build_breadcrumb, home_link, paginate, generic_getter
 from .org import organizations_link, organization_link, get_organization, add_organization_common_context
 
+from marketplace.domain import marketplace
 from marketplace.domain.proj import ProjectService, ProjectTaskService
 from marketplace.domain.common import get_social_causes
 from marketplace.domain.org import OrganizationService
@@ -120,61 +122,72 @@ def get_project_role(request, proj_pk, role_pk):
     return generic_getter(ProjectService.get_project_role, request.user, proj_pk, role_pk)
 
 
-def project_list_view(request):
-    checked_social_cause_fields = {}
-    checked_project_fields = {}
-    filter_projname = ""
-    filter_orgname = ""
-    filter_skills = ""
-    if request.method == 'POST':
-        search_config = {}
-        if 'projname' in request.POST and request.POST.get('projname'):
-            search_config['projname'] = request.POST.get('projname')
-            filter_projname = request.POST.get('projname')
-        if 'orgname' in request.POST and request.POST.get('orgname'):
-            search_config['orgname'] = request.POST.get('orgname')
-            filter_orgname = request.POST.get('orgname')
-        if 'skills' in request.POST and request.POST.get('skills'):
-            search_config['skills'] = request.POST.get('skills')
-            filter_skills = request.POST.get('skills')
-        if 'socialcause' in request.POST:
-            search_config['social_cause'] = request.POST.getlist('socialcause')
-            for f in request.POST.getlist('socialcause'):
-                checked_social_cause_fields[f] = True
-        if 'projectstatus' in request.POST:
-            search_config['project_status'] = request.POST.getlist('projectstatus')
-            for f in request.POST.getlist('projectstatus'):
-                checked_project_fields[f] = True
-        projects =  ProjectService.get_all_public_projects(request.user, search_config)
-    elif request.method == 'GET':
-        projects =  ProjectService.get_all_public_projects(request.user)
+PROJECT_SEARCH_KEYS = (
+    'projname',
+    'orgname',
+    'skills',
+)
 
-    if projects:
-        projects_page = paginate(request, projects, page_size=15)
-    else:
-        projects_page = []
+PROJECT_SEARCH_LISTS = (
+    'social_cause',
+    'project_status',
+)
+
+@require_GET
+def project_list_view(request):
+    search_values = (
+        request.GET.get(key.replace('_', ''))
+        for key in PROJECT_SEARCH_KEYS
+    )
+    search_config = {
+        key: value
+        for (key, value) in zip(PROJECT_SEARCH_KEYS, search_values)
+        if value
+    }
+
+    filter_projname = request.GET.get('projname', '')
+    filter_orgname = request.GET.get('orgname', '')
+    filter_skills = request.GET.get('skills', '')
+
+    search_values_multi = (
+        request.GET.getlist(key.replace('_', ''))
+        for key in PROJECT_SEARCH_LISTS
+    )
+    search_config.update(
+        (key, values)
+        for (key, values) in zip(PROJECT_SEARCH_LISTS, search_values_multi)
+        if values
+    )
+
+    checked_social_cause_fields = dict.fromkeys(request.GET.getlist('socialcause'), True)
+    checked_project_fields = dict.fromkeys(request.GET.getlist('projectstatus'), True)
+
+    projects =  marketplace.project.list_public_projects(**search_config)
+    projects_page = paginate(request, projects, page_size=15) if projects else ()
 
     any_org_member = OrganizationService.user_is_any_organization_member(request.user)
     organizations = OrganizationService.get_organizations_with_user_create_project_permission(request.user)
+
     if len(organizations) == 1:
         single_org_membership = organizations[0]
         organization_memberships = None
     else:
         single_org_membership = None
         organization_memberships = organizations
-    return render(request, 'marketplace/proj_list.html',
-                        {
-                            'breadcrumb': build_breadcrumb([home_link(), projects_link(False)]),
-                            'proj_list': projects_page,
-                            'checked_social_cause_fields': checked_social_cause_fields,
-                            'checked_project_fields': checked_project_fields,
-                            'filter_projname': filter_projname,
-                            'filter_orgname': filter_orgname,
-                            'filter_skills': filter_skills,
-                            'user_is_any_organization_member': any_org_member,
-                            'single_org_membership': single_org_membership,
-                            'organization_memberships': organization_memberships,
-                        })
+
+    return render(request, 'marketplace/proj_list.html', {
+        'breadcrumb': build_breadcrumb([home_link(), projects_link(False)]),
+        'proj_list': projects_page,
+        'checked_social_cause_fields': checked_social_cause_fields,
+        'checked_project_fields': checked_project_fields,
+        'filter_projname': filter_projname,
+        'filter_orgname': filter_orgname,
+        'filter_skills': filter_skills,
+        'user_is_any_organization_member': any_org_member,
+        'single_org_membership': single_org_membership,
+        'organization_memberships': organization_memberships,
+    })
+
 
 def add_project_common_context(request, project, page_tab, context):
     context['project'] = project
