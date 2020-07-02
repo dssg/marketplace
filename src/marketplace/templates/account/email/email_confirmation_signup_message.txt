@@ -1,0 +1,7 @@
+Welcome to Solve for Good!
+
+Please click the link below to confirm your e-mail address and get started.
+
+{{ activate_url }}
+
+Thank you from solveforgood.org!
