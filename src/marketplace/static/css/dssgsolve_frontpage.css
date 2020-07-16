@@ -99,3 +99,32 @@ h1, h2, h3 {
   text-align: center;
   padding: 0.75rem 9.25rem;
 }
+
+.marketing-secondary {
+  background-color: #F3DA12;
+}
+
+.call-special {
+  font-size: 1.8rem;
+  font-weight: 400;
+  margin-left: -3%;
+  padding-left: 1%;
+}
+.call-special a {
+  text-decoration: underline;
+  color: inherit;
+}
+.call-special .material-icons {
+  vertical-align: middle;
+  font-size: 4rem;
+}
+
+.platform-stat {
+  color: #2c3e50;
+}
+.platform-stat .material-icons {
+  vertical-align: middle;
+  font-size: 3rem;
+  padding-right: 0.5rem;
+  float: left;
+}
