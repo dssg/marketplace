@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from allauth.account.models import EmailAddress
 from allauth.account.utils import perform_login
 from allauth.socialaccount import providers
@@ -13,6 +15,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import Http404, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
+from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views import generic
 from django.views.decorators.csrf import csrf_protect
@@ -24,7 +27,7 @@ from rules.contrib.views import (
 )
 
 from ..models.org import Organization, OrganizationMembershipRequest
-from ..models.proj import Project, ProjectTask, VolunteerApplication
+from ..models.proj import Project, ProjectStatus, ProjectTask, VolunteerApplication
 from ..models.user import SkillLevel, User, UserType, VolunteerProfile, UserNotification, NotificationSource
 from .common import build_breadcrumb, home_link, paginate
 
@@ -220,24 +223,35 @@ class UserHomeView(PermissionRequiredMixin, generic.ListView): ## This is a list
         return response
 
 def home_view(request):
-    # if request.user.is_authenticated:
-    #     return UserHomeView.as_view()(request)
-    # else:
+    # featured volunteer
     featured_volunteer = UserService.get_featured_volunteer()
     if featured_volunteer:
-        featured_volunteer_skills = featured_volunteer.user.volunteerskill_set.filter(level=SkillLevel.EXPERT)
-        featured_volunteer_skill_names = [volunteer_skill.skill.name for volunteer_skill in featured_volunteer_skills]
+        featured_volunteer_skills = (
+            featured_volunteer.user.volunteerskill_set
+            .filter(level=SkillLevel.EXPERT)
+            .values_list('skill__name', flat=True)
+        )
     else:
-        featured_volunteer_skill_names = None
-    return render(request, 'marketplace/home_anonymous.html',
-        {
-            'user_is_any_organization_member': OrganizationService.user_can_create_projects(request.user),
-            'featured_project': ProjectService.get_featured_project(),
-            'featured_organization': OrganizationService.get_featured_organization(),
-            'featured_volunteer': featured_volunteer,
-            'featured_volunteer_skills': featured_volunteer_skill_names,
-            'news': NewsService.get_latest_news(request.user),
-        })
+        featured_volunteer_skills = None
+
+    # platform stats
+    avg_days_month = 365.25 / 12
+    one_avg_month = timedelta(days=avg_days_month)
+    one_avg_month_ago = timezone.now() - one_avg_month
+
+    return render(request, 'marketplace/home_anonymous.html', {
+        'user_is_any_organization_member': OrganizationService.user_can_create_projects(request.user),
+        'featured_project': ProjectService.get_featured_project(),
+        'featured_organization': OrganizationService.get_featured_organization(),
+        'featured_volunteer': featured_volunteer,
+        'featured_volunteer_skills': featured_volunteer_skills,
+        'news': NewsService.get_latest_news(request.user),
+        'platform_stats': {
+            'projects_in_design': Project.objects.filter(status=ProjectStatus.DESIGN).count(),
+            'projects_this_month': Project.objects.filter(creation_date__gte=one_avg_month_ago).count(),
+            'volunteers_this_month': VolunteerProfile.objects.filter(creation_date__gte=one_avg_month_ago).count(),
+        },
+    })
 
 
 @login_required
