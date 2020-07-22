@@ -99,3 +99,49 @@ h1, h2, h3 {
   text-align: center;
   padding: 0.75rem 9.25rem;
 }
+
+.marketing-secondary {
+  background-color: #AAD037;
+}
+
+.call-special {
+  font-size: 1.8rem;
+  font-weight: 400;
+  margin-left: -3%;
+  padding-left: 1%;
+  color: #EEEEEE;
+}
+@media all and (min-width: 1200px) {
+  .call-special {
+    margin-left: -4%;
+  }
+}
+
+.call-special a {
+  text-decoration: underline;
+  color: inherit;
+}
+.call-special .material-icons {
+  vertical-align: middle;
+  font-size: 4rem;
+}
+.call-special .special-text-outline {
+  -webkit-text-stroke: 2px #2c3e50;
+}
+
+.platform-stat {
+  color: #2c3e50;
+}
+.platform-stat .material-icons {
+  font-size: 3rem;
+  margin-top: -0.3rem;
+  padding-right: 0.6rem;
+  float: left;
+}
+
+.mt-45 {
+  margin-top: 2rem !important;
+}
+.mt-54 {
+  margin-top: 2.5rem !important;
+}

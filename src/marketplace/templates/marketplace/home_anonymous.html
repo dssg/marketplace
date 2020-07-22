@@ -45,8 +45,49 @@
 
 <div class="container">
 
- <div class="row mt-5">
+ <div class="row marketing-secondary">
+   <div class="col-lg-12">
 
+     {% if settings.WEBINAR_CALLOUT.register_url and settings.WEBINAR_CALLOUT.home_url %}
+     <div class="row mt-45">
+       <div class="col-lg-12">
+         <h3 class="call-special text-center">
+           <i class="material-icons special-text-outline">device_hub</i>
+           <a href="{{ settings.WEBINAR_CALLOUT.register_url }}" target="_blank">Register</a>
+           for the biweekly Thursday
+           <a href="{{ settings.WEBINAR_CALLOUT.home_url }}" target="_blank">Solve Summer Academy webinar series</a>.
+         </h3>
+       </div>
+     </div>
+     {% endif %}
+
+     <div class="row mt-4 mb-5">
+       <div class="card-deck col-lg-12">
+         <div class="card border-0 bg-transparent">
+           <h5 class="platform-stat">
+             <i class="material-icons">remove_red_eye</i>
+             {{ platform_stats.projects_in_design }} projects are posted and waiting to be scoped
+           </h5>
+         </div>
+         <div class="card border-0 bg-transparent">
+           <h5 class="platform-stat">
+             <i class="material-icons">emoji_objects</i>
+             {{ platform_stats.projects_this_month }} new projects posted this month
+           </h5>
+         </div>
+         <div class="card border-0 bg-transparent">
+           <h5 class="platform-stat">
+             <i class="material-icons">people</i>
+             {{ platform_stats.volunteers_this_month }} new volunteers joined this month
+           </h5>
+         </div>
+       </div>
+     </div>
+
+   </div>
+ </div>
+
+ <div class="row mt-54">
   <div class="col-lg-9">
    <div class="col-lg-12">
      <h2>What is <span class="text-warning">Solve for Good</span>?</h2>

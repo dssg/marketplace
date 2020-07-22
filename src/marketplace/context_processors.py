@@ -1,5 +1,21 @@
 from django.conf import settings
 
 
-def ga_tracking_id(request):
-    return {} if settings.DEBUG else {'GA_TRACKING_ID': settings.GA_TRACKING_ID}
+Empty = object()
+
+
+INCLUDED_SETTINGS = getattr(settings, 'TEMPLATE_INCLUDED_SETTINGS', ())
+
+
+def include_settings(request):
+    values = (
+        getattr(settings, name, Empty)
+        for name in INCLUDED_SETTINGS
+    )
+    return {
+        'settings': {
+            name: value
+            for (name, value) in zip(INCLUDED_SETTINGS, values)
+            if value is not Empty
+        }
+    }

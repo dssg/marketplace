@@ -129,7 +129,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'marketplace.context_processors.ga_tracking_id',
+                'marketplace.context_processors.include_settings',
             ],
         },
     },
@@ -320,4 +320,14 @@ RECAPTCHA_SECRET_KEY = config('RECAPTCHA_SECRET_KEY', default=None)
 
 AUTOMATICALLY_ACCEPT_VOLUNTEERS = config('AUTOMATICALLY_ACCEPT_VOLUNTEERS', default=False, cast=bool)
 
-GA_TRACKING_ID = config('GA_TRACKING_ID', default=None)
+GA_TRACKING_ID = config('GA_TRACKING_ID', default=None) if not DEBUG else None
+
+WEBINAR_CALLOUT = {
+    'register_url': config('WEBINAR_REGISTER_URL', default=None),
+    'home_url': config('WEBINAR_HOME_URL', default=None),
+}
+
+TEMPLATE_INCLUDED_SETTINGS = (
+    'GA_TRACKING_ID',
+    'WEBINAR_CALLOUT',
+)
