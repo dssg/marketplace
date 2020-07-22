@@ -47,16 +47,19 @@
 
  <div class="row marketing-secondary">
    <div class="col-lg-12">
+
+     {% if settings.WEBINAR_CALLOUT.register_url and settings.WEBINAR_CALLOUT.home_url %}
      <div class="row mt-45">
        <div class="col-lg-12">
          <h3 class="call-special text-center">
            <i class="material-icons special-text-outline">device_hub</i>
-           <a href="https://www.eventbrite.com/e/solve-summer-academy-webinar-series-tickets-112140246496" target="_blank">Register</a>
+           <a href="{{ settings.WEBINAR_CALLOUT.register_url }}" target="_blank">Register</a>
            for the biweekly Thursday
-           <a href="https://www.youtube.com/playlist?list=PLUsfTziJs0NUT5WDlMjOqHr1-ovsdWCMN" target="_blank">Solve Summer Academy webinar series</a>.
+           <a href="{{ settings.WEBINAR_CALLOUT.home_url }}" target="_blank">Solve Summer Academy webinar series</a>.
          </h3>
        </div>
      </div>
+     {% endif %}
 
      <div class="row mt-4 mb-5">
        <div class="card-deck col-lg-12">
