@@ -1,15 +1,24 @@
 {% load static %}
 
-<nav class="navbar footer no-gutters">
+<nav class="navbar navbar-dark footer no-gutters">
   <div class="container">
-    <div class="col-lg-12 mb-2">
-      <img src="{% static 'img/dssglogo-footer.png' %}" class="img-fluid"></img>
+
+    <div class="col-12 col-md-8">
+      <p>
+        <img src="{% static 'img/dssglogo-footer.png' %}" class="img-fluid">
+      </p>
+      <p class="mb-0">
+        &copy;{% now "Y" %} Data Science for Social Good Foundation<br>
+        info at solveforgood dot org
+      </p>
     </div>
-    <div class="col-lg-12">
-      ©2020 Data Science for Social Good Foundation
+
+    <div class="col-auto">
+      <ul class="nav justify-content-end">
+        <li class="nav-item"><a class="nav-link" href="{% url 'marketplace:terms' %}">Terms</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'marketplace:privacy' %}">Privacy</a></li>
+      </ul>
     </div>
-    <div class="col-lg-12">
-    info at solveforgood dot org
-     </div>
+
   </div>
-</div>
+</nav>

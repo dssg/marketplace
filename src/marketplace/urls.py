@@ -1,5 +1,6 @@
 from django.contrib.auth import views as auth_views
 from django.urls import path, reverse_lazy
+from django.views.generic.base import RedirectView, TemplateView
 
 from .views import common, org, proj, user, admin
 
@@ -9,8 +10,15 @@ app_name = 'marketplace'
 
 urlpatterns = [
     path('', user.home_view, name='home'),
+
     path('about/', common.about_view, name='about'),
     path('resources/', common.resources_view, name='resources'),
+
+    path('terms-20200720.html', TemplateView.as_view(template_name='marketplace/terms/terms-20200720.html'), name='terms-20200720'),
+    path('terms/', RedirectView.as_view(pattern_name='marketplace:terms-20200720'), name='terms'),
+
+    path('privacy-20200720.html', TemplateView.as_view(template_name='marketplace/privacy/privacy-20200720.html'), name='privacy-20200720'),
+    path('privacy/', RedirectView.as_view(pattern_name='marketplace:privacy-20200720'), name='privacy'),
 
     path('org/', org.organization_list_view, name='org_list'),
     path('org/create', org.OrganizationCreateView.as_view(), name='org_create'),

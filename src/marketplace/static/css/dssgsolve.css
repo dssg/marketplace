@@ -61,6 +61,18 @@ body {
   background-color: #ABCF38;
   color: white;
 }
+.footer .nav .nav-link {
+  color: #fff;
+}
+.footer .nav .nav-link:hover {
+  color: #2c3e50 !important;
+}
+.footer .nav .nav-item:first-child .nav-link {
+  padding-left: 0;
+}
+.footer .nav .nav-item:last-child .nav-link {
+  padding-right: 1rem;
+}
 
 p.line-compact, .line-compact p {
   margin-bottom: 0.5rem;
