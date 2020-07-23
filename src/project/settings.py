@@ -218,8 +218,13 @@ if file_storage_option == 's3':
     DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
     STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
-    AWS_QUERYSTRING_AUTH = False
     AWS_LOCATION = 'static'
+
+    AWS_QUERYSTRING_AUTH = False      # currently it's all public so this is not desired
+    AWS_IS_GZIPPED = True             # gzip: css, js & svg (by default)
+    AWS_S3_OBJECT_PARAMETERS = {
+        'CacheControl': 'no-cache',   # force browser to validate cache (S3 uses ETag)
+    }
 
     AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID', default=None)
     AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY', default=None)
