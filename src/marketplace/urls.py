@@ -14,11 +14,17 @@ urlpatterns = [
     path('about/', common.about_view, name='about'),
     path('resources/', common.resources_view, name='resources'),
 
-    path('terms-20200804.html', TemplateView.as_view(template_name='marketplace/terms/terms-20200804.html'), name='terms-20200804'),
     path('terms/', RedirectView.as_view(pattern_name='marketplace:terms-20200804'), name='terms'),
+    path('terms-20200804.html',
+         TemplateView.as_view(template_name='marketplace/terms/terms-20200804.html',
+                              extra_context={'privacy_url': 'marketplace:privacy-20200804'}),
+         name='terms-20200804'),
 
-    path('privacy-20200804.html', TemplateView.as_view(template_name='marketplace/privacy/privacy-20200804.html'), name='privacy-20200804'),
     path('privacy/', RedirectView.as_view(pattern_name='marketplace:privacy-20200804'), name='privacy'),
+    path('privacy-20200804.html',
+         TemplateView.as_view(template_name='marketplace/privacy/privacy-20200804.html',
+                              extra_context={'terms_url': 'marketplace:terms-20200804'}),
+         name='privacy-20200804'),
 
     path('org/', org.organization_list_view, name='org_list'),
     path('org/create', org.OrganizationCreateView.as_view(), name='org_create'),
