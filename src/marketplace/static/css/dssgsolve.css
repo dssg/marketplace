@@ -57,9 +57,46 @@ body {
   }
 }
 
+.list-roman {
+  list-style: lower-roman;
+}
+
+.list-mt-1 li {
+  margin-top: 0.25rem !important;
+}
+.list-mt-2 li {
+  margin-top: 0.5rem !important;
+}
+.list-mt-3 li {
+  margin-top: 1rem !important;
+}
+
+/* fix internal anchors
+ *
+ * don't allow navbar to overshoot them
+ */
+:target::before {
+  content: "";
+  display: block;
+  height: 125px;       /* fixed header height*/
+  margin: -125px 0 0;  /* negative fixed header height */
+}
+
 .footer {
   background-color: #ABCF38;
   color: white;
+}
+.footer .nav .nav-link {
+  color: #fff;
+}
+.footer .nav .nav-link:hover {
+  color: #2c3e50 !important;
+}
+.footer .nav .nav-item:first-child .nav-link {
+  padding-left: 0;
+}
+.footer .nav .nav-item:last-child .nav-link {
+  padding-right: 1rem;
 }
 
 p.line-compact, .line-compact p {
