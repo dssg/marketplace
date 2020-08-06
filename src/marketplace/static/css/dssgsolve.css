@@ -43,6 +43,9 @@ body {
 .section-header {
   margin-top: 25px;
 }
+.section-header-primary {
+  margin-top: 10px;
+}
 
 .main-page-container {
   padding-top: 50px;
@@ -418,4 +421,32 @@ fieldset legend {
     color: transparent;
  *
  */
+}
+
+.btn-affirm {
+	color: #fff;
+	background-color: #95a5a6;
+	border-color: #95a5a6;
+}
+.btn-affirm:hover {
+	background-color: #809395;
+	border-color: #798d8f;
+}
+.btn-affirm.focus {
+  box-shadow: none;
+  -webkit-box-shadow: none;
+}
+.btn-affirm.active {
+  background-color: #80a415;
+  border-color: #80a415;
+}
+
+.btn-affirm .post-affirm {
+	display: none;
+}
+.btn-affirm.active .post-affirm {
+	display: block;
+}
+.btn-affirm.active .pre-affirm {
+	display: none;
 }

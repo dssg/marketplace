@@ -434,7 +434,7 @@ def create_volunteer_profile_view(request, user_pk):
 
 def select_user_type_before(request):
     return render(request, 'marketplace/signup_type_select.html', {
-        'breadcrumb': [home_link(), ('Select your account type', None)],
+        'breadcrumb': [home_link(), ('Get started', None)],
     })
 
 
@@ -604,7 +604,7 @@ def signup(request, user_type):
     return render(request, 'marketplace/signup.html', {
         'form': form,
         'user_type': user_type,
-        'breadcrumb': build_breadcrumb([home_link(), ('Sign up', None)]),
+        'breadcrumb': build_breadcrumb([home_link(), ('Get started', reverse('marketplace:signup_type_select')), ('Sign up', None)]),
         'captcha_site_key': settings.RECAPTCHA_SITE_KEY,
         'preferences': preferences,
     })
