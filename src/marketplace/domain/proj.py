@@ -63,7 +63,18 @@ class ProjectService():
                     status_filter = project_status_view_model_translation[project_status_from_view]
                     project_statuses.extend(status_filter)
                 base_query = base_query.filter(status__in=project_statuses).distinct()
-        return base_query.distinct().order_by('name')
+
+        # Here we'll make this method order by creation_date descending, rather than by name.
+        # It's only used by the project list view, which wants it this way.
+        #
+        # However, upon refactor, it *might* make sense to make this configurable by call argument,
+        # (and have the view indicate this preference), or omitted entirely (and left to the caller
+        # to apply `order_by()`).
+        #
+        # And, this module can either continue to insist on name ascending, or it looks like this
+        # could be safely moved to the model's Meta default.
+        #
+        return base_query.distinct().order_by('-creation_date')
 
 
     @staticmethod
