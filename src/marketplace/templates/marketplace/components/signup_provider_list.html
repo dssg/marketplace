@@ -3,20 +3,26 @@
 {% get_providers as socialaccount_providers %}
 
 <form id="signup_oauth">
+  <fieldset
+      {% if form_disabled %}disabled="disabled"{% endif %}
+  >
+
 {% csrf_token %}
 
 {% for preference in preferences %}
-  <input type="hidden" name="preferences" value="{{ preference }}">
+    <input type="hidden" name="preferences" value="{{ preference }}">
 {% endfor %}
 
 {% for provider in socialaccount_providers %}
-    <button
-        title="Sign up via {{provider.name}}"
-        class="btn btn-outline-light provider {{provider.id}}"
-        type="submit"
-        form="signup_oauth"
-        formaction="{% url 'marketplace:signup_oauth' user_type provider.id %}"
-        formmethod="post"
-    ><i class="fab fa-{{provider.id}}"></i>{{provider.name}}</button>
+      <button
+          title="Sign up via {{provider.name}}"
+          class="btn btn-outline-light provider {{provider.id}}"
+          type="submit"
+          form="signup_oauth"
+          formaction="{% url 'marketplace:signup_oauth' user_type provider.id %}"
+          formmethod="post"
+      ><i class="fab fa-{{provider.id}}"></i>{{provider.name}}</button>
 {% endfor %}
+
+  </fieldset>
 </form>

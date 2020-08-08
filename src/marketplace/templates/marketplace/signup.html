@@ -7,15 +7,45 @@
   {% endif %}
 
   <div class="col-lg-12">
-    <h2 class="section-header">Sign up</h2>
 
-    <p>Sign up and log in via one of these providers or by filling out the form below.</p>
+    <div class="row">
+      <div class="col-md-9 col-lg-7 col-xl-6">
+        <h4 class="section-header-primary">Review our Terms of Use and Privacy Policy</h4>
 
-    {% include "marketplace/components/signup_provider_list.html" %}
+        <div class="row">
+          <div class="col-sm-8">
+            <p>
+              First, please affirm your agreement with Solve for Good's
+              <a href="{% url 'marketplace:terms' %}">Terms of Use</a> and
+              <a href="{% url 'marketplace:privacy' %}">Privacy Policy</a>.
+            </p>
+          </div>
+          <div class="col-sm-4">
+            <div class="btn-group-toggle pt-sm-1">
+              <label id="legal_agreement" class="btn btn-affirm">
+                <input type="checkbox" autocomplete="off"> I agree
+                <i class="material-icons on-right pre-affirm">check_box_outline_blank</i>
+                <i class="material-icons on-right post-affirm">check_box</i>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <hr>
+
+    <h4 class="section-header">Sign up</h4>
+
+    <p>Now, sign up and log in via one of these providers or by filling out the form below.</p>
+
+    {% include "marketplace/components/signup_provider_list.html" with form_disabled=True %}
 
     <hr>
 
     <form id="signup">
+      <fieldset disabled="disabled">
+
       {% csrf_token %}
       {% include 'marketplace/components/standard_form_fields.html' with wide_field_names=True %}
 
@@ -71,8 +101,59 @@
         </div>
       </div>
 
+      </fieldset>
     </form>
+
   </div>
 
+  <script>
+    $(
+      function () {
+        /* Disallow sign-up without legal agreement.
+         *
+         * Sign-up form fieldsets are disabled unless user has agreed to legal terms.
+         *
+         * To prevent a race condition, additionally reproduces the `.active` class logic of
+         * Boostrap's `data-toggle="buttons"`, (against which other logic, e.g. CSS, is based).
+         */
+        'use strict';
+
+        var
+            // our targets
+            agreementBtn = $('#legal_agreement'),
+            signUpForms = $('#signup, #signup_oauth'),
+
+            // our handlers
+            syncActive = function () {
+              /* Set class `active` in sync with whether underlying form field is checked.
+               */
+              var $this = $(this),
+                  isActive = $this.find('input').is(':checked');
+
+              $this.toggleClass('active', isActive);
+            },
+            allowSignUp = function (agreementBtn, signUpForms) {
+              /* Disable sign-up form fieldsets unless legal agreement button is activated.
+               */
+              var agreed = agreementBtn.hasClass('active'),
+                  fieldsets = signUpForms.find('fieldset');
+
+              fieldsets.attr('disabled', agreed ? null : 'disabled');
+            },
+            syncAll = function () {
+              /* All of the above
+               */
+              syncActive.call(this);
+              allowSignUp(agreementBtn, signUpForms);
+            };
+
+        // Sync each time agreement button is clicked
+        agreementBtn.click(syncAll);
+
+        // ...And once on initialization to be sure
+        syncAll.call(agreementBtn);
+      }
+    );
+  </script>
 
 {% endblock %}
