@@ -693,7 +693,6 @@ class Develop(Local):
         docker = cls.local['docker']
         return docker[
             'run',
-            '-p', '8000:8000',
             '-v', f'{SRC_PATH}:/app',
             '--env-file', str(ROOT_PATH / '.env'),
         ].bound_command(
@@ -718,6 +717,24 @@ class Develop(Local):
             action='store_true',
             help="(re-)build image before container creation",
         )
+        parser.add_argument(
+            '--net',
+            choices=('host',),
+            help="specify a non-default networking mode",
+        )
+        parser.add_argument(
+            '-e', '--env',
+            action='append',
+            help='set environment variables (as for docker)',
+        )
+
+        parser.set_defaults(
+            resolve_environ=functools.lru_cache()(self.resolve_environ),
+        )
+
+    def resolve_environ(self):
+        return dict(pair.split('=') if '=' in pair else (pair, None)
+                    for pair in (self.args.env or ()))
 
     def exec(self, user='webapp', interactive=True, tty=True, **environ):
         command = self.local['docker']['exec']
@@ -733,7 +750,11 @@ class Develop(Local):
 
         if environ:
             command = command[[
-                ('--env', f'{key}={value}') for (key, value) in environ.items()
+                (
+                    '--env',
+                    key if value is None else f'{key}={value}'
+                )
+                for (key, value) in environ.items()
             ]]
 
         return command[self.args.name]
@@ -762,8 +783,20 @@ class Develop(Local):
 
         yield self.run(
             '-d',
+            '-p', '8000:8000',
             '--name', args.name,
+            f'--net={args.net}' if args.net is not None else (),
+            **args.resolve_environ(),
         )
+
+    @localmethod
+    def restart(self):
+        """restart the web server"""
+        yield self.exec(user=None, interactive=False, tty=False)[
+            'supervisorctl',
+            'restart',
+            'webapp',
+        ]
 
     @localmethod('cmd', metavar='command', nargs=REMAINDER, help="shell command (default: bash)")
     @localmethod('--root', action='store_true', help="execute command as root")
@@ -776,18 +809,8 @@ class Develop(Local):
             self.exec(**kwargs)[args.cmd or 'bash'],
         )
 
-    @localmethod
-    def restart(self):
-        """restart the web server"""
-        yield self.exec(user=None, interactive=False, tty=False)[
-            'supervisorctl',
-            'restart',
-            'webapp',
-        ]
-
     @localmethod('remainder', metavar='command arguments', nargs=REMAINDER)
     @localmethod('mcmd', metavar='command', help="django management command")
-    @localmethod('-e', '--env', action='append', help='set environment variables')
     def djmanage(self, args):
         """manage the django project in a running container"""
         yield (
@@ -795,10 +818,15 @@ class Develop(Local):
             self.local.FG(retcode=None),
             self.exec(
                 PAGER='more',
-                **dict(pair.split('=') for pair in args.env or ()),
+                **args.resolve_environ(),
             )[
                 './manage.py',
                 args.mcmd,
                 args.remainder,
             ],
         )
+
+    @localmethod('remainder', metavar='test command arguments', nargs=REMAINDER)
+    def test(self, args):
+        """test the django project in a container"""
+        return self.run('--rm')['./manage.py', 'test', args.remainder]
