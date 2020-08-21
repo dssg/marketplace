@@ -214,10 +214,38 @@ USE_TZ = True
 ## DEBUG = True. When not in debug mode, Django will not serve those files locally
 ## so it needs a remote storage system.
 ## Whitenoise works for serving static files locally, but not for user-uploaded files.
+#
+## It might make sense at some point to *only* store user files in S3, and serve
+## the app's static files through whitenoise (even in production):
+##
+##   * whitenoise appears as tho it might be more sophisticated in its handling
+##     of static files (than django-storages + S3)
+##
+##   * this separation would be "cleaner" (as well as that static files wouldn't
+##     be deployed to yet another place: S3)
+##
+## Even then, we might still (maybe even more so in this case) want a CDN
+## (CloudFront). CloudFront could be configured to pull user files from S3. And
+## CloudFront would pull static files from whitenoise.
+##
+## (That said, that would be *a little* more complex.)
+#
+## Moreover, note that, for security reasons, we'll *never* want user-uploaded
+## content to be available from a secure domain (the domain or subdomain of the
+## app), regardless of whether it's coming from S3 or CloudFront (i.e. a vanity
+## domain / CNAME configuration to which authenticated cookies would be shared):
+##
+##   https://security.googleblog.com/2012/08/content-hosting-for-modern-web.html
+#
 if file_storage_option == 's3':
     DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
     STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
+    # TODO: user-uploaded media can be moved/put in 'media' through
+    # configuration of DEFAULT_FILE_STORAGE:
+    #
+    #   https://django-storages.readthedocs.io/en/latest/backends/amazon-S3.html
+    #
     AWS_LOCATION = 'static'
 
     AWS_QUERYSTRING_AUTH = False      # currently it's all public so this is not desired
