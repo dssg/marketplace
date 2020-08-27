@@ -5,6 +5,8 @@ from django.contrib.auth import logout
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib import messages
 from django.core.exceptions import ValidationError
+from django.db.models import Max, Min
+from django.db.models.functions import ExtractYear
 from django.forms import CharField, ModelForm, Textarea
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import redirect, render
@@ -135,15 +137,36 @@ PROJECT_SEARCH_LISTS = (
 
 @require_GET
 def project_list_view(request):
+    # year of posting filter gets slight special handling
+    (latest_year, oldest_year) = (
+        Project.objects
+        .annotate(
+            creation_year=ExtractYear('creation_date'),
+        ).aggregate(
+            Max('creation_year'),
+            Min('creation_year'),
+        ).values()
+    )
+    project_years = range(latest_year, (oldest_year - 1), -1)
+
+    try:
+        filter_year = int(request.GET.get('postedsince', ''))
+    except ValueError:
+        filter_year = None
+    selected_year = filter_year if filter_year in project_years else oldest_year
+
+    search_config = {'posted_since': selected_year}
+
+    # the rest are handled in bulk
     search_values = (
         request.GET.get(key.replace('_', ''))
         for key in PROJECT_SEARCH_KEYS
     )
-    search_config = {
-        key: value
+    search_config.update(
+        (key, value)
         for (key, value) in zip(PROJECT_SEARCH_KEYS, search_values)
         if value
-    }
+    )
 
     filter_projname = request.GET.get('projname', '')
     filter_orgname = request.GET.get('orgname', '')
@@ -186,6 +209,10 @@ def project_list_view(request):
         'user_is_any_organization_member': any_org_member,
         'single_org_membership': single_org_membership,
         'organization_memberships': organization_memberships,
+        'project_years': [
+            (project_year, project_year == selected_year)
+            for project_year in project_years
+        ],
     })
 
 

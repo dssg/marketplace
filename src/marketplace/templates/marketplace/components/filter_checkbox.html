@@ -1,10 +1,7 @@
-
-
-
 <div class="form-check">
   <label class="form-check-label" for="{{ field_name }}{{ field_value }}">
     <input class="form-check-input"
-           type="checkbox"
+           type="{{ field_type|default:'checkbox' }}"
            id="{{ field_name }}{{ field_value }}"
            name="{{ field_name }}"
            value="{{ field_value }}"
