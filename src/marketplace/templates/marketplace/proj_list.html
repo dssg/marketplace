@@ -36,6 +36,14 @@
           {% include 'marketplace/components/filter_checkbox.html' with field_name='projectstatus' field_value='completed' field_text='Completed' is_checked=checked_project_fields.completed %}
         </fieldset>
 
+        <fieldset class="mt-3" name="since">
+          <legend>Posted in or after</legend>
+          {# if we make form auto-submit on change, then these should perhaps be anchors. however, as currently implemented, radios perhaps make most sense. #}
+          {% for project_year, is_checked in project_years %}
+          {% include 'marketplace/components/filter_checkbox.html' with field_name='postedsince' field_value=project_year field_text=project_year field_type='radio' is_checked=is_checked %}
+          {% endfor %}
+        </fieldset>
+
         <button type="submit"
                 form="projlist"
                 formmethod="get"

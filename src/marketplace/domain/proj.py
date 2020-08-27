@@ -48,6 +48,7 @@ def list_public_projects(projname=None,
                          orgname=None,
                          skills=None,
                          social_cause=None,
+                         posted_since=None,
                          project_status=None):
     # We could also add the projects that are non-public but that also belong
     # to the organizations that the user is member of. Should that be added
@@ -59,6 +60,12 @@ def list_public_projects(projname=None,
 
     if orgname:
         projects = projects.filter(organization__name__icontains=orgname)
+
+    if isinstance(posted_since, int):
+        projects = projects.filter(creation_date__year__gte=posted_since)
+    elif posted_since:
+        # must be datetime-like value
+        projects = projects.filter(creation_date__gte=posted_since)
 
     if skills:
         for skill in re.split(r'[,\s]+', skills):
