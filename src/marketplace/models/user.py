@@ -195,8 +195,9 @@ class NotificationSource():
                 )
 
 class UserNotification(models.Model):
+
     notification_date = models.DateTimeField(auto_now_add=True)
-    notification_description = models.CharField(max_length=500)
+    notification_description = models.TextField()
     is_read = models.BooleanField()
     severity = models.IntegerField(
         choices=NotificationSeverity.get_choices(),
