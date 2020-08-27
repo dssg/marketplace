@@ -11,7 +11,7 @@ from ..models.user import (
     User, NotificationSeverity, NotificationSource,
 )
 from ..models.proj import ProjectStatus
-from .notifications import NotificationService
+from .notifications import NotificationDomain, NotificationService
 from .proj import ProjectService
 
 from .common import validate_consistent_keys, social_cause_view_model_translation, project_status_view_model_translation, org_type_view_model_translation
@@ -103,7 +103,7 @@ class OrganizationService():
             admin_role.role = OrgRole.ADMINISTRATOR
             admin_role.save()
             message = "You have created the organization {0} and have been made its administrator user.".format(organization.name)
-            NotificationService.add_user_notification(request_user,
+            NotificationDomain.add_user_notification(request_user,
                                                         message,
                                                         NotificationSeverity.INFO,
                                                         NotificationSource.ORGANIZATION,
@@ -218,7 +218,7 @@ class OrganizationService():
             organization_role.organization = organization
             try:
                 organization_role.save()
-                NotificationService.add_user_notification(organization_role.user,
+                NotificationDomain.add_user_notification(organization_role.user,
                                                             "You have been added as a member of " + organization_role.organization.name + " with " + organization_role.get_role_display() + " role.",
                                                             NotificationSeverity.INFO,
                                                             NotificationSource.ORGANIZATION,
@@ -257,7 +257,7 @@ class OrganizationService():
                 membership_request.role = OrgRole.STAFF
                 if not OrganizationService.user_is_pending_membership(user, organization):
                     membership_request.save()
-                    NotificationService.add_user_notification(membership_request.user,
+                    NotificationDomain.add_user_notification(membership_request.user,
                                                                 "You have applied to be a member of " + membership_request.organization.name + ". You will be notified when the organization's administrators review your membership request.",
                                                                 NotificationSeverity.INFO,
                                                                 NotificationSource.ORGANIZATION_MEMBERSHIP_REQUEST,
@@ -287,7 +287,7 @@ class OrganizationService():
         membership_request.status = ReviewStatus.ACCEPTED
         membership_request.reviewer = request_user
         OrganizationService.save_membership_request(request_user, orgid, membership_request)
-        NotificationService.add_user_notification(membership_request.user,
+        NotificationDomain.add_user_notification(membership_request.user,
                                                     "Congratulations! Your membership request for " + membership_request.organization.name + " was accepted.",
                                                     NotificationSeverity.INFO,
                                                     NotificationSource.ORGANIZATION_MEMBERSHIP_REQUEST,
@@ -300,7 +300,7 @@ class OrganizationService():
         membership_request.status = ReviewStatus.REJECTED
         membership_request.reviewer = request_user
         OrganizationService.save_membership_request(request_user, orgid, membership_request)
-        NotificationService.add_user_notification(membership_request.user,
+        NotificationDomain.add_user_notification(membership_request.user,
                                                     "Your membership request for " + membership_request.organization.name + " was rejected.",
                                                     NotificationSeverity.WARNING,
                                                     NotificationSource.ORGANIZATION_MEMBERSHIP_REQUEST,
@@ -317,7 +317,7 @@ class OrganizationService():
                 len(OrganizationService.get_organization_admins(request_user, orgid)) <= 1:
                 raise ValueError('You are trying to remove the last administrator of the organization. Please appoint another administrator before removing the current one.')
             organization_role.save()
-            NotificationService.add_user_notification(organization_role.user,
+            NotificationDomain.add_user_notification(organization_role.user,
                                                         "Your role within " + organization_role.organization.name + " has been changed to " + organization_role.get_role_display() + ".",
                                                         NotificationSeverity.INFO,
                                                         NotificationSource.ORGANIZATION,
@@ -333,7 +333,7 @@ class OrganizationService():
             raise ValueError('Role does not match current user')
         else:
             organization_role.delete()
-            NotificationService.add_user_notification(request_user,
+            NotificationDomain.add_user_notification(request_user,
                                                         "You left " + organization_role.organization.name,
                                                         NotificationSeverity.INFO,
                                                         NotificationSource.ORGANIZATION,
@@ -353,7 +353,7 @@ class OrganizationService():
         if organization_role.role == OrgRole.ADMINISTRATOR and len(OrganizationService.get_organization_admins(request_user, orgid)) <= 1:
             raise ValueError('You are trying to remove the last administrator of the organization. Please appoint another administrator before removing the current one.')
         organization_role.delete()
-        NotificationService.add_user_notification(organization_role.user,
+        NotificationDomain.add_user_notification(organization_role.user,
                                                     "You were removed as a staff member of " + organization_role.organization.name,
                                                     NotificationSeverity.INFO,
                                                     NotificationSource.ORGANIZATION,

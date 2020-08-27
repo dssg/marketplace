@@ -18,7 +18,7 @@ from ..models.user import (
 from django.db.models import Case, When, Count, Q, Subquery, Avg, F
 
 from .common import validate_consistent_keys, social_cause_view_model_translation, project_status_view_model_translation
-from .notifications import NotificationService
+from .notifications import NotificationDomain, NotificationService
 from marketplace.authorization.common import ensure_user_has_permission
 
 def filter_public_projects(query_set):
@@ -417,7 +417,7 @@ class ProjectService():
                                                      NotificationSeverity.INFO,
                                                      NotificationSource.PROJECT,
                                                      project.id)
-            NotificationService.add_user_notification(request_user,
+            NotificationDomain.add_user_notification(request_user,
                                                      "The project {0} was created successfully and you have been made project administrator. The next step is to define the project scope and to review the three default tasks that were created automatically.".format(project.name),
                                                      NotificationSeverity.INFO,
                                                      NotificationSource.PROJECT,
@@ -518,7 +518,7 @@ class ProjectService():
                                                             NotificationSeverity.INFO,
                                                             NotificationSource.PROJECT,
                                                             project.id)
-                NotificationService.add_user_notification(project_role.user,
+                NotificationDomain.add_user_notification(project_role.user,
                                                             "You have been added as a member of project {0} with role {1}.".format(project.name, project_role.get_role_display()),
                                                             NotificationSeverity.INFO,
                                                             NotificationSource.PROJECT,
@@ -551,7 +551,7 @@ class ProjectService():
                                                     NotificationSeverity.INFO,
                                                     NotificationSource.PROJECT,
                                                     project.id)
-        NotificationService.add_user_notification(project_role.user,
+        NotificationDomain.add_user_notification(project_role.user,
                                                     "Your role within project {0} has been changed to {1}.".format(project.name, project_role.get_role_display()),
                                                     NotificationSeverity.INFO,
                                                     NotificationSource.PROJECT,
@@ -577,7 +577,7 @@ class ProjectService():
                                                     NotificationSeverity.INFO,
                                                     NotificationSource.PROJECT,
                                                     project.id)
-        NotificationService.add_user_notification(project_role.user,
+        NotificationDomain.add_user_notification(project_role.user,
                                                     "You were removed from project {0} and are no longer part of its staff.".format(project.name),
                                                     NotificationSeverity.INFO,
                                                     NotificationSource.PROJECT,
@@ -1118,7 +1118,7 @@ class ProjectTaskService():
                         message = "Congratulations! Your award for {0} has increased to {1}. Keep up with the good work!".format(badge_name, current_badge.get_tier_display())
                     else:
                         message = "Unfortunately your award for {0} has decreased to {1}.".format(badge_name, current_badge.get_tier_display())
-                    NotificationService.add_user_notification(request_user,
+                    NotificationDomain.add_user_notification(request_user,
                                                              message,
                                                              NotificationSeverity.INFO,
                                                              NotificationSource.BADGE,
@@ -1130,7 +1130,7 @@ class ProjectTaskService():
                 new_badge.user = request_user
                 new_badge.save()
                 message = "Congratulations! You have been awarded a new badge ({0}) for {1}. Keep up with the good work!".format(new_badge.get_tier_display(), badge_name)
-                NotificationService.add_user_notification(request_user,
+                NotificationDomain.add_user_notification(request_user,
                                                          message,
                                                          NotificationSeverity.INFO,
                                                          NotificationSource.BADGE,
@@ -1140,7 +1140,7 @@ class ProjectTaskService():
                 current_badge = UserBadge.objects.get(user=request_user, type=badge_type)
                 current_badge.delete()
                 message = "Unfortunately your award for {0} was removed.".format(badge_name, current_badge.get_tier_display())
-                NotificationService.add_user_notification(request_user,
+                NotificationDomain.add_user_notification(request_user,
                                                          message,
                                                          NotificationSeverity.INFO,
                                                          NotificationSource.BADGE,
@@ -1276,7 +1276,7 @@ class ProjectTaskService():
                                                     NotificationSeverity.WARNING,
                                                     NotificationSource.TASK,
                                                     project_task.id)
-        NotificationService.add_user_notification(task_review.volunteer,
+        NotificationDomain.add_user_notification(task_review.volunteer,
                                                     "Your task {0} of project {1} has been reviewed by the project staff and rejected as finished, so it has been reopened. The staff comments are: {2}.".format(project_task.name, project.name, task_review.public_reviewer_comments),
                                                     NotificationSeverity.ERROR,
                                                     NotificationSource.TASK,
@@ -1328,7 +1328,7 @@ class ProjectTaskService():
                                                         NotificationSeverity.ERROR,
                                                         NotificationSource.TASK,
                                                         project_task.id)
-            NotificationService.add_user_notification(project_task_role.user,
+            NotificationDomain.add_user_notification(project_task_role.user,
                                                         "You have stopped working on task {0} of project {1}.".format(project_task.name, project.name),
                                                         NotificationSeverity.INFO,
                                                         NotificationSource.TASK,
@@ -1364,7 +1364,7 @@ class ProjectTaskService():
                                                     NotificationSeverity.WARNING,
                                                     NotificationSource.VOLUNTEER_APPLICATION,
                                                     task_application_request.id)
-        NotificationService.add_user_notification(task_application_request.volunteer,
+        NotificationDomain.add_user_notification(task_application_request.volunteer,
                                                     "You have applied to volunteer on task {0} of project {1}. The project staff will review the application and notify you of their decision as soon as possible.".format(project_task.name, project.name),
                                                     NotificationSeverity.INFO,
                                                     NotificationSource.VOLUNTEER_APPLICATION,
@@ -1460,7 +1460,7 @@ class ProjectTaskService():
                                                     NotificationSeverity.INFO,
                                                     NotificationSource.VOLUNTEER_APPLICATION,
                                                     volunteer_application.id)
-        NotificationService.add_user_notification(volunteer_application.volunteer,
+        NotificationDomain.add_user_notification(volunteer_application.volunteer,
                                                     "Congratulations! Your volunteer application for task {0} of project {1} has been accepted! You can now start working on this project. The reviewer's comments are: {2}".format(project_task.name, project.name, volunteer_application.public_reviewer_comments),
                                                     NotificationSeverity.INFO,
                                                     NotificationSource.VOLUNTEER_APPLICATION,
@@ -1491,7 +1491,7 @@ class ProjectTaskService():
                                                     NotificationSeverity.INFO,
                                                     NotificationSource.VOLUNTEER_APPLICATION,
                                                     volunteer_application.id)
-        NotificationService.add_user_notification(volunteer_application.volunteer,
+        NotificationDomain.add_user_notification(volunteer_application.volunteer,
                                                     "Your volunteer application for task {0} of project {1} has been rejected. The reviewer's comments are: {2}.".format(project_task.name, project.name, volunteer_application.public_reviewer_comments),
                                                     NotificationSeverity.ERROR,
                                                     NotificationSource.VOLUNTEER_APPLICATION,
@@ -1546,7 +1546,7 @@ class ProjectTaskService():
                     task_role.role = TaskRole.SUPPORT_STAFF
                     task_role.save()
                     message = "You have been added as support staff of task {0} of project {1}.".format(project_task.name, project.name)
-                    NotificationService.add_user_notification(task_role.user,
+                    NotificationDomain.add_user_notification(task_role.user,
                                                              message,
                                                              NotificationSeverity.INFO,
                                                              NotificationSource.TASK,
@@ -1556,7 +1556,7 @@ class ProjectTaskService():
                     user = task_role.user
                     task_role.delete()
                     message = "You have been removed as support staff from task {0} of project {1}.".format(project_task.name, project.name)
-                    NotificationService.add_user_notification(user,
+                    NotificationDomain.add_user_notification(user,
                                                              message,
                                                              NotificationSeverity.WARNING,
                                                              NotificationSource.TASK,
@@ -1662,7 +1662,7 @@ class ProjectTaskService():
                                                     NotificationSeverity.INFO,
                                                     NotificationSource.TASK,
                                                     project_task.id)
-        NotificationService.add_user_notification(project_task_role.user,
+        NotificationDomain.add_user_notification(project_task_role.user,
                                                     "Your volunteer spot in project {0} has been changed to task {1}.".format(project.name, project_task.name),
                                                     NotificationSeverity.WARNING,
                                                     NotificationSource.TASK,
@@ -1689,7 +1689,7 @@ class ProjectTaskService():
                                                     NotificationSeverity.INFO,
                                                     NotificationSource.TASK,
                                                     project_task.id)
-        NotificationService.add_user_notification(project_task_role.user,
+        NotificationDomain.add_user_notification(project_task_role.user,
                                                     "Your volunteer role for the task {0} of project {1} has been canceled, and you have been removed from the project.".format(project_task.name, project.name),
                                                     NotificationSeverity.ERROR,
                                                     NotificationSource.TASK,
