@@ -30,7 +30,7 @@ from marketplace.models.user import (
 from .common import validate_consistent_keys, award_view_model_translation, task_preferences_model_translation
 from .org import OrganizationService
 from .proj import ProjectService
-from .notifications import NotificationService
+from .notifications import NotificationDomain, NotificationService
 
 
 # Namespace declaration #
@@ -272,7 +272,7 @@ class UserService():
             volunteer_profile.volunteer_status = ReviewStatus.ACCEPTED
             volunteer_profile.is_edited = True
             volunteer_profile.save()
-            NotificationService.add_user_notification(volunteer_profile.user,
+            NotificationDomain.add_user_notification(volunteer_profile.user,
                     "Congratulations! you have been accepted as a volunteer and can now apply to work on open projects.",
                     NotificationSeverity.INFO,
                     NotificationSource.VOLUNTEER_APPLICATION,
@@ -288,7 +288,7 @@ class UserService():
             volunteer_profile.volunteer_status = ReviewStatus.REJECTED
             volunteer_profile.is_edited = True
             volunteer_profile.save()
-            NotificationService.add_user_notification(volunteer_profile.user,
+            NotificationDomain.add_user_notification(volunteer_profile.user,
                     "Unfortunately your volunteer application was not approved at the time.",
                     NotificationSeverity.INFO,
                     NotificationSource.VOLUNTEER_APPLICATION,

@@ -1,7 +1,7 @@
 from django.core import mail
 from django.test import TestCase
 
-from marketplace.domain import marketplace, notifications
+from marketplace.domain import marketplace
 from marketplace.models.user import (
     NotificationSeverity,
     NotificationSource,
@@ -21,7 +21,7 @@ class NotificationsTestCase(TestCase):
         volunteer = common.example_volunteer_user()
         marketplace.user.add_user(volunteer, 'volunteer')
 
-        notifications.NotificationService.add_user_notification(
+        marketplace.notification.add_user_notification(
             volunteer,
             """
             Congratulations! you have been accepted as a volunteer and can now apply to work on
