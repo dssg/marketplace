@@ -138,6 +138,16 @@ PROJECT_SEARCH_LISTS = (
 @require_GET
 def project_list_view(request):
     # year of posting filter gets slight special handling
+    #
+    # FIXME: the below query should only consider dates of "public" projects
+    # FIXME: (which will be available to the view);
+    # FIXME: though, it's a minor discrepancy to show more years than are useful.
+    #
+    # domain/proj.py:filter_public_projects does this (and the below query _could_ be moved to
+    # that module as well). though, at the same time, filter_public_projects would make *at least*
+    # as much sense as a method on the Project object manager, (such that it's available here
+    # "for free").
+    #
     (latest_year, oldest_year) = (
         Project.objects
         .annotate(
