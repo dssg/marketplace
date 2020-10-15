@@ -298,9 +298,12 @@ class DeploymentMixin:
         # https://docs.github.com/en/rest/reference/repos#deployments
         # https://developer.github.com/v3/previews/#deployment-statuses
         # NOTE: required for "in_progress" status -- application/vnd.github.flash-preview+json
-        # NOTE: if necessary of course can accept multiples!
+        # session.headers.update({'Accept': 'application/vnd.github+json'})
         # session.headers.update({'Accept': 'application/vnd.github.v3+json'})
+        # session.headers.update({'Accept': 'application/vnd.github.ant-man-preview+json'})
         session.headers.update({'Accept': 'application/vnd.github.flash-preview+json'})
+        # session.headers.update({'Accept': 'application/vnd.github.v3+json, '
+        #                                   'application/vnd.github.flash-preview+json'})
         return session
 
     def check_latest(self):
