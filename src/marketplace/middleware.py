@@ -1,4 +1,22 @@
+from django.conf import settings
+from django.core.exceptions import MiddlewareNotUsed
+
 from marketplace import utils
+
+
+def version_header_middleware(get_response):
+    """Decorate response with software application version header."""
+    if getattr(settings, 'APP_VERSION', None) is None:
+        raise MiddlewareNotUsed
+
+    app_version = settings.APP_VERSION or '<unversioned>'
+
+    def middleware(request):
+        response = get_response(request)
+        response['Software'] = f'marketplace/{app_version}'
+        return response
+
+    return middleware
 
 
 class UserTypeMiddleware:

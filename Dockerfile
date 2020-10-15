@@ -5,19 +5,23 @@ ARG PYVERSION=3.7
 
 FROM python:$PYVERSION
 
+ARG APPVERSION
+ARG CHVERSION=2.2.0
+
 # build for production by default, but allow use of alternative Python
 # requirement files for alternative runtime targets (such as development)
 ARG TARGET=production
-ARG CHVERSION=2.2.0
 
-# redeclare PYVERSION argument for access in label (FIXME: does this work?)
+# redeclare PYVERSION argument for access in label
 ARG PYVERSION
 
-LABEL version="0.3" \
-      pyversion="$PYVERSION" \
+LABEL version="0.4" \
+      appversion="$APPVERSION" \
       chversion="$CHVERSION" \
+      pyversion="$PYVERSION" \
       target="$TARGET"
 
+ENV APP_VERSION "$APPVERSION"
 ENV DEBIAN_FRONTEND noninteractive
 ENV PYTHONUNBUFFERED 1
 

@@ -24,8 +24,7 @@ SITE_ID = 1
 
 SITE_NAME = config('SITE_NAME', default='DSSG Solve')
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
+APP_VERSION = config('APP_VERSION', default=None)
 
 SECRET_KEY = config('SECRET_KEY')
 
@@ -110,6 +109,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
     'marketplace.middleware.UserTypeMiddleware',
+    'marketplace.middleware.version_header_middleware',
 ]
 
 if file_storage_option == 'whitenoise':

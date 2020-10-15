@@ -602,6 +602,11 @@ class Build(ContainerRegistryMixin, DeploymentMixin, EnvironmentMixin, Local):
         ]
 
         if args.label:
+            # treat first label/tag as version to be handled specially by build
+            command = command[
+                '--build-arg', f'APPVERSION={args.label[0]}',
+            ]
+
             for label in args.label:
                 name = args.resolve_repository_name() + ':' + label
                 command = command[
