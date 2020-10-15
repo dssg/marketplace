@@ -6,20 +6,46 @@ import itertools
 import json
 import os
 import re
+import socket
 import sys
 import textwrap
 import time
+import typing
 from argparse import _StoreAction, REMAINDER
 from pathlib import Path
+from urllib.parse import urljoin
 
+import requests
 from argcmdr import Local, LocalRoot, localmethod
-from descriptors import cachedclassproperty
+from descriptors import cachedproperty, cachedclassproperty
 from plumbum.commands import ExecutionModifier
 from terminaltables import AsciiTable
 
 
 ROOT_PATH = Path(__file__).parent.resolve()
 SRC_PATH = ROOT_PATH / 'src'
+
+
+class PathPrefixSession(requests.Session):
+
+    def __init__(self, prefix_url=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.prefix_url = prefix_url
+
+    def request(self, method, url, *args, **kwargs):
+        # NOTE: urljoin can be kind of annoying/surprising in its operation
+        # https://docs.python.org/3/library/urllib.parse.html#urllib.parse.urljoin
+        url = urljoin(self.prefix_url, url)
+        return super().request(method, url, *args, **kwargs)
+
+    def get(self, url='', *args, **kwargs):
+        return super().get(url, *args, **kwargs)
+
+    def post(self, url='', *args, **kwargs):
+        return super().post(url, *args, **kwargs)
+
+    def delete(self, url='', *args, **kwargs):
+        return super().delete(url, *args, **kwargs)
 
 
 def spincycle(chars='|/–\\', file=sys.stdout, wait=1):
@@ -230,6 +256,156 @@ class ClusterServiceMixin:
         return service
 
 
+class DeploymentMixin:
+
+    GITHUB_DEPLOYMENT_API = 'https://api.github.com/repos/{REPO_SPEC}/deployments'
+
+    class BasicCredentials(typing.NamedTuple):
+
+        username: str
+        token: str
+
+    class TagSpec(enum.Enum):
+
+        staging = re.compile(r'^\d+\.\d+.*$', re.M)
+        production = re.compile(r'^\d+\.\d+\.\d+$', re.M)
+
+        __delegates__ = {'pattern', 'search'}
+
+        def __getattr__(self, name):
+            if name in self.__delegates__:
+                return getattr(self.value, name)
+
+            return super().__getattr__(name)
+
+    @cachedproperty
+    def github_auth(self):
+        try:
+            (username, token) = os.getenv('GITHUB_AUTH', '').split(':')
+        except ValueError as exc:
+            raise LookupError(
+                "GitHub API credentials invalid or could not be found under "
+                "environment variable GITHUB_AUTH={USERNAME}:{TOKEN}"
+            ) from exc
+
+        return self.BasicCredentials(username, token)
+
+    @cachedproperty
+    def github_deployments(self):
+        session = PathPrefixSession(self.GITHUB_DEPLOYMENT_API
+                                    .format(REPO_SPEC=self.args.github_repo))
+        session.auth = self.github_auth
+        # https://docs.github.com/en/rest/reference/repos#deployments
+        # https://developer.github.com/v3/previews/#deployment-statuses
+        # NOTE: required for "in_progress" status -- application/vnd.github.flash-preview+json
+        # NOTE: if necessary of course can accept multiples!
+        # session.headers.update({'Accept': 'application/vnd.github.v3+json'})
+        session.headers.update({'Accept': 'application/vnd.github.flash-preview+json'})
+        return session
+
+    def check_latest(self):
+        if not self.args.if_latest:
+            return
+
+        tag_spec = self.TagSpec[self.args.target]
+        label = self.args.label[0] if self.args.label else None
+
+        if not label or not tag_spec.search(label):
+            self.args.__parser__.error(
+                f"a version label matching the pattern /{tag_spec.pattern}/ is "
+                f"required for {self.args.target} when flag --if-latest is provided"
+            )
+
+        (_retcode, stdout, _stderr) = yield SHH, self.local['git'][
+            'tag',
+            '--sort=version:refname',
+        ]
+
+        tags = stdout.splitlines() if stdout is not None else ()
+
+        for latest_tag in reversed(tags):
+            if tag_spec.search(latest_tag):
+                if label != latest_tag:
+                    self.args.__parser__.error(
+                        f"the provided version label {label} is not the latest {latest_tag}"
+                    )
+
+                break
+
+    def get_record_description(self, action):
+        return (f'{action} initiated by {__file__} on behalf of '
+                f'{self.github_auth.username} from {socket.gethostname()}')
+
+    def record_deployment(self, deployment_id=None, status='pending', current_action='BUILD'):
+        if self.args.record_deployment and not self.args.label:
+            self.args.__parser__.error('version label required to record deployment '
+                                       '(try --no-record to skip)')
+        elif self.args.label and not self.args.record_deployment:
+            print('warning: deployment of',
+                  self.args.label[0],
+                  'to',
+                  self.args.target,
+                  'will NOT be recorded')
+        elif self.args.label and self.args.record_deployment:
+            # check for an extant deployment record
+            if deployment_id:
+                response = self.github_deployments.get(f'deployments/{deployment_id}')
+                response.raise_for_status()
+                deployment = response.json()
+            else:
+                response = self.github_deployments.get(params={
+                    'ref': self.args.label[0],
+                    'environment': self.args.target,
+                })
+                response.raise_for_status()
+
+                try:
+                    (deployment,) = response.json()
+                except ValueError:
+                    # record a new deployment (pending)
+                    if self.args.execute_commands:
+                        response = self.github_deployments.post(json={
+                            'ref': self.args.label[0],
+                            'auto_merge': False,
+                            'environment': self.args.target,
+                            'description': self.get_record_description('DEPLOYMENT'),
+                        })
+                        response.raise_for_status()
+                        deployment = response.json()
+                    else:
+                        deployment = None
+                else:
+                    if self.args.show_warnings:
+                        self.args.__parser__.error(
+                            f"deployment record for {self.args.label[0]} already exists "
+                            f"(try --force to override): {deployment['url']}"
+                        )
+
+            if deployment:
+                self.record_status(
+                    deployment['id'],
+                    status,
+                    self.get_record_description(current_action),
+                )
+
+            return deployment
+
+    def record_status(self, deployment_id, state, description=''):
+        if not self.args.execute_commands:
+            return
+
+        response = self.github_deployments.post(
+            f"deployments/{deployment_id}/statuses",
+            json={
+                'state': state,
+                'description': description,
+                'auto_inactive': False,
+            },
+        )
+        response.raise_for_status()
+        print(f'info: status "{state}" recorded:', response.json()['url'])
+
+
 class ContainerRegistryMixin:
 
     def __init__(self, parser):
@@ -339,12 +515,19 @@ class Db(Local):
 
 
 @Marketplace.register
-class Build(ContainerRegistryMixin, EnvironmentMixin, Local):
+class Build(ContainerRegistryMixin, DeploymentMixin, EnvironmentMixin, Local):
     """build app container image for deployment"""
 
     def __init__(self, parser):
         super().__init__(parser)
 
+        parser.add_argument(
+            '--github-repo',
+            action=store_env_override,
+            envvar='GITHUB_REPO',
+            metavar='OWNER/NAME',
+            description='GitHub repository for which Deployments are tracked',
+        )
         parser.add_argument(
             '-n', '--name',
             help='image name:tag (default derived from repository name: '
@@ -355,6 +538,20 @@ class Build(ContainerRegistryMixin, EnvironmentMixin, Local):
             action='append',
             help='additional name/tags to label image; the first of these, '
                  'if any, is treated as the "version"',
+        )
+        parser.add_argument(
+            '--if-latest',
+            action='store_true',
+            help="ensure that the label provided is the most recent repository tag appropriate "
+                 "to the target environment (x.y.z for production and x.y* for staging)",
+        )
+        parser.add_argument(
+            '--no-record',
+            action='store_false',
+            dest='record_deployment',
+            default=True,
+            help="disable Github Deployment record and "
+                 "disable check that deployment has not already been recorded",
         )
         parser.add_argument(
             '-f', '--force',
@@ -385,6 +582,13 @@ class Build(ContainerRegistryMixin, EnvironmentMixin, Local):
     def prepare(self, args, parser):
         if args.login and not args.push:
             parser.error("will not log in outside of push operation")
+
+        yield from self.check_latest()
+
+        if args.deploy:
+            deployment = self.record_deployment()
+        else:
+            deployment = None
 
         repository_tag = args.name or (args.resolve_repository_name() + ':latest')
         command = self.local['docker'][
@@ -424,9 +628,19 @@ class Build(ContainerRegistryMixin, EnvironmentMixin, Local):
         yield command[ROOT_PATH]
 
         if args.push:
+            if deployment:
+                self.record_status(
+                    deployment['id'],
+                    'pending',
+                    self.get_record_description('PUSH'),
+                )
+
             yield from self['push'].delegate()
 
         if args.deploy:
+            if deployment:
+                args.deployment_id = deployment['id']
+
             yield from self['deploy'].delegate()
 
     @localmethod('-l', '--login', action='store_true', help="log in to AWS ECR")
@@ -451,7 +665,7 @@ class Build(ContainerRegistryMixin, EnvironmentMixin, Local):
             self.get_full_name(args.resolve_repository_name()),
         ]
 
-    class Deploy(ClusterServiceMixin, Local):
+    class Deploy(ClusterServiceMixin, DeploymentMixin, Local):
         """deploy the latest image container to the cluster service"""
 
         environmental = True  # flag for ClusterServiceMixin
@@ -483,6 +697,10 @@ class Build(ContainerRegistryMixin, EnvironmentMixin, Local):
         def __init__(self, parser):
             super().__init__(parser)
 
+            parser.add_argument(
+                '--deployment-id',
+                help="Github Deployment record to update",
+            )
             parser.add_argument(
                 '--static',
                 action='store_true',
@@ -521,6 +739,17 @@ class Build(ContainerRegistryMixin, EnvironmentMixin, Local):
             )
 
         def prepare(self, args, parser, local):
+            # NOTE: because, for simplicity, this just updates the service by
+            # NOTE: telling it to pull the "latest" from the image repo, the
+            # NOTE: versioned deployment record *could* be inaccurate (for now)
+            yield from self.check_latest()
+
+            deployment = self.record_deployment(
+                args.deployment_id,
+                'in_progress',
+                'CLUSTER-UPDATE',
+            )
+
             last_event = None
             if args.static or args.migrate:
                 # AWS CLI and ECS CLI provide no great way of tying deployments
@@ -680,6 +909,9 @@ class Build(ContainerRegistryMixin, EnvironmentMixin, Local):
                         local.FG(retcode=None),
                         container['./manage.py', 'collectstatic', '--no-input', '-v', '1']
                     )
+
+            if deployment:
+                self.record_status(deployment['id'], 'success')
 
 
 @Marketplace.register
