@@ -21,4 +21,4 @@ jobs:
           pip install -r requirement/console.txt
 
       - name: Build, push & deploy
-        run: manage --show build staging --label=${{ github.ref }} --if-latest --login --push --deploy
+        run: manage --show build staging --label=${{ github.event.release.tag_name }} --if-latest --login --push --deploy
