@@ -10,7 +10,6 @@ import socket
 import sys
 import textwrap
 import time
-import typing
 from argparse import _StoreAction, REMAINDER
 from pathlib import Path
 from urllib.parse import urljoin
@@ -260,10 +259,16 @@ class DeploymentMixin:
 
     GITHUB_DEPLOYMENT_API = 'https://api.github.com/repos/{REPO_SPEC}/deployments'
 
-    class BasicCredentials(typing.NamedTuple):
+    class BearerAuth(requests.auth.AuthBase):
+        """Attaches Bearer Authentication to Requests."""
 
-        username: str
-        token: str
+        username = '<no-user>'
+
+        def __init__(self, token):
+            self.token = token
+
+        def __call__(self, request):
+            request.headers['Authorization'] = f"Bearer {self.token}"
 
     class TagSpec(enum.Enum):
 
@@ -280,15 +285,20 @@ class DeploymentMixin:
 
     @cachedproperty
     def github_auth(self):
-        try:
-            (username, token) = os.getenv('GITHUB_AUTH', '').split(':')
-        except ValueError as exc:
-            raise LookupError(
-                "GitHub API credentials invalid or could not be found under "
-                "environment variable GITHUB_AUTH={USERNAME}:{TOKEN}"
-            ) from exc
+        github_auth = os.getenv('GITHUB_AUTH', '')
 
-        return self.BasicCredentials(username, token)
+        if not github_auth:
+            raise LookupError(
+                "GitHub API credentials not found under environment variable GITHUB_AUTH "
+                "({USERNAME}:{TOKEN} for Basic or {TOKEN} for Bearer authentication)"
+            )
+
+        try:
+            (username, token) = github_auth.split(':', 1)
+        except ValueError:
+            return self.BearerAuth(github_auth)
+        else:
+            return requests.auth.HTTPBasicAuth(username, token)
 
     @cachedproperty
     def github_deployments(self):
