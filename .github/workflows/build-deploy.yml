@@ -26,6 +26,8 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+          ECS_CLUSTER_NAME: ${{ secrets.ECS_CLUSTER_NAME }}
+          ECS_SERVICE_NAME: ${{ secrets.ECS_SERVICE_NAME }}
           GITHUB_AUTH: ${{ github.token }}
           GITHUB_REPO: ${{ github.repository }}
           IMAGE_REPOSITORY_NAME: ${{ secrets.IMAGE_REPOSITORY_NAME }}
