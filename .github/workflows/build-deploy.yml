@@ -22,3 +22,5 @@ jobs:
 
       - name: Build, push & deploy
         run: manage --show build staging --label=${{ github.event.release.tag_name }} --if-latest --login --push --deploy
+        env:
+          GITHUB_REPO: ${{ github.repository }}
