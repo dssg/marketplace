@@ -24,3 +24,5 @@ jobs:
         run: manage --show build staging --label=${{ github.event.release.tag_name }} --if-latest --login --push --deploy
         env:
           GITHUB_REPO: ${{ github.repository }}
+          IMAGE_REPOSITORY_NAME: ${{ secrets.IMAGE_REPOSITORY_NAME }}
+          IMAGE_REPOSITORY_URI: ${{ secrets.IMAGE_REPOSITORY_URI }}
