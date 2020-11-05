@@ -269,6 +269,7 @@ class DeploymentMixin:
 
         def __call__(self, request):
             request.headers['Authorization'] = f"Bearer {self.token}"
+            return request
 
     class TagSpec(enum.Enum):
 
