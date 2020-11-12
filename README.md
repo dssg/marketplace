@@ -91,6 +91,18 @@ The Web app binds to `localhost:8000`.
 
 ## Deployment
 
+### Automation
+
+The marketplace integrates with [GitHub Actions](https://github.com/dssg/marketplace/actions) for automated deployment via a [workflow named CI/CD](.github/workflows/build-deploy.yml).
+
+The CI/CD workflow is triggered by the publishing of a [GitHub Release](https://github.com/dssg/marketplace/releases). Only releases for semantically-named tags are considered for deployment. Tags of the form `[0-9].[0-9].[0-9]` will be built and deployed to both staging and production. Tags of the form `[0-9].[0-9]*` will be deployed to staging only. Releases for tags of any other form are ignored.
+
+The workflow executes the same `manage` commands as those outlined below for manual use.
+
+**Note**: The automated workflow *will not* instruct the deployment target to collect static assets nor to migrate the database. These tasks may be performed manually following an automated deployment; or, it is advised that such deployments be performed manually in their entirety.
+
+The below commands will, by default, [record the deployment with GitHub](https://api.github.com/repos/dssg/marketplace/deployments). Neither manual nor automated deployments against non-latest tags or already-deployed tags will succeed.
+
 ### Build for deployment
 
 To build the app's Docker image for deployment:

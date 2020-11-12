@@ -31,6 +31,21 @@
 # export IMAGE_REPOSITORY_NAME=
 # export IMAGE_REPOSITORY_URI=XYZ.dkr.ecr.us-west-2.amazonaws.com
 
+# GitHub deployment
+#
+# Deployments of the app may be recorded to the GitHub API.
+#
+# The use of a personal access token is *strongly* encouraged over the
+# specification of your account password.
+#
+# This token requires only the "repo_deployment" scope for this
+# repository.
+#
+# See: https://github.com/settings/tokens
+#
+# export GITHUB_REPO=dssg/marketplace
+# export GITHUB_AUTH=user-name:auth-token
+
 # SSH
 #
 # In order to access the EC2 servers that make up the cluster, for
