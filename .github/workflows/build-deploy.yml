@@ -8,6 +8,7 @@ jobs:
   prepare-targets:
     outputs:
       targets: ${{ steps.tag-test.outputs.targets }}
+      target-count: ${{ steps.tag-test.outputs.target-count }}
     runs-on: ubuntu-latest
     steps:
       - id: tag-test
@@ -28,10 +29,12 @@ jobs:
           ]
 
           print('::set-output name=targets::' + json.dumps(targets))
+          print('::set-output name=target-count::' + json.dumps(len(targets)))
 
   build-deploy:
     needs: prepare-targets
     runs-on: ubuntu-latest
+    if: fromJson(needs.prepare-targets.outputs.target-count) > 0
     strategy:
       matrix:
         target: ${{ fromJson(needs.prepare-targets.outputs.targets) }}
