@@ -5,45 +5,52 @@ on:
     types: [published]
 
 jobs:
+  prepare-targets:
+    outputs:
+      targets: ${{ steps.tag-test.outputs.targets }}
+    runs-on: ubuntu-latest
+    steps:
+      - id: tag-test
+        name: Test whether/where to build & deploy tag
+        shell: python
+        run: |
+          import json
+          import re
+
+          TARGET_PATTERNS = (
+              ('staging', r'^\d+\.\d+.*$'),
+              ('production', r'^\d+\.\d+\.\d+$'),
+          )
+
+          targets = [
+              target for (target, pattern) in TARGET_PATTERNS
+              if re.search(pattern, '${{ github.event.release.tag_name }}')
+          ]
+
+          print('::set-output name=targets::' + json.dumps(targets))
+
   build-deploy:
+    needs: prepare-targets
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        target:
-          - staging
-          - production
-        include:
-          - target: staging
-            tag-pattern: ^\d+\.\d+.*$
-          - target: production
-            tag-pattern: ^\d+\.\d+\.\d+$
+        target: ${{ fromJson(needs.prepare-targets.outputs.targets) }}
     steps:
-      - id: tag-test
-        name: Test whether to build & deploy tag
-        shell: python
-        run: |
-          import json, re
-          tag_match = re.search(r'${{ matrix.tag-pattern }}', '${{ github.event.release.tag_name }}')
-          print('::set-output name=compatible::' + json.dumps(bool(tag_match)))
-
-      - uses: actions/checkout@v2
-        if: fromJson(steps.tag-test.outputs.compatible)
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
       - name: Set up Python
         uses: actions/setup-python@v2
-        if: fromJson(steps.tag-test.outputs.compatible)
         with:
           python-version: '3.x'
           
       - name: Install management dependencies
-        if: fromJson(steps.tag-test.outputs.compatible)
         run: |
           python -m pip install --upgrade pip
           pip install -r requirement/console.txt
 
       - name: Build, push & deploy
         run: manage --show build ${{ matrix.target }} --label=${{ github.event.release.tag_name }} --if-latest --login --push --deploy
-        if: fromJson(steps.tag-test.outputs.compatible)
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
