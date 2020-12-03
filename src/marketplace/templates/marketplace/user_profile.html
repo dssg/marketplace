@@ -1,5 +1,7 @@
 {% extends 'marketplace/base.html' %}
 
+{% load text %}
+
 {% block pagecontents %}
   {% load markdown_deux_tags %}
 
@@ -127,11 +129,19 @@
       <div class="card">
         <div class="card-header">Personal information</div>
         <div class="card-body">
+          {% if userprofile.full_name %}
           <div>Full name: {{ userprofile.full_name }}</div>
+          {% endif %}
+
           <div>User name: {{ userprofile.username }}</div>
-          {# <div>Email address: {{ userprofile.email }}</div> #}
-          {# <div>Phone number: {{ userprofile.phone_number }}</div> #}
-          {% if userprofile.skype_name %}<div>Skype name: {{ userprofile.skype_name }}</div> {% endif %}
+
+          {% if user.is_authenticated %}
+          <div style="padding-left: 6.8em; text-indent: -6.8em">
+              Email address: {{ userprofile.email|wordbreak:'@' }}
+          </div>
+          {% if userprofile.phone_number %}<div>Phone number: {{ userprofile.phone_number }}</div>{% endif %}
+          {% if userprofile.skype_name %}<div>Skype name: {{ userprofile.skype_name }}</div>{% endif %}
+          {% endif %}
         </div>
       </div>
       <div class="card">

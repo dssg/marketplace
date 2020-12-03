@@ -1,5 +1,7 @@
 {% extends 'marketplace/base.html' %}
 
+{% load text %}
+
 {% block pagecontents %}
 
       {% if leaderboards %}
@@ -67,15 +69,15 @@
             <thead>
               <tr>
                   <th>User</th>
-                  {# <th>Email address</th> #}
+                  {% if user.is_authenticated %}<th>Email address</th>{% endif %}
                   <th>Member since</th>
               </tr>
             </thead>
             <tbody>
               {% for volunteer in volunteer_list %}
                 <tr>
-                    <td>{% include 'marketplace/components/user_display.html' with user=volunteer.user hide_username=True %}</td>
-                    {# <td><a href="{% url 'marketplace:user_profile' volunteer.user.id %}">{{ volunteer.user.email }}</a></td> #}
+                    <td>{% include 'marketplace/components/user_display.html' with user=volunteer.user include_username=False %}</td>
+                    {% if user.is_authenticated %}<td>{{ volunteer.user.email|wordbreak:'@' }}</td>{% endif %}
                     <td>{{ volunteer.user.date_joined }}</td>
                 </tr>
               {% endfor %}

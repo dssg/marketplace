@@ -10,8 +10,10 @@
         Remove staff member
       {% endif %}
     </h4>
+
     <p>User: {% include 'marketplace/components/user_display.html' with user=organizationrole.user %}</p>
-    {# <p>Email: {{ organizationrole.user.email }}</p> #}
+    <p>Email: <a href="mailto:{{ organizationrole.user.email }}">{{ organizationrole.user.email }}</a></p>
+
     {% csrf_token %}
     {% include 'marketplace/components/standard_form_fields.html' %}
 

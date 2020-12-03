@@ -6,9 +6,9 @@
   <h4 class="section-header">Volunteer application</h4>
   <p>This person has applied to volunteer in your project.</p>
 
-  <p>User:{% include 'marketplace/components/user_display.html' with user=volunteerapplication.volunteer %}</p>
-  {# <p>Email addres:<a href="">{{ volunteerapplication.volunteer.email }}</a></p> #}
-  <p>Application date: {{ volunteerapplication.application_date }} </p>
+  <p>User: {% include 'marketplace/components/user_display.html' with user=volunteerapplication.volunteer %}</p>
+  <p>Email: <a href="mailto:{{ volunteerapplication.volunteer.email }}">{{ volunteerapplication.volunteer.email }}</a></p>
+  <p>Application date: {{ volunteerapplication.application_date }}</p>
   <p>Task: {{ volunteerapplication.task.name }}</p>
   <h4>Volunteer application letter</h4>
   <p>{{ volunteerapplication.volunteer_application_letter|markdown }}</p>

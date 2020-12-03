@@ -1,5 +1,7 @@
 {% extends 'marketplace/proj.html' %}
 
+{% load text %}
+
 {% block tabcontents %}
 
   <h4 class="section-header">Project volunteers</h4>
@@ -13,7 +15,7 @@
         <thead>
           <tr>
               <th>Full name</th>
-              {# <th>Email address</th> #}
+              <th>Email address</th>
               <th>Task</th>
               <th>Status</th>
               {% if perm_volunteers_edit %}
@@ -28,7 +30,7 @@
           {% for volunteer in volunteers %}
             <tr>
                 <td>{% include 'marketplace/components/user_display.html' with user=volunteer.user %}</td>
-                {# <td><a href="{% url 'marketplace:user_profile' volunteer.user.id %}">{{ volunteer.user.email }}</a></td> #}
+                <td><a href="mailto:{{ volunteer.user.email }}">{{ volunteer.user.email|wordbreak:'@' }}</a></td>
                 <td>{{ volunteer.task.name }}</td>
                 <td>{% if volunteer.task.is_completed %}<span class="text-muted">Completed</span>{% else %}Active{% endif %}</td>
                 <td>
@@ -66,7 +68,6 @@
         <thead>
           <tr>
               <th>Full name</th>
-              {# <th>Email address</th> #}
               <th>Project task</th>
               <th>Application date</th>
               <th>Status</th>
@@ -77,7 +78,6 @@
           {% for application in volunteer_applications %}
             <tr>
                 <td>{% include 'marketplace/components/user_display.html' with user=application.volunteer %}</td>
-                {# <td><a href="{% url 'marketplace:user_profile' application.volunteer.id %}">{{ application.volunteer.email }}</a></td> #}
                 <td>{{ application.task.name }}</td>
                 <td>{{ application.application_date }}</td>
                 <td>

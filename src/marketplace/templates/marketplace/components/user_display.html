@@ -1,11 +1,16 @@
 {% if not hide_anchor %}<a href="{% url 'marketplace:user_profile' user.id %}">{% endif %}
-  {{ user.first_name }}
-  {{ user.last_name }}
-  {% if not hide_username %}
+
+{% if user.full_name %}
+  {{ user.full_name }}
+  {% if include_username|default_if_none:True %}
     ({{ user.username }})
   {% endif %}
+{% else %}
+  {{ user.username }}
+{% endif %}
 
-  {% for badge in user.userbadge_set.all %}
-    {% include 'marketplace/components/user_badge.html' with badge=badge compact_display=True %}
-  {% endfor %}
+{% for badge in user.userbadge_set.all %}
+  {% include 'marketplace/components/user_badge.html' with badge=badge compact_display=True %}
+{% endfor %}
+
 {% if not hide_anchor %}</a>{% endif %}
