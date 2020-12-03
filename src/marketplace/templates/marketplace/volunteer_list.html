@@ -74,7 +74,7 @@
             <tbody>
               {% for volunteer in volunteer_list %}
                 <tr>
-                    <td>{% include 'marketplace/components/user_display.html' with user=volunteer.user hide_username=True %}</td>
+                    <td>{% include 'marketplace/components/user_display.html' with user=volunteer.user include_username=False %}</td>
                     {# <td><a href="{% url 'marketplace:user_profile' volunteer.user.id %}">{{ volunteer.user.email }}</a></td> #}
                     <td>{{ volunteer.user.date_joined }}</td>
                 </tr>
