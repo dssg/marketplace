@@ -4,7 +4,7 @@
 
   <h4 class="section-header">Remove volunteer</h4>
   <p>User: {% include 'marketplace/components/user_display.html' with user=projecttaskrole.user %}</p>
-  {# <p>Email: {{ projecttaskrole.user.email }}</p> #}
+  <p>Email: <a href="mailto:{{ projecttaskrole.user.email }}">{{ projecttaskrole.user.email }}</a></p>
   <form id="removestaff">
     {% csrf_token %}
     {% include 'marketplace/components/standard_form_fields.html' %}

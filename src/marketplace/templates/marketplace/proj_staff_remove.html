@@ -5,7 +5,8 @@
   <form id="removestaff">
     <h4 class="section-header">Remove staff member</h4>
     <p>User: {% include 'marketplace/components/user_display.html' with user=projectrole.user %}</p>
-    {# <p>Email: {{ projectrole.user.email }}</p> #}
+    <p>Email: <a href="mailto:{{ projectrole.user.email }}">{{ projectrole.user.email }}</a></p>
+
     {% csrf_token %}
     {% include 'marketplace/components/standard_form_fields.html' %}
 

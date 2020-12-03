@@ -13,7 +13,7 @@
         <thead>
           <tr>
               <th>Full name</th>
-              {# <th>Email address</th> #}
+              <th>Email address</th>
               <th>Role</th>
               {% if perm_staff_edit %}
                 <th></th>
@@ -27,7 +27,7 @@
           {% for staff in project_staff %}
             <tr>
                 <td>{% include 'marketplace/components/user_display.html' with user=staff.user %}</td>
-                {# <td><a href="{% url 'marketplace:user_profile' staff.user.id %}">{{ staff.user.email }}</a></td> #}
+                <td><a href="mailto:{{ staff.user.email }}">{{ staff.user.email }}</a></td>
                 <td>{{ staff.get_role_display }}</td>
                 {% if perm_staff_edit %}
                   <td>
