@@ -270,7 +270,7 @@ class UserProfileView(generic.DetailView):
         context = super().get_context_data(**kwargs)
         context['breadcrumb'] = build_breadcrumb([home_link(),
                                                     users_link(),
-                                                    my_profile_link(self.object.id, include_link=False) if self.object.id == self.request.user.id else (self.object.standard_display_name(), None)])
+                                                    my_profile_link(self.object.id, include_link=False) if self.object.id == self.request.user.id else (self.object.standard_display_name, None)])
 
         project_tasks = ProjectTaskService.get_volunteer_all_tasks(self.request.user, self.object)
         context['project_tasks'] = paginate(self.request, project_tasks, request_key='project_tasks_page', page_size=15)

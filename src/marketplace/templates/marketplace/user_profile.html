@@ -127,7 +127,9 @@
       <div class="card">
         <div class="card-header">Personal information</div>
         <div class="card-body">
+          {% if userprofile.full_name %}
           <div>Full name: {{ userprofile.full_name }}</div>
+          {% endif %}
           <div>User name: {{ userprofile.username }}</div>
           {# <div>Email address: {{ userprofile.email }}</div> #}
           {# <div>Phone number: {{ userprofile.phone_number }}</div> #}

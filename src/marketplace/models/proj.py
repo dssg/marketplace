@@ -1040,7 +1040,7 @@ class ProjectTaskRole(models.Model):
     )
 
     def __str__(self):
-        return self.user.standard_display_name() + "-" + self.task.name + "-" + self.get_role_display()
+        return self.user.standard_display_name + "-" + self.task.name + "-" + self.get_role_display()
 
     class Meta:
         unique_together = ('user', 'task', 'role')

@@ -442,7 +442,7 @@ class ProjectService:
             qa_channel.save()
 
 
-            message = "The project {0} was created by {1} within the organization {2}.".format(project.name, request_user.standard_display_name(), organization.name)
+            message = "The project {0} was created by {1} within the organization {2}.".format(project.name, request_user.standard_display_name, organization.name)
             NotificationService.add_multiuser_notification(organization_members,
                                                      message,
                                                      NotificationSeverity.INFO,
@@ -461,7 +461,7 @@ class ProjectService:
         validate_consistent_keys(project, ('id', projid))
         ensure_user_has_permission(request_user, project, 'project.information_edit')
         project.save()
-        message = "The project {0} was edited by {1}.".format(project.name, request_user.standard_display_name())
+        message = "The project {0} was edited by {1}.".format(project.name, request_user.standard_display_name)
         NotificationService.add_multiuser_notification(ProjectService.get_public_notification_users(request_user, project),
                                                  message,
                                                  NotificationSeverity.INFO,
@@ -500,7 +500,7 @@ class ProjectService:
             # working on domain tasks?
             project.actual_start_date = timezone.now()
             project.save()
-        message = "The project {0} was published by {1} and can now be applied to by volunteers.".format(project.name, request_user.standard_display_name())
+        message = "The project {0} was published by {1} and can now be applied to by volunteers.".format(project.name, request_user.standard_display_name)
         NotificationService.add_multiuser_notification(ProjectService.get_project_members(request_user, project),
                                                  message,
                                                  NotificationSeverity.WARNING,
@@ -543,7 +543,7 @@ class ProjectService:
             try:
                 previous_members = ProjectService.get_project_members(request_user, project)
                 project_role.save()
-                message = "New staff member {0} added to the project {1} with role {2}.".format(project_role.user.standard_display_name(), project.name, project_role.get_role_display())
+                message = "New staff member {0} added to the project {1} with role {2}.".format(project_role.user.standard_display_name, project.name, project_role.get_role_display())
                 NotificationService.add_multiuser_notification(previous_members,
                                                             message,
                                                             NotificationSeverity.INFO,
@@ -576,7 +576,7 @@ class ProjectService:
             raise ValueError('You are trying to remove the last administrator of the project. Please appoint another administrator before removing the current one.')
         project_role.save()
         project = project_role.project
-        message = "The role of {0} in project {1} has been changed to {2}.".format(project_role.user.standard_display_name(), project.name, project_role.get_role_display())
+        message = "The role of {0} in project {1} has been changed to {2}.".format(project_role.user.standard_display_name, project.name, project_role.get_role_display())
         NotificationService.add_multiuser_notification(ProjectService.get_project_members(request_user, project),
                                                     message,
                                                     NotificationSeverity.INFO,
@@ -602,7 +602,7 @@ class ProjectService:
             raise ValueError('You are trying to remove the last administrator of the project. Please appoint another administrator before removing the current one.')
         project_role.delete()
         project = project_role.project
-        message = "The user {0} has been removed from the staff of project {1}.".format(project_role.user.standard_display_name(), project.name)
+        message = "The user {0} has been removed from the staff of project {1}.".format(project_role.user.standard_display_name, project.name)
         NotificationService.add_multiuser_notification(ProjectService.get_project_members(request_user, project),
                                                     message,
                                                     NotificationSeverity.INFO,
@@ -650,7 +650,7 @@ class ProjectService:
             project_scope.creation_date = None
             try:
                 project_scope.save()
-                message = "The project scope of project {0} was edited by {1}.".format(project.name, request_user.standard_display_name())
+                message = "The project scope of project {0} was edited by {1}.".format(project.name, request_user.standard_display_name)
                 NotificationService.add_multiuser_notification(ProjectService.get_project_members(request_user, project),
                                                             message,
                                                             NotificationSeverity.INFO,
@@ -1353,7 +1353,7 @@ class ProjectTaskService():
                     project_task.accepting_volunteers = True
                     ProjectTaskService.save_task_internal(request_user, projid, taskid, project_task)
             project = project_task.project
-            message = "The volunteer {0} working on task {1} of project {2} has canceled the work and has stopped volunteering in the project.".format(project_task_role.user.standard_display_name(), project_task.name, project.name)
+            message = "The volunteer {0} working on task {1} of project {2} has canceled the work and has stopped volunteering in the project.".format(project_task_role.user.standard_display_name, project_task.name, project.name)
             NotificationService.add_multiuser_notification(ProjectService.get_project_members(request_user, project),
                                                         message,
                                                         NotificationSeverity.ERROR,
@@ -1389,7 +1389,7 @@ class ProjectTaskService():
         task_application_request.volunteer = request_user
         task_application_request.save()
         project = project_task.project
-        message = "User {0} has applied to volunteer on task {1} of project {2}. Please review the application and accept or reject it as soon as possible.".format(task_application_request.volunteer.standard_display_name(), project_task.name, project.name)
+        message = "User {0} has applied to volunteer on task {1} of project {2}. Please review the application and accept or reject it as soon as possible.".format(task_application_request.volunteer.standard_display_name, project_task.name, project.name)
         NotificationService.add_multiuser_notification(ProjectService.get_project_officials(request_user, project),
                                                     message,
                                                     NotificationSeverity.WARNING,
@@ -1485,7 +1485,7 @@ class ProjectTaskService():
         ProjectTaskService.save_volunteer_application(request_user, projid, taskid, volunteer_application)
         project_task = volunteer_application.task
         project = project_task.project
-        message = "The user {0} has been accepted as volunteer for task {1} of project {2}.".format(volunteer_application.volunteer.standard_display_name(), project_task.name, project.name)
+        message = "The user {0} has been accepted as volunteer for task {1} of project {2}.".format(volunteer_application.volunteer.standard_display_name, project_task.name, project.name)
         NotificationService.add_multiuser_notification(ProjectService.get_project_members(request_user, project),
                                                     message,
                                                     NotificationSeverity.INFO,
@@ -1516,7 +1516,7 @@ class ProjectTaskService():
         ProjectTaskService.save_volunteer_application(request_user, projid, taskid, volunteer_application)
         project_task = volunteer_application.task
         project = project_task.project
-        message = "The user {0} has been rejected as volunteer for task {1} of project {2}.".format(volunteer_application.volunteer.standard_display_name(), project_task.name, project.name)
+        message = "The user {0} has been rejected as volunteer for task {1} of project {2}.".format(volunteer_application.volunteer.standard_display_name, project_task.name, project.name)
         NotificationService.add_multiuser_notification(ProjectService.get_project_members(request_user, project),
                                                     message,
                                                     NotificationSeverity.INFO,
@@ -1687,7 +1687,7 @@ class ProjectTaskService():
         if project_task.stage == TaskStatus.COMPLETED:
             raise ValueError('Cannot edit the role of a completed task')
         project_task_role.save()
-        message = "The volunteer {0} of project {1} has been assigned to the task {2}.".format(project_task_role.user.standard_display_name(), project.name, project_task.name)
+        message = "The volunteer {0} of project {1} has been assigned to the task {2}.".format(project_task_role.user.standard_display_name, project.name, project_task.name)
         NotificationService.add_multiuser_notification(ProjectService.get_project_members(request_user, project),
                                                     message,
                                                     NotificationSeverity.INFO,
@@ -1714,7 +1714,7 @@ class ProjectTaskService():
         if project_task.stage == TaskStatus.COMPLETED:
             raise ValueError('Cannot delete the role of a completed task')
         project_task_role.delete()
-        message = "The volunteer {0} has been removed from task {1} of project {2}.".format(project_task_role.user.standard_display_name(), project_task.name, project.name)
+        message = "The volunteer {0} has been removed from task {1} of project {2}.".format(project_task_role.user.standard_display_name, project_task.name, project.name)
         NotificationService.add_multiuser_notification(ProjectService.get_project_members(request_user, project),
                                                     message,
                                                     NotificationSeverity.INFO,
@@ -1804,7 +1804,7 @@ class ProjectTaskService():
         if project_task.stage == TaskStatus.DRAFT:
             project_task.stage = TaskStatus.NOT_STARTED
             project_task.save()
-            message = "The project task {0} from project {1} was published by {2}.".format(project_task.name, project.name, request_user.standard_display_name())
+            message = "The project task {0} from project {1} was published by {2}.".format(project_task.name, project.name, request_user.standard_display_name)
             NotificationService.add_multiuser_notification(ProjectService.get_project_members(request_user, project),
                                           message,
                                           NotificationSeverity.WARNING,

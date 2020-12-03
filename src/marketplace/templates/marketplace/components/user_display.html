@@ -1,8 +1,7 @@
 {% if not hide_anchor %}<a href="{% url 'marketplace:user_profile' user.id %}">{% endif %}
 
-{% if user.first_name or user.last_name %}
-  {{ user.first_name }}
-  {{ user.last_name }}
+{% if user.full_name %}
+  {{ user.full_name }}
   {% if include_username|default_if_none:True %}
     ({{ user.username }})
   {% endif %}

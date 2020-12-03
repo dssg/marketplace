@@ -80,11 +80,13 @@ class User(AbstractUser):
 
     objects = UserManager()
 
+    @property
     def full_name(self):
-        return self.first_name + " " + self.last_name
+        return ' '.join(part for part in (self.first_name, self.last_name) if part)
 
+    @property
     def standard_display_name(self):
-        return self.full_name() + "(" + self.username + ")"
+        return f'{self.full_name} ({self.username})' if self.full_name else self.username
 
     def is_type_dssg_staff(self):
         return self.initial_type == UserType.DSSG_STAFF
