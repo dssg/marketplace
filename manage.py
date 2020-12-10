@@ -1080,4 +1080,4 @@ class Develop(Local):
     @localmethod('remainder', metavar='test command arguments', nargs=REMAINDER)
     def test(self, args):
         """test the django project in a container"""
-        return self.run('--rm')['./manage.py', 'test', args.remainder]
+        return self.run('--rm', '--interactive', '--tty')['./manage.py', 'test', args.remainder]
