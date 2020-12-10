@@ -6,7 +6,7 @@ from marketplace.domain.user import UserService
 
 
 add_perm('project.view', marketplace.project.user.can_view)
-add_perm('project.information_edit', marketplace.project.user.is_owner)
+add_perm('project.information_edit', marketplace.project.user.can_edit_information)
 add_perm('project.publish', marketplace.project.user.is_owner)
 add_perm('project.approve_as_completed', marketplace.project.user.can_complete)
 add_perm('project.scope_view', marketplace.project.user.can_view)

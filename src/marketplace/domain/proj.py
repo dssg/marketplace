@@ -169,21 +169,6 @@ def is_reviewer(user, proj):
     )
 
 
-@ProjectUserDomain._method_
-def can_view_tasks(self, user, proj):
-    return self.is_member(user, proj) or self.is_reviewer(user, proj)
-
-
-@ProjectUserDomain._method_
-def can_review_tasks(self, user, proj):
-    return self.is_owner(user, proj) or self.is_reviewer(user, proj)
-
-
-@ProjectUserDomain._method_
-def can_complete(self, user, proj):
-    return self.is_official(user, proj)  # or self.is_reviewer(user, proj)
-
-
 @ProjectUserDomain
 def is_volunteer_official(user, proj):
     return user.is_authenticated and user.projecttaskrole_set.filter(
@@ -233,6 +218,26 @@ def can_view(self, user, project):
         return self.is_owner(user, project)
 
     return True
+
+
+@ProjectUserDomain._method_
+def can_view_tasks(self, user, proj):
+    return self.is_member(user, proj) or self.is_reviewer(user, proj)
+
+
+@ProjectUserDomain._method_
+def can_review_tasks(self, user, proj):
+    return self.is_owner(user, proj) or self.is_reviewer(user, proj)
+
+
+@ProjectUserDomain._method_
+def can_edit_information(self, user, project):
+    return self.is_owner(user, project) or self.is_scoper(user, project)
+
+
+@ProjectUserDomain._method_
+def can_complete(self, user, proj):
+    return self.is_official(user, proj)  # or self.is_reviewer(user, proj)
 
 
 class ProjectService:
