@@ -368,7 +368,7 @@ class UserService():
             else:
                 if not request_user.volunteerprofile.is_edited:
                     todos.append({'text':'You should fill out your volunteer profile.'})
-                elif not ProjectService.user_is_volunteer(request_user) and request_user.volunteerprofile.is_accepted:
+                elif not UserDomain.__root__.project.user.is_active(request_user) and request_user.volunteerprofile.is_accepted:
                     todos.append({'text':'You are not volunteering for any organization, find a new project.'})
                 if not UserService.user_has_skills(request_user):
                     todos.append({'text':'You have no listed skills, your should add your expertise to your profile.'})

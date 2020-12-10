@@ -102,6 +102,139 @@ def list_public_projects(projname=None,
     return projects.distinct().order_by('-creation_date')
 
 
+# Project user domain #
+
+ProjectUserDomain = ProjectDomain(Namespace('user'))
+
+
+@ProjectUserDomain
+def is_owner(user, proj):
+    return user.is_authenticated and user.projectrole_set.filter(
+        project=proj,
+        role=ProjRole.OWNER,
+    ).exists()
+
+
+@ProjectUserDomain
+def is_follower(user, proj):
+    return user.is_authenticated and user.projectfollower_set.filter(project=proj).exists()
+
+
+@ProjectUserDomain
+def is_volunteer(user, proj):
+    return user.is_authenticated and user.projecttaskrole_set.filter(
+        role=TaskRole.VOLUNTEER,
+        task__project=proj,
+    ).exists()
+
+
+@ProjectUserDomain
+def is_active(user):
+    return user.is_authenticated and user.projecttaskrole_set.filter(
+        role=TaskRole.VOLUNTEER,
+        task__stage__in=(TaskStatus.STARTED, TaskStatus.WAITING_REVIEW),
+    ).exists()
+
+
+@ProjectUserDomain
+def is_scoper(user, proj):
+    return user.is_authenticated and user.projecttaskrole_set.filter(
+        role=TaskRole.VOLUNTEER,
+        task__project=proj,
+        task__type=TaskType.SCOPING_TASK,
+        task__stage__in=(TaskStatus.STARTED, TaskStatus.WAITING_REVIEW),
+    ).exists()
+
+
+@ProjectUserDomain
+def is_manager(user, proj):
+    return user.is_authenticated and user.projecttaskrole_set.filter(
+        role=TaskRole.VOLUNTEER,
+        task__project=proj,
+        task__type=TaskType.PROJECT_MANAGEMENT_TASK,
+        task__stage__in=(TaskStatus.STARTED, TaskStatus.WAITING_REVIEW),
+    ).exists()
+
+
+@ProjectUserDomain
+def is_reviewer(user, proj):
+    return (
+        user.is_authenticated and
+        user.projecttaskrole_set.filter(
+            role=TaskRole.VOLUNTEER,
+            task__project=proj,
+            task__type=TaskType.QA_TASK,
+            task__stage__in=(TaskStatus.STARTED, TaskStatus.WAITING_REVIEW),
+        ).exists()
+    )
+
+
+@ProjectUserDomain._method_
+def can_view_tasks(self, user, proj):
+    return self.is_member(user, proj) or self.is_reviewer(user, proj)
+
+
+@ProjectUserDomain._method_
+def can_review_tasks(self, user, proj):
+    return self.is_owner(user, proj) or self.is_reviewer(user, proj)
+
+
+@ProjectUserDomain._method_
+def can_complete(self, user, proj):
+    return self.is_official(user, proj)  # or self.is_reviewer(user, proj)
+
+
+@ProjectUserDomain
+def is_volunteer_official(user, proj):
+    return user.is_authenticated and user.projecttaskrole_set.filter(
+        role=TaskRole.VOLUNTEER,
+        task__project=proj,
+        task__type__in=(TaskType.SCOPING_TASK, TaskType.PROJECT_MANAGEMENT_TASK),
+        task__stage__in=(TaskStatus.STARTED, TaskStatus.WAITING_REVIEW),
+    ).exists()
+
+
+@ProjectUserDomain._method_
+def is_task_editor(self, user, proj):
+    return self.is_owner(user, proj) or self.is_scoper(user, proj)
+
+
+@ProjectUserDomain._method_
+def is_official(self, user, proj):
+    return self.is_owner(user, proj) or self.is_volunteer_official(user, proj)
+
+
+@ProjectUserDomain._method_
+def is_member(self, user, proj):
+    return user.is_authenticated and (
+        user.projectrole_set.filter(project=proj).exists() or
+        self.is_volunteer_official(user, proj)
+    )
+
+
+@ProjectUserDomain._method_
+def is_commenter(self, user, proj):
+    return self.is_member(user, proj) or self.is_volunteer(user, proj)
+
+
+@ProjectUserDomain._method_
+def is_channel_commenter(self, user, channel):
+    return (
+        self.is_member(user, channel.project) or
+        (not channel.related_task and self.is_volunteer(user, channel.project)) or
+        (channel.related_task and ProjectTaskService.user_is_task_volunteer(user, channel.related_task))
+    )
+
+
+@ProjectUserDomain._method_
+def can_view(self, user, project):
+    if project.status == ProjectStatus.DRAFT:
+        # TODO Maybe add the project staff here.
+        return self.is_owner(user, project)
+
+    return True
+
+
 class ProjectService:
 
     @staticmethod
@@ -132,78 +265,6 @@ class ProjectService:
     @staticmethod
     def get_organization_public_projects(request_user, org):
         return filter_public_projects(ProjectService.get_all_organization_projects(request_user, org))
-
-    @staticmethod
-    def user_is_project_owner(user, proj):
-        return user.is_authenticated and ProjectRole.objects.filter(project=proj, user=user, role=ProjRole.OWNER).exists()
-
-    @staticmethod
-    def user_is_project_follower(user, proj):
-        return user.is_authenticated and ProjectFollower.objects.filter(project=proj, user=user).exists()
-
-    @staticmethod
-    def user_is_project_volunteer(user, proj):
-        return user.is_authenticated and ProjectTaskRole.objects.filter(user=user, role=TaskRole.VOLUNTEER, task__project=proj).exists()
-
-    @staticmethod
-    def user_is_volunteer(user):
-        return ProjectTaskRole.objects.filter(user=user, role=TaskRole.VOLUNTEER, task__stage__in=[TaskStatus.STARTED, TaskStatus.WAITING_REVIEW]).exists()
-
-    @staticmethod
-    def user_is_project_scoper(user, proj):
-        return user.is_authenticated and ProjectTaskRole.objects.filter(user=user, role=TaskRole.VOLUNTEER, task__project=proj, task__type=TaskType.SCOPING_TASK, task__stage__in=[TaskStatus.STARTED, TaskStatus.WAITING_REVIEW]).exists()
-
-    @staticmethod
-    def user_is_project_manager(user, proj):
-        return user.is_authenticated and ProjectTaskRole.objects.filter(user=user, role=TaskRole.VOLUNTEER, task__project=proj, task__type=TaskType.PROJECT_MANAGEMENT_TASK, task__stage__in=[TaskStatus.STARTED, TaskStatus.WAITING_REVIEW]).exists()
-
-    @staticmethod
-    def user_is_project_reviewer(user, proj):
-        return user.is_authenticated and ProjectTaskRole.objects.filter(user=user, role=TaskRole.VOLUNTEER, task__project=proj, task__type=TaskType.QA_TASK, task__stage__in=[TaskStatus.STARTED, TaskStatus.WAITING_REVIEW]).exists()
-
-    @staticmethod
-    def user_can_view_project_tasks(user, proj):
-        return ProjectService.user_is_project_member(user, proj) or ProjectService.user_is_project_reviewer(user, proj)
-
-    @staticmethod
-    def user_can_review_project_tasks(user, proj):
-        return ProjectService.user_is_project_owner(user, proj) or ProjectService.user_is_project_reviewer(user, proj)
-
-    @staticmethod
-    def user_can_complete_project(user, proj):
-        return ProjectService.user_is_project_official(user, proj) # or ProjectService.user_is_project_reviewer(user, proj)
-
-    @staticmethod
-    def user_is_project_volunteer_official(user, proj):
-        return user.is_authenticated and ProjectTaskRole.objects.filter(user=user, role=TaskRole.VOLUNTEER, task__project=proj, task__type__in=[TaskType.SCOPING_TASK, TaskType.PROJECT_MANAGEMENT_TASK], task__stage__in=[TaskStatus.STARTED, TaskStatus.WAITING_REVIEW]).exists()
-
-    @staticmethod
-    def user_is_task_editor(user, proj):
-        return ProjectService.user_is_project_owner(user, proj) or ProjectService.user_is_project_scoper(user, proj)
-
-    @staticmethod
-    def user_is_project_official(user, proj):
-        return ProjectService.user_is_project_owner(user, proj) or ProjectService.user_is_project_volunteer_official(user, proj)
-
-    @staticmethod
-    def user_is_project_member(user, proj):
-        return user.is_authenticated and (ProjectRole.objects.filter(project=proj, user=user).exists() or ProjectService.user_is_project_volunteer_official(user, proj))
-
-    @staticmethod
-    def user_is_project_commenter(user, proj):
-        return user.is_authenticated and (ProjectService.user_is_project_member(user, proj) or ProjectService.user_is_project_volunteer(user, proj))
-
-    @staticmethod
-    def user_is_channel_commenter(user, channel):
-        project = channel.project
-        return user.is_authenticated and (ProjectService.user_is_project_member(user, project) or (not channel.related_task and ProjectService.user_is_project_volunteer(user, project)) or (channel.related_task and ProjectTaskService.user_is_task_volunteer(user, channel.related_task)))
-
-    @staticmethod
-    def is_project_visible_by_user(user, project):
-        if project.status == ProjectStatus.DRAFT:
-            # TODO Maybe add the project staff here.
-            return ProjectService.user_is_project_owner(user, project)
-        return True
 
     @staticmethod
     def get_project_officials(request_user, proj):
@@ -784,7 +845,7 @@ class ProjectTaskService():
         base_query = ProjectTask.objects.filter(project=proj) \
                                   .exclude(stage=TaskStatus.DELETED) \
                                   .order_by('-accepting_volunteers', '-stage')
-        if ProjectService.user_is_project_reviewer(request_user, proj):
+        if ProjectUserDomain.is_reviewer(request_user, proj):
             base_query = base_query.filter(stage=TaskStatus.WAITING_REVIEW)
         return base_query
 
@@ -835,19 +896,19 @@ class ProjectTaskService():
 
     @staticmethod
     def user_can_view_task_review(user, task_review):
-        return user.is_authenticated and (ProjectService.user_is_project_member(user, task_review.task.project) or ProjectTaskService.user_belongs_to_task_review(user, task_review) or ProjectService.user_is_project_reviewer(user, task_review.task.project))
+        return user.is_authenticated and (ProjectUserDomain.is_member(user, task_review.task.project) or ProjectTaskService.user_belongs_to_task_review(user, task_review) or ProjectUserDomain.is_reviewer(user, task_review.task.project))
 
     @staticmethod
     def user_can_view_all_task_reviews(user, task):
-        return user.is_authenticated and (ProjectService.user_is_project_member(user, task.project) or ProjectTaskService.user_is_task_volunteer(user, task))
+        return user.is_authenticated and (ProjectUserDomain.is_member(user, task.project) or ProjectTaskService.user_is_task_volunteer(user, task))
 
     @staticmethod
     def user_can_view_volunteer_application(user, volunteer_application):
-        return user == volunteer_application.volunteer or ProjectService.user_is_project_official(user, volunteer_application.task.project)
+        return user == volunteer_application.volunteer or ProjectUserDomain.is_official(user, volunteer_application.task.project)
 
     @staticmethod
     def user_can_review_task(user, task):
-        return ProjectService.user_can_review_project_tasks(user, task.project) and not ProjectTaskRole.objects.filter(user=user, task=task).exists()
+        return ProjectUserDomain.can_review_tasks(user, task.project) and not user.projecttaskrole_set.filter(task=task).exists()
 
     @staticmethod
     def task_has_volunteers(request_user, taskid):
