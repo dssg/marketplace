@@ -360,28 +360,28 @@ class ProjectDeliverablesView(generic.DetailView):
         return context
 
 
+@require_GET
 @permission_required('project.scope_view', raise_exception=True, fn=objectgetter(Project, 'proj_pk'))
 def project_scope_view(request, proj_pk, scope_pk=None):
-    if request.method == 'GET':
-        project = get_project(request, proj_pk)
-        project_scopes = ProjectService.get_all_project_scopes(request.user, proj_pk)
-        scopes_page = paginate(request, project_scopes, page_size=10)
-        if scope_pk:
-            current_scope = get_project_scope(request, proj_pk, scope_pk)
-            showing_current_scope = current_scope == ProjectService.get_current_project_scope(request.user, proj_pk)
-        else:
-            current_scope = ProjectService.get_current_project_scope(request.user, proj_pk)
-            showing_current_scope = True
-        return render(request, 'marketplace/proj_scope.html',
-                        add_project_common_context(request, project, 'scope',
-                            {
-                                'breadcrumb': project_breadcrumb(project, ('Scope', None)),
-                                'current_scope': current_scope,
-                                'project_scopes': scopes_page,
-                                'showing_current_scope': showing_current_scope
-                            }))
+    project = get_project(request, proj_pk)
+    project_scopes = ProjectService.get_all_project_scopes(request.user, proj_pk)
+    scopes_page = paginate(request, project_scopes, page_size=10)
+
+    if scope_pk:
+        current_scope = get_project_scope(request, proj_pk, scope_pk)
+        showing_current_scope = current_scope == ProjectService.get_current_project_scope(request.user, proj_pk)
     else:
-        raise Http404
+        current_scope = ProjectService.get_current_project_scope(request.user, proj_pk)
+        showing_current_scope = True
+
+    return render(request, 'marketplace/proj_scope.html',
+                    add_project_common_context(request, project, 'scope',
+                        {
+                            'breadcrumb': project_breadcrumb(project, ('Scope', None)),
+                            'current_scope': current_scope,
+                            'project_scopes': scopes_page,
+                            'showing_current_scope': showing_current_scope
+                        }))
 
 
 class EditProjectScopeForm(ModelForm):
