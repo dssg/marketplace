@@ -230,7 +230,7 @@ def add_project_common_context(request, project, page_tab, context):
     context['project'] = project
     context['page_tab'] = page_tab
     if not request.user.is_anonymous:
-        context['user_is_following_project'] = ProjectService.user_is_project_follower(request.user, project)
+        context['user_is_following_project'] = marketplace.project.user.is_follower(request.user, project)
         context['first_open_task'] = ProjectTaskService.get_open_project_tasks_summary(request.user, project).first()
     return context
 

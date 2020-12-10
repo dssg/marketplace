@@ -103,10 +103,10 @@ class ProjectTestCase(TestCase):
         self.assertEqual(list(ProjectService.get_organization_public_projects(self.owner_user, self.organization)), [])
         self.assertEqual(ProjectService.get_featured_project(), None)
         self.assertEqual(ProjectService.get_project(self.owner_user, self.project.id), self.project)
-        self.assertTrue(ProjectService.is_project_visible_by_user(self.owner_user, self.project))
-        self.assertFalse(ProjectService.is_project_visible_by_user(self.staff_user, self.project))
-        self.assertFalse(ProjectService.is_project_visible_by_user(self.volunteer_user, self.project))
-        self.assertFalse(ProjectService.is_project_visible_by_user(AnonymousUser(), self.project))
+        self.assertTrue(marketplace.project.user.can_view(self.owner_user, self.project))
+        self.assertFalse(marketplace.project.user.can_view(self.staff_user, self.project))
+        self.assertFalse(marketplace.project.user.can_view(self.volunteer_user, self.project))
+        self.assertFalse(marketplace.project.user.can_view(AnonymousUser(), self.project))
         self.assertEqual(list(ProjectService.get_user_projects_in_draft_status(self.owner_user)), projects_list)
         self.assertEqual(list(ProjectService.get_user_projects_in_draft_status(self.volunteer_user)), [])
 
@@ -193,7 +193,7 @@ class ProjectTestCase(TestCase):
 
         owner_users = [self.owner_user]
         with self.subTest(stage='Owner users'):
-            test_users_group_inclusion(self, all_users, owner_users, lambda x: ProjectService.user_is_project_owner(x, self.project))
+            test_users_group_inclusion(self, all_users, owner_users, lambda x: marketplace.project.user.is_owner(x, self.project))
 
         owner_user_roles = [self.owner_user.projectrole_set.first()]
         with self.subTest(stage='Owner user roles'):
@@ -205,8 +205,8 @@ class ProjectTestCase(TestCase):
 
         volunteer_users = [self.scoping_user, self.proj_mgmt_user, self.volunteer_user, self.qa_user]
         with self.subTest(stage='Volunteer users'):
-            test_users_group_inclusion(self, all_users, volunteer_users, lambda x: ProjectService.user_is_project_volunteer(x, self.project))
-            test_users_group_inclusion(self, all_users, volunteer_users, ProjectService.user_is_volunteer)
+            test_users_group_inclusion(self, all_users, volunteer_users, lambda x: marketplace.project.user.is_volunteer(x, self.project))
+            test_users_group_inclusion(self, all_users, volunteer_users, marketplace.project.user.is_active)
         volunteer_user_roles = [
             self.volunteer_user.projecttaskrole_set.first(),
             self.scoping_user.projecttaskrole_set.first(),
@@ -219,37 +219,37 @@ class ProjectTestCase(TestCase):
 
         scoping_users = [self.scoping_user]
         with self.subTest(stage='Scoping users'):
-            test_users_group_inclusion(self, all_users, scoping_users, lambda x: ProjectService.user_is_project_scoper(x, self.project))
+            test_users_group_inclusion(self, all_users, scoping_users, lambda x: marketplace.project.user.is_scoper(x, self.project))
 
         proj_mgmt_users = [self.proj_mgmt_user]
         with self.subTest(stage='Project management users'):
-            test_users_group_inclusion(self, all_users, proj_mgmt_users, lambda x: ProjectService.user_is_project_manager(x, self.project))
+            test_users_group_inclusion(self, all_users, proj_mgmt_users, lambda x: marketplace.project.user.is_manager(x, self.project))
 
         volunteer_officials = [self.scoping_user, self.proj_mgmt_user]
         with self.subTest(stage='Volunteer officials'):
-            test_users_group_inclusion(self, all_users, volunteer_officials, lambda x: ProjectService.user_is_project_volunteer_official(x, self.project))
+            test_users_group_inclusion(self, all_users, volunteer_officials, lambda x: marketplace.project.user.is_volunteer_official(x, self.project))
 
         task_editors = [self.owner_user, self.scoping_user]
         with self.subTest(stage='Task editors'):
-            test_users_group_inclusion(self, all_users, task_editors, lambda x: ProjectService.user_is_task_editor(x, self.project))
+            test_users_group_inclusion(self, all_users, task_editors, lambda x: marketplace.project.user.is_task_editor(x, self.project))
 
         officials = [self.owner_user, self.scoping_user, self.proj_mgmt_user]
         with self.subTest(stage='Project officials'):
-            test_users_group_inclusion(self, all_users, officials, lambda x: ProjectService.user_is_project_official(x, self.project))
+            test_users_group_inclusion(self, all_users, officials, lambda x: marketplace.project.user.is_official(x, self.project))
             self.assertEqual(set(ProjectService.get_project_officials(self.owner_user, self.project)), set(officials))
 
         members = [self.owner_user, self.staff_user, self.scoping_user, self.proj_mgmt_user]
         with self.subTest(stage='Project members'):
-            test_users_group_inclusion(self, all_users, members, lambda x: ProjectService.user_is_project_member(x, self.project))
+            test_users_group_inclusion(self, all_users, members, lambda x: marketplace.project.user.is_member(x, self.project))
             self.assertEqual(set(ProjectService.get_project_members(self.owner_user, self.project)), set(members))
 
         commenters = [self.owner_user, self.staff_user, self.scoping_user, self.proj_mgmt_user, self.volunteer_user, self.qa_user]
         with self.subTest(stage='Project commenters'):
-            test_users_group_inclusion(self, all_users, commenters, lambda x: ProjectService.user_is_project_commenter(x, self.project))
+            test_users_group_inclusion(self, all_users, commenters, lambda x: marketplace.project.user.is_commenter(x, self.project))
 
         reviewers = [self.qa_user]
         with self.subTest(stage='Project reviewers'):
-            test_users_group_inclusion(self, all_users, reviewers, lambda x: ProjectService.user_is_project_reviewer(x, self.project))
+            test_users_group_inclusion(self, all_users, reviewers, lambda x: marketplace.project.user.is_reviewer(x, self.project))
 
         # Check that getting project roles from the DB works
         for role in staff_user_roles:
@@ -268,7 +268,7 @@ class ProjectTestCase(TestCase):
 
         owner_users = [self.owner_user, self.staff_user]
         with self.subTest(stage='Test edited project roles'):
-            test_users_group_inclusion(self, all_users, owner_users, lambda x: ProjectService.user_is_project_owner(x, self.project))
+            test_users_group_inclusion(self, all_users, owner_users, lambda x: marketplace.project.user.is_owner(x, self.project))
 
         # Check that we can delete the staff member's role
         with self.subTest(stage='Delete project roles'):
@@ -278,7 +278,7 @@ class ProjectTestCase(TestCase):
 
         owner_users = [self.owner_user]
         with self.subTest(stage='Test deleted project roles'):
-            test_users_group_inclusion(self, all_users, owner_users, lambda x: ProjectService.user_is_project_owner(x, self.project))
+            test_users_group_inclusion(self, all_users, owner_users, lambda x: marketplace.project.user.is_owner(x, self.project))
 
         # Check that we cannot delete the last owner of a project
         with self.subTest(stage='Prevent deleting last project owner'):
@@ -299,14 +299,14 @@ class ProjectTestCase(TestCase):
         # Test that all followers are identified correctly
         all_users = self.get_all_users()
         with self.subTest(stage='Test followers'):
-            test_users_group_inclusion(self, all_users, followers, lambda x: ProjectService.user_is_project_follower(x, self.project))
+            test_users_group_inclusion(self, all_users, followers, lambda x: marketplace.project.user.is_follower(x, self.project))
             self.assertEqual(set(ProjectService.get_project_followers(self.owner_user, self.project.id)), set(followers))
             self.assertEqual(set(ProjectService.get_public_notification_users(self.owner_user, self.project.id)), set(followers))
 
         with self.subTest(stage='Remove followers'):
             for user in followers:
                 ProjectService.toggle_follower(user, self.project.id)
-            test_users_group_inclusion(self, all_users, [], lambda x: ProjectService.user_is_project_follower(x, self.project))
+            test_users_group_inclusion(self, all_users, [], lambda x: marketplace.project.user.is_follower(x, self.project))
             self.assertEqual(set(ProjectService.get_project_followers(self.owner_user, self.project.id)), set([]))
 
         # Test that the owner user is still in the public notification group
@@ -371,7 +371,7 @@ class ProjectTestCase(TestCase):
             with self.subTest(stage='Test channel operations', channel=channel):
                 self.assertEqual(channel, ProjectService.get_project_channel(self.owner_user, self.project, channel.id))
                 for user in all_users:
-                    if ProjectService.user_is_channel_commenter(user, channel):
+                    if marketplace.project.user.is_channel_commenter(user, channel):
                         current_comments = list(ProjectService.get_project_comments(user, channel.id, self.project))
                         comment_text = "C" + str(user.id)
                         comment = ProjectComment()
@@ -473,7 +473,7 @@ class ProjectTestCase(TestCase):
             ProjectTaskService.reject_volunteer(self.scoping_user, self.project.id, task.id, application)
             saved_application = ProjectTaskService.get_volunteer_application(self.owner_user, self.project.id, task.id, application.id)
             self.assertEqual(saved_application.status, ReviewStatus.REJECTED)
-            self.assertFalse(ProjectService.user_is_project_volunteer(self.volunteer_applicant_user, self.project))
+            self.assertFalse(marketplace.project.user.is_volunteer(self.volunteer_applicant_user, self.project))
             self.assertFalse(ProjectTaskService.user_is_task_volunteer(self.volunteer_applicant_user, task))
 
         with self.subTest(stage='Accept volunteer application'):
