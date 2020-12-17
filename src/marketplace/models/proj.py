@@ -85,14 +85,14 @@ class Project(models.Model):
     )
     #============
     banner_image_url = models.URLField(
-        verbose_name="Project main image",
+        verbose_name="Project main image (URL)",
         help_text="A descriptive image identifying the project, it can be a project logo, an image representing the problem you want to solve, etc.",
         max_length=200,
         blank=True,
         null=True,
     )
     banner_image_file = models.ImageField(
-        verbose_name="Project main image",
+        verbose_name="Project main image (file)",
         help_text="A descriptive image identifying the project, it can be a project logo, an image representing the problem you want to solve, etc.",
         upload_to="projlogos/",
         blank=True,
