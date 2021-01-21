@@ -1,0 +1,41 @@
+{% if task.task_home_url %}
+<a href="{{ task.task_home_url }}" target="_blank" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+    External task home
+    <span class="material-icons d-inline-flex"><small>open_in_new</small></span>
+</a>
+{% endif %}
+
+{% if task.task_deliverables_url %}
+<a href="{{ task.task_deliverables_url }}" target="_blank" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+    External deliverables page
+    <span class="material-icons d-inline-flex"><small>open_in_new</small></span>
+</a>
+{% endif %}
+
+{% if project.deliverable_management_url %}
+<a href="{{ project.deliverable_management_url }}" target="_blank" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+    External project home
+    <span class="material-icons d-inline-flex"><small>open_in_new</small></span>
+</a>
+{% endif %}
+
+{% if project.deliverable_github_url %}
+<a href="{{ project.deliverable_github_url }}" target="_blank" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+    Project GitHub page
+    <span class="material-icons d-inline-flex"><small>open_in_new</small></span>
+</a>
+{% endif %}
+
+{% if project.deliverable_reports_url %}
+<a href="{{ project.deliverable_reports_url }}" target="_blank" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+    Project reports
+    <span class="material-icons d-inline-flex"><small>open_in_new</small></span>
+</a>
+{% endif %}
+
+{% if project.deliverable_documentation_url %}
+<a href="{{ project.deliverable_documentation_url }}" target="_blank" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+    Project documentation
+    <span class="material-icons d-inline-flex"><small>open_in_new</small></span>
+</a>
+{% endif %}

@@ -78,17 +78,17 @@
               <p>Created on: {{ project_task.creation_date }}</p>
               <p>Last modified: {{ project_task.last_modified_date }}</p>
               <p>Start: {{ project_task.estimated_start_date }} (estimated), {{ project_task.actual_start_date }} (actual)</p>
-              <p>End: {{ project_task.estimated_end_date }} (estimated), {{ project_task.actual_end_date }} (actual)</p>
+              <p>End: {{ project_task.estimated_end_date }} (estimated){% if project_task.actual_end_date %}, {{ project_task.actual_end_date }} (actual){% endif %}</p>
             </div>
           </div>
           <div class="card">
             <div class="card-header"><i class="fas fa-list-ul"></i> Work details</div>
             <div class="card-body">
-              <p>Estimated effort in hours: {{ project_task.estimated_effort_hours }}</p>
-              <p>Actual effort spent in hours: {{ project_task.actual_effort_hours }}</p>
+              <p>Estimated effort in hours: {{ project_task.estimated_effort_hours|default:'(none)' }}</p>
+              <p>Actual effort spent in hours: {{ project_task.actual_effort_hours|default:'(none)' }}</p>
 
-              <p>External task home: <a href="{{ project_task.task_home_url }}">{{ project_task.task_home_url }}</a></p>
-              <p>External deliverables page: <a href="{{ project_task.task_deliverables_url }}">{{ project_task.task_deliverables_url }}</a></p>
+              <p>External task home: {{ project_task.task_home_url|default:'(none)'|urlize }}</p>
+              <p>External deliverables page: {{ project_task.task_deliverables_url|default:'(none)'|urlize }}</p>
             </div>
           </div>
           <div class="card">
