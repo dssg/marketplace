@@ -68,19 +68,11 @@
       {% if project.is_completed %}
         <div class="card mb-3 section-header">
           <div class="card-header">Project results</div>
-          <div class="card-body">
-            {% if project.deliverable_management_url %}
-              <div><a href="{{ project.deliverable_management_url }}">Project home</a></div>
-            {% endif %}
-            {% if project.deliverable_github_url %}
-              <div><a href="{{ project.deliverable_github_url }}">Project github page</a></div>
-            {% endif %}
-            {% if project.deliverable_reports_url %}
-              <div><a href="{{ project.deliverable_reports_url }}">Project reports</a></div>
-            {% endif %}
-            {% if project.deliverable_documentation_url %}
-              <div><a href="{{ project.deliverable_documentation_url }}">Project documentation</a></div>
-            {% endif %}
+
+          <div class="card-body py-1 px-0">
+            <div class="list-group list-group-flush">
+              {% include 'marketplace/components/proj_task_deliverables_list.html' with project=project %}
+            </div>
           </div>
         </div>
       {% endif %}

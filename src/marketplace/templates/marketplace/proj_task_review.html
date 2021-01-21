@@ -1,24 +1,40 @@
 {% extends "marketplace/proj_task_base.html" %}
 
+{% load markdown_deux_tags rules %}
+
 {% block taskcontents %}
-
-  {% load markdown_deux_tags %}
-
   <h4 class="section-header">Completed task review</h4>
-  <p>Task: {{ project_task.name }}</p>
-  <p>Estimated effort in hours: {{ project_task.estimated_effort_hours }}</p>
-  <p>Total effort spent (in hours): {{ task_review.volunteer_effort_hours }}</p>
-  <p>Volunteer's comments: {{ task_review.volunteer_comment|markdown }}</p>
 
-  {% if project_task.task_home_url %}
-    <p>External task home: <a href="{{ project_task.task_home_url }}">{{ project_task.task_home_url }}</a></p>
-  {% endif %}
-  {% if project_task.task_deliverables_url %}
-    <p>External deliverables page: <a href="{{ project_task.task_deliverables_url }}">{{ project_task.task_deliverables_url }}</a></p>
-  {% endif %}
-  <p>Request date: {{ task_review.review_request_date }} </p>
+  <div class="row">
+    <div class="col-md-6 mt-3">
+      <div class="row align-items-center">
+        <dt class="col-sm-5 mb-2">Task</dt>
+        <dd class="col-sm-7"><a href="{% url 'marketplace:proj_task' project.id project_task.id %}">{{ project_task.name }}</a></dd>
 
-  {% load rules %}
+        <dt class="col-sm-5 mb-2">Estimated effort (hours)</dt>
+        <dd class="col-sm-7">{{ project_task.estimated_effort_hours }}</dd>
+
+        <dt class="col-sm-5 mb-2">Total effort spent (hours)</dt>
+        <dd class="col-sm-7">{{ task_review.volunteer_effort_hours }}</dd>
+
+        <dt class="col-sm-5 mb-2">Request date</dt>
+        <dd class="col-sm-7">{{ task_review.review_request_date }}</dd>
+
+        <dt class="col-sm-5 mb-2">Volunteer's comments</dt>
+        <dd class="col-sm-7">
+          <blockquote class="blockquote mt-2">{{ task_review.volunteer_comment|markdown }}</blockquote>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="list-group list-group-flush">
+        {% include 'marketplace/components/proj_task_deliverables_list.html' with project=project task=project_task %}
+      </div>
+    </div>
+  </div>
+
+  <hr class="mb-4">
+
   {% has_perm 'project.task_review_do' user project as perm_task_reviewer %}
 
   {% if task_review.is_pending %}

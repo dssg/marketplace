@@ -1,39 +1,24 @@
 {% extends "marketplace/proj_volunteer_task_base.html" %}
 
+{% load markdown_deux_tags %}
+
 {% block taskcontents %}
-
-
-
-  {% load markdown_deux_tags %}
-
   <div class="row mb-5 section-header">
     <div class="col-lg-8">
         <span class="text-muted">
           {% include 'marketplace/components/task_type_display.html' %}
         </span>
+
         <h4>{{ project_task.name }}</h4>
-          {% include 'marketplace/components/task_status.html' with task=project_task %}
 
-      <p>{{ project_task.description|markdown }}</p>
-      <p>{{ project_task.onboarding_instructions|markdown }}</p>
+        {% include 'marketplace/components/task_status.html' with task=project_task %}
 
-      {% if project.deliverable_management_url %}
-        <a href="{{ project.deliverable_management_url }}">External project home</a>
-      {% endif %}
-      {% if project.deliverable_github_url %}
-        <a href="{{ project.deliverable_github_url }}">Project github page</a>
-      {% endif %}
-      {% if project.deliverable_reports_url %}
-        <a href="{{ project.deliverable_reports_url }}">Project reports</a>
-      {% endif %}
-      {% if project.deliverable_documentation_url %}
-        <a href="{{ project.deliverable_documentation_url }}">Project documentation</a>
-      {% endif %}
+        <p>{{ project_task.description|markdown }}</p>
+        <p>{{ project_task.onboarding_instructions|markdown }}</p>
 
-
-
-
-
+        <div class="list-group list-group-flush">
+        {% include 'marketplace/components/proj_task_deliverables_list.html' with project=project task=project_task %}
+        </div>
     </div>
 
     <div class="col-lg-4">
@@ -61,7 +46,7 @@
         <div class="card-header"><i class="far fa-calendar-alt"></i> Schedule</div>
         <div class="card-body">
           <p>Start: {{ project_task.estimated_start_date }} (estimated), {{ project_task.actual_start_date }} (actual)</p>
-          <p>End: {{ project_task.estimated_end_date }} (estimated), {{ project_task.actual_end_date }} (actual)</p>
+          <p>End: {{ project_task.estimated_end_date }} (estimated){% if project_task.actual_end_date %}, {{ project_task.actual_end_date }} (actual){% endif %}</p>
         </div>
       </div>
 

@@ -3,28 +3,31 @@
 {% block taskcontents %}
 
   {% if project_task %}
-
     <h4 class="section-header">Mark work as done</h4>
 
-    <p>Task:<a href="{% url 'marketplace:proj_instructions' project.id %}">{{ project_task.name }}</a></p>
+    <p>Task: <a href="{% url 'marketplace:proj_instructions' project.id %}">{{ project_task.name }}</a></p>
 
-    <p>Remember to put all the results of your work in the appropriate sites
-       designed for the task:</p>
-     {% if project.deliverable_management_url %}
-       <a href="{{ project.deliverable_management_url }}">External project home</a>
-     {% endif %}
-     {% if project.deliverable_github_url %}
-       <a href="{{ project.deliverable_github_url }}">Project github page</a>
-     {% endif %}
-     {% if project.deliverable_reports_url %}
-       <a href="{{ project.deliverable_reports_url }}">Project reports</a>
-     {% endif %}
-     {% if project.deliverable_documentation_url %}
-       <a href="{{ project.deliverable_documentation_url }}">Project documentation</a>
-     {% endif %}
+    <div class="row">
+      <div class="col-md-4">
+        <div class="d-flex align-items-center h-100">
+          <p class="align-self-center"><i class="fas fa-check-double fa-lg pr-3"></i></p>
+          <p>Remember to put all the results of your work into the appropriate documents and/or repositories
+             designated for this task.</p>
+        </div>
+      </div>
+
+      <div class="col-md-8">
+        <div class="list-group list-group-flush">
+          {% include 'marketplace/components/proj_task_deliverables_list.html' with project=project task=project_task %}
+        </div>
+       </div>
+    </div>
+
+    <hr class="mt-3 mb-4">
 
     <form id="completetask">
       {% csrf_token %}
+
       {% include 'marketplace/components/standard_form_fields.html' %}
 
       <div class="form-row">
@@ -37,6 +40,7 @@
             <i class="material-icons" style="vertical-align: middle">check</i>
             Mark work as done
           </button>
+
           <a class="btn btn-outline-primary" href="{% url 'marketplace:proj_instructions_task' project.id project_task.id %}">
             <i class="material-icons" style="vertical-align: middle">close</i>
             Cancel
@@ -44,7 +48,6 @@
         </div>
       </div>
     </form>
-
   {% else %}
     <p>You don't have any active task in this project.</p>
   {% endif %}
