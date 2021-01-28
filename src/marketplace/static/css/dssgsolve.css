@@ -85,6 +85,20 @@ body {
   margin: -125px 0 0;  /* negative fixed header height */
 }
 
+.nav-tabs .nav-link.nav-dark {
+  color: #fff;
+  background-color: #80a415;
+  border-top-left-radius: 0.25rem;
+  border-top-right-radius: 0.25rem;
+}
+.nav-tabs .nav-link.nav-dark:hover {
+  background-color: #5d770f;
+}
+.nav-tabs .nav-link.nav-dark.active {
+  color: #fff;
+  background-color: #5d770f;
+}
+
 .footer {
   background-color: #ABCF38;
   color: white;
