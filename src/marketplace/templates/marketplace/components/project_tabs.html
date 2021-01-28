@@ -1,7 +1,6 @@
-
 {% load rules %}
-<ul class="nav nav-tabs">
 
+<ul class="nav nav-tabs">
     <li class="nav-item">
       {% if page_tab == 'info' %}
         <span class="nav-link active">Information</span>
@@ -25,16 +24,6 @@
       <a class="nav-link" href="{% url 'marketplace:proj_discussion' project.id %}">Discussion</a>
     {% endif %}
   </li>
-
-  {% if project.is_completed %}
-    <li class="nav-item">
-      {% if page_tab == 'deliverables' %}
-        <span class="nav-link active">Results</span>
-      {% else %}
-        <a class="nav-link" href="{% url 'marketplace:proj_deliverables' project.id %}">Results</a>
-      {% endif %}
-    </li>
-  {% endif %}
 
   {% has_perm 'project.tasks_view' user project as perm_tasks_view %}
   {% if perm_tasks_view %}
@@ -91,4 +80,13 @@
     </li>
   {% endif %}
 
+  {% if project.is_completed %}
+    <li class="nav-item">
+      {% if page_tab == 'deliverables' %}
+        <span class="nav-link nav-dark active">Results</span>
+      {% else %}
+        <a class="nav-link nav-dark" href="{% url 'marketplace:proj_deliverables' project.id %}">Results</a>
+      {% endif %}
+    </li>
+  {% endif %}
 </ul>
