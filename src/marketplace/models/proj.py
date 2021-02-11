@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.db.models import Count
 from django_countries.fields import CountryField
 
 from .common import (
@@ -36,7 +37,15 @@ class ProjectStatus():
                     (ProjectStatus.DELETED, 'Deleted')
                 )
 
+
+class ProjectQuerySet(models.QuerySet):
+
+    def with_follower_count(self):
+        return self.annotate(follower_count=Count('projectfollower'))
+
+
 class Project(models.Model):
+
     name = models.CharField(
         verbose_name="Name",
         help_text="Name of this project. Make sure it is distinctive and recognizable on its own.",
@@ -238,6 +247,8 @@ class Project(models.Model):
         verbose_name="Organization",
         help_text="Organization that owns this project.",
     )
+
+    objects = ProjectQuerySet.as_manager()
 
     def __str__(self):
         return self.name

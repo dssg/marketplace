@@ -5,14 +5,14 @@ from django.contrib.auth import logout
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied, ValidationError
-from django.db.models import Count, Max, Min
+from django.db.models import Max, Min
 from django.db.models.functions import ExtractYear
 from django.forms import CharField, ModelForm, Textarea
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views import generic
-from django.views.decorators.http import require_GET, require_http_methods
+from django.views.decorators.http import require_GET, require_POST, require_http_methods
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from rules.contrib.views import (
     PermissionRequiredMixin, objectgetter, permission_required,
@@ -1153,7 +1153,7 @@ def publish_project_view(request, proj_pk):
 @require_http_methods(['GET', 'POST'])
 @permission_required('project.approve_as_completed', raise_exception=True, fn=objectgetter(Project, 'proj_pk'))
 def finish_project_view(request, proj_pk):
-    project = get_object_or_404(Project.objects.annotate(follower_count=Count('projectfollower')), pk=proj_pk)
+    project = get_object_or_404(Project.objects.with_follower_count(), pk=proj_pk)
 
     if not project.is_waiting_review_status() and not (project.is_in_progress_status() and
                                                        marketplace.user.is_site_staff(request.user)):
@@ -1170,21 +1170,20 @@ def finish_project_view(request, proj_pk):
                   }))
 
 
+@require_POST
 @permission_required('project.task_edit', raise_exception=True, fn=objectgetter(Project, 'proj_pk'))
 def toggle_task_accepting_volunteers_view(request, proj_pk, task_pk):
-    if request.method == 'GET':
-        raise Http404
-    elif request.method == 'POST':
-        try:
-            ProjectTaskService.toggle_task_accepting_volunteers(request.user, proj_pk, task_pk)
-            return redirect('marketplace:proj_task', proj_pk=proj_pk, task_pk=task_pk)
-        except KeyError:
-            messages.error(request, 'There was an error while processing your request.')
-            return redirect('marketplace:proj_task', proj_pk=proj_pk, task_pk=task_pk)
+    try:
+        ProjectTaskService.toggle_task_accepting_volunteers(request.user, proj_pk, task_pk)
+        return redirect('marketplace:proj_task', proj_pk=proj_pk, task_pk=task_pk)
+    except KeyError:
+        messages.error(request, 'There was an error while processing your request.')
+        return redirect('marketplace:proj_task', proj_pk=proj_pk, task_pk=task_pk)
 
 
 
 class CreateProjectForm(ModelForm):
+
     class Meta:
         model = Project
         fields = ['name', 'short_summary',
