@@ -4,15 +4,15 @@ import traceback
 from django.contrib.auth import logout
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib import messages
-from django.core.exceptions import ValidationError
-from django.db.models import Max, Min
+from django.core.exceptions import PermissionDenied, ValidationError
+from django.db.models import Count, Max, Min
 from django.db.models.functions import ExtractYear
 from django.forms import CharField, ModelForm, Textarea
 from django.http import Http404, HttpResponseRedirect
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views import generic
-from django.views.decorators.http import require_GET
+from django.views.decorators.http import require_GET, require_http_methods
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from rules.contrib.views import (
     PermissionRequiredMixin, objectgetter, permission_required,
@@ -1150,30 +1150,25 @@ def publish_project_view(request, proj_pk):
         raise Http404
 
 
+@require_http_methods(['GET', 'POST'])
 @permission_required('project.approve_as_completed', raise_exception=True, fn=objectgetter(Project, 'proj_pk'))
 def finish_project_view(request, proj_pk):
-    project = get_project(request, proj_pk)
+    project = get_object_or_404(Project.objects.annotate(follower_count=Count('projectfollower')), pk=proj_pk)
+
+    if not project.is_waiting_review_status() and not (project.is_in_progress_status() and
+                                                       marketplace.user.is_site_staff(request.user)):
+        raise PermissionDenied
+
     if request.method == 'POST':
-        try:
-            ProjectService.finish_project(request.user, proj_pk, project)
-            return redirect('marketplace:proj_info', proj_pk=proj_pk)
-        except KeyError:
-            messages.error(request, 'There was an error while processing your request.')
-            return redirect('marketplace:proj_info', proj_pk=proj_pk)
-    elif request.method == 'GET':
-        pass
-    if project:
-        return render(request, 'marketplace/proj_finish.html',
-                        add_project_common_context(
-                            request,
-                            project,
-                            'info',
-                            {
-                                'breadcrumb': project_breadcrumb(project,
-                                                                    ('Finish project', None)),
-                            }))
-    else:
-        raise Http404
+        marketplace.project.finish_project(request.user, project)
+        return redirect('marketplace:proj_info', proj_pk=proj_pk)
+
+    return render(request,
+                  'marketplace/proj_finish.html',
+                  add_project_common_context(request, project, 'info', {
+                        'breadcrumb': project_breadcrumb(project, ('Finish project', None)),
+                  }))
+
 
 @permission_required('project.task_edit', raise_exception=True, fn=objectgetter(Project, 'proj_pk'))
 def toggle_task_accepting_volunteers_view(request, proj_pk, task_pk):

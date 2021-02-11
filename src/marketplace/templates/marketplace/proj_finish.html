@@ -1,6 +1,13 @@
 {% extends 'marketplace/proj.html' %}
 
 {% block tabcontents %}
+  {% if not project.is_waiting_review_status %}
+  <div class="section-header-primary alert alert-warning px-3" role="alert">
+    <i class="fas fa-exclamation-circle"></i>
+    This project is <em>not</em> in the final QA stage, and it is still considered <strong>in progress</strong>.
+  </div>
+  {% endif %}
+
   <form id="finishproject">
     <h4 class="section-header">Finish project</h4>
 
@@ -20,7 +27,11 @@
     </button>
     <a class="btn btn-outline-primary" href="{% url 'marketplace:proj_info' project.id %}">
       <i class="material-icons" style="vertical-align: middle">close</i>
+      {% if project.is_waiting_review_status %}
       No, keep this project in QA
+      {% else %}
+      No, keep this project in progress
+      {% endif %}
     </a>
   </form>
 {% endblock %}
