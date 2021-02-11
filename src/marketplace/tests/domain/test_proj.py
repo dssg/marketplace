@@ -189,7 +189,7 @@ class ProjectTestCase(TestCase):
         all_users = self.get_all_users()
         project_users = [self.owner_user, self.staff_user, self.scoping_user, self.proj_mgmt_user, self.volunteer_user, self.qa_user]
         self.assertEqual(set(ProjectService.get_all_project_users(self.owner_user, self.project)), set(project_users))
-        self.assertEqual(set(ProjectService.get_public_notification_users(self.owner_user, self.project)), set(project_users))
+        self.assertEqual(set(marketplace.project.query_notification_users(self.project)), set(project_users))
 
         owner_users = [self.owner_user]
         with self.subTest(stage='Owner users'):
@@ -301,7 +301,7 @@ class ProjectTestCase(TestCase):
         with self.subTest(stage='Test followers'):
             test_users_group_inclusion(self, all_users, followers, lambda x: marketplace.project.user.is_follower(x, self.project))
             self.assertEqual(set(ProjectService.get_project_followers(self.owner_user, self.project.id)), set(followers))
-            self.assertEqual(set(ProjectService.get_public_notification_users(self.owner_user, self.project.id)), set(followers))
+            self.assertEqual(set(marketplace.project.query_notification_users(self.project.id)), set(followers))
 
         with self.subTest(stage='Remove followers'):
             for user in followers:
@@ -312,7 +312,7 @@ class ProjectTestCase(TestCase):
         # Test that the owner user is still in the public notification group
         # even when not being a follower
         with self.subTest(stage='Check public notification group'):
-            self.assertEqual(set(ProjectService.get_public_notification_users(self.owner_user, self.project.id)), set([self.owner_user]))
+            self.assertEqual(set(marketplace.project.query_notification_users(self.project.id)), set([self.owner_user]))
 
 
     def test_project_scopes(self):
@@ -798,8 +798,8 @@ class ProjectTestCase(TestCase):
         self.assertEqual(len(ProjectService.get_project_changes(self.owner_user, self.project)), project_changes)
 
         test_permission_denied_operation(self, [AnonymousUser(), self.volunteer_user, self.staff_user, self.proj_mgmt_user, self.scoping_user, self.volunteer_applicant_user],
-            lambda x: ProjectService.finish_project(x, self.project.id, self.project))
-        ProjectService.finish_project(self.owner_user, self.project.id, ProjectService.get_project(self.owner_user, self.project.id))
+            lambda x: marketplace.project.finish_project(x, self.project))
+        marketplace.project.finish_project(self.owner_user, ProjectService.get_project(self.owner_user, self.project.id))
         self.assertEqual(ProjectService.get_project(self.owner_user, self.project.id).status, ProjectStatus.COMPLETED)
         project_changes += 1
         self.assertEqual(len(ProjectService.get_project_changes(self.owner_user, self.project)), project_changes)

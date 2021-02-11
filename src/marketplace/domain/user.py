@@ -7,7 +7,7 @@ from django.utils import timezone
 
 from namespaces import Namespace
 
-from marketplace.authorization.common import ensure_user_has_permission
+from marketplace.authorization.common import ensure_user_has_permission, ensure_rule
 
 from marketplace.models.common import ReviewStatus, SkillLevel
 from marketplace.models.org import OrganizationRole
@@ -44,8 +44,9 @@ UserDomain = Namespace('user')
 
 
 @UserDomain
-def query_pending_volunteer_profiles(request_user):
-    ensure_user_has_permission(request_user, request_user, 'volunteer.new_user_review')
+def query_pending_volunteer_profiles(user):
+    ensure_rule('volunteer.new_user_review', user)
+
     return (
         VolunteerProfile.objects
         .filter(volunteer_status=ReviewStatus.NEW)
@@ -156,6 +157,15 @@ def set_task_preferences(user, preferences):
     ])
 
 
+@UserDomain
+def is_dssg_staff(user):
+    return user.is_authenticated and user.is_type_dssg_staff
+
+@UserDomain._method_
+def is_site_staff(self, user):
+    return user.is_staff or user.is_superuser or self.is_dssg_staff(user)
+
+
 # Volunteer user domain #
 
 VolunteerDomain = UserDomain(Namespace('volunteer'))
@@ -240,11 +250,6 @@ class UserService():
             #     base_query = base_query.filter(status__in=project_statuses).distinct()
         return base_query.distinct().order_by('user__first_name', 'user__last_name')
 
-
-    @staticmethod
-    def user_is_dssg_staff(request_user, user):
-        return user.is_authenticated and user.initial_type == UserType.DSSG_STAFF
-
     @staticmethod
     def get_featured_volunteer():
         return VolunteerProfile.objects.filter(volunteer_status=ReviewStatus.ACCEPTED) \
@@ -266,7 +271,7 @@ class UserService():
 
     @staticmethod
     def accept_volunteer_profile(request_user, volunteer_profile_pk):
-        ensure_user_has_permission(request_user, request_user, 'volunteer.new_user_review')
+        ensure_rule('volunteer.new_user_review', request_user)
         volunteer_profile = VolunteerProfile.objects.get(pk=volunteer_profile_pk)
         if volunteer_profile:
             volunteer_profile.volunteer_status = ReviewStatus.ACCEPTED
@@ -282,7 +287,7 @@ class UserService():
 
     @staticmethod
     def reject_volunteer_profile(request_user, volunteer_profile_pk):
-        ensure_user_has_permission(request_user, request_user, 'volunteer.new_user_review')
+        ensure_rule('volunteer.new_user_review', request_user)
         volunteer_profile = VolunteerProfile.objects.get(pk=volunteer_profile_pk)
         if volunteer_profile:
             volunteer_profile.volunteer_status = ReviewStatus.REJECTED

@@ -1,4 +1,4 @@
-{% load static %}
+{% load rules static %}
 
 <nav class="navbar sticky-top navbar-expand-lg navbar-dark bg-primary">
   <div class="container">
@@ -18,13 +18,12 @@
         <li class="nav-item"><a class="nav-link" href="{% url 'marketplace:volunteer_list' %}">Volunteers</a></li>
         <li class="nav-item"><a class="nav-link" href="{% url 'marketplace:resources' %}">Resources</a></li>
 
-
-        {% if user.is_authenticated %}
-          {% if user.is_type_dssg_staff %}
-            <li class="nav-item"><a class="nav-link text-warning" href="{% url 'marketplace:admin_home' %}">Admin</a></li>
-          {% endif %}
-        {% endif %}
+      {% has_perm 'user.is_site_staff' user as is_site_staff %}
+      {% if is_site_staff %}
+        <li class="nav-item"><a class="nav-link text-warning" href="{% url 'marketplace:admin_home' %}">Admin</a></li>
+      {% endif %}
       </ul>
+
       <ul class="navbar-nav">
         {% if user.is_authenticated %}
           <li class="nav-item"><a class="nav-link" href="{% url 'marketplace:user_dashboard' %}">Dashboard</a></li>
