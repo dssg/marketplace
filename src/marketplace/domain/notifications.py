@@ -38,7 +38,7 @@ def add_user_notification(user, notification_description, severity, source, targ
             settings.DEFAULT_FROM_EMAIL,
             user.email,
             f"[{settings.SITE_NAME}] You have a new notification",
-            f"You have a new notification pending:\n{notification_description}",
+            f"You have a new notification pending:\n\n{notification_description}",
         )
 
 

@@ -1,16 +1,15 @@
-from rules import add_perm, predicate
+import operator
+
+import rules
 from rules.predicates import is_authenticated
 
-from marketplace.models.user import User
-from marketplace.domain.user import UserService
+from marketplace.domain import marketplace
 
 
-add_perm('user.is_authenticated', is_authenticated)
+rules.add_perm('user.is_same_user', operator.eq)
 
-@predicate
-def is_same_user(request_user, target_user):
-    return request_user == target_user
+rules.add_perm('user.is_authenticated', is_authenticated)
 
-add_perm('user.is_same_user', is_same_user)
+rules.add_rule('user.is_site_staff', marketplace.user.is_site_staff)
 
-add_perm('volunteer.new_user_review', UserService.user_is_dssg_staff)
+rules.add_rule('volunteer.new_user_review', marketplace.user.is_site_staff)

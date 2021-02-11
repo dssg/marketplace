@@ -102,6 +102,49 @@ def list_public_projects(projname=None,
     return projects.distinct().order_by('-creation_date')
 
 
+@ProjectDomain
+def query_notification_users(project):
+    project_staff = User.objects.filter(projectrole__project=project)
+    project_volunteers = User.objects.filter(
+        projecttaskrole__task__project=project,
+        projecttaskrole__role=TaskRole.VOLUNTEER,
+        projecttaskrole__task__stage__in=(TaskStatus.STARTED, TaskStatus.WAITING_REVIEW),
+    )
+    project_followers = User.objects.filter(projectfollower__project=project)
+
+    return project_staff.union(project_volunteers, project_followers)
+
+
+@ProjectDomain._method_
+def finish_project(self, user, project):
+    ensure_user_has_permission(user, project, 'project.approve_as_completed')
+
+    if not project.is_completed():
+        project.status = ProjectStatus.COMPLETED
+        project.actual_end_date = timezone.now()
+        project.save()
+
+    message = (f"""The project "{project.name}" has been accepted as finished. """
+                """All volunteer work has been completed.""")
+
+    NotificationService.add_multiuser_notification(
+        self.query_notification_users(project),
+        message,
+        NotificationSeverity.INFO,
+        NotificationSource.PROJECT,
+        project.id,
+    )
+
+    ProjectService.add_project_change(
+        user,
+        project,
+        ProjectLogType.COMPLETE,
+        ProjectLogSource.STATUS,
+        project.id,
+        message,
+    )
+
+
 # Project user domain #
 
 ProjectUserDomain = ProjectDomain(Namespace('user'))
@@ -311,17 +354,6 @@ class ProjectService:
         )
 
     @staticmethod
-    def get_public_notification_users(request_user, proj):
-        return User.objects.filter(projectrole__project=proj).union(
-            User.objects.filter(projecttaskrole__task__project=proj,
-                                projecttaskrole__role=TaskRole.VOLUNTEER,
-                                projecttaskrole__task__stage__in=[TaskStatus.STARTED, TaskStatus.WAITING_REVIEW]
-                                ).union(
-                                    User.objects.filter(projectfollower__project=proj)
-                                )
-        ).distinct()
-
-    @staticmethod
     def get_project_followers(request_user, proj):
         return User.objects.filter(projectfollower__project=proj)
 
@@ -367,7 +399,7 @@ class ProjectService:
             project_comment.channel = channel
             try:
                 project_comment.save()
-                NotificationService.add_multiuser_notification(ProjectService.get_public_notification_users(request_user, project),
+                NotificationService.add_multiuser_notification(ProjectDomain.query_notification_users(project),
                                                             "New comment added to the discussion channel {0} of project {1}.".format(channel.name, project.name),
                                                             NotificationSeverity.INFO,
                                                             NotificationSource.PROJECT,
@@ -528,7 +560,7 @@ class ProjectService:
         ensure_user_has_permission(request_user, project, 'project.information_edit')
         project.save()
         message = "The project {0} was edited by {1}.".format(project.name, request_user.standard_display_name)
-        NotificationService.add_multiuser_notification(ProjectService.get_public_notification_users(request_user, project),
+        NotificationService.add_multiuser_notification(ProjectDomain.query_notification_users(project),
                                                  message,
                                                  NotificationSeverity.INFO,
                                                  NotificationSource.PROJECT,
@@ -575,27 +607,6 @@ class ProjectService:
         ProjectService.add_project_change(request_user,
                                            project,
                                            ProjectLogType.ADD,
-                                           ProjectLogSource.STATUS,
-                                           project.id,
-                                           message)
-
-    @staticmethod
-    def finish_project(request_user, projid, project):
-        validate_consistent_keys(project, ('id', projid))
-        ensure_user_has_permission(request_user, project, 'project.approve_as_completed')
-        if project.status == ProjectStatus.WAITING_REVIEW:
-            project.status = ProjectStatus.COMPLETED
-            project.actual_end_date = timezone.now()
-            project.save()
-        message = "The project {0} has been accepted as finished, so all the volunteer work has been completed.".format(project.name)
-        NotificationService.add_multiuser_notification(ProjectService.get_public_notification_users(request_user, project),
-                                                 message,
-                                                 NotificationSeverity.INFO,
-                                                 NotificationSource.PROJECT,
-                                                 project.id)
-        ProjectService.add_project_change(request_user,
-                                           project,
-                                           ProjectLogType.COMPLETE,
                                            ProjectLogSource.STATUS,
                                            project.id,
                                            message)
@@ -955,7 +966,7 @@ class ProjectTaskService():
                             project.status = ProjectStatus.WAITING_STAFF
                             project.save()
                             message = "The status of project {0} has changed to 'Staffing', so users can now apply to volunteer in the project tasks.".format(project.name)
-                            NotificationService.add_multiuser_notification(ProjectService.get_public_notification_users(request_user, project),
+                            NotificationService.add_multiuser_notification(ProjectDomain.query_notification_users(project),
                                                                      message,
                                                                      NotificationSeverity.INFO,
                                                                      NotificationSource.PROJECT,
@@ -972,7 +983,7 @@ class ProjectTaskService():
                             project.status = ProjectStatus.WAITING_DESIGN_APPROVAL
                             project.save()
                             message = "The status of project {0} has changed to 'Scoping QA'; the project's staff will review the current scope and determine if it is final and thus the project work can begin, or if the current scope needs further modifications.".format(project.name)
-                            NotificationService.add_multiuser_notification(ProjectService.get_public_notification_users(request_user, project),
+                            NotificationService.add_multiuser_notification(ProjectDomain.query_notification_users(project),
                                                                      message,
                                                                      NotificationSeverity.INFO,
                                                                      NotificationSource.PROJECT,
@@ -993,7 +1004,7 @@ class ProjectTaskService():
                             project.status = ProjectStatus.WAITING_REVIEW
                             project.save()
                             message = "The status of project {0} has changed to 'Final QA'; the project's work has finished and the staff will now verify if the project can be considered finished or if additional work needs to be completed.".format(project.name)
-                            NotificationService.add_multiuser_notification(ProjectService.get_public_notification_users(request_user, project),
+                            NotificationService.add_multiuser_notification(ProjectDomain.query_notification_users(project),
                                                                      message,
                                                                      NotificationSeverity.INFO,
                                                                      NotificationSource.PROJECT,
@@ -1138,7 +1149,7 @@ class ProjectTaskService():
                 project.status = ProjectStatus.IN_PROGRESS
                 project.save()
                 message = "The status of project {0} has changed to 'In progress' as the staff determined that the project was not ready to be marked as finished.".format(project.name)
-                NotificationService.add_multiuser_notification(ProjectService.get_public_notification_users(request_user, project),
+                NotificationService.add_multiuser_notification(ProjectDomain.query_notification_users(project),
                                                          message,
                                                          NotificationSeverity.INFO,
                                                          NotificationSource.PROJECT,
@@ -1390,7 +1401,7 @@ class ProjectTaskService():
                 project.status = ProjectStatus.DESIGN
                 project.save()
                 message = "The status of project {0} has changed to 'Scoping' as the project's staff determined that the scope needs modifications.".format(project.name)
-                NotificationService.add_multiuser_notification(ProjectService.get_public_notification_users(request_user, project),
+                NotificationService.add_multiuser_notification(ProjectDomain.query_notification_users(project),
                                                          message,
                                                          NotificationSeverity.INFO,
                                                          NotificationSource.PROJECT,
@@ -1509,7 +1520,7 @@ class ProjectTaskService():
                         project.status = ProjectStatus.DESIGN
                         project.save()
                         message = "The status of project {0} has changed to 'Scoping', as new volunteers have been accepted to work on the project scope.".format(project.name)
-                        NotificationService.add_multiuser_notification(ProjectService.get_public_notification_users(request_user, project),
+                        NotificationService.add_multiuser_notification(ProjectDomain.query_notification_users(project),
                                                                  message,
                                                                  NotificationSeverity.INFO,
                                                                  NotificationSource.PROJECT,
@@ -1526,7 +1537,7 @@ class ProjectTaskService():
                         project.status = ProjectStatus.IN_PROGRESS
                         project.save()
                         message = "The status of project {0} has changed to 'In progress', as volunteers have been accepted to work on the project tasks.".format(project.name)
-                        NotificationService.add_multiuser_notification(ProjectService.get_public_notification_users(request_user, project),
+                        NotificationService.add_multiuser_notification(ProjectDomain.query_notification_users(project),
                                                                  message,
                                                                  NotificationSeverity.INFO,
                                                                  NotificationSource.PROJECT,
@@ -1814,14 +1825,14 @@ class ProjectTaskService():
            project_task.save()
            if project_task.accepting_volunteers:
                message = "The task {0} of project {1} is now accepting volunteers.".format(project_task.name, project.name)
-               NotificationService.add_multiuser_notification(ProjectService.get_public_notification_users(request_user, project),
+               NotificationService.add_multiuser_notification(ProjectDomain.query_notification_users(project),
                                                         message,
                                                         NotificationSeverity.INFO,
                                                         NotificationSource.PROJECT,
                                                         project.id)
            else:
                message = "The task {0} of project {1} has stopped accepting volunteers.".format(project_task.name, project.name)
-               NotificationService.add_multiuser_notification(ProjectService.get_public_notification_users(request_user, project),
+               NotificationService.add_multiuser_notification(ProjectDomain.query_notification_users(project),
                                                         message,
                                                         NotificationSeverity.INFO,
                                                         NotificationSource.PROJECT,

@@ -88,6 +88,7 @@ class User(AbstractUser):
     def standard_display_name(self):
         return f'{self.full_name} ({self.username})' if self.full_name else self.username
 
+    @property
     def is_type_dssg_staff(self):
         return self.initial_type == UserType.DSSG_STAFF
 

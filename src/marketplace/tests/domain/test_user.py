@@ -70,7 +70,7 @@ class UserTestCase(TestCase):
         )
         marketplace.user.add_user(organization_user, 'organization')
 
-        self.assertFalse(UserService.user_is_dssg_staff(organization_user, organization_user))
+        self.assertFalse(marketplace.user.is_dssg_staff(organization_user))
         self.assertTrue(UserService.user_is_organization_creator(organization_user))
         self.assertFalse(UserService.user_has_skills(organization_user))
         self.assertFalse(UserService.user_has_volunteer_profile(organization_user))
@@ -89,7 +89,7 @@ class UserTestCase(TestCase):
         )
         marketplace.user.add_user(volunteer_user, 'volunteer')
 
-        self.assertFalse(UserService.user_is_dssg_staff(volunteer_user, volunteer_user))
+        self.assertFalse(marketplace.user.is_dssg_staff(volunteer_user))
         self.assertFalse(UserService.user_is_organization_creator(volunteer_user))
         self.assertFalse(UserService.user_has_skills(volunteer_user))
         self.assertTrue(UserService.user_has_volunteer_profile(volunteer_user))
