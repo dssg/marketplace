@@ -1,9 +1,8 @@
 {% extends "marketplace/proj.html" %}
 
+{% load markdown_deux_tags rules %}
+
 {% block tabcontents %}
-
-  {% load markdown_deux_tags %}
-
   <div class="row mt-5 mb-5">
     <div class="col-lg-8">
       <h4 class="section-header">Background and Motivation</h4>
@@ -37,7 +36,6 @@
           </button>
         </form>
       {% endif %}
-      {% load rules %}
       {% has_perm 'project.publish' user project as perm_publish %}
       {% if perm_publish and project.is_draft_status %}
         <a class="btn btn-success col-lg-12 mb-1"
@@ -48,11 +46,12 @@
       {% endif %}
 
       {% has_perm 'project.approve_as_completed' user project as perm_approve %}
-      {% if perm_approve and project.is_waiting_review_status %}
+      {% has_perm 'user.is_site_staff' user as is_site_staff %}
+      {% if perm_approve and project.is_waiting_review_status or is_site_staff and project.is_in_progress_status %}
         <a class="btn btn-success col-lg-12 mb-1"
            href="{% url 'marketplace:proj_finish' project.id %}">
-          <i class="material-icons" style="vertical-align: middle">done_all</i>
-          Finish project
+          <i class="material-icons" style="vertical-align: middle">{{ project.is_waiting_review_status|yesno:'done_all,fast_forward' }}</i>
+          Finish project {% if project.is_in_progress_status %}(without review){% endif %}
         </a>
       {% endif %}
 
