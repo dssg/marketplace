@@ -157,7 +157,7 @@ def project_list_view(request):
             Min('creation_year'),
         ).values()
     )
-    project_years = range(latest_year, (oldest_year - 1), -1)
+    project_years = range(latest_year, (oldest_year - 1), -1) if latest_year and oldest_year else ()
 
     try:
         filter_year = int(request.GET.get('postedsince', ''))
