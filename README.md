@@ -1,4 +1,4 @@
-# Solve for Good Platform
+# [Solve for Good Platform](http://www.solveforgood.org)
 ## Development
 
 ### Getting started
