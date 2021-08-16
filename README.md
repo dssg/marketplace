@@ -3,7 +3,7 @@
 
 ### Getting started
 
-The DSSG Marketplace is built to run under Python v3.7. Virtual environment management is strongly recommended in development, using at least the [venv](https://docs.python.org/3/library/venv.html) module, or [pyenv](https://github.com/pyenv/pyenv).
+Solve for Good is built to run under Python v3.7. Virtual environment management is strongly recommended in development, using at least the [venv](https://docs.python.org/3/library/venv.html) module, or [pyenv](https://github.com/pyenv/pyenv).
 
 Also note that the marketplace requires configuration, documented by example in [.env.example](.env.example). This configuration may be supplied as either process environment variables or via a file named `.env` added to the repository root directory. If neither are supplied the application will not start.
 
@@ -26,7 +26,7 @@ This wizard will initialize a local application configuration file (`.env`), and
     2) no, ignore
     #? 1
 
-The marketplace assumes a [Docker](https://www.docker.com/) image build target; and so, the Python requirements of the Web app are not themselves automatically installed into the project virtual environment.
+Solve for Good assumes a [Docker](https://www.docker.com/) image build target; and so, the Python requirements of the Web app are not themselves automatically installed into the project virtual environment.
 
 If you'd like to build the app in your project virtual environment, you may:
 
