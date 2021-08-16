@@ -1,5 +1,4 @@
-# DSSG Marketplace
-
+# Solve for Good Platform
 ## Development
 
 ### Getting started
